@@ -13,7 +13,7 @@ const formatForDisplay = (value: unknown): string | undefined => {
 };
 
 const getLanguage = (mediaType?: string): string => {
-  if (!mediaType) return "plain";
+  if (!mediaType) return "text";
   if (mediaType.endsWith("+json")) return "json";
   if (mediaType.endsWith("+xml")) return "xml";
   if (mediaType.endsWith("+yaml")) return "yaml";
@@ -28,7 +28,7 @@ const getLanguage = (mediaType?: string): string => {
     "application/javascript": "javascript",
     "application/graphql": "graphql",
   };
-  return languages[mediaType] ?? "plain";
+  return languages[mediaType] ?? "text";
 };
 
 export type SidecarExamplesProps = {

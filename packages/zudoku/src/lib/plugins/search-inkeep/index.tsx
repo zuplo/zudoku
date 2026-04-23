@@ -97,13 +97,7 @@ export const inkeepSearchPlugin = (
         />
       );
     },
-    renderSearch: ({
-      isOpen,
-      onClose,
-    }: {
-      isOpen: boolean;
-      onClose: () => void;
-    }) => {
+    renderSearch: ({ isOpen, onClose }) => {
       return (
         <ClientOnly>
           <InkeepSearch isOpen={isOpen} onClose={onClose} settings={settings} />

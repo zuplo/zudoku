@@ -1,16 +1,13 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createContext, useContext, useEffect } from "react";
+import { useContext, useEffect, useMemo, useRef } from "react";
 import { matchPath, useLocation } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { useAuthState } from "../../authentication/state.js";
-import type { ZudokuContext } from "../../core/ZudokuContext.js";
+import { applyRules } from "../../navigation/applyRules.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS, useCache } from "../cache.js";
-import { traverseNavigation } from "../navigation/utils.js";
-
-export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
-  undefined,
-);
+import { getItemPath, traverseNavigation } from "../navigation/utils.js";
+import { ZudokuReactContext } from "./ZudokuReactContext.js";
 
 export const useZudoku = () => {
   const context = useContext(ZudokuReactContext);
@@ -39,21 +36,6 @@ export const useApiIdentities = () => {
   });
 };
 
-const getItemPath = (item: NavigationItem) => {
-  switch (item.type) {
-    case "doc":
-      return joinUrl(item.path);
-    case "category":
-      return item.link ? joinUrl(item.link.path) : undefined;
-    case "link":
-      return item.to;
-    case "custom-page":
-      return joinUrl(item.path);
-    default:
-      return undefined;
-  }
-};
-
 const extractAllPaths = (items: NavigationItem[]) => {
   const paths = new Set<string>();
 
@@ -73,21 +55,27 @@ const extractAllPaths = (items: NavigationItem[]) => {
 };
 
 export const useCurrentNavigation = () => {
-  const { getPluginNavigation, navigation } = useZudoku();
+  const context = useZudoku();
+  const { getPluginNavigation, navigation, navigationRules } = context;
   const location = useLocation();
+  const loggedWarnings = useRef(new Set<string>());
+
+  const pathname = joinUrl(location.pathname);
 
   const navItem = traverseNavigation(navigation, (item, parentCategories) => {
-    if (getItemPath(item) === location.pathname) {
+    if (item.type === "link") return;
+    if (getItemPath(item) === pathname) {
       return parentCategories.at(0) ?? item;
     }
   });
 
   const { data } = useSuspenseQuery({
-    queryFn: () => getPluginNavigation(location.pathname),
-    queryKey: ["plugin-navigation", location.pathname],
+    queryFn: () => getPluginNavigation(pathname),
+    queryKey: ["plugin-navigation", pathname],
   });
 
   let topNavItem = navItem;
+
   if (!navItem && data.length > 0) {
     const pluginBasePaths = extractAllPaths(data);
 
@@ -106,11 +94,37 @@ export const useCurrentNavigation = () => {
       })?.item;
   }
 
-  return {
-    navigation: [
-      ...(navItem?.type === "category" ? navItem.items : []),
+  const finalNavigation = useMemo(() => {
+    const baseNavigation = [
+      ...(topNavItem?.type === "category" ? topNavItem.items : []),
       ...data,
-    ],
+    ];
+
+    if (topNavItem?.label && navigationRules.length > 0) {
+      const { result, warnings } = applyRules(
+        baseNavigation,
+        navigationRules,
+        topNavItem?.label,
+      );
+
+      if (import.meta.env.DEV) {
+        for (const warning of warnings) {
+          if (!loggedWarnings.current.has(warning)) {
+            loggedWarnings.current.add(warning);
+            // biome-ignore lint/suspicious/noConsole: Dev-only navigation rule warnings
+            console.warn(`[Zudoku] Navigation rule: ${warning}`);
+          }
+        }
+      }
+
+      return result;
+    }
+
+    return baseNavigation;
+  }, [topNavItem, data, navigationRules]);
+
+  return {
+    navigation: finalNavigation,
     topNavItem,
   };
 };

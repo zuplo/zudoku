@@ -21,10 +21,7 @@ import {
 } from "./utils.js";
 
 const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => (
-  <InlineCode
-    className="inline-flex items-center gap-1.5 text-xs translate-y-0.5"
-    selectOnClick={false}
-  >
+  <InlineCode className="inline-flex items-center gap-1.5 text-xs translate-y-0.5">
     <RefreshCcwDotIcon size={13} />
     <span>{circularProp ? `${circularProp} (circular)` : "circular"}</span>
   </InlineCode>
@@ -45,19 +42,26 @@ export const SchemaPropertyItem = ({
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
+  const isDeprecated = group === "deprecated";
+
   if (isCircularRef(schema)) {
     return (
-      <Item>
+      <Item
+        className={cn(
+          isDeprecated && "opacity-50 hover:opacity-100 transition",
+        )}
+      >
         <ItemContent className="gap-y-2">
           <div>
             <ItemTitle className="inline me-2">
-              <code>{name}</code>
+              <code className={cn(isDeprecated && "line-through")}>{name}</code>
             </ItemTitle>
+            {"\u200B"}
             <ParamInfos
               className="inline"
               schema={schema}
               extraItems={[
-                group !== "optional" && (
+                group === "required" && (
                   <span className="text-primary">required</span>
                 ),
                 <RecursiveIndicator key="circular-ref" />,
@@ -79,20 +83,22 @@ export const SchemaPropertyItem = ({
         "items" in schema &&
         isComplexType(schema.items)) ||
       schema.additionalProperties) &&
-      !isArrayCircularRef(schema),
+    !isArrayCircularRef(schema),
   );
 
   const shouldRenderDescription = Boolean(
     schema.description ||
-      ("items" in schema && schema.items?.enum) ||
-      schema.const ||
-      schema.enum ||
-      schema.example !== undefined ||
-      schema.default !== undefined,
+    ("items" in schema && schema.items?.enum) ||
+    schema.const ||
+    schema.enum ||
+    schema.example !== undefined ||
+    schema.default !== undefined,
   );
 
   return (
-    <Item>
+    <Item
+      className={cn(isDeprecated && "opacity-50 hover:opacity-100 transition")}
+    >
       <ItemContent className="gap-y-2">
         <div>
           <ItemTitle className="inline me-2">
@@ -102,17 +108,20 @@ export const SchemaPropertyItem = ({
                 type="button"
                 className="hover:underline"
               >
-                <code>{name}</code>
+                <code className={cn(isDeprecated && "line-through")}>
+                  {name}
+                </code>
               </button>
             ) : (
-              <code>{name}</code>
+              <code className={cn(isDeprecated && "line-through")}>{name}</code>
             )}
           </ItemTitle>
+          {"\u200B"}
           <ParamInfos
             className="inline"
             schema={schema}
             extraItems={[
-              group !== "optional" && (
+              group === "required" && (
                 <span className="text-primary">required</span>
               ),
               isArrayCircularRef(schema) && (

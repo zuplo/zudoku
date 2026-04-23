@@ -3,6 +3,8 @@ import { isValidElement, useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
+import { SchemaRefLink } from "./schema/SchemaRefLink.js";
+import { getSchemaRefName } from "./schema/utils.js";
 
 const Pattern = ({ pattern }: { pattern: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -13,7 +15,6 @@ const Pattern = ({ pattern }: { pattern: string }) => {
     <InlineCode
       className={cn("text-xs", isExpandable && "cursor-pointer")}
       onClick={() => setIsExpanded(!isExpanded)}
-      selectOnClick={false}
     >
       {isExpanded ? pattern : shortPattern}
       {isExpandable && (
@@ -28,18 +29,35 @@ const Pattern = ({ pattern }: { pattern: string }) => {
 const getSchemaInfos = (schema?: SchemaObject) => {
   if (!schema) return [];
 
+  const items =
+    schema.type === "array" && typeof schema.items === "object"
+      ? schema.items
+      : undefined;
+
+  const getTypeLabel = () => {
+    if (items) {
+      const itemsRefName = getSchemaRefName(items);
+      if (itemsRefName) {
+        return <SchemaRefLink name={itemsRefName} suffix="[]" />;
+      }
+      if (items.type) {
+        return Array.isArray(items.type)
+          ? `(${items.type.join(" | ")})[]`
+          : `${items.type}[]`;
+      }
+    }
+    const refName = getSchemaRefName(schema);
+    if (refName) return <SchemaRefLink name={refName} />;
+    return Array.isArray(schema.type) ? schema.type.join(" | ") : schema.type;
+  };
+
   return [
-    schema.type === "array" && schema.items.type
-      ? Array.isArray(schema.items.type)
-        ? `(${schema.items.type.join(" | ")})[]`
-        : `${schema.items.type}[]`
-      : Array.isArray(schema.type)
-        ? schema.type.join(" | ")
-        : schema.type,
+    getTypeLabel(),
 
     schema.enum && "enum",
     schema.const && "const",
     schema.format,
+    items?.contentMediaType,
     schema.minimum !== undefined && `min: ${schema.minimum}`,
     schema.maximum !== undefined && `max: ${schema.maximum}`,
     schema.minLength !== undefined && `minLength: ${schema.minLength}`,

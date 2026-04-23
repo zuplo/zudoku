@@ -2,6 +2,8 @@ name: Build
 on:
   workflow_call:
   pull_request:
+  push:
+    branches: [main]
 
 jobs:
   build:
@@ -12,16 +14,17 @@ jobs:
       actions: read
       contents: read
       id-token: write
+      pull-requests: write
 
     env:
       COREPACK_ENABLE_STRICT: 0
       ZUDOKU_INTERNAL_DEV: true
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           run_install: false
 
@@ -37,40 +40,103 @@ jobs:
 
       - run: pnpm install nx --global
 
-      - uses: nrwl/nx-set-shas@v4
+      - uses: nrwl/nx-set-shas@v5
 
       - run: pnpm check
-      - run: nx run-many -t build:ci test
+      - run: nx run-many -t build:ci
+      - run: pnpm test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: coverage/
+
+      - name: Restore base coverage
+        if: github.event_name == 'pull_request'
+        id: base-coverage
+        uses: actions/cache/restore@v5
+        with:
+          path: coverage-base/coverage-summary.json
+          key: coverage-base-
+          restore-keys: coverage-base-
+
+      - name: Save base coverage
+        if: github.ref == 'refs/heads/main'
+        run: mkdir -p coverage-base && cp coverage/coverage-summary.json coverage-base/
+
+      - name: Save base coverage cache
+        if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v5
+        with:
+          path: coverage-base/coverage-summary.json
+          key: coverage-base-${{ github.sha }}
+
+      - name: Coverage report comment (with comparison)
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key != ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: coverage/coverage-summary.json
+          json-summary-compare-path: coverage-base/coverage-summary.json
+
+      - name: Coverage report comment
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key == ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: coverage/coverage-summary.json
 
       - name: Get Variables
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Version (Canary)
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
         run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
 
       - name: Publish Modules
+        if: github.ref != 'refs/heads/main'
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku --filter config --tag canary --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
       - name: Build Examples
-        run: nx run-many -t build --projects=tag:example --exclude=mermaid
+        run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
 
-        # Check if the stats file exists, if zudoku doesn't change in the PR
-        # the stats file won't exist and we don't need to upload it
-      - name: Has Stats
-        run: echo "exists=${{ hashFiles('./packages/zudoku/stats.html') != '' }}" >> $GITHUB_OUTPUT
-        id: stats-file
+      - name: Smoke Test with-base-path
+        run: |
+          dist="examples/with-base-path/dist"
+          nested="$dist/your-repo"
+          fail() { echo "::error::$1"; exit 1; }
+
+          [ -f "$nested/introduction.html" ] || fail "prerendered page missing at $nested/introduction.html"
+          [ -f "$nested/api/rick-and-morty/1.0.0/schema.json" ] || fail "schema download missing under $nested/api/"
+          [ -f "$nested/llms.txt" ] || fail "llms.txt missing under $nested/"
+          find "$nested/assets" -name '*.js' -type f | grep -q . || fail "no JS bundles in $nested/assets"
+          [ -f "$dist/404.html" ] || fail "status page 404.html missing at dist root"
+
+          grep -q 'rel="icon" href="/your-repo/favicon.svg"' "$nested/introduction.html" \
+            || fail "favicon href missing /your-repo prefix"
+
+          grep -q 'href="/your-repo/assets/' "$nested/introduction.html" \
+            || fail "asset URLs missing /your-repo prefix"
+
+          echo "✅ with-base-path smoke test passed"
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E Tests
+        run: pnpm test:e2e
+
+      - name: Check Bundle Size
+        run: pnpm size
 
   check-links:
     name: Check Links
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
         with:
           run_install: false
 
@@ -90,19 +156,27 @@ jobs:
 
       - name: Restore lychee cache
         id: restore-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .lycheecache
-          key: cache-lychee-v3-${{ github.sha }}
-          restore-keys: cache-lychee-v2-
+          key: cache-lychee-v4-${{ github.sha }}
+          restore-keys: cache-lychee-v4-
 
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --fallback-extensions html --cache --max-cache-age 1d --config ./docs/lychee.toml --root-dir $PWD/docs/dist --include-fragments ./docs/dist
+          args: >-
+            --config ./docs/lychee.toml
+            --remap "https://zudoku.dev file://${{ github.workspace }}/docs/dist"
+            --fallback-extensions html
+            --cache
+            --max-cache-age 1d
+            --root-dir $PWD/docs/dist
+            --include-fragments
+            ./docs/dist
       - name: Save lychee cache
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .lycheecache
-          key: cache-lychee-v3-${{ github.sha }}
+          key: ${{ steps.restore-cache.outputs.cache-primary-key }}

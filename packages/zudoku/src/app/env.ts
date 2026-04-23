@@ -1,28 +1,25 @@
-import { z } from "zod";
-import { BuildConfigSchema } from "./ZuploBuildConfig.js";
+import { z } from "zod/mini";
+import { parseBuildConfig } from "./ZuploBuildConfig.js";
+
+const formatError = (error: unknown) => {
+  if (error instanceof SyntaxError) {
+    return "ZUPLO_BUILD_CONFIG contains invalid JSON";
+  }
+  if (error instanceof z.core.$ZodError) {
+    return `ZUPLO_BUILD_CONFIG is invalid:\n${z.prettifyError(error)}`;
+  }
+  return `ZUPLO_BUILD_CONFIG is invalid: ${error}`;
+};
 
 const getZuploBuildConfig = () => {
   if (!process.env.ZUPLO_BUILD_CONFIG) return undefined;
 
   try {
-    const zuploBuildConfig = BuildConfigSchema.parse(
-      JSON.parse(process.env.ZUPLO_BUILD_CONFIG),
-    );
-    return zuploBuildConfig;
+    const parsed = JSON.parse(process.env.ZUPLO_BUILD_CONFIG);
+    return parseBuildConfig(parsed);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      // biome-ignore lint/suspicious/noConsole: Logging allowed here
-      console.error("ZUPLO_BUILD_CONFIG is invalid.");
-      // biome-ignore lint/suspicious/noConsole: Logging allowed here
-      console.log(error.issues);
-      return undefined;
-    }
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.error(
-      "ZUPLO_BUILD_CONFIG is a reserved environment variable and cannot be used for custom configuration. Please remove it from your environment variables.",
-    );
-    // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.log(error);
+    console.error(formatError(error));
     return undefined;
   }
 };

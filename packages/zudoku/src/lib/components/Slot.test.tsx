@@ -20,7 +20,7 @@ import { Slot } from "./Slot.js";
 
 const createWrapper = (slots: Record<string, ReactNode> = {}) => {
   const queryClient = new QueryClient();
-  const context = new ZudokuContext({}, queryClient);
+  const context = new ZudokuContext({}, queryClient, {});
 
   const wrapper = ({ children }: PropsWithChildren) => (
     <MemoryRouter initialEntries={["/", "/page"]}>

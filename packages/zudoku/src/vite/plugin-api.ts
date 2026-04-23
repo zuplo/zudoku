@@ -3,20 +3,18 @@ import path from "node:path";
 import { deepEqual } from "fast-equals";
 import { type Plugin, runnerImport } from "vite";
 import { ZuploEnv } from "../app/env.js";
+import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { getCurrentConfig } from "../config/loader.js";
 import {
   getBuildConfig,
   type Processor,
 } from "../config/validators/BuildSchema.js";
-import {
-  getAllOperations,
-  getAllSlugs,
-  getAllTags,
-} from "../lib/oas/graphql/index.js";
+import { getAllTags } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
+import type { VersionedInput } from "../lib/plugins/openapi/interfaces.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
@@ -31,7 +29,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
   // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = ZuploEnv.isZuplo
     ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
-        path.resolve(import.meta.dirname, "../zuplo/with-zuplo-processors.js"),
+        path.resolve(getZudokuRootDir(), "src/zuplo/with-zuplo-processors.ts"),
       ).then((m) => m.module.default(initialConfig.__meta.rootDir))
     : [];
 
@@ -50,19 +48,43 @@ const viteApiPlugin = async (): Promise<Plugin> => {
     processors,
   });
 
+  await fs.rm(tmpStoreDir, { recursive: true, force: true });
+  await fs.mkdir(tmpStoreDir, { recursive: true });
+  await schemaManager.processAllSchemas();
+
   return {
     name: "zudoku-api-plugins",
     async buildStart() {
-      await fs.rm(tmpStoreDir, { recursive: true, force: true });
-      await fs.mkdir(tmpStoreDir, { recursive: true });
-
-      await schemaManager.processAllSchemas();
-
       schemaManager
         .getAllTrackedFiles()
         .forEach((file) => this.addWatchFile(file));
     },
     configureServer(server) {
+      // Serve original OpenAPI schema files
+      server.middlewares.use(async (req, res, next) => {
+        if (req.method !== "GET" || !req.url) return next();
+        if (
+          !req.url.toLowerCase().endsWith(".json") &&
+          !req.url.toLowerCase().endsWith(".yaml")
+        ) {
+          return next();
+        }
+
+        const pathMap = schemaManager.getUrlToFilePathMap();
+
+        const inputPath = pathMap.get(req.url);
+        if (!inputPath) return next();
+
+        const content = await fs.readFile(inputPath, "utf-8");
+        const mimeType =
+          path.extname(inputPath).toLowerCase() === ".json"
+            ? "application/json"
+            : "application/x-yaml";
+
+        res.setHeader("Content-Type", `${mimeType}; charset=utf-8`);
+        return res.end(content);
+      });
+
       server.watcher.on("change", async (id) => {
         const mainFiles = schemaManager.getFilesToReprocess(id);
         if (mainFiles.length === 0) return;
@@ -70,8 +92,8 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.log(`Re-processing schema ${id}`);
 
-        for (const mainFile of mainFiles) {
-          await schemaManager.processSchema(mainFile);
+        for (const inputConfig of mainFiles) {
+          await schemaManager.processSchema(inputConfig);
         }
         schemaManager
           .getAllTrackedFiles()
@@ -120,16 +142,48 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         const apis = ensureArray(config.apis);
         const apiMetadata: ApiCatalogItem[] = [];
 
+        const httpMethods = new Set([
+          "get",
+          "post",
+          "put",
+          "patch",
+          "delete",
+          "options",
+          "head",
+          "trace",
+        ]);
+
         for (const apiConfig of apis) {
           if (apiConfig.type === "file" && apiConfig.path) {
             const latestSchema = schemaManager.getLatestSchema(apiConfig.path);
             if (!latestSchema?.schema.info) continue;
+
+            const operationCount = Object.values(
+              latestSchema.schema.paths ?? {},
+            ).reduce<number>((sum, pathItem) => {
+              if (!pathItem || typeof pathItem !== "object") return sum;
+              return (
+                sum +
+                Object.keys(pathItem).filter((m) =>
+                  httpMethods.has(m.toLowerCase()),
+                ).length
+              );
+            }, 0);
+
+            const rawVersion = latestSchema.schema.info.version;
+            const version = rawVersion
+              ? rawVersion.startsWith("v") || rawVersion.startsWith("V")
+                ? rawVersion
+                : `v${rawVersion}`
+              : undefined;
 
             apiMetadata.push({
               path: apiConfig.path,
               label: latestSchema.schema.info.title,
               description: latestSchema.schema.info.description ?? "",
               categories: apiConfig.categories ?? [],
+              version,
+              operationCount,
             });
           }
         }
@@ -145,30 +199,34 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             if (!schemas?.length) continue;
 
-            const tags = Array.from(
-              new Set(
-                schemas
-                  .flatMap(({ schema }) => {
-                    const operations = getAllOperations(schema.paths);
-                    const slugs = getAllSlugs(operations);
-                    return getAllTags(schema, slugs.tags);
-                  })
-                  .map(({ slug }) => slug),
-              ),
-            );
+            const allSlugs = new Set<string>();
+            const versionedInput = schemas.map<VersionedInput>((s) => {
+              const versionTags = getAllTags(s.schema);
+              versionTags.forEach(({ slug }) => {
+                if (slug) allSlugs.add(slug);
+              });
 
-            const schemaMapEntries = Array.from(
-              schemaManager.schemaMap.entries(),
-            );
+              return {
+                path: s.path,
+                version: s.version,
+                downloadUrl: s.downloadUrl,
+                label: s.label ?? s.schema.info?.version,
+                input: s.importKey,
+                hasUntaggedOperations: versionTags.some(
+                  (tag) => tag.name === undefined,
+                ),
+                tagPages: versionTags.flatMap((t) => t.slug ?? []),
+              };
+            });
+
+            const tags = Array.from(allSlugs);
+
+            const schemaImports = schemaManager.getSchemaImports();
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
               `  type: "file",`,
-              `  input: ${JSON.stringify(
-                Object.fromEntries(
-                  schemas.map((s) => [s.version, s.inputPath]),
-                ),
-              )},`,
+              `  input: ${JSON.stringify(versionedInput)},`,
               `  path: ${JSON.stringify(apiConfig.path)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
               `  options: {`,
@@ -176,17 +234,19 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
+              `    disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
-              `    expandApiInformation: config.defaults?.apis?.expandApiInformation ?? false,`,
+              `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,
+              `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    transformExamples: config.defaults?.apis?.transformExamples,`,
               `    generateCodeSnippet: config.defaults?.apis?.generateCodeSnippet,`,
               `    ...(apis[${apiIndex}].options ?? {}),`,
               `  },`,
               `  schemaImports: {`,
-              ...schemaMapEntries.map(
-                ([key, processed]) =>
-                  `    "${key.replace(/\\/g, "\\\\")}": () => import("${processed.filePath.replace(/\\/g, "/")}?d=${processed.processedTime}"),`,
+              ...schemaImports.map(
+                (s) =>
+                  `    "${s.importKey.replaceAll("\\", "\\\\")}": () => import("${s.importKey.replaceAll("\\", "/")}?d=${s.processedTime}"),`,
               ),
               `  },`,
               "}));",
@@ -200,8 +260,11 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
+              `    disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? false,`,
+              `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,
+              `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    ...${JSON.stringify(apiConfig.options ?? {})},`,
               "  },",
               "}));",
@@ -265,6 +328,22 @@ const viteApiPlugin = async (): Promise<Plugin> => {
       );
 
       return code.join("\n");
+    },
+    async closeBundle() {
+      if (this.environment.name === "ssr") return;
+
+      const config = getCurrentConfig();
+      const pathMap = schemaManager.getUrlToFilePathMap();
+
+      if (process.env.NODE_ENV !== "production") return;
+
+      for (const [urlPath, inputPath] of pathMap) {
+        const content = await fs.readFile(inputPath, "utf-8");
+        const outputPath = path.join(config.__meta.rootDir, "dist", urlPath);
+
+        await fs.mkdir(path.dirname(outputPath), { recursive: true });
+        await fs.writeFile(outputPath, content, "utf-8");
+      }
     },
   };
 };

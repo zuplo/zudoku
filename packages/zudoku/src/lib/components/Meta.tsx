@@ -5,7 +5,8 @@ import { joinUrl } from "../util/joinUrl.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
 export const Meta = ({ children }: PropsWithChildren) => {
-  const { meta, options } = useZudoku();
+  const { options } = useZudoku();
+  const { metadata: meta } = options;
   const location = useLocation();
 
   return (
@@ -24,7 +25,16 @@ export const Meta = ({ children }: PropsWithChildren) => {
         {meta?.description && (
           <meta name="description" content={meta.description} />
         )}
-        {meta?.favicon && <link rel="icon" href={meta.favicon} />}
+        {meta?.favicon && (
+          <link
+            rel="icon"
+            href={
+              /^https?:\/\//.test(meta.favicon)
+                ? meta.favicon
+                : joinUrl(options.basePath, meta.favicon)
+            }
+          />
+        )}
         {meta?.generator && <meta name="generator" content={meta.generator} />}
         {meta?.applicationName && (
           <meta name="application-name" content={meta.applicationName} />
@@ -38,6 +48,7 @@ export const Meta = ({ children }: PropsWithChildren) => {
         ))}
         {meta?.creator && <meta name="creator" content={meta.creator} />}
         {meta?.publisher && <meta name="publisher" content={meta.publisher} />}
+        {meta?.robots && <meta name="robots" content={meta.robots} />}
       </Helmet>
       {children}
     </>

@@ -5,19 +5,12 @@
     "clientKind": "git",
     "useIgnoreFile": true
   },
-  "css": {
-    "parser": {
-      "tailwindDirectives": true
-    }
-  },
   "files": {
     "ignoreUnknown": true,
     "includes": [
-      "**/*.{ts,tsx,js,jsx,mjs,json,yml,yaml,css}",
-      // TODO: remove when Biome supports all of Tailwinds syntax
-      "!packages/zudoku/src/app/main.css",
-      "!**/*.{md,mdx}",
+      "**/*.{ts,tsx,js,jsx,mjs,json,yml,yaml,css,html}",
       "!**/node_modules",
+      "!**/{demo,demo-cdn,standalone}.html",
       "!.nx",
       "!**/pagefind",
       "!**/.vercel",
@@ -26,13 +19,12 @@
       "!packages/zudoku/lib",
       "!examples/many-apis/apis",
       "!packages/zudoku/standalone",
-      "!packages/zudoku/src/lib/plugins/openapi/graphql"
+      "!packages/zudoku/src/lib/plugins/openapi/graphql",
+      "!**/*.{md,mdx}"
     ]
   },
   "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2
+    "enabled": false
   },
   "linter": {
     "enabled": true,
@@ -44,7 +36,13 @@
       "suspicious": {
         "noConsole": "error",
         "noConfusingVoidType": "off",
-        "useIterableCallbackReturn": "off"
+        "useIterableCallbackReturn": "off",
+        "noUnknownAtRules": {
+          "level": "warn",
+          "options": {
+            "ignore": ["plugin", "theme", "custom-variant", "apply"]
+          }
+        }
       },
       "a11y": {
         "noSvgWithoutTitle": "off",
@@ -53,14 +51,8 @@
       "performance": {
         "noAccumulatingSpread": "off"
       },
-      "complexity": {
-        "noImportantStyles": "off"
-      },
       "correctness": {
-        "noUnusedImports": {
-          "level": "error",
-          "fix": "safe"
-        }
+        "noUnusedImports": { "level": "error", "fix": "safe" }
       },
       "style": {
         "useNodejsImportProtocol": {
@@ -70,15 +62,34 @@
         "useImportType": {
           "level": "warn",
           "fix": "safe",
-          "options": {
-            "style": "auto"
-          }
+          "options": { "style": "auto" }
         }
       }
     }
   },
-
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "overrides": [
+    {
+      "includes": ["packages/zudoku/src/lib/**", "packages/zudoku/src/app/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "zod": "Use zod/mini instead to keep the client bundle small."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     {
       "includes": ["packages/zudoku/src/cli/**"],
       "linter": {
@@ -88,19 +99,18 @@
           }
         }
       }
-    }
-  ],
-  "json": {
-    "formatter": {
-      "trailingCommas": "none"
-    }
-  },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
+    },
+    {
+      // main.css:
+      "includes": ["packages/zudoku/src/app/main.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
       }
     }
-  }
+  ],
+  "assist": { "enabled": false }
 }

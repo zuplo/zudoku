@@ -1,20 +1,37 @@
-import type { Plugin, ResolvedConfig } from "vite";
+import { normalizePath, type Plugin, type ResolvedConfig } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 
-const viteConfigPlugin = (): Plugin => {
-  const virtualModuleId = "virtual:zudoku-config";
+const virtualModuleId = "virtual:zudoku-config";
+const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
+const viteConfigPlugin = (): Plugin => {
   let viteConfig: ResolvedConfig;
 
   return {
     name: "zudoku-config-plugin",
     resolveId(id) {
-      if (id === virtualModuleId) {
-        return getCurrentConfig().__meta.configPath;
-      }
+      if (id !== virtualModuleId) return;
+
+      return resolvedVirtualModuleId;
     },
     configResolved(resolvedConfig) {
       viteConfig = resolvedConfig;
+    },
+    load(id) {
+      if (id !== resolvedVirtualModuleId) return;
+
+      const configPath = getCurrentConfig().__meta.configPath;
+      if (!configPath) {
+        return `export default {};`;
+      }
+
+      return `
+import rawConfig from "${normalizePath(configPath)}";
+import { runPluginTransformConfig } from "zudoku/plugins";
+
+const config = await runPluginTransformConfig(rawConfig);
+export default config;
+`;
     },
     async transform(code, id) {
       if (id !== getCurrentConfig().__meta.configPath) return;

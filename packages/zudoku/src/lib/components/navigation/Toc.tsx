@@ -1,15 +1,20 @@
-import type { TocEntry } from "@stefanprobst/rehype-extract-toc";
 import { ListTreeIcon } from "lucide-react";
 import {
   type CSSProperties,
   type PropsWithChildren,
+  Suspense,
+  lazy,
   useEffect,
   useRef,
   useState,
 } from "react";
+import type { TocEntry } from "../../../vite/mdx/rehype-extract-toc-with-jsx.js";
 import { cn } from "../../util/cn.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
+import { InlineCode } from "../InlineCode.js";
+
+const HastRichText = lazy(() => import("../../util/hastToJsx.js"));
 
 const DATA_ANCHOR_ATTR = "data-active";
 
@@ -22,24 +27,30 @@ const TocItem = ({
   item: TocEntry;
   isActive: boolean;
   className?: string;
-}>) => {
-  return (
-    <li className={cn("truncate", className)} title={item.value}>
-      <AnchorLink
-        to={`#${item.id}`}
-        {...{ [DATA_ANCHOR_ATTR]: item.id }}
-        className={cn(
-          isActive
-            ? "text-primary"
-            : "hover:text-accent-foreground text-muted-foreground",
-        )}
-      >
-        {item.value}
-      </AnchorLink>
-      {children}
-    </li>
-  );
-};
+}>) => (
+  <li className={cn("truncate", className)} title={item.text}>
+    <AnchorLink
+      to={`#${item.id}`}
+      {...{ [DATA_ANCHOR_ATTR]: item.id }}
+      className={cn(
+        isActive
+          ? "text-primary"
+          : "hover:text-accent-foreground text-muted-foreground",
+      )}
+    >
+      {item.rich ? (
+        <Suspense fallback={item.text}>
+          <HastRichText overrides={{ code: InlineCode, pre: "pre" }}>
+            {item.rich}
+          </HastRichText>
+        </Suspense>
+      ) : (
+        item.text
+      )}
+    </AnchorLink>
+    {children}
+  </li>
+);
 
 export const Toc = ({ entries }: { entries: TocEntry[] }) => {
   const { activeAnchor } = useViewportAnchor();
@@ -89,7 +100,7 @@ export const Toc = ({ entries }: { entries: TocEntry[] }) => {
         <div className="absolute inset-0 end-auto bg-border w-[1.5px]" />
         <div
           className={cn(
-            "absolute start-0 -translate-y-1 h-6 w-[2.5px] bg-primary",
+            "absolute inset-s-0 -translate-y-1 h-6 w-[2.5px] bg-primary",
             paintedOnce.current &&
               "ease-out [transition:top_150ms,opacity_325ms]",
           )}

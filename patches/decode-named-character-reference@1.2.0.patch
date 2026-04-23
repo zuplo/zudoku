@@ -1,0 +1,13 @@
+diff --git a/index.dom.js b/index.dom.js
+index 01670f76cfffbe80a0ba185725f04743e289a0df..ad0ca4f3d09a5b65c55fddc45240eb6b456c7f4f 100644
+--- a/index.dom.js
++++ b/index.dom.js
+@@ -2,7 +2,7 @@
+ 
+ /* global document */
+ 
+-const element = document.createElement('i')
++const element = typeof document !== 'undefined' && document.createElement('i')
+ 
+ /**
+  * @param {string} value

@@ -1,6 +1,6 @@
 import { ExternalLink as ExternalLinkIcon } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
-import type { FooterSocialIcons } from "../../config/validators/validate.js";
+import type { FooterSocialIcons } from "../../config/validators/ZudokuConfig.js";
 import { cn } from "../util/cn.js";
 import { AnchorLink } from "./AnchorLink.js";
 import { useZudoku } from "./index.js";
@@ -17,6 +17,7 @@ const SocialIcon = ({
         src={`https://cdn.simpleicons.org/${icon}/000000/ffffff`}
         className="size-5"
         alt={icon}
+        loading="lazy"
       />
     );
   }
@@ -26,8 +27,9 @@ const SocialIcon = ({
 const isExternalUrl = (href: string) => /^https?:/.test(href);
 
 export const Footer = () => {
-  const { site: page } = useZudoku();
-  const footer = page?.footer;
+  const { options } = useZudoku();
+  const { site } = options;
+  const footer = site?.footer;
 
   if (!footer) return null;
 
@@ -44,7 +46,7 @@ export const Footer = () => {
           <Slot.Target name="footer-before" />
           {footer.columns && (
             <div
-              className="w-full md:max-w-screen-md grid grid-cols-[1fr_1fr] gap-8 md:grid-cols-[repeat(var(--columns),minmax(0,1fr))]"
+              className="w-full md:max-w-3xl grid grid-cols-[1fr_1fr] gap-8 md:grid-cols-[repeat(var(--columns),minmax(0,1fr))]"
               style={{ "--columns": footer.columns.length } as CSSProperties}
             >
               {footer.columns.map((column) => (
@@ -103,11 +105,13 @@ export const Footer = () => {
                 alt={footer.logo.alt}
                 className="w-8 dark:hidden"
                 style={{ width: footer.logo.width }}
+                loading="lazy"
               />
               <img
                 src={footer.logo.src.dark}
                 alt={footer.logo.alt}
                 className="w-8 hidden dark:block"
+                loading="lazy"
                 style={{ width: footer.logo.width }}
               />
             </>

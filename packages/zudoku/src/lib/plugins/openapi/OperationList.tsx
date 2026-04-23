@@ -1,24 +1,12 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
-import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useNavigate, useParams } from "react-router";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "zudoku/ui/Collapsible.js";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "zudoku/ui/Select.js";
-import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { Navigate, useParams } from "react-router";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
-import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import { usePrevNext } from "../../components/navigation/utils.js";
+import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { Pagination } from "../../components/Pagination.js";
+import { ApiHeader } from "./ApiHeader.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { Endpoint } from "./Endpoint.js";
@@ -27,6 +15,7 @@ import { UNTAGGED_PATH } from "./index.js";
 import { OperationListItem } from "./OperationListItem.js";
 import { useSelectedServer } from "./state.js";
 import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
+import { useWarmupSchema } from "./util/useWarmupSchema.js";
 
 export const OperationsFragment = graphql(/* GraphQL */ `
   fragment OperationsFragment on OperationItem {
@@ -51,12 +40,59 @@ export const OperationsFragment = graphql(/* GraphQL */ `
       schema
       style
       explode
+      allowReserved
       examples {
         name
         description
         externalValue
         value
         summary
+      }
+    }
+    security {
+      schemes {
+        scopes
+        scheme {
+          name
+          type
+          description
+          in
+          paramName
+          scheme
+          bearerFormat
+          openIdConnectUrl
+          flows {
+            implicit {
+              authorizationUrl
+              scopes {
+                name
+                description
+              }
+            }
+            password {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            clientCredentials {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            authorizationCode {
+              authorizationUrl
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+          }
+        }
       }
     }
     requestBody {
@@ -95,14 +131,6 @@ export const OperationsFragment = graphql(/* GraphQL */ `
         }
         schema
       }
-    }
-  }
-`);
-
-const SchemaWarmupQuery = graphql(/* GraphQL */ `
-  query SchemaWarmup($input: JSON!, $type: SchemaType!) {
-    schema(input: $input, type: $type) {
-      openapi
     }
   }
 `);
@@ -155,7 +183,7 @@ export const OperationList = ({
   tag?: string;
   untagged?: boolean;
 }) => {
-  const { input, type, versions, version, options } = useOasConfig();
+  const { input, type } = useOasConfig();
   const { tag: tagFromParams } = useParams<"tag">();
   const query = useCreateQuery(OperationsForTagQuery, {
     input,
@@ -163,33 +191,31 @@ export const OperationList = ({
     tag: tag ?? tagFromParams,
     untagged,
   });
-  const result = useSuspenseQuery(query);
-  const {
-    data: { schema },
-  } = result;
-  // Global server selection for the dropdown UI
+  const schema = useSuspenseQuery(query).data.schema;
   const { selectedServer: globalSelectedServer } = useSelectedServer(
     schema.servers,
   );
   const title = schema.title;
   const summary = schema.summary;
   const description = schema.description;
-  const navigate = useNavigate();
+  const { prev: navPrev, next: navNext } = usePrevNext();
 
-  // This is to warmup (i.e. load the schema in the background) the schema on the client, if the page has been rendered on the server
-  const warmupQuery = useCreateQuery(SchemaWarmupQuery, { input, type });
-  useQuery({
-    ...warmupQuery,
-    enabled: typeof window !== "undefined",
-    notifyOnChangeProps: [],
-  });
+  useWarmupSchema();
 
   // Prefetch for Playground
   useApiIdentities();
 
   if (!schema.tag) {
+    // Route targets a tag or untagged ops that don't exist in this version
+    if (tag || tagFromParams || untagged) {
+      return <Navigate to=".." replace />;
+    }
+
     return (
-      <div className="flex flex-col h-full items-center justify-center text-center">
+      <div
+        className="flex flex-col h-full items-center justify-center text-center"
+        data-pagefind-ignore="all"
+      >
         <div className="text-muted-foreground font-medium">
           No operations found
         </div>
@@ -217,19 +243,15 @@ export const OperationList = ({
         ? sanitizeMarkdownForMetatag(description)
         : undefined;
 
-  const hasMultipleVersions = Object.entries(versions).length > 1;
-
-  const showVersions =
-    options?.showVersionSelect === "always" ||
-    (hasMultipleVersions && options?.showVersionSelect !== "hide");
-
   const paginationProps = {
     prev: prev
       ? {
           to: `../${prev.slug}`,
           label: prev.extensions?.["x-displayName"] ?? prev.name,
         }
-      : undefined,
+      : navPrev
+        ? { to: navPrev.id, label: navPrev.label }
+        : undefined,
     next: next
       ? {
           to: `../${next.slug ?? UNTAGGED_PATH}`,
@@ -238,10 +260,15 @@ export const OperationList = ({
             next.name ??
             "Other endpoints",
         }
-      : undefined,
+      : navNext
+        ? { to: navNext.id, label: navNext.label }
+        : undefined,
   };
 
-  const tagTitle = schema.tag.extensions?.["x-displayName"] ?? schema.tag.name;
+  const tagTitle = untagged
+    ? "Other endpoints"
+    : (schema.tag.extensions?.["x-displayName"] ?? schema.tag.name);
+
   const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
 
   return (
@@ -250,6 +277,7 @@ export const OperationList = ({
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >
+      <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
       <Helmet>
         {helmetTitle && <title>{helmetTitle}</title>}
         {metaDescription && (
@@ -258,76 +286,14 @@ export const OperationList = ({
       </Helmet>
 
       <div className="mb-8">
-        <Collapsible
-          className="w-full"
-          defaultOpen={options?.expandApiInformation}
+        <ApiHeader
+          title={title}
+          heading={tagTitle}
+          headingId="description"
+          tag={tag ?? tagFromParams}
         >
-          <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
-            <div className="flex flex-col flex-1 gap-2">
-              <CategoryHeading>{title}</CategoryHeading>
-              <Heading
-                level={1}
-                id="description"
-                registerNavigationAnchor
-                className="mb-0"
-              >
-                {tagTitle}
-                {showVersions && (
-                  <span className="text-xl text-muted-foreground ms-1.5">
-                    {" "}
-                    ({version})
-                  </span>
-                )}
-              </Heading>
-              <Endpoint />
-            </div>
-            <div className="flex flex-col gap-4 sm:items-end">
-              {showVersions && (
-                <Select
-                  // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
-                  onValueChange={(version) => navigate(versions[version]!)}
-                  defaultValue={version}
-                  disabled={!hasMultipleVersions}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select version" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(versions).map(([version]) => (
-                      <SelectItem key={version} value={version}>
-                        {version}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {schema.description && (
-                <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground group">
-                  <span>API information</span>
-
-                  <ChevronsUpDownIcon
-                    className="group-data-[state=open]:hidden translate-y-px"
-                    size={14}
-                  />
-                  <ChevronsDownUpIcon
-                    className="group-data-[state=closed]:hidden translate-y-px"
-                    size={13}
-                  />
-                </CollapsibleTrigger>
-              )}
-            </div>
-          </div>
-          {schema.description && (
-            <CollapsibleContent className="CollapsibleContent">
-              <div className="mt-4 max-w-full border rounded-sm bg-muted/25">
-                <Markdown
-                  className="max-w-full prose-img:max-w-prose border-border p-3 lg:p-5"
-                  content={schema.description}
-                />
-              </div>
-            </CollapsibleContent>
-          )}
-        </Collapsible>
+          <Endpoint />
+        </ApiHeader>
         {tagDescription && (
           <Markdown
             className="my-4 max-w-full prose-img:max-w-prose"

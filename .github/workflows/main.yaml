@@ -11,14 +11,20 @@ on:
           - major
           - minor
           - patch
+          - prerelease
   push:
     branches:
       - "main"
     tags-ignore:
       - "*"
 
-# Only one of these can run at a time because it pushes to main
-# kill any other running jobs and the latest one wins
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+
+# Releases and prereleases are grouped separately so that pushes to main
+# (which trigger dev releases) don't cancel in-progress manual releases
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}
   cancel-in-progress: true
@@ -34,16 +40,19 @@ jobs:
       id-token: write
       pull-requests: read
 
-    # This can only be triggered from main
-    if: github.ref == 'refs/heads/main'
+    # Regular releases can only be triggered from main, prereleases can be from any branch
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType == 'prerelease')
+
+    env:
+      IS_RELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType != 'prerelease' }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ssh-key: ${{ secrets.GH_ACTIONS_DEPLOY_KEY_RULE_BYPASS }}
+          persist-credentials: false
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           run_install: false
 
@@ -54,12 +63,14 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
+      - run: npm install -g npm@latest
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - run: pnpm install nx --global
 
-      - uses: nrwl/nx-set-shas@v4
+      - uses: nrwl/nx-set-shas@v5
 
       # This must be a real github account otherwise vercel thows ugly errors
       - run: git config --global user.email "integrations@zuplo.com"
@@ -70,33 +81,53 @@ jobs:
 
       - name: Get Variables
         id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: |
+          echo "sha_short=z$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "branch_safe=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_OUTPUT
 
       - name: Copy readme
         run: cp README.md packages/zudoku
 
       - name: Version
-        if: github.event_name == 'workflow_dispatch'
+        if: env.IS_RELEASE == 'true'
         run: nx release version --specifier ${{ github.event.inputs.releaseType }} --git-commit --git-tag=true
 
-      - name: Version (Prerelease)
+      - name: Version (Branch Prerelease)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType == 'prerelease'
+        run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.branch_safe }}.${{ steps.vars.outputs.sha_short }} --git-tag=false
+
+      - name: Version (Dev Prerelease)
         if: github.event_name == 'push'
         run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
 
       - name: Publish Modules
-        run: pnpm publish --provenance --filter zudoku --filter create-zudoku --no-git-checks --tag ${{ github.event_name == 'push' && 'dev' || 'latest' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        run: pnpm publish --provenance --filter zudoku --filter create-zudoku --no-git-checks --tag ${{ (github.event_name == 'push' || github.event.inputs.releaseType == 'prerelease') && 'dev' || 'latest' }}
 
       - run: echo "ZUDOKU_VERSION=$(node --print 'require(`./packages/zudoku/package.json`).version')" >> $GITHUB_ENV
 
-      - name: Push Git Changes
-        if: github.event_name == 'workflow_dispatch'
-        run: git push origin main --follow-tags
+      - name: Generate zudoku release token
+        if: env.IS_RELEASE == 'true'
+        id: zudoku-release-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.ZUDOKU_RELEASE_APP_ID }}
+          private-key: ${{ secrets.ZUDOKU_RELEASE_APP_PRIVATE_KEY }}
+          owner: zuplo
+          repositories: zudoku
+          permission-contents: write
 
-      - uses: actions/github-script@v8
-        name: ${{ github.event_name == 'workflow_dispatch' && 'Create Release' || 'Create Pre-release' }}
+      - name: Push Git Changes
+        if: env.IS_RELEASE == 'true'
+        env:
+          ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
+        run: |
+          echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
+          git push "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git" main --follow-tags
+
+      - uses: actions/github-script@v9
+        name: ${{ env.IS_RELEASE == 'true' && 'Create Release' || 'Create Pre-release' }}
         id: create-release
+        if: github.ref == 'refs/heads/main'
         with:
           result-encoding: string
           retries: 3
@@ -105,6 +136,7 @@ jobs:
             await release({ github, context, core })
 
       - name: Authenticate to Google Cloud
+        if: github.ref == 'refs/heads/main'
         uses: google-github-actions/auth@v3
         with:
           token_format: access_token
@@ -113,6 +145,7 @@ jobs:
           access_token_lifetime: 300s
 
       - name: Upload CSS
+        if: github.ref == 'refs/heads/main'
         uses: google-github-actions/upload-cloud-storage@v3
         with:
           process_gcloudignore: false
@@ -124,6 +157,7 @@ jobs:
             content-type: text/css
 
       - name: Upload Javascript
+        if: github.ref == 'refs/heads/main'
         uses: google-github-actions/upload-cloud-storage@v3
         with:
           process_gcloudignore: false
@@ -136,8 +170,7 @@ jobs:
             cache-control: public,max-age=31536000,immutable
 
       - name: Upload HTML (Latest)
-        # Only publish latest for non-prerelease
-        if: github.event_name == 'workflow_dispatch'
+        if: env.IS_RELEASE == 'true'
         uses: google-github-actions/upload-cloud-storage@v3
         with:
           process_gcloudignore: false
@@ -148,8 +181,7 @@ jobs:
             content-type: text/html
 
       - name: Upload CSS (Latest)
-        # Only publish latest for non-prerelease
-        if: github.event_name == 'workflow_dispatch'
+        if: env.IS_RELEASE == 'true'
         uses: google-github-actions/upload-cloud-storage@v3
         with:
           process_gcloudignore: false
@@ -161,8 +193,7 @@ jobs:
             content-type: text/css
 
       - name: Upload Javascript (Latest)
-        # Only publish latest for non-prerelease
-        if: github.event_name == 'workflow_dispatch'
+        if: env.IS_RELEASE == 'true'
         uses: google-github-actions/upload-cloud-storage@v3
         with:
           process_gcloudignore: false
@@ -174,19 +205,8 @@ jobs:
             content-type: text/javascript
             cache-control: public,max-age=31536000,immutable
 
-      - name: Upload Artifacts
-        uses: google-github-actions/upload-cloud-storage@v3
-        with:
-          process_gcloudignore: false
-          path: packages/zudoku/stats.html
-          destination: cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}
-          parent: false
-          headers: |-
-            content-type: text/html
-
       - name: Clear CDN Cache
-        # Only for non-prerelease
-        if: github.event_name == 'workflow_dispatch'
+        if: env.IS_RELEASE == 'true'
         run: |
           curl --request POST \
           --url https://api.cloudflare.com/client/v4/zones/1abaefabd6800e9979a740a7cdf235a8/purge_cache \
@@ -194,15 +214,10 @@ jobs:
           --header 'Authorization: Bearer ${{ secrets.CF_ZONE_PURGE_ACCESS_TOKEN }}' \
           --data '{ "purge_everything": true }'
 
-      - name: Write Summary
-        run: |
-          echo "📝 Bundle stats uploaded" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY
-
       - name: Generate a token
+        if: env.IS_RELEASE == 'true'
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ vars.ZUDOKU_GH_APP_ID }}
           private-key: ${{ secrets.ZUDOKU_GH_APP_PRIVATE_KEY }}
@@ -214,17 +229,14 @@ jobs:
 
       # Trigger updates of internal projects using Zudoku
       - run: gh workflow run update-zudoku.yaml --repo zuplo/docs --ref main
-        # Only for non-prerelease
-        if: github.event_name == 'workflow_dispatch'
+        if: env.IS_RELEASE == 'true'
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - run: gh workflow run zudoku-builder.yaml --repo zuplo/core --ref main
-        # Only for non-prerelease
-        if: github.event_name == 'workflow_dispatch'
+        if: env.IS_RELEASE == 'true'
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Trigger Zuplo Docs Update
-        # Only for non-prerelease
-        if: github.event_name == 'workflow_dispatch'
+        if: env.IS_RELEASE == 'true'
         run: curl ${{ secrets.VERCEL_DOCS_WEBHOOK_URL }}

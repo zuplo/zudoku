@@ -1,0 +1,133 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "My Zuplo API"
+  },
+  "paths": {
+    "/todos": {
+      "get": {
+        "summary": "Get all todos",
+        "description": "**Retrieves a complete list of all todo items** from the system. This endpoint returns all todos regardless of their completion status or owner, making it useful for displaying comprehensive todo lists or performing bulk operations.",
+        "responses": {
+          "200": {
+            "description": "A list of todos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Todo"
+                  }
+                },
+                "examples": {
+                  "mixed_todos": {
+                    "summary": "A list of todos with different completion states",
+                    "value": [
+                      {
+                        "id": 1,
+                        "title": "Buy groceries",
+                        "completed": false,
+                        "userId": 123
+                      },
+                      {
+                        "id": 2,
+                        "title": "Write documentation",
+                        "completed": true,
+                        "userId": 456
+                      },
+                      {
+                        "id": 3,
+                        "title": "Review pull requests",
+                        "completed": false,
+                        "userId": 123
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-all-todos",
+        "x-zuplo-route": {
+          "corsPolicy": "none",
+          "handler": {
+            "export": "urlForwardHandler",
+            "module": "$import(@zuplo/runtime)",
+            "options": {
+              "baseUrl": "https://todo.zuplo.io"
+            }
+          },
+          "policies": {
+            "inbound": ["monetization"],
+            "outbound": []
+          }
+        },
+        "tags": ["Todo"]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Todo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The todo ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "The todo title"
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Whether the todo is completed"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "The user ID who owns the todo"
+          }
+        },
+        "required": ["id", "title", "completed", "userId"]
+      },
+      "CreateTodo": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The todo title"
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Whether the todo is completed",
+            "default": false
+          },
+          "userId": {
+            "type": "integer",
+            "description": "The user ID who owns the todo"
+          }
+        },
+        "required": ["title", "userId"]
+      },
+      "UpdateTodo": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The todo title"
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Whether the todo is completed"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "The user ID who owns the todo"
+          }
+        }
+      }
+    }
+  }
+}

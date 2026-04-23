@@ -18,7 +18,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const { data: comments } = await github.rest.issues.listComments({
@@ -59,11 +59,11 @@ jobs:
       deployments: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           # Safe: Only runs after maintainer approval via 'approve public build' label
           ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || '' }}
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           run_install: false
 
@@ -90,7 +90,8 @@ jobs:
 
       - name: Update package.json
         run: |
-          VERSION=$(node -p "require('./packages/zudoku/package.json').version")
+          VERSION=$(pnpm view zudoku@local version --registry http://localhost:4873)
+          echo "Using locally-published zudoku version: $VERSION"
           cd examples/cosmo-cargo
           pnpm pkg set "devDependencies.zudoku=$VERSION"
 
@@ -128,20 +129,33 @@ jobs:
             echo "::error::No JavaScript bundles found in assets directory"
             exit 1
           fi
+
+          # Check that plugin getHead content is injected into SSR output
+          if ! grep -q "cosmo-cargo-head-test" examples/cosmo-cargo/dist/index.html; then
+            echo "::error::Plugin getHead meta tag not found in index.html (head injection broken)"
+            echo "Head section:"
+            sed -n '/<head/,/<\/head>/p' examples/cosmo-cargo/dist/index.html
+            exit 1
+          fi
+          if ! grep -q "__COSMO_HEAD_TEST" examples/cosmo-cargo/dist/index.html; then
+            echo "::error::Plugin getHead script not found in index.html (head injection broken)"
+            exit 1
+          fi
+
           echo "✅ Smoke test passed - build output contains expected files and content"
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.COSMO_CARGO_CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
         with:
           apiToken: ${{ secrets.COSMO_CARGO_CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
+          accountId: ${{ vars.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy examples/cosmo-cargo/dist --project-name=cosmocargo-public-package
 
       - name: Comment PR
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const deploymentUrl = "${{ steps.deploy.outputs.deployment-url }}";

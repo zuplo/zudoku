@@ -1,0 +1,1 @@
+export { zuploMonetizationPlugin } from "./ZuploMonetizationPlugin";

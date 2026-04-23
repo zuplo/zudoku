@@ -3,6 +3,7 @@ import { type Control, useFormContext } from "react-hook-form";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
+import { MultiSelect } from "../../../components/MultiSelect.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
@@ -14,6 +15,7 @@ import ParamsGrid, {
 } from "./ParamsGrid.js";
 import type { PlaygroundForm, QueryParam } from "./Playground.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
+import { parseArrayParamValue } from "./serializeQueryParams.js";
 
 export const QueryParams = ({
   control,
@@ -29,6 +31,15 @@ export const QueryParams = ({
     control,
     name: "queryParams",
     defaultValue: { name: "", value: "", active: false },
+    shouldSetActive: (item) => {
+      const schemaParam = schemaQueryParams.find((p) => p.name === item.name);
+      if (schemaParam) {
+        const isRequired = schemaParam.isRequired ?? false;
+        const hasValue = Boolean(item.value);
+        return isRequired || hasValue;
+      }
+      return Boolean(item.name || item.value);
+    },
   });
 
   const requiredFields = schemaQueryParams.map((param) =>
@@ -40,7 +51,7 @@ export const QueryParams = ({
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
-        <Unlink2Icon size={16} />
+        <Unlink2Icon size={16} aria-hidden="true" />
         <CollapsibleHeader>Query Parameters</CollapsibleHeader>
       </CollapsibleHeaderTrigger>
       <CollapsibleContent className="CollapsibleContent">
@@ -50,6 +61,7 @@ export const QueryParams = ({
               (param) => param.name === watchedQueryParams.at(i)?.name,
             );
             const hasEnum = currentParam?.enum && currentParam.enum.length > 0;
+            const isArrayEnum = currentParam?.type === "array" && hasEnum;
             const nameInputProps = manager.getNameInputProps(i);
             const valueInputProps = manager.getValueInputProps(i);
 
@@ -81,12 +93,28 @@ export const QueryParams = ({
                       title={requiredFields[i] ? "Required field" : undefined}
                     >
                       {watchedQueryParams[i]?.name}
-                      {requiredFields[i] && <sup>&nbsp;*</sup>}
+                      {requiredFields[i] && <span>&nbsp;*</span>}
                     </label>
                   </ParamsGridInput>
                 )}
                 <div className="flex justify-between items-center">
-                  {!hasEnum ? (
+                  {isArrayEnum ? (
+                    <ParamsGridInput asChild>
+                      <MultiSelect
+                        options={currentParam.enum ?? []}
+                        value={parseArrayParamValue(
+                          String(manager.getValue(i, "value")),
+                        )}
+                        onChange={(values) => {
+                          manager.setValue(
+                            i,
+                            "value",
+                            values.length > 0 ? JSON.stringify(values) : "",
+                          );
+                        }}
+                      />
+                    </ParamsGridInput>
+                  ) : !hasEnum ? (
                     <ParamsGridInput
                       placeholder="Value"
                       aria-label="Query parameter value"

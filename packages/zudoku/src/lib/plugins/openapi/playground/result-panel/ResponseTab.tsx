@@ -32,6 +32,8 @@ import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "../CollapsibleHeader.js";
+import { isAudioContentType } from "../fileUtils.js";
+import { AudioPlayer } from "./AudioPlayer.js";
 import { convertToTypes } from "./convertToTypes.js";
 
 const mimeTypeToLanguage = (mimeType: string) => {
@@ -50,9 +52,14 @@ const mimeTypeToLanguage = (mimeType: string) => {
   )?.[1];
 };
 
+const getContentType = (headers: Array<[string, string]>) => {
+  return (
+    headers.find(([key]) => key.toLowerCase() === "content-type")?.[1] || ""
+  );
+};
+
 const detectLanguage = (headers: Array<[string, string]>) => {
-  const contentType =
-    headers.find(([key]) => key.toLowerCase() === "content-type")?.[1] || "";
+  const contentType = getContentType(headers);
   return mimeTypeToLanguage(contentType);
 };
 
@@ -117,9 +124,17 @@ const RowValue = ({ value, header }: { value: string; header: string }) => {
         <>
           <SecretText secret={value} previewChars={0} revealed={revealed} />
           {revealed ? (
-            <EyeOffIcon size={14} className={cn("hidden group-hover:block")} />
+            <EyeOffIcon
+              size={14}
+              className={cn("hidden group-hover:block")}
+              aria-hidden="true"
+            />
           ) : (
-            <EyeIcon size={14} className={cn("hidden group-hover:block")} />
+            <EyeIcon
+              size={14}
+              className={cn("hidden group-hover:block")}
+              aria-hidden="true"
+            />
           )}
         </>
       )}
@@ -183,7 +198,7 @@ export const ResponseTab = ({
     <>
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownRightIcon size={14} />
+          <CornerDownRightIcon size={14} aria-hidden="true" />
           <CollapsibleHeader>Request Headers</CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
@@ -201,7 +216,11 @@ export const ResponseTab = ({
                 <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
                   Show {request.headers.length - MAX_HEADERS_TO_SHOW} more
                   headers
-                  <PlusCircleIcon size={12} className="text-muted-foreground" />
+                  <PlusCircleIcon
+                    size={12}
+                    className="text-muted-foreground"
+                    aria-hidden="true"
+                  />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
                   {request.headers
@@ -217,6 +236,7 @@ export const ResponseTab = ({
                     <MinusCircleIcon
                       size={12}
                       className="text-muted-foreground"
+                      aria-hidden="true"
                     />
                   </CollapsibleTrigger>
                 </CollapsibleContent>
@@ -228,7 +248,7 @@ export const ResponseTab = ({
 
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownLeftIcon size={14} />
+          <CornerDownLeftIcon size={14} aria-hidden="true" />
           <CollapsibleHeader>Response Headers</CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
@@ -243,7 +263,11 @@ export const ResponseTab = ({
               <Collapsible className="col-span-full grid-cols-subgrid grid group">
                 <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
                   Show {sortedHeaders.length - MAX_HEADERS_TO_SHOW} more headers
-                  <PlusCircleIcon size={12} className="text-muted-foreground" />
+                  <PlusCircleIcon
+                    size={12}
+                    className="text-muted-foreground"
+                    aria-hidden="true"
+                  />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
                   {sortedHeaders
@@ -259,6 +283,7 @@ export const ResponseTab = ({
                     <MinusCircleIcon
                       size={12}
                       className="text-muted-foreground"
+                      aria-hidden="true"
                     />
                   </CollapsibleTrigger>
                 </CollapsibleContent>
@@ -270,7 +295,7 @@ export const ResponseTab = ({
 
       <div className="flex gap-2 justify-between items-center border-b px-2 flex-0">
         <CollapsibleHeader className="flex items-center gap-2">
-          <SquareCodeIcon size={14} />
+          <SquareCodeIcon size={14} aria-hidden="true" />
           Response body
         </CollapsibleHeader>
         {jsonContent && !isBinary && (
@@ -293,23 +318,32 @@ export const ResponseTab = ({
       </div>
       <div className="flex-1">
         {isBinary ? (
-          <div className="p-4 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="text-lg font-semibold">Binary Content</div>
-              <div className="text-sm text-muted-foreground">
-                This response contains binary data that cannot be displayed as
-                text.
+          blob && isAudioContentType(getContentType(headers)) ? (
+            <AudioPlayer
+              blob={blob}
+              fileName={fileName ?? "audio"}
+              size={size}
+              onDownload={handleDownload}
+            />
+          ) : (
+            <div className="p-4 text-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-lg font-semibold">Binary Content</div>
+                <div className="text-sm text-muted-foreground">
+                  This response contains binary data that cannot be displayed as
+                  text.
+                </div>
+                <Button
+                  onClick={handleDownload}
+                  className="flex items-center gap-2"
+                  disabled={!blob}
+                >
+                  <DownloadIcon className="h-4 w-4" aria-hidden="true" />
+                  Download {fileName || "file"} ({humanFileSize(size)})
+                </Button>
               </div>
-              <Button
-                onClick={handleDownload}
-                className="flex items-center gap-2"
-                disabled={!blob}
-              >
-                <DownloadIcon className="h-4 w-4" />
-                Download {fileName || "file"} ({humanFileSize(size)})
-              </Button>
             </div>
-          </div>
+          )
         ) : (
           <SyntaxHighlight
             className="text-xs flex-1"
@@ -320,7 +354,7 @@ export const ResponseTab = ({
                 ? "typescript"
                 : view === "raw"
                   ? jsonContent
-                    ? "plain"
+                    ? "text"
                     : detectedLanguage
                   : "json"
             }

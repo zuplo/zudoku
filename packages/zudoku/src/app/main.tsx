@@ -1,3 +1,5 @@
+import type { RouteObject } from "react-router";
+import type { HighlighterCore } from "shiki";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -6,30 +8,36 @@ import {
 import { configuredAuthProvider } from "virtual:zudoku-auth";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
 import { configuredDocsPlugin } from "virtual:zudoku-docs-plugin";
-import { configuredNavigation } from "virtual:zudoku-navigation";
-import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
-import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
-import { registerShiki } from "virtual:zudoku-shiki-register";
-import type { RouteObject } from "react-router";
-import "virtual:zudoku-theme.css";
 import {
-  BuildCheck,
-  Layout,
-  Meta,
-  RouteGuard,
-  RouterError,
-  StatusPage,
-} from "zudoku/__internal";
+  configuredHeaderNavigation,
+  configuredNavigation,
+  configuredNavigationRules,
+} from "virtual:zudoku-navigation";
+import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
+import "virtual:zudoku-theme.css";
 import { Zudoku } from "zudoku/components";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
-import { isNavigationPlugin } from "../lib/core/plugins.js";
-import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
-import { highlighter } from "../lib/shiki.js";
-import { ZuploEnv } from "./env.js";
+import { BuildCheck } from "../lib/components/BuildCheck.js";
 import "./main.css";
+import { Meta } from "../lib/components/Meta.js";
+import "./polyfills.js";
+import { StatusPage } from "../lib/components/StatusPage.js";
+import { isNavigationPlugin } from "../lib/core/plugins.js";
+import { RouteGuard } from "../lib/core/RouteGuard.js";
+import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
+import { RouterError } from "../lib/errors/RouterError.js";
+import { ZuploEnv } from "./env.js";
+import { processRoutes } from "./processRoutes.js";
+import { createRedirectRoutes } from "./utils/createRedirectRoutes.js";
 
-await registerShiki(highlighter);
+export const shikiReady: Promise<HighlighterCore> =
+  import("../lib/shiki.js").then(async ({ highlighterPromise }) => {
+    const highlighter = await highlighterPromise;
+    const { registerShiki } = await import("virtual:zudoku-shiki-register");
+    await registerShiki(highlighter);
+    return highlighter;
+  });
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -37,6 +45,7 @@ export const convertZudokuConfigToOptions = (
   return {
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,
+    aiAssistants: config.aiAssistants,
     protectedRoutes: config.protectedRoutes,
     site: {
       ...config.site,
@@ -51,21 +60,25 @@ export const convertZudokuConfigToOptions = (
       title: "%s - Zudoku",
       ...config.metadata,
     },
+    header: {
+      navigation: configuredHeaderNavigation,
+      placements: config.header?.placements,
+    },
     navigation: configuredNavigation,
+    navigationRules: configuredNavigationRules,
     mdx: config.mdx,
     plugins: [
       ...(configuredAuthProvider ? [configuredAuthProvider] : []),
       ...(configuredDocsPlugin ? [configuredDocsPlugin] : []),
       ...configuredApiPlugins,
       ...(configuredSearchPlugin ? [configuredSearchPlugin] : []),
-      ...(configuredRedirectPlugin ? [configuredRedirectPlugin] : []),
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),
       ...(configuredCustomPagesPlugin ? [configuredCustomPagesPlugin] : []),
       ...configuredApiCatalogPlugins,
       ...(config.plugins ?? []),
     ],
     syntaxHighlighting: {
-      highlighter,
+      highlighterPromise: shikiReady,
       themes: config.syntaxHighlighting?.themes,
     },
   };
@@ -109,9 +122,10 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   );
 
   return [
+    ...createRedirectRoutes(config.redirects),
     {
       element: (
-        <Zudoku {...options}>
+        <Zudoku {...options} env={import.meta.env}>
           <BuildCheck
             buildId={import.meta.env.ZUPLO_BUILD_ID}
             environmentType={import.meta.env.ZUPLO_ENVIRONMENT_TYPE}
@@ -119,7 +133,6 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
           <Outlet />
         </Zudoku>
       ),
-      hydrateFallbackElement: <div>Loading...</div>,
       children: [
         {
           element: (
@@ -128,18 +141,9 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
             </Meta>
           ),
           errorElement: <RouterError />,
-          children: routes.map((r) =>
-            r.handle?.layout === "none" ? r : wrapWithLayout(r),
-          ),
+          children: processRoutes(routes),
         },
       ],
     },
   ];
-};
-
-const wrapWithLayout = (route: RouteObject) => {
-  return {
-    element: <Layout />,
-    children: [route],
-  };
 };

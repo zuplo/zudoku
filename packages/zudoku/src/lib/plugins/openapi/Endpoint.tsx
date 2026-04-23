@@ -1,7 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useState, useTransition } from "react";
-import { InlineCode } from "../../components/InlineCode.js";
 import { Button } from "../../ui/Button.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
@@ -32,12 +31,13 @@ const CopyButton = ({ url }: { url: string }) => {
         });
       }}
       variant="ghost"
-      size="icon"
+      size="icon-xs"
+      aria-label="Copy server URL"
     >
       {isCopied ? (
-        <CheckIcon className="text-green-600" size={14} />
+        <CheckIcon className="text-green-600" size={14} aria-hidden="true" />
       ) : (
-        <CopyIcon size={14} strokeWidth={1.3} />
+        <CopyIcon size={14} strokeWidth={1.3} aria-hidden="true" />
       )}
     </Button>
   );
@@ -54,33 +54,19 @@ export const Endpoint = () => {
 
   const { servers } = result.data.schema;
 
-  const firstServer = servers.at(0);
-
-  if (!firstServer) return null;
-
-  if (servers.length === 1) {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="font-medium text-sm">Endpoint:</span>
-        <InlineCode className="text-xs px-2 py-1.5" selectOnClick>
-          {firstServer.url}
-        </InlineCode>
-        <CopyButton url={firstServer.url} />
-      </div>
-    );
-  }
+  if (servers.length <= 1) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="font-medium text-sm">Endpoint</span>
-
+    <div className="flex items-center gap-1.5 flex-nowrap">
+      <span className="font-medium text-sm">Server</span>
       <SimpleSelect
-        className="font-mono text-xs bg-border/50 dark:bg-border/70 py-1.5 max-w-[450px] truncate"
+        className="font-mono text-xs border-input bg-transparent dark:bg-input/30 dark:hover:bg-input/50 py-1.5 max-w-[450px] truncate"
         onChange={(e) =>
           startTransition(() => setSelectedServer(e.target.value))
         }
         value={selectedServer}
-        showChevrons={servers.length > 1}
+        showChevrons
+        aria-label="Select server"
         options={servers.map((server) => ({
           value: server.url,
           label: server.url,

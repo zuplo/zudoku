@@ -5,9 +5,9 @@
     "lib": ["esnext"],
     "strict": true,
     "moduleResolution": "bundler",
-    "esModuleInterop": true,
     "noEmit": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "erasableSyntaxOnly": true
   },
   "include": ["scripts", "lucide-react.d.ts"],
   "exclude": ["node_modules"]

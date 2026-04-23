@@ -3,10 +3,14 @@ import { glob } from "glob";
 import globParent from "glob-parent";
 import type { Plugin } from "vite";
 import { type ConfigWithMeta, getCurrentConfig } from "../config/loader.js";
-import { NavigationResolver } from "../config/validators/NavigationSchema.js";
-import { DocsConfigSchema } from "../config/validators/validate.js";
+import {
+  type NavigationItem,
+  NavigationResolver,
+} from "../config/validators/NavigationSchema.js";
+import { DocsConfigSchema } from "../config/validators/ZudokuConfig.js";
 import { traverseNavigation } from "../lib/components/navigation/utils.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { readFrontmatter } from "../lib/util/readFrontmatter.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const ensureLeadingSlash = joinUrl;
@@ -23,21 +27,44 @@ export const globMarkdownFiles = async (
     const globbedFiles = await glob(globPattern, {
       root: config.__meta.rootDir,
       ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
-      absolute: options.absolute,
+      // Always glob with relative paths to avoid issues on different OS
+      absolute: false,
       posix: true,
     });
 
     // Normalize parent by removing leading `./` or `/`
     const parent = globParent(globPattern).replace(/^\.?\//, "");
 
-    const toRoutePath = (file: string) => {
-      const relativePath = path.posix.relative(parent, file);
-      return ensureLeadingSlash(relativePath.replace(/\.mdx?$/, ""));
-    };
+    // Precompute draft status for all files in production mode to avoid serial I/O
+    let draftFiles = new Set<string>();
+    if (process.env.NODE_ENV !== "development") {
+      const draftStatuses = await Promise.all(
+        globbedFiles.map(async (file) => {
+          const absolutePath = path.resolve(config.__meta.rootDir, file);
+          const { data } = await readFrontmatter(absolutePath);
+          return { file, isDraft: data.draft === true };
+        }),
+      );
+      draftFiles = new Set(
+        draftStatuses
+          .filter((entry) => entry.isDraft)
+          .map((entry) => entry.file),
+      );
+    }
 
     for (const file of globbedFiles) {
-      const routePath = toRoutePath(file);
-      fileMapping[routePath] = file;
+      // Skip draft documents in production mode
+      if (draftFiles.has(file)) {
+        continue;
+      }
+
+      const relativePath = path.posix.relative(parent, file);
+      const routePath = ensureLeadingSlash(relativePath.replace(/\.mdx?$/, ""));
+      // Resolve to absolute path if requested, using path.resolve to handle cross-platform paths
+      const filePath = options.absolute
+        ? path.resolve(config.__meta.rootDir, file)
+        : file;
+      fileMapping[routePath] = filePath;
     }
   }
 
@@ -52,12 +79,12 @@ export const resolveCustomNavigationPaths = async (
   config: ConfigWithMeta,
   fileMapping: Record<string, string>,
 ): Promise<Record<string, string>> => {
-  if (!config.navigation) return fileMapping;
+  if (!config.navigation && !config.navigationRules) return fileMapping;
 
-  const resolvedNavigation = await new NavigationResolver(config).resolve();
+  const resolver = new NavigationResolver(config);
   const mapping = { ...fileMapping };
 
-  traverseNavigation(resolvedNavigation, (item) => {
+  const processItem = (item: NavigationItem) => {
     const doc =
       item.type === "doc"
         ? { file: item.file, path: item.path }
@@ -75,7 +102,21 @@ export const resolveCustomNavigationPaths = async (
     const customPath = ensureLeadingSlash(doc.path);
     mapping[customPath] = filePath;
     delete mapping[fileRoutePath];
-  });
+  };
+
+  if (config.navigation) {
+    const resolvedNavigation = await resolver.resolve();
+    traverseNavigation(resolvedNavigation, processItem);
+  }
+
+  if (config.navigationRules) {
+    const resolvedRules = await resolver.resolveRules(config.navigationRules);
+    for (const rule of resolvedRules) {
+      if (rule.type === "insert") {
+        traverseNavigation(rule.items, processItem);
+      }
+    }
+  }
 
   return mapping;
 };
@@ -100,27 +141,11 @@ const viteDocsPlugin = (): Plugin => {
         return `export const configuredDocsPlugin = undefined;`;
       }
 
-      const code: string[] = [
-        // IMPORTANT! This path here is important, we MUST resolve
-        // files here as Typescript from the appDir
-        config.__meta.mode === "internal"
-          ? `import { markdownPlugin } from "${config.__meta.moduleDir}/src/lib/plugins/markdown/index.tsx";`
-          : `import { markdownPlugin } from "zudoku/plugins/markdown";`,
+      const code = [
+        'import { markdownPlugin } from "zudoku/plugins/markdown";',
       ];
 
       const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
-
-      // This is a workaround for a bug(?) in Vite where `import.meta.glob` failed us:
-      // - Root dir is `/path/to/docs`
-      // - The Markdown docs config is `/docs/**/*.md`
-      // - The basePath config is set to `/docs`
-      // This results in:
-      // > `Internal server error: Failed to resolve import "/some.md" from "virtual:zudoku-docs-plugins". Does the file exist?`
-      // Mind that the `docs` part that should be prepended is not in there
-      //
-      // This does only happen in dev SSR environments, so for prod the `basePath` is not added
-      const globImportBasePath =
-        process.env.NODE_ENV === "development" ? (config.basePath ?? "") : "";
 
       // Glob markdown files and resolve custom navigation paths
       const fileMapping = await resolveCustomNavigationPaths(
@@ -131,9 +156,7 @@ const viteDocsPlugin = (): Plugin => {
       // Transform file paths to import paths
       const globbedDocuments: Record<string, string> = {};
       for (const [routePath, file] of Object.entries(fileMapping)) {
-        const importPath = ensureLeadingSlash(
-          path.posix.join(globImportBasePath, file),
-        );
+        const importPath = ensureLeadingSlash(file);
         globbedDocuments[routePath] = importPath;
       }
 
@@ -148,6 +171,7 @@ const viteDocsPlugin = (): Plugin => {
         `  basePath: "${config.basePath ?? ""}",`,
         `  fileImports,`,
         `  defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)},`,
+        `  publishMarkdown: ${JSON.stringify(docsConfig.publishMarkdown)},`,
         `});`,
       );
 

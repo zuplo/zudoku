@@ -9,7 +9,9 @@ declare module "virtual:zudoku-docs-plugin" {
 }
 
 declare module "virtual:zudoku-navigation" {
-  export const configuredNavigation: import("./config/validators/NavigationSchema.ts").NavigationConfig;
+  export const configuredHeaderNavigation: import("./config/validators/HeaderNavigationSchema.ts").HeaderNavigation;
+  export const configuredNavigation: import("./config/validators/NavigationSchema.ts").Navigation;
+  export const configuredNavigationRules: import("./config/validators/NavigationSchema.ts").ResolvedNavigationRule[];
 }
 
 declare module "virtual:zudoku-api-plugins" {
@@ -35,11 +37,6 @@ declare module "virtual:zudoku-custom-pages-plugin" {
     | undefined;
 }
 
-declare module "virtual:zudoku-redirect-plugin" {
-  export const configuredRedirectPlugin:
-    | import("./lib/core/plugins.ts").ZudokuPlugin
-    | undefined;
-}
 declare module "virtual:zudoku-config" {
   const config: import("./config/config.ts").ZudokuConfig;
   export default config;

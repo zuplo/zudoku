@@ -1,25 +1,62 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
 import SchemaBuilder from "@pothos/core";
+import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
+import { createYoga, type YogaServerOptions } from "graphql-yoga";
+import type { OpenAPIV3 } from "openapi-types";
 import {
   type CountableSlugify,
   slugifyWithCounter,
-} from "@sindresorhus/slugify";
-import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
-import { createYoga, type YogaServerOptions } from "graphql-yoga";
-import {
-  type EncodingObject,
-  type ExampleObject,
-  HttpMethods,
-  type OpenAPIDocument,
-  type OperationObject,
-  type ParameterObject,
-  type PathsObject,
-  type SchemaObject,
-  type ServerObject,
-  type TagObject,
-  validate,
+} from "../../util/slugify.js";
+import { HttpMethods, validate } from "../parser/index.js";
+import type {
+  ContactObject,
+  EncodingObject,
+  ExampleObject,
+  ExternalDocumentationObject,
+  LicenseObject,
+  OpenAPIDocument,
+  OperationObject,
+  ParameterObject,
+  PathsObject,
+  SchemaObject,
+  ServerObject,
+  TagObject,
 } from "../parser/index.js";
 import { GraphQLJSONSchema } from "./circular.js";
+
+// Security scheme types for the GraphQL layer
+// Uses OpenAPI types where possible; adds `name` (the key from securitySchemes map)
+// and renames apiKey's `name` to `paramName` to avoid collision with the scheme key.
+type SecuritySchemeData = {
+  name: string;
+  type: OpenAPIV3.SecuritySchemeObject["type"];
+  description?: string;
+  in?: OpenAPIV3.ApiKeySecurityScheme["in"];
+  paramName?: string;
+  scheme?: string;
+  bearerFormat?: string;
+  openIdConnectUrl?: string;
+  flows?: OpenAPIV3.OAuth2SecurityScheme["flows"];
+  extensions?: Record<string, any>;
+};
+
+type OAuthFlowsData = OpenAPIV3.OAuth2SecurityScheme["flows"];
+// Union of all flow shapes — each flow type has a different subset of fields
+type OAuthFlowData = {
+  authorizationUrl?: string;
+  tokenUrl?: string;
+  refreshUrl?: string;
+  scopes: { [scope: string]: string };
+};
+
+type SecurityRequirementSchemeData = {
+  scheme: SecuritySchemeData;
+  scopes: string[];
+};
+
+type SecurityRequirementData = {
+  schemes: SecurityRequirementSchemeData[];
+};
 
 export type {
   EncodingObject,
@@ -51,19 +88,21 @@ export const createOperationSlug = (
   return slugify(summary);
 };
 
-export type SchemaImport = () => Promise<{
-  schema: OpenAPIDocument;
-  slugs: ReturnType<typeof getAllSlugs>;
-}>;
+export type SchemaImport = () => Promise<{ schema: OpenAPIDocument }>;
 
 export type SchemaImports = Record<string, SchemaImport>;
+
+type Slugs = {
+  operations: Record<string, string>;
+  tags: Record<string, string>;
+};
 
 type Context = {
   schema: OpenAPIDocument;
   operations: GraphQLOperationObject[];
   schemaImports?: SchemaImports;
   tags: ReturnType<typeof getAllTags>;
-  slugs: ReturnType<typeof getAllSlugs>;
+  slugs: Slugs;
 };
 
 const builder = new SchemaBuilder<{
@@ -96,19 +135,23 @@ const resolveExtensions = (obj: Record<string, any>) =>
 
 export const getAllTags = (
   schema: OpenAPIDocument,
-  slugs: ReturnType<typeof getAllSlugs>["tags"],
 ): Array<Omit<TagObject, "name"> & { name?: string; slug?: string }> => {
   const rootTags = schema.tags ?? [];
-  const operationTags = new Set(
-    Object.values(schema.paths ?? {})
-      .flatMap((path) => Object.values(path ?? {}))
-      .flatMap((op) => (op as OperationObject).tags ?? []),
+  const operations = Object.values(schema.paths ?? {}).flatMap((path) =>
+    HttpMethods.map((k) => path?.[k]).filter((op) => op != null),
   );
 
-  const hasUntaggedOperations = Object.values(schema.paths ?? {}).some((path) =>
-    Object.values(path ?? {}).some(
-      (op) => !(op as OperationObject).tags?.length,
-    ),
+  const operationTags = new Set(operations.flatMap((op) => op.tags ?? []));
+
+  const hasUntaggedOperations = operations.some(
+    (op) => (op.tags?.length ?? 0) === 0,
+  );
+
+  const slugify = slugifyWithCounter();
+  const slugs = Object.fromEntries(
+    Array.from(
+      new Set([...Array.from(operationTags), ...rootTags.map((t) => t.name)]),
+    ).map((tag) => [tag, slugify(tag)]),
   );
 
   const result = [
@@ -144,8 +187,9 @@ export const getAllTags = (
 export const getAllSlugs = (
   ops: GraphQLOperationObject[],
   schemaTags: TagObject[] = [],
-) => {
-  const slugify = slugifyWithCounter();
+): Slugs => {
+  const operationSlugify = slugifyWithCounter();
+  const tagSlugify = slugifyWithCounter();
 
   const tags = Array.from(
     new Set([
@@ -158,10 +202,10 @@ export const getAllSlugs = (
     operations: Object.fromEntries(
       ops.map((op) => [
         getOperationSlugKey(op),
-        createOperationSlug(slugify, op),
+        createOperationSlug(operationSlugify, op),
       ]),
     ),
-    tags: Object.fromEntries(tags.map((tag) => [tag, slugify(tag)])),
+    tags: Object.fromEntries(tags.map((tag) => [tag, tagSlugify(tag)])),
   };
 };
 
@@ -214,6 +258,35 @@ export const getAllOperations = (
 
   return operations;
 };
+
+const SchemaContact = builder
+  .objectRef<ContactObject>("SchemaContact")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name", { nullable: true }),
+      url: t.exposeString("url", { nullable: true }),
+      email: t.exposeString("email", { nullable: true }),
+    }),
+  });
+
+const SchemaLicense = builder
+  .objectRef<LicenseObject>("SchemaLicense")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      url: t.exposeString("url", { nullable: true }),
+      identifier: t.exposeString("identifier", { nullable: true }),
+    }),
+  });
+
+const SchemaExternalDocs = builder
+  .objectRef<ExternalDocumentationObject>("SchemaExternalDocs")
+  .implement({
+    fields: (t) => ({
+      description: t.exposeString("description", { nullable: true }),
+      url: t.exposeString("url"),
+    }),
+  });
 
 const SchemaTag = builder.objectRef<
   Omit<TagObject, "name"> & { name?: string; slug?: string }
@@ -271,6 +344,201 @@ const ServerItem = builder.objectRef<ServerObject>("Server").implement({
     description: t.exposeString("description", { nullable: true }),
   }),
 });
+
+type WebhookData = {
+  name: string;
+  method: string;
+  summary?: string;
+  description?: string;
+  operationId?: string;
+};
+
+const WebhookItem = builder.objectRef<WebhookData>("WebhookItem").implement({
+  fields: (t) => ({
+    name: t.exposeString("name"),
+    method: t.exposeString("method"),
+    summary: t.exposeString("summary", { nullable: true }),
+    description: t.exposeString("description", { nullable: true }),
+    operationId: t.exposeString("operationId", { nullable: true }),
+  }),
+});
+
+// --- Security Scheme GraphQL Types ---
+
+const SecuritySchemeTypeEnum = builder.enumType("SecuritySchemeType", {
+  values: ["apiKey", "http", "oauth2", "openIdConnect", "mutualTLS"] as const,
+});
+
+const SecuritySchemeInEnum = builder.enumType("SecuritySchemeIn", {
+  values: ["header", "query", "cookie"] as const,
+});
+
+const OAuthScopeItem = builder
+  .objectRef<{ name: string; description: string }>("OAuthScopeItem")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      description: t.exposeString("description"),
+    }),
+  });
+
+const OAuthFlowItem = builder
+  .objectRef<OAuthFlowData>("OAuthFlowItem")
+  .implement({
+    fields: (t) => ({
+      authorizationUrl: t.exposeString("authorizationUrl", { nullable: true }),
+      tokenUrl: t.exposeString("tokenUrl", { nullable: true }),
+      refreshUrl: t.exposeString("refreshUrl", { nullable: true }),
+      scopes: t.field({
+        type: [OAuthScopeItem],
+        resolve: (parent) =>
+          Object.entries(parent.scopes ?? {}).map(([name, description]) => ({
+            name,
+            description,
+          })),
+      }),
+    }),
+  });
+
+const OAuthFlowsItem = builder
+  .objectRef<OAuthFlowsData>("OAuthFlowsItem")
+  .implement({
+    fields: (t) => ({
+      implicit: t.field({
+        type: OAuthFlowItem,
+        resolve: (parent) => parent.implicit ?? null,
+        nullable: true,
+      }),
+      password: t.field({
+        type: OAuthFlowItem,
+        resolve: (parent) => parent.password ?? null,
+        nullable: true,
+      }),
+      clientCredentials: t.field({
+        type: OAuthFlowItem,
+        resolve: (parent) => parent.clientCredentials ?? null,
+        nullable: true,
+      }),
+      authorizationCode: t.field({
+        type: OAuthFlowItem,
+        resolve: (parent) => parent.authorizationCode ?? null,
+        nullable: true,
+      }),
+    }),
+  });
+
+const SecuritySchemeItem = builder
+  .objectRef<SecuritySchemeData>("SecuritySchemeItem")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      type: t.field({
+        type: SecuritySchemeTypeEnum,
+        resolve: (parent) =>
+          parent.type as typeof SecuritySchemeTypeEnum.$inferType,
+      }),
+      description: t.exposeString("description", { nullable: true }),
+      in: t.field({
+        type: SecuritySchemeInEnum,
+        resolve: (parent) =>
+          (parent.in as typeof SecuritySchemeInEnum.$inferType) ?? null,
+        nullable: true,
+      }),
+      paramName: t.exposeString("paramName", { nullable: true }),
+      scheme: t.exposeString("scheme", { nullable: true }),
+      bearerFormat: t.exposeString("bearerFormat", { nullable: true }),
+      openIdConnectUrl: t.exposeString("openIdConnectUrl", { nullable: true }),
+      flows: t.field({
+        type: OAuthFlowsItem,
+        resolve: (parent) => parent.flows ?? null,
+        nullable: true,
+      }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => parent.extensions ?? null,
+        nullable: true,
+      }),
+    }),
+  });
+
+const SecurityRequirementScheme = builder
+  .objectRef<SecurityRequirementSchemeData>("SecurityRequirementScheme")
+  .implement({
+    fields: (t) => ({
+      scheme: t.field({
+        type: SecuritySchemeItem,
+        resolve: (parent) => parent.scheme,
+      }),
+      scopes: t.stringList({ resolve: (parent) => parent.scopes }),
+    }),
+  });
+
+const SecurityRequirementItem = builder
+  .objectRef<SecurityRequirementData>("SecurityRequirementItem")
+  .implement({
+    fields: (t) => ({
+      schemes: t.field({
+        type: [SecurityRequirementScheme],
+        resolve: (parent) => parent.schemes,
+      }),
+    }),
+  });
+
+const resolveSecuritySchemes = (
+  schema: OpenAPIDocument,
+): SecuritySchemeData[] => {
+  const securitySchemes = schema.components?.securitySchemes ?? {};
+  return Object.entries(securitySchemes).map(
+    ([name, scheme]: [string, any]) => ({
+      name,
+      type: scheme.type,
+      description: scheme.description,
+      in: scheme.in,
+      paramName: scheme.name, // apiKey's `name` field (parameter name)
+      scheme: scheme.scheme, // http scheme (e.g. "bearer", "basic")
+      bearerFormat: scheme.bearerFormat,
+      openIdConnectUrl: scheme.openIdConnectUrl,
+      flows: scheme.flows,
+      extensions: resolveExtensions(scheme),
+    }),
+  );
+};
+
+const resolveSecurityRequirements = (
+  securityArray: OpenAPIDocument["security"],
+  securitySchemes: SecuritySchemeData[],
+): SecurityRequirementData[] => {
+  if (!securityArray) return [];
+
+  return securityArray.map((req) => ({
+    schemes: Object.entries(req)
+      .filter(([key]) => !key.startsWith("__"))
+      .flatMap(([schemeName, scopes]) => {
+        const scheme = securitySchemes.find((s) => s.name === schemeName);
+        if (!scheme) return [];
+        return [{ scheme, scopes }];
+      }),
+  }));
+};
+
+// --- End Security Scheme GraphQL Types ---
+
+const resolveWebhooks = (schema: OpenAPIDocument): WebhookData[] => {
+  const webhooks = (schema as any).webhooks ?? {};
+  return Object.entries(webhooks).flatMap(([name, pathItem]: [string, any]) =>
+    HttpMethods.flatMap((method) => {
+      const op = pathItem?.[method];
+      if (!op) return [];
+      return {
+        name,
+        method: method.toUpperCase(),
+        summary: op.summary,
+        description: op.description,
+        operationId: op.operationId,
+      };
+    }),
+  );
+};
 
 const PathItem = builder
   .objectRef<{
@@ -473,7 +741,9 @@ const OperationItem = builder
                     name,
                     ...(typeof value === "string" ? { value } : value),
                   }))
-                : [],
+                : content.example !== undefined
+                  ? [{ name: "", value: content.example }]
+                  : [],
               encoding: Object.entries(content.encoding ?? {}).map(
                 ([name, value]) => ({ name, ...value }),
               ),
@@ -490,7 +760,7 @@ const OperationItem = builder
               statusCode,
               description: response.description,
               content: Object.entries(response.content ?? {}).map(
-                ([mediaType, { schema, examples }]) => ({
+                ([mediaType, { schema, examples, example }]) => ({
                   mediaType,
                   schema,
                   examples: examples
@@ -498,7 +768,9 @@ const OperationItem = builder
                         name,
                         ...(typeof value === "string" ? { value } : value),
                       }))
-                    : [],
+                    : example !== undefined
+                      ? [{ name: "", value: example }]
+                      : [],
                 }),
               ),
               headers: response.headers,
@@ -518,6 +790,17 @@ const OperationItem = builder
         nullable: true,
       }),
       deprecated: t.exposeBoolean("deprecated", { nullable: true }),
+      security: t.field({
+        type: [SecurityRequirementItem],
+        nullable: true,
+        resolve: (parent, _, ctx) => {
+          const securitySchemes = resolveSecuritySchemes(ctx.schema);
+          // Operation-level security overrides global security
+          const securityArray = parent.security ?? ctx.schema.security;
+          if (!securityArray) return null;
+          return resolveSecurityRequirements(securityArray, securitySchemes);
+        },
+      }),
       extensions: t.field({
         type: JSONObjectScalar,
         resolve: (parent) => resolveExtensions(parent),
@@ -560,6 +843,11 @@ Components.implement({
       },
       nullable: true,
     }),
+    securitySchemes: t.field({
+      type: [SecuritySchemeItem],
+      resolve: (_parent, _args, ctx) => resolveSecuritySchemes(ctx.schema),
+      nullable: true,
+    }),
   }),
 });
 
@@ -583,6 +871,25 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
     summary: t.string({
       resolve: (root) => root.info.summary,
       nullable: true,
+    }),
+    contact: t.field({
+      type: SchemaContact,
+      nullable: true,
+      resolve: (root) => root.info.contact ?? null,
+    }),
+    license: t.field({
+      type: SchemaLicense,
+      nullable: true,
+      resolve: (root) => root.info.license ?? null,
+    }),
+    termsOfService: t.string({
+      resolve: (root) => root.info.termsOfService,
+      nullable: true,
+    }),
+    externalDocs: t.field({
+      type: SchemaExternalDocs,
+      nullable: true,
+      resolve: (root) => root.externalDocs ?? null,
     }),
     paths: t.field({
       type: [PathItem],
@@ -637,10 +944,23 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
           );
         }),
     }),
+    webhooks: t.field({
+      type: [WebhookItem],
+      resolve: (root) => resolveWebhooks(root),
+    }),
     components: t.field({
       type: Components,
       resolve: (root) => root.components,
       nullable: true,
+    }),
+    security: t.field({
+      type: [SecurityRequirementItem],
+      nullable: true,
+      resolve: (root) => {
+        const securitySchemes = resolveSecuritySchemes(root);
+        if (!root.security) return null;
+        return resolveSecurityRequirements(root.security, securitySchemes);
+      },
     }),
     extensions: t.field({
       type: JSONObjectScalar,
@@ -669,17 +989,14 @@ builder.queryType({
           if (!loadSchema) {
             throw new Error(`No schema loader found for path: ${args.input}`);
           }
-          const { schema, slugs } = await loadSchema();
-          ctx.schema = schema;
-          ctx.operations = getAllOperations(schema.paths);
-          ctx.slugs = slugs;
-          ctx.tags = getAllTags(schema, ctx.slugs.tags);
+          ctx.schema = (await loadSchema()).schema;
         } else {
           ctx.schema = await validate(args.input as string);
-          ctx.operations = getAllOperations(ctx.schema.paths);
-          ctx.slugs = getAllSlugs(ctx.operations);
-          ctx.tags = getAllTags(ctx.schema, ctx.slugs.tags);
         }
+
+        ctx.operations = getAllOperations(ctx.schema.paths);
+        ctx.slugs = getAllSlugs(ctx.operations, ctx.schema.tags);
+        ctx.tags = getAllTags(ctx.schema);
 
         return ctx.schema;
       },

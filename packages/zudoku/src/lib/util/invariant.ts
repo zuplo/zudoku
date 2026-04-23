@@ -7,6 +7,7 @@ export default function invariant(
    * the message takes a fair amount of effort to compute
    */
   message?: string | (() => string),
+  options?: ZudokuErrorOptions,
 ): asserts condition {
   if (condition) {
     return;
@@ -16,7 +17,7 @@ export default function invariant(
   const provided: string | undefined =
     typeof message === "function" ? message() : message;
 
-  throw new ZudokuError(provided ?? "Invariant failed");
+  throw new ZudokuError(provided ?? "Invariant failed", options);
 }
 
 export type ZudokuErrorOptions = {

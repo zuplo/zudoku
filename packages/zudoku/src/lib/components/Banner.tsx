@@ -12,21 +12,22 @@ const COLOR_MAP = {
 } as const;
 
 export const Banner = () => {
-  const { site: page } = useZudoku();
+  const { options } = useZudoku();
+  const { site } = options;
   const [isBannerOpen, setIsBannerOpen] = useState(true);
 
-  if (!page?.banner || !isBannerOpen) {
+  if (!site?.banner || !isBannerOpen) {
     return <style>{`:root { --banner-height: 0px; }`}</style>;
   }
 
   const mappedColor =
-    page.banner.color && page.banner.color in COLOR_MAP
-      ? COLOR_MAP[page.banner.color as keyof typeof COLOR_MAP]
-      : !page.banner.color
+    site.banner.color && site.banner.color in COLOR_MAP
+      ? COLOR_MAP[site.banner.color as keyof typeof COLOR_MAP]
+      : !site.banner.color
         ? "bg-primary"
         : undefined;
 
-  const style = !mappedColor ? { backgroundColor: page.banner.color } : {};
+  const style = !mappedColor ? { backgroundColor: site.banner.color } : {};
 
   return (
     <div
@@ -36,8 +37,8 @@ export const Banner = () => {
       )}
       style={style}
     >
-      <div className="w-full">{page.banner.message}</div>
-      {page.banner.dismissible && (
+      <div className="w-full">{site.banner.message}</div>
+      {site.banner.dismissible && (
         <button
           type="button"
           className="md:absolute md:end-4 -m-1.5 p-1.5 hover:bg-accent-foreground/10 rounded-md"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZudokuConfig } from "../../config/validators/validate.js";
+import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
 import { getIssuer } from "./issuer.js";
 
 describe("getIssuer", () => {
@@ -26,7 +26,7 @@ describe("getIssuer", () => {
     };
 
     await expect(getIssuer(config)).rejects.toThrow(
-      "Clerk public key is invalid",
+      "Invalid Clerk publishable key",
     );
   });
 
@@ -39,7 +39,7 @@ describe("getIssuer", () => {
     };
 
     await expect(getIssuer(config)).rejects.toThrow(
-      "Clerk public key is invalid",
+      "Invalid Clerk publishable key",
     );
   });
 

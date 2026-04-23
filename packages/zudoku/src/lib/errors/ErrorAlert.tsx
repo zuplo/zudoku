@@ -1,4 +1,3 @@
-import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { DeveloperHint } from "../components/DeveloperHint.js";
 import { Heading } from "../components/Heading.js";
 import { Typography } from "../components/Typography.js";
@@ -22,11 +21,7 @@ export function ErrorAlert({ error }: { error: unknown }) {
       Error: {message}
       {hint && <DeveloperHint className="mb-4">{hint}</DeveloperHint>}
       {stringError && (
-        <SyntaxHighlight
-          className="max-h-[400px] [&>pre]:p-4"
-          language="js"
-          code={stringError}
-        />
+        <pre className="max-h-[400px] [&>pre]:p-4">{stringError}</pre>
       )}
     </Typography>
   );

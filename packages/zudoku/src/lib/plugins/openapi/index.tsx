@@ -1,7 +1,6 @@
 import { CirclePlayIcon } from "lucide-react";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren, Suspense, lazy } from "react";
 import { matchPath } from "react-router";
-import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
@@ -11,9 +10,15 @@ import type { GetNavigationOperationsQuery as GetNavigationOperationsQueryResult
 import { graphql } from "./graphql/index.js";
 import type { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
-import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
+import { buildTagCategories } from "./util/buildTagCategories.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
-import { getRoutes, getVersions } from "./util/getRoutes.js";
+import { getRoutes, getVersionMetadata } from "./util/getRoutes.js";
+
+const PlaygroundDialog = lazy(() =>
+  import("./playground/PlaygroundDialog.js").then((m) => ({
+    default: m.PlaygroundDialog,
+  })),
+);
 
 export const GetNavigationOperationsQuery = graphql(`
   query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
@@ -54,14 +59,19 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
   return {
     getHead: () => {
       if (config.type === "url" && !config.skipPreload) {
-        return (
+        const urls = Array.isArray(config.input)
+          ? config.input.map((v) => v.input)
+          : [config.input];
+
+        return urls.map((url) => (
           <link
+            key={url}
+            href={url}
             rel="preload"
-            href={config.input}
             as="fetch"
             crossOrigin="anonymous"
           />
-        );
+        ));
       }
 
       if (config.server) {
@@ -81,21 +91,23 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         }
 
         return (
-          <PlaygroundDialog
-            url={url}
-            method={method}
-            server={server}
-            {...props}
-          >
-            <Button className="gap-2 items-center" variant="outline">
-              {children ?? (
-                <>
-                  Open in Playground
-                  <CirclePlayIcon size={16} />
-                </>
-              )}
-            </Button>
-          </PlaygroundDialog>
+          <Suspense>
+            <PlaygroundDialog
+              url={url}
+              method={method}
+              server={server}
+              {...props}
+            >
+              <Button className="gap-2 items-center" variant="outline">
+                {children ?? (
+                  <>
+                    Open in Playground
+                    <CirclePlayIcon size={16} aria-hidden="true" />
+                  </>
+                )}
+              </Button>
+            </PlaygroundDialog>
+          </Suspense>
         );
       },
     }),
@@ -104,17 +116,20 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         return [];
       }
 
-      const match = matchPath(
-        { path: `${basePath}/:version?/:tag`, end: true },
-        path,
-      );
-
       try {
-        const versionParam = match?.params.version;
-        const version = versionParam ?? getVersions(config).at(0);
+        const { versions } = getVersionMetadata(config);
+
+        const versionParam = versions.find((v) =>
+          matchPath({ path: joinUrl(basePath, v), end: false }, path),
+        );
+
+        const version = versionParam ?? versions.at(0);
         const { type } = config;
-        // biome-ignore lint/style/noNonNullAssertion: version is guaranteed to be defined
-        const input = type === "file" ? config.input[version!] : config.input;
+
+        const input = Array.isArray(config.input)
+          ? (config.input.find((v) => v.path === version)?.input ??
+            config.input[0]?.input)
+          : config.input;
 
         const query = createQuery(client, GetNavigationOperationsQuery, {
           type,
@@ -156,39 +171,19 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
             | { name: string; tags: string[] }[]
             | undefined) ?? [];
 
-        const groupedTags = new Set(
-          tagGroups.flatMap((group) =>
-            group.tags.filter((name) => tagCategories.has(name)),
-          ),
-        );
+        const categories = buildTagCategories({
+          tagCategories,
+          tagGroups,
+          expandAllTags: config.options?.expandAllTags,
+        });
 
-        const groupedCategories: NavigationItem[] = tagGroups.flatMap(
-          (group) => {
-            const items = group.tags
-              .map((name) => tagCategories.get(name))
-              .filter(Boolean) as NavigationItem[];
-
-            if (items.length === 0) {
-              return [];
-            }
-            return [
-              {
-                type: "category",
-                label: group.name,
-                items,
-                collapsible: true,
-                collapsed: !config.options?.expandAllTags,
-              },
-            ];
-          },
-        );
-
-        const categories: NavigationItem[] = [
-          ...groupedCategories,
-          ...Array.from(tagCategories.entries())
-            .filter(([name]) => !groupedTags.has(name))
-            .map(([, cat]) => cat),
-        ];
+        if (config.options?.showInfoPage !== false) {
+          categories.unshift({
+            type: "link" as const,
+            to: joinUrl(basePath, versionParam),
+            label: "Information",
+          });
+        }
 
         const untaggedOperations = data.schema.tags.find(
           (tag) => !tag.name,
@@ -207,7 +202,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
 
         if (data.schema.components?.schemas?.length) {
           categories.push({
-            type: "link" as const,
+            type: "link",
             label: "Schemas",
             to: joinUrl(basePath, versionParam, "~schemas"),
           });

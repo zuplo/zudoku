@@ -44,11 +44,11 @@ export const ParameterListItem = ({
 
   const shouldRenderDescription = Boolean(
     parameter.description ||
-      paramSchema.description ||
-      (paramSchema.type === "array" && paramSchema.items?.enum) ||
-      paramSchema.enum ||
-      paramSchema.example !== undefined ||
-      paramSchema.default !== undefined,
+    paramSchema.description ||
+    (paramSchema.type === "array" && paramSchema.items?.enum) ||
+    paramSchema.enum ||
+    paramSchema.example !== undefined ||
+    paramSchema.default !== undefined,
   );
 
   return (
@@ -90,6 +90,7 @@ export const ParameterListItem = ({
               </code>
             )}
           </ItemTitle>
+          {"\u200B"}
           <ParamInfos
             className="inline"
             schema={paramSchema}

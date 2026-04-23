@@ -1,0 +1,21 @@
+---
+title: Introduction
+---
+
+# Mermaid Diagrams
+
+Zudoku supports rendering Mermaid diagrams in two ways:
+
+| Approach                        | Pros                                                                  | Cons                                                        |
+| ------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| **Build-Time** (rehype-mermaid) | • Faster page loads<br/>• No client-side JS needed<br/>• SEO friendly | • Requires playwright<br/>• Slower builds<br/>• Static only |
+| **Client-Side** (`<Mermaid />`) | • Fast builds<br/>• Can be dynamic<br/>• No build dependencies        | • Requires client-side JS<br/>• Slight render delay         |
+
+Choose build-time rendering for static documentation, and client-side rendering for interactive or
+dynamic diagrams.
+
+## Next Steps
+
+- [Build-Time Setup](/build-time) - Configure rehype-mermaid for static diagrams
+- [Client-Side Setup](/client-side) - Use the `<Mermaid />` component
+- [Diagram Examples](/mermaid) - See various diagram types

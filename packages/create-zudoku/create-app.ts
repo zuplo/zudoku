@@ -17,7 +17,6 @@ import { install } from "./helpers/install";
 import { isFolderEmpty } from "./helpers/is-folder-empty";
 import { getOnline } from "./helpers/is-online";
 import { isWriteable } from "./helpers/is-writeable";
-
 import type { TemplateMode, TemplateType } from "./templates";
 import { getTemplateFile, installTemplate } from "./templates";
 

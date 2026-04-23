@@ -82,6 +82,11 @@ const config: ZudokuConfig = {
   apiKeys: {
     enabled: true,
   },
+  protectedRoutes: {
+    "/settings/api-keys": ({ reasonCode }) => {
+      return reasonCode.FORBIDDEN;
+    },
+  },
 };
 
 export default config;

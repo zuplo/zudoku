@@ -1,0 +1,1386 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "The Rick and Morty API (via a Zuplo Gateway)",
+    "version": "1.0.0",
+    "description": "This is an example API proxied via Zuplo - these docs are generated based on the gateway configuration. Full credit to the original and upstream API, which is available at rickandmortyapi.com. \n\n The source for the gateway is available on GitHub [here](https://github.com/zuplo-samples/rick-and-morty). \n\n **To use this API: 1) visit the pricing page from the top menu , 2) subscribe to any plan using a [fake credit card](https://docs.stripe.com/testing#cards) like `4242 4242 4242 4242` and any expire date and CVC and 3) copy your API key and start using the API.**"
+  },
+  "paths": {
+    "/v1/characters": {
+      "get": {
+        "summary": "Get all characters ",
+        "description": "You can access the list of characters by using the `/characters` endpoint. Pagination is supported via the `?page=2` querystring. You can also filter the results using the `name`, `status`, `species`, `type` and `gender` query parameters.",
+        "operationId": "a079709e-683f-4580-ab6b-59ebcb3508cb",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "example": "Bearer YOUR_KEY_HERE",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `Authorization` header is used to authenticate with the API using your API key. Value is of the format `Bearer YOUR_KEY_HERE`."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Pagination index",
+            "schema": {
+              "type": "number",
+              "example": "1"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "filter by the given name",
+            "schema": {
+              "type": "string",
+              "example": "Rick"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "filter by the status, one of `dead`, `alive` or `unknown`",
+            "schema": {
+              "type": "string",
+              "example": "alive"
+            }
+          },
+          {
+            "name": "species",
+            "in": "query",
+            "required": false,
+            "description": "filter by the species",
+            "schema": {
+              "type": "string",
+              "example": "Human"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "filter by the given type",
+            "schema": {
+              "type": "string",
+              "example": ""
+            }
+          },
+          {
+            "name": "gender",
+            "in": "query",
+            "required": false,
+            "description": " filter by the given gender (female, male, genderless or unknown)",
+            "schema": {
+              "type": "string",
+              "example": "male"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$id": "http://example.com/all-characters.json",
+                  "type": "object",
+                  "default": {},
+                  "title": "Root Schema",
+                  "required": ["info", "results"],
+                  "properties": {
+                    "info": {
+                      "type": "object",
+                      "default": {},
+                      "title": "The info Schema",
+                      "required": ["count", "pages", "next", "prev"],
+                      "properties": {
+                        "count": {
+                          "type": "integer",
+                          "default": 0,
+                          "title": "The count Schema",
+                          "examples": [826]
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "default": 0,
+                          "title": "The pages Schema",
+                          "examples": [42]
+                        },
+                        "next": {
+                          "type": "string",
+                          "default": "",
+                          "title": "The next Schema",
+                          "examples": [
+                            "https://rickandmorty.zuplo.io/v1/characters/?page=2"
+                          ]
+                        },
+                        "prev": {
+                          "type": "null",
+                          "default": null,
+                          "title": "The prev Schema",
+                          "examples": [null]
+                        }
+                      },
+                      "examples": [
+                        {
+                          "count": 826,
+                          "pages": 42,
+                          "next": "https://rickandmorty.zuplo.io/v1/characters/?page=2",
+                          "prev": null
+                        }
+                      ]
+                    },
+                    "results": {
+                      "type": "array",
+                      "default": [],
+                      "title": "The results Schema",
+                      "items": {
+                        "type": "object",
+                        "default": {},
+                        "title": "A Schema",
+                        "required": [
+                          "id",
+                          "name",
+                          "status",
+                          "species",
+                          "type",
+                          "gender",
+                          "origin",
+                          "location",
+                          "image",
+                          "episode",
+                          "url",
+                          "created"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "default": 0,
+                            "title": "The id Schema",
+                            "examples": [1]
+                          },
+                          "name": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The name Schema",
+                            "examples": ["Rick Sanchez"]
+                          },
+                          "status": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The status Schema",
+                            "examples": ["Alive"]
+                          },
+                          "species": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The species Schema",
+                            "examples": ["Human"]
+                          },
+                          "type": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The type Schema",
+                            "examples": [""]
+                          },
+                          "gender": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The gender Schema",
+                            "examples": ["Male"]
+                          },
+                          "origin": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The origin Schema",
+                            "required": ["name", "url"],
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "default": "",
+                                "title": "The name Schema",
+                                "examples": ["Earth"]
+                              },
+                              "url": {
+                                "type": "string",
+                                "default": "",
+                                "title": "The url Schema",
+                                "examples": [
+                                  "https://rickandmorty.zuplo.io/v1/locations/1"
+                                ]
+                              }
+                            },
+                            "examples": [
+                              {
+                                "name": "Earth",
+                                "url": "https://rickandmorty.zuplo.io/v1/locations/1"
+                              }
+                            ]
+                          },
+                          "location": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The location Schema",
+                            "required": ["name", "url"],
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "default": "",
+                                "title": "The name Schema",
+                                "examples": ["Earth"]
+                              },
+                              "url": {
+                                "type": "string",
+                                "default": "",
+                                "title": "The url Schema",
+                                "examples": [
+                                  "https://rickandmorty.zuplo.io/v1/locations/20"
+                                ]
+                              }
+                            },
+                            "examples": [
+                              {
+                                "name": "Earth",
+                                "url": "https://rickandmorty.zuplo.io/v1/locations/20"
+                              }
+                            ]
+                          },
+                          "image": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The image Schema",
+                            "examples": [
+                              "https://rickandmorty.zuplo.io/v1/characters/avatar/1.jpeg"
+                            ]
+                          },
+                          "episode": {
+                            "type": "array",
+                            "default": [],
+                            "title": "The episode Schema",
+                            "items": {
+                              "type": "string",
+                              "title": "A Schema",
+                              "examples": [
+                                "https://rickandmorty.zuplo.io/v1/episode/1",
+                                "https://rickandmorty.zuplo.io/v1/episode/2"
+                              ]
+                            },
+                            "examples": [
+                              [
+                                "https://rickandmorty.zuplo.io/v1/episode/1",
+                                "https://rickandmorty.zuplo.io/v1/episode/2"
+                              ]
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The url Schema",
+                            "examples": [
+                              "https://rickandmorty.zuplo.io/v1/characters/1"
+                            ]
+                          },
+                          "created": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The created Schema",
+                            "examples": ["2017-11-04T18:48:46.250Z"]
+                          }
+                        },
+                        "examples": [
+                          {
+                            "id": 1,
+                            "name": "Rick Sanchez",
+                            "status": "Alive",
+                            "species": "Human",
+                            "type": "",
+                            "gender": "Male",
+                            "origin": {
+                              "name": "Earth",
+                              "url": "https://rickandmorty.zuplo.io/v1/locations/1"
+                            },
+                            "location": {
+                              "name": "Earth",
+                              "url": "https://rickandmorty.zuplo.io/v1/locations/20"
+                            },
+                            "image": "https://rickandmorty.zuplo.io/v1/characters/avatar/1.jpeg",
+                            "episode": [
+                              "https://rickandmorty.zuplo.io/v1/episode/1",
+                              "https://rickandmorty.zuplo.io/v1/episode/2"
+                            ],
+                            "url": "https://rickandmorty.zuplo.io/v1/characters/1",
+                            "created": "2017-11-04T18:48:46.250Z"
+                          }
+                        ]
+                      },
+                      "examples": [
+                        [
+                          {
+                            "id": 1,
+                            "name": "Rick Sanchez",
+                            "status": "Alive",
+                            "species": "Human",
+                            "type": "",
+                            "gender": "Male",
+                            "origin": {
+                              "name": "Earth",
+                              "url": "https://rickandmorty.zuplo.io/v1/locations/1"
+                            },
+                            "location": {
+                              "name": "Earth",
+                              "url": "https://rickandmorty.zuplo.io/v1/locations/20"
+                            },
+                            "image": "https://rickandmorty.zuplo.io/v1/characters/avatar/1.jpeg",
+                            "episode": [
+                              "https://rickandmorty.zuplo.io/v1/episode/1",
+                              "https://rickandmorty.zuplo.io/v1/episode/2"
+                            ],
+                            "url": "https://rickandmorty.zuplo.io/v1/characters/1",
+                            "created": "2017-11-04T18:48:46.250Z"
+                          }
+                        ]
+                      ]
+                    }
+                  },
+                  "examples": [
+                    {
+                      "info": {
+                        "count": 826,
+                        "pages": 42,
+                        "next": "https://rickandmorty.zuplo.io/v1/characters/?page=2",
+                        "prev": null
+                      },
+                      "results": [
+                        {
+                          "id": 1,
+                          "name": "Rick Sanchez",
+                          "status": "Alive",
+                          "species": "Human",
+                          "type": "",
+                          "gender": "Male",
+                          "origin": {
+                            "name": "Earth",
+                            "url": "https://rickandmorty.zuplo.io/v1/locations/1"
+                          },
+                          "location": {
+                            "name": "Earth",
+                            "url": "https://rickandmorty.zuplo.io/v1/locations/20"
+                          },
+                          "image": "https://rickandmorty.zuplo.io/v1/characters/avatar/1.jpeg",
+                          "episode": [
+                            "https://rickandmorty.zuplo.io/v1/episode/1",
+                            "https://rickandmorty.zuplo.io/v1/episode/2"
+                          ],
+                          "url": "https://rickandmorty.zuplo.io/v1/characters/1",
+                          "created": "2017-11-04T18:48:46.250Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Characters"],
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/v1/characters/:characterId": {
+      "get": {
+        "summary": "Get a characters by ID(s)",
+        "description": "You can get a single character by ID, or multiple by adding an array of ids as parameter: `/characters/[1,2,3]` or `/characters/1,2,3`",
+        "operationId": "e6df88e1-c847-43ef-b8d3-aa897dcb6f11",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "example": "Bearer YOUR_KEY_HERE",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `Authorization` header is used to authenticate with the API using your API key. Value is of the format `Bearer YOUR_KEY_HERE`."
+          },
+          {
+            "name": "characterId",
+            "in": "path",
+            "description": "A single numeric ID or multiple IDs, e.g. `[1,2,3]` or `1,2`",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$id": "http://example.com/single-character.json",
+                  "type": "object",
+                  "default": {},
+                  "title": "Root Schema",
+                  "required": [
+                    "id",
+                    "name",
+                    "status",
+                    "species",
+                    "type",
+                    "gender",
+                    "origin",
+                    "location",
+                    "image",
+                    "episode",
+                    "url",
+                    "created"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "default": 0,
+                      "title": "The id Schema",
+                      "examples": [2]
+                    },
+                    "name": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The name Schema",
+                      "examples": ["Morty Smith"]
+                    },
+                    "status": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The status Schema",
+                      "examples": ["Alive"]
+                    },
+                    "species": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The species Schema",
+                      "examples": ["Human"]
+                    },
+                    "type": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The type Schema",
+                      "examples": [""]
+                    },
+                    "gender": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The gender Schema",
+                      "examples": ["Male"]
+                    },
+                    "origin": {
+                      "type": "object",
+                      "default": {},
+                      "title": "The origin Schema",
+                      "required": ["name", "url"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "default": "",
+                          "title": "The name Schema",
+                          "examples": ["Earth"]
+                        },
+                        "url": {
+                          "type": "string",
+                          "default": "",
+                          "title": "The url Schema",
+                          "examples": [
+                            "https://rickandmorty.zuplo.io/v1/location/1"
+                          ]
+                        }
+                      },
+                      "examples": [
+                        {
+                          "name": "Earth",
+                          "url": "https://rickandmorty.zuplo.io/v1/location/1"
+                        }
+                      ]
+                    },
+                    "location": {
+                      "type": "object",
+                      "default": {},
+                      "title": "The location Schema",
+                      "required": ["name", "url"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "default": "",
+                          "title": "The name Schema",
+                          "examples": ["Earth"]
+                        },
+                        "url": {
+                          "type": "string",
+                          "default": "",
+                          "title": "The url Schema",
+                          "examples": [
+                            "https://rickandmorty.zuplo.io/v1/location/20"
+                          ]
+                        }
+                      },
+                      "examples": [
+                        {
+                          "name": "Earth",
+                          "url": "https://rickandmorty.zuplo.io/v1/location/20"
+                        }
+                      ]
+                    },
+                    "image": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The image Schema",
+                      "examples": [
+                        "https://rickandmorty.zuplo.io/v1/characters/avatar/2.jpeg"
+                      ]
+                    },
+                    "episode": {
+                      "type": "array",
+                      "default": [],
+                      "title": "The episode Schema",
+                      "items": {
+                        "type": "string",
+                        "title": "A Schema",
+                        "examples": [
+                          "https://rickandmorty.zuplo.io/v1/episodes/1",
+                          "https://rickandmorty.zuplo.io/v1/episodes/2"
+                        ]
+                      },
+                      "examples": [
+                        [
+                          "https://rickandmorty.zuplo.io/v1/episodes/1",
+                          "https://rickandmorty.zuplo.io/v1/episodes/2"
+                        ]
+                      ]
+                    },
+                    "url": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The url Schema",
+                      "examples": [
+                        "https://rickandmorty.zuplo.io/v1/characters/2"
+                      ]
+                    },
+                    "created": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The created Schema",
+                      "examples": ["2017-11-04T18:50:21.651Z"]
+                    }
+                  },
+                  "examples": [
+                    {
+                      "id": 2,
+                      "name": "Morty Smith",
+                      "status": "Alive",
+                      "species": "Human",
+                      "type": "",
+                      "gender": "Male",
+                      "origin": {
+                        "name": "Earth",
+                        "url": "https://rickandmorty.zuplo.io/v1/locations/1"
+                      },
+                      "location": {
+                        "name": "Earth",
+                        "url": "https://rickandmorty.zuplo.io/v1/locations/20"
+                      },
+                      "image": "https://rickandmorty.zuplo.io/v1/characters/avatar/2.jpeg",
+                      "episode": [
+                        "https://rickandmorty.zuplo.io/v1/episodes/1",
+                        "https://rickandmorty.zuplo.io/v1/episodes/2"
+                      ],
+                      "url": "https://rickandmorty.zuplo.io/v1/characters/2",
+                      "created": "2017-11-04T18:50:21.651Z"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "test"
+          }
+        },
+        "tags": ["Characters"],
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/v1/locations": {
+      "get": {
+        "summary": "Get all locations",
+        "description": "You can access the list of locations by using the `/locations` endpoint.",
+        "operationId": "90fc0a35-405e-4713-8094-91117bbf74dd",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "example": "Bearer YOUR_KEY_HERE",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `Authorization` header is used to authenticate with the API using your API key. Value is of the format `Bearer YOUR_KEY_HERE`."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Pagination index",
+            "schema": {
+              "type": "number",
+              "example": 1
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "filter by the given name",
+            "schema": {
+              "type": "string",
+              "example": "Earth"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "filter by the type",
+            "schema": {
+              "type": "string",
+              "example": "Planet"
+            }
+          },
+          {
+            "name": "dimension",
+            "in": "query",
+            "description": "filter by the dimension",
+            "schema": {
+              "type": "string",
+              "example": "Dimension C-137"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$id": "http://example.com/all-locations.json",
+                  "type": "object",
+                  "default": {},
+                  "title": "Root Schema",
+                  "required": ["info", "results"],
+                  "properties": {
+                    "info": {
+                      "type": "object",
+                      "default": {},
+                      "title": "The info Schema",
+                      "required": ["count", "pages", "next", "prev"],
+                      "properties": {
+                        "count": {
+                          "type": "integer",
+                          "default": 0,
+                          "title": "The count Schema",
+                          "examples": [126]
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "default": 0,
+                          "title": "The pages Schema",
+                          "examples": [7]
+                        },
+                        "next": {
+                          "default": null,
+                          "title": "The next Schema",
+                          "examples": [null]
+                        },
+                        "prev": {
+                          "type": "null",
+                          "default": null,
+                          "title": "The prev Schema",
+                          "examples": [null]
+                        }
+                      },
+                      "examples": [
+                        {
+                          "count": 126,
+                          "pages": 7,
+                          "next": null,
+                          "prev": null
+                        }
+                      ]
+                    },
+                    "results": {
+                      "type": "array",
+                      "default": [],
+                      "title": "The results Schema",
+                      "items": {
+                        "type": "object",
+                        "default": {},
+                        "title": "A Schema",
+                        "required": [
+                          "id",
+                          "name",
+                          "type",
+                          "dimension",
+                          "residents",
+                          "url",
+                          "created"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "default": 0,
+                            "title": "The id Schema",
+                            "examples": [1]
+                          },
+                          "name": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The name Schema",
+                            "examples": ["Earth"]
+                          },
+                          "type": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The type Schema",
+                            "examples": ["Planet"]
+                          },
+                          "dimension": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The dimension Schema",
+                            "examples": ["Dimension C-137"]
+                          },
+                          "residents": {
+                            "type": "array",
+                            "default": [],
+                            "title": "The residents Schema",
+                            "items": {
+                              "type": "string",
+                              "title": "A Schema",
+                              "examples": [
+                                "https://rickandmorty.zuplo.io/v1/characters/1",
+                                "https://rickandmorty.zuplo.io/v1/characters/2"
+                              ]
+                            },
+                            "examples": [
+                              [
+                                "https://rickandmorty.zuplo.io/v1/characters/1",
+                                "https://rickandmorty.zuplo.io/v1/characters/2"
+                              ]
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The url Schema",
+                            "examples": [
+                              "https://rickandmorty.zuplo.io/v1/locations/1"
+                            ]
+                          },
+                          "created": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The created Schema",
+                            "examples": ["2017-11-10T12:42:04.162Z"]
+                          }
+                        },
+                        "examples": [
+                          {
+                            "id": 1,
+                            "name": "Earth",
+                            "type": "Planet",
+                            "dimension": "Dimension C-137",
+                            "residents": [
+                              "https://rickandmorty.zuplo.io/v1/characters/1",
+                              "https://rickandmorty.zuplo.io/v1/characters/2"
+                            ],
+                            "url": "https://rickandmorty.zuplo.io/v1/locations/1",
+                            "created": "2017-11-10T12:42:04.162Z"
+                          }
+                        ]
+                      },
+                      "examples": [
+                        [
+                          {
+                            "id": 1,
+                            "name": "Earth",
+                            "type": "Planet",
+                            "dimension": "Dimension C-137",
+                            "residents": [
+                              "https://rickandmorty.zuplo.io/v1/characters/1",
+                              "https://rickandmorty.zuplo.io/v1/characters/2"
+                            ],
+                            "url": "https://rickandmorty.zuplo.io/v1/locations/1",
+                            "created": "2017-11-10T12:42:04.162Z"
+                          }
+                        ]
+                      ]
+                    }
+                  },
+                  "examples": [
+                    {
+                      "info": {
+                        "count": 126,
+                        "pages": 7,
+                        "next": null,
+                        "prev": null
+                      },
+                      "results": [
+                        {
+                          "id": 1,
+                          "name": "Earth",
+                          "type": "Planet",
+                          "dimension": "Dimension C-137",
+                          "residents": [
+                            "https://rickandmorty.zuplo.io/v1/characters/1",
+                            "https://rickandmorty.zuplo.io/v1/characters/2"
+                          ],
+                          "url": "https://rickandmorty.zuplo.io/v1/locations/1",
+                          "created": "2017-11-10T12:42:04.162Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Locations"],
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/v1/locations/:locationId": {
+      "get": {
+        "summary": "Get locations by ID(s)",
+        "description": "You can get a single location by ID, or multiple by adding an array of ids as parameter: `/locations/[1,2,3]` or `/locations/1,2,3`",
+        "operationId": "9fd9bea1-568e-44a7-8be2-e435d5457207",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "example": "Bearer YOUR_KEY_HERE",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `Authorization` header is used to authenticate with the API using your API key. Value is of the format `Bearer YOUR_KEY_HERE`."
+          },
+          {
+            "name": "locationId",
+            "in": "path",
+            "description": "A single numeric ID or multiple IDs, e.g. `[1,2,3]` or `1,2`",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$id": "http://example.com/single-location.json",
+                  "type": "object",
+                  "default": {},
+                  "title": "Root Schema",
+                  "required": [
+                    "id",
+                    "name",
+                    "type",
+                    "dimension",
+                    "residents",
+                    "url",
+                    "created"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "default": 0,
+                      "title": "The id Schema",
+                      "examples": [3]
+                    },
+                    "name": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The name Schema",
+                      "examples": ["Citadel of Ricks"]
+                    },
+                    "type": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The type Schema",
+                      "examples": ["Space station"]
+                    },
+                    "dimension": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The dimension Schema",
+                      "examples": ["unknown"]
+                    },
+                    "residents": {
+                      "type": "array",
+                      "default": [],
+                      "title": "The residents Schema",
+                      "items": {
+                        "type": "string",
+                        "title": "A Schema",
+                        "examples": [
+                          "https://rickandmorty.zuplo.io/v1/characters/8",
+                          "https://rickandmorty.zuplo.io/v1/characters/14"
+                        ]
+                      },
+                      "examples": [
+                        [
+                          "https://rickandmorty.zuplo.io/v1/characters/8",
+                          "https://rickandmorty.zuplo.io/v1/characters/14"
+                        ]
+                      ]
+                    },
+                    "url": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The url Schema",
+                      "examples": ["https://rickandmorty.zuplo.io/locations/3"]
+                    },
+                    "created": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The created Schema",
+                      "examples": ["2017-11-10T13:08:13.191Z"]
+                    }
+                  },
+                  "examples": [
+                    {
+                      "id": 3,
+                      "name": "Citadel of Ricks",
+                      "type": "Space station",
+                      "dimension": "unknown",
+                      "residents": [
+                        "https://rickandmorty.zuplo.io/v1/characters/8",
+                        "https://rickandmorty.zuplo.io/v1/characters/14"
+                      ],
+                      "url": "https://rickandmorty.zuplo.io/locations/3",
+                      "created": "2017-11-10T13:08:13.191Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Locations"],
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/v1/episodes/": {
+      "get": {
+        "summary": "Get all episodes",
+        "description": "You can access the list of episodes by using the `/episodes` endpoint.",
+        "operationId": "6aa12d8c-6132-4161-9e7c-acccbc891bfc",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "example": "Bearer YOUR_KEY_HERE",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `Authorization` header is used to authenticate with the API using your API key. Value is of the format `Bearer YOUR_KEY_HERE`."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Pagination index",
+            "schema": {
+              "type": "number",
+              "example": 1
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "filter by the given name",
+            "schema": {
+              "type": "string",
+              "example": "Pilot"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$id": "http://example.com/all-episodes.json",
+                  "type": "object",
+                  "default": {},
+                  "title": "Root Schema",
+                  "required": ["info", "results"],
+                  "properties": {
+                    "info": {
+                      "type": "object",
+                      "default": {},
+                      "title": "The info Schema",
+                      "required": ["count", "pages", "next", "prev"],
+                      "properties": {
+                        "count": {
+                          "type": "integer",
+                          "default": 0,
+                          "title": "The count Schema",
+                          "examples": [51]
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "default": 0,
+                          "title": "The pages Schema",
+                          "examples": [3]
+                        },
+                        "next": {
+                          "default": null,
+                          "title": "The next Schema",
+                          "examples": [null]
+                        },
+                        "prev": {
+                          "type": "null",
+                          "default": null,
+                          "title": "The prev Schema",
+                          "examples": [null]
+                        }
+                      },
+                      "examples": [
+                        {
+                          "count": 51,
+                          "pages": 3,
+                          "next": "https://rickandmorty.zuplo.io/v1/episodes?page=2",
+                          "prev": null
+                        }
+                      ]
+                    },
+                    "results": {
+                      "type": "array",
+                      "default": [],
+                      "title": "The results Schema",
+                      "items": {
+                        "type": "object",
+                        "default": {},
+                        "title": "A Schema",
+                        "required": [
+                          "id",
+                          "name",
+                          "air_date",
+                          "episode",
+                          "characters",
+                          "url",
+                          "created"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "default": 0,
+                            "title": "The id Schema",
+                            "examples": [1]
+                          },
+                          "name": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The name Schema",
+                            "examples": ["Pilot"]
+                          },
+                          "air_date": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The air_date Schema",
+                            "examples": ["December 2, 2013"]
+                          },
+                          "episode": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The episode Schema",
+                            "examples": ["S01E01"]
+                          },
+                          "characters": {
+                            "type": "array",
+                            "default": [],
+                            "title": "The characters Schema",
+                            "items": {
+                              "type": "string",
+                              "title": "A Schema",
+                              "examples": [
+                                "https://rickandmorty.zuplo.io/v1/characters/1",
+                                "https://rickandmorty.zuplo.io/v1/characters/2"
+                              ]
+                            },
+                            "examples": [
+                              [
+                                "https://rickandmorty.zuplo.io/v1/characters/1",
+                                "https://rickandmorty.zuplo.io/v1/characters/2"
+                              ]
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The url Schema",
+                            "examples": [
+                              "https://rickandmorty.zuplo.io/v1/episodes/1"
+                            ]
+                          },
+                          "created": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The created Schema",
+                            "examples": ["2017-11-10T12:56:33.798Z"]
+                          }
+                        },
+                        "examples": [
+                          {
+                            "id": 1,
+                            "name": "Pilot",
+                            "air_date": "December 2, 2013",
+                            "episode": "S01E01",
+                            "characters": [
+                              "https://rickandmorty.zuplo.io/v1/characters/1",
+                              "https://rickandmorty.zuplo.io/v1/characters/2"
+                            ],
+                            "url": "https://rickandmorty.zuplo.io/v1/episodes/1",
+                            "created": "2017-11-10T12:56:33.798Z"
+                          }
+                        ]
+                      },
+                      "examples": [
+                        [
+                          {
+                            "id": 1,
+                            "name": "Pilot",
+                            "air_date": "December 2, 2013",
+                            "episode": "S01E01",
+                            "characters": [
+                              "https://rickandmorty.zuplo.io/v1/characters/1",
+                              "https://rickandmorty.zuplo.io/v1/characters/2"
+                            ],
+                            "url": "https://rickandmorty.zuplo.io/v1/episodes/1",
+                            "created": "2017-11-10T12:56:33.798Z"
+                          }
+                        ]
+                      ]
+                    }
+                  },
+                  "examples": [
+                    {
+                      "info": {
+                        "count": 51,
+                        "pages": 3,
+                        "next": "https://rickandmorty.zuplo.io/v1/episodes?page=2",
+                        "prev": null
+                      },
+                      "results": [
+                        {
+                          "id": 1,
+                          "name": "Pilot",
+                          "air_date": "December 2, 2013",
+                          "episode": "S01E01",
+                          "characters": [
+                            "https://rickandmorty.zuplo.io/v1/characters/1",
+                            "https://rickandmorty.zuplo.io/v1/characters/2"
+                          ],
+                          "url": "https://rickandmorty.zuplo.io/v1/episodes/1",
+                          "created": "2017-11-10T12:56:33.798Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Episodes"],
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/v1/episodes/:episodeId": {
+      "get": {
+        "summary": "Get episodes by ID(s)",
+        "description": "You can get a single episode by ID, or multiple by adding an array of ids as parameter: `/episodes/[1,2,3]` or `/episodes/1,2,3`",
+        "operationId": "98dd71d5-4217-412a-b873-146b4e8b1c60",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "example": "Bearer YOUR_KEY_HERE",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `Authorization` header is used to authenticate with the API using your API key. Value is of the format `Bearer YOUR_KEY_HERE`."
+          },
+          {
+            "name": "episodeId",
+            "in": "path",
+            "description": "A single numeric ID or multiple IDs, e.g. `[1,2,3]` or `1,2`",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$id": "http://example.com/single-episode.json",
+                  "type": "object",
+                  "default": {},
+                  "title": "Root Schema",
+                  "required": [
+                    "id",
+                    "name",
+                    "air_date",
+                    "episode",
+                    "characters",
+                    "url",
+                    "created"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "default": 0,
+                      "title": "The id Schema",
+                      "examples": [28]
+                    },
+                    "name": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The name Schema",
+                      "examples": ["The Ricklantis Mixup"]
+                    },
+                    "air_date": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The air_date Schema",
+                      "examples": ["September 10, 2017"]
+                    },
+                    "episode": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The episode Schema",
+                      "examples": ["S03E07"]
+                    },
+                    "characters": {
+                      "type": "array",
+                      "default": [],
+                      "title": "The characters Schema",
+                      "items": {
+                        "type": "string",
+                        "title": "A Schema",
+                        "examples": [
+                          "https://rickandmorty.zuplo.io/v1/characters/1",
+                          "https://rickandmorty.zuplo.io/v1/characters/2"
+                        ]
+                      },
+                      "examples": [
+                        [
+                          "https://rickandmorty.zuplo.io/v1/characters/1",
+                          "https://rickandmorty.zuplo.io/v1/characters/2"
+                        ]
+                      ]
+                    },
+                    "url": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The url Schema",
+                      "examples": [
+                        "https://rickandmorty.zuplo.io/v1/episodes/28"
+                      ]
+                    },
+                    "created": {
+                      "type": "string",
+                      "default": "",
+                      "title": "The created Schema",
+                      "examples": ["2017-11-10T12:56:36.618Z"]
+                    }
+                  },
+                  "examples": [
+                    {
+                      "id": 28,
+                      "name": "The Ricklantis Mixup",
+                      "air_date": "September 10, 2017",
+                      "episode": "S03E07",
+                      "characters": [
+                        "https://rickandmorty.zuplo.io/v1/characters/1",
+                        "https://rickandmorty.zuplo.io/v1/characters/2"
+                      ],
+                      "url": "https://rickandmorty.zuplo.io/v1/episodes/28",
+                      "created": "2017-11-10T12:56:36.618Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Episodes"],
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "summary": "OpenAPI File",
+        "description": "Returns the OpenAPI file of this API.",
+        "operationId": "f45b4333-54c1-450d-87f1-b02a6b508ae3"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "api_key": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://rickandmorty.zuplo.io"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type {
   ApiIdentity,
   ApiIdentityPlugin,
@@ -6,6 +7,7 @@ import type {
 } from "zudoku";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
+import { NotFound } from "./src/NotFound";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -34,11 +36,83 @@ const config: ZudokuConfig = {
   metadata: {
     title: "Cosmo Cargo Inc.",
   },
+  header: {
+    navigation: [
+      {
+        label: "Solutions",
+        items: [
+          {
+            label: "Shipment Tracking",
+            icon: "satellite",
+            description: "Real-time quantum-entangled tracking across galaxies",
+            to: "/documentation",
+          },
+          {
+            label: "Warp Logistics",
+            icon: "zap",
+            description: "FTL delivery for time-critical cargo",
+            to: "/api-shipments/shipment-management",
+          },
+          {
+            label: "API Catalog",
+            icon: "layout-grid",
+            description: "Browse all available Cosmo Cargo APIs",
+            to: "/catalog",
+          },
+        ],
+      },
+      {
+        label: "Products",
+        items: [
+          {
+            label: "Shipping",
+            items: [
+              {
+                label: "Interstellar Express",
+                icon: "rocket",
+                description: "Cross-system delivery in under 12 parsecs",
+                to: "/documentation",
+              },
+              {
+                label: "Quantum Freight",
+                icon: "atom",
+                description: "Bulk cargo via quantum tunneling",
+                to: "/documentation",
+              },
+            ],
+          },
+          {
+            label: "Developer Tools",
+            items: [
+              {
+                label: "Shipment API",
+                icon: "code",
+                description: "Integrate shipping into your apps",
+                to: "/api-shipments/shipment-management",
+              },
+              {
+                label: "Webhooks",
+                icon: "webhook",
+                description: "Event-driven cargo notifications",
+                to: "/catalog",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    placements: {
+      // search: "start",
+      navigation: "end",
+      auth: "end",
+    },
+  },
   docs: {
     publishMarkdown: true,
     llms: { llmsTxt: true, llmsTxtFull: true },
   },
   site: {
+    notFoundPage: <NotFound />,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       width: 130,
@@ -114,8 +188,71 @@ const config: ZudokuConfig = {
       },
     },
   },
-  plugins: [new CosmoCargoApiIdentityPlugin()],
-  protectedRoutes: ["/only-members"],
+  plugins: [
+    new CosmoCargoApiIdentityPlugin(),
+    {
+      getHead: () => (
+        <>
+          <meta name="cosmo-cargo-head-test" content="verified" />
+          <script>{`window.__COSMO_HEAD_TEST=true`}</script>
+        </>
+      ),
+    },
+  ],
+  protectedRoutes: {
+    "/only-members": ({ auth, reasonCode }) =>
+      auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
+    "/vip-lounge": ({ auth, reasonCode }) =>
+      !auth.isAuthenticated
+        ? reasonCode.UNAUTHORIZED
+        : auth.profile?.email?.endsWith("@zuplo.com")
+          ? true
+          : reasonCode.FORBIDDEN,
+  },
+  mdx: {
+    components: {
+      Trademark: () => "™",
+      SpaceWarning: ({
+        children,
+        sector,
+      }: {
+        children: ReactNode;
+        sector?: string;
+      }) => (
+        <div className="my-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
+          <div className="flex items-center gap-2 font-semibold text-yellow-600 dark:text-yellow-400">
+            ⚠️ {sector ? `Sector ${sector} Advisory` : "Space Advisory"}
+          </div>
+          <div className="mt-1 text-sm">{children}</div>
+        </div>
+      ),
+    },
+  },
+  navigationRules: [
+    {
+      type: "modify",
+      match: "Shipments/1",
+      set: { icon: "ship" },
+    },
+    {
+      type: "modify",
+      match: "Shipments/2",
+      set: { icon: "box" },
+    },
+    {
+      type: "insert",
+      match: "Shipments/-1",
+      position: "after",
+      items: [
+        {
+          type: "link",
+          label: "System Status",
+          to: "/status",
+          icon: "satellite",
+        },
+      ],
+    },
+  ],
   navigation: [
     {
       type: "custom-page",
@@ -127,20 +264,35 @@ const config: ZudokuConfig = {
       label: "Documentation",
       icon: "book-open",
       items: [
+        { type: "filter", placeholder: "Filter documentation" },
         "documentation",
+        { type: "section", label: "Operations" },
         {
           type: "category",
           icon: "telescope",
           collapsed: false,
           label: "Space Operations",
-          items: ["shipping-process", "tracking"],
+          items: [
+            "shipping-process",
+            "tracking",
+            "quantum-express",
+            "ship-states",
+          ],
         },
         "global",
+        { type: "separator" },
+        { type: "section", label: "Guides" },
         {
           type: "category",
           icon: "library-big",
           label: "Shipping Guides",
           items: ["interstellar", "intergalactic"],
+        },
+        {
+          type: "link",
+          label: "See Shipment API",
+          to: "/api-shipments",
+          icon: "arrow-right",
         },
         {
           type: "category",
@@ -168,7 +320,7 @@ const config: ZudokuConfig = {
     {
       type: "link",
       icon: "ship",
-      to: "/api-shipments/shipment-management",
+      to: "/api-shipments",
       label: "Shipments",
     },
     {
@@ -184,6 +336,27 @@ const config: ZudokuConfig = {
       display: "auth",
       element: <div>Only members are allowed in here.</div>,
     },
+    {
+      type: "custom-page",
+      path: "/vip-lounge",
+      label: "VIP Lounge",
+      display: "auth",
+      element: <div>Welcome to the VIP Lounge, exclusive Zuplo member!</div>,
+    },
+  ],
+  redirects: [
+    {
+      from: "/api-shipments/create-shipment",
+      to: "/api-shipments/shipment-management#post-shipments",
+    },
+    {
+      from: "/api-shipments/get-rates",
+      to: "/api-shipments/rates-and-billing#post-shipments-shipmentid-rates",
+    },
+    {
+      from: "/api-shipments/track-shipment",
+      to: "/api-shipments/tracking-and-notifications#get-shipments-shipmentid-events",
+    },
   ],
   catalogs: {
     path: "catalog",
@@ -198,6 +371,9 @@ const config: ZudokuConfig = {
   defaults: {
     apis: {
       examplesLanguage: "js",
+      schemaDownload: {
+        enabled: true,
+      },
     },
   },
   search: {
@@ -208,8 +384,12 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/shipments.json",
       path: "api-shipments",
-      categories: [{ label: "General", tags: ["Shipments"] }],
+      categories: [
+        { label: "Core", tags: ["Shipments", "Logistics"] },
+        { label: "Logistics", tags: ["Shipments"] },
+      ],
       options: {
+        disableSecurity: false,
         transformExamples: ({ content, auth }) => {
           if (!auth.isAuthenticated) {
             return content;
@@ -235,18 +415,28 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: [
-        "./schema/label-v3.json",
+        {
+          input: "./schema/label-v3.json",
+          path: "latest",
+          label: "Latest (3.0.0)",
+        },
         "./schema/label-v2.json",
         "./schema/label-v1.json",
       ],
       path: "/catalog/api-label",
-      categories: [{ label: "General", tags: ["Labels"] }],
+      categories: [
+        { label: "Core", tags: ["Labels"] },
+        { label: "Printing", tags: ["Labels"] },
+      ],
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
       path: "/catalog/api-webhooks",
-      categories: [{ label: "General", tags: ["Developer"] }],
+      categories: [
+        { label: "Platform", tags: ["Events", "Developer"] },
+        { label: "Integrations", tags: ["Developer"] },
+      ],
       options: {
         supportedLanguages: [
           { value: "js", label: "JavaScript" },
@@ -272,13 +462,16 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/interplanetary.json",
       path: "/catalog/api-interplanetary",
-      categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
+      categories: [{ label: "Interplanetary", tags: ["Routes", "Transit"] }],
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
       path: "/catalog/api-tracking",
-      categories: [{ label: "General", tags: ["Tracking"] }],
+      categories: [
+        { label: "Core", tags: ["Tracking", "Events"] },
+        { label: "Insights", tags: ["Tracking"] },
+      ],
     },
     {
       type: "file",
@@ -293,19 +486,56 @@ const config: ZudokuConfig = {
     },
     {
       type: "file",
+      input: "./schema/docs.json",
+      path: "/catalog/api-docs",
+      categories: [
+        {
+          label: "Platform",
+          tags: ["Documentation"],
+        },
+      ],
+    },
+    {
+      type: "file",
       input: "./schema/cargo-containers.json",
       path: "/catalog/api-cargo-containers",
-      categories: [{ label: "General", tags: ["Containers", "Booking"] }],
+      categories: [
+        { label: "Core", tags: ["Containers", "Booking"] },
+        { label: "Storage", tags: ["Containers"] },
+      ],
+    },
+    {
+      type: "file",
+      input: [
+        {
+          input: "./schema/fleet-ops.json?prefix=/v3",
+          path: "v3",
+          label: "v3 (Quantum)",
+        },
+        {
+          input: "./schema/fleet-ops.json?prefix=/v2",
+          path: "v2",
+          label: "v2 (Warp)",
+        },
+        {
+          input: "./schema/fleet-ops.json?prefix=/v1",
+          path: "v1",
+          label: "v1 (Sublight)",
+        },
+      ],
+      path: "/catalog/api-fleet-ops",
+      categories: [
+        { label: "Core", tags: ["Fleet Command"] },
+        { label: "Operations", tags: ["Fleet Command"] },
+      ],
     },
   ],
   theme: {
     light: {
-      background: "0 0% 100%",
-      foreground: "20 14.3% 4.1%",
+      background: "oklch(0.995 0.002 80)",
+      foreground: "#262626",
       card: "#fff",
       cardForeground: "#262626",
-      popover: "0 0% 100%",
-      popoverForeground: "20 14.3% 4.1%",
       primary: "#f4bf32",
       primaryForeground: "#0f1719",
       secondary: "60 4.8% 95.9%",
@@ -319,12 +549,13 @@ const config: ZudokuConfig = {
       border: "20 5.9% 90%",
       input: "20 5.9% 90%",
       ring: "oklch(0.708 0 0)",
+      radius: "0.4rem",
     },
     dark: {
       background: "#1a1a18",
       foreground: "60 9.1% 97.8%",
-      card: "#151518",
-      cardForeground: "60 9.1% 97.8%",
+      card: "#242424",
+      cardForeground: "#f2e9e4",
       popover: "20 14.3% 4.1%",
       popoverForeground: "60 9.1% 97.8%",
       primary: "#f4bf32",

@@ -3,23 +3,52 @@ import {
   type Auth,
   createUserWithEmailAndPassword,
   getAuth,
+  isSignInWithEmailLink,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  sendSignInLinkToEmail,
   signInWithEmailAndPassword,
+  signInWithEmailLink,
   signInWithPopup,
   signOut,
   type User,
 } from "firebase/auth";
 import type { FirebaseAuthenticationConfig } from "../../../config/config.js";
-import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
+import { ClientOnly } from "../../components/ClientOnly.js";
+import { ZudokuError } from "../../util/invariant.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import type {
   AuthActionContext,
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
-import { ZudokuSignInUi, ZudokuSignUpUi } from "../ui/ZudokuAuthUi.js";
+import { EmailLinkCallbackUi } from "../ui/EmailLinkCallbackUi.js";
+import { EmailLinkSentUi } from "../ui/EmailLinkSentUi.js";
+import { EmailLinkSignInUi } from "../ui/EmailLinkSignInUi.js";
+import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
+import {
+  ZudokuPasswordResetUi,
+  ZudokuSignInUi,
+  ZudokuSignUpUi,
+} from "../ui/ZudokuAuthUi.js";
+
+export type FirebaseProviderData = {
+  type: "firebase";
+  user: User;
+};
+
+declare module "../state.js" {
+  interface ProviderDataRegistry {
+    firebase: FirebaseProviderData;
+  }
+}
+
+import { EMAIL_LINK_STORAGE_KEY } from "../constants.js";
 
 class FirebaseAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -28,9 +57,13 @@ class FirebaseAuthenticationProvider
   private readonly app: FirebaseApp;
   private readonly auth: Auth;
   private readonly providers: string[];
+  private readonly enableUsernamePassword: boolean;
+  private readonly enableEmailLink: boolean;
+  private readonly redirectToAfterSignOut: string;
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
+    this.redirectToAfterSignOut = config.redirectToAfterSignOut ?? "/";
 
     this.app = initializeApp({
       apiKey: config.apiKey,
@@ -42,7 +75,16 @@ class FirebaseAuthenticationProvider
       measurementId: config.measurementId,
     });
     this.auth = getAuth(this.app);
-    this.providers = config.providers ?? [];
+    this.providers =
+      config.providers?.filter((p) => p !== "password" && p !== "emailLink") ??
+      [];
+    this.enableUsernamePassword =
+      config.providers?.includes("password") ?? false;
+    this.enableEmailLink = config.providers?.includes("emailLink") ?? false;
+  }
+
+  async initialize() {
+    await this.auth.authStateReady();
   }
 
   async signRequest(request: Request): Promise<Request> {
@@ -76,13 +118,105 @@ class FirebaseAuthenticationProvider
     );
   };
 
+  requestEmailVerification = async (
+    { navigate }: AuthActionContext,
+    { redirectTo }: AuthActionOptions,
+  ) => {
+    if (!this.auth.currentUser) {
+      throw new ZudokuError("User is not authenticated", {
+        title: "User not authenticated",
+      });
+    }
+
+    await sendEmailVerification(this.auth.currentUser);
+    void navigate(
+      redirectTo
+        ? `/verify-email?redirectTo=${encodeURIComponent(redirectTo)}`
+        : `/verify-email`,
+    );
+  };
+
+  private getEmailLinkActionCodeSettings(redirectTo?: string) {
+    const callbackUrl = new URL(window.location.origin);
+    callbackUrl.pathname = joinUrl(
+      import.meta.env.BASE_URL,
+      "/signin/email-link-callback",
+    );
+    if (redirectTo) {
+      callbackUrl.searchParams.set("redirectTo", redirectTo);
+    }
+    return {
+      url: callbackUrl.toString(),
+      handleCodeInApp: true as const,
+    };
+  }
+
+  private async sendEmailLink(email: string, redirectTo?: string) {
+    try {
+      await sendSignInLinkToEmail(
+        this.auth,
+        email,
+        this.getEmailLinkActionCodeSettings(redirectTo),
+      );
+    } catch (error) {
+      throw new Error(getFirebaseErrorMessage(error), { cause: error });
+    }
+    localStorage.setItem(EMAIL_LINK_STORAGE_KEY, email);
+  }
+
   getRoutes = () => {
     return [
+      {
+        path: "/verify-email",
+        element: (
+          <EmailVerificationUi
+            onResendVerification={async () => {
+              if (!this.auth.currentUser) {
+                throw new ZudokuError("User is not authenticated", {
+                  title: "User not authenticated",
+                });
+              }
+              await sendEmailVerification(this.auth.currentUser);
+            }}
+            onCheckVerification={async () => {
+              if (!this.auth.currentUser) {
+                throw new ZudokuError("User is not authenticated", {
+                  title: "User not authenticated",
+                });
+              }
+              await this.auth.currentUser.reload();
+              const isVerified = this.auth.currentUser.emailVerified;
+
+              if (isVerified) {
+                await this.auth.currentUser.getIdToken(true);
+                await this.setUserLoggedIn(this.auth.currentUser);
+              }
+
+              return isVerified;
+            }}
+          />
+        ),
+      },
+      {
+        path: "/reset-password",
+        element: (
+          <ZudokuPasswordResetUi
+            onPasswordReset={async (email: string) => {
+              try {
+                await sendPasswordResetEmail(this.auth, email);
+              } catch (error) {
+                throw Error(getFirebaseErrorMessage(error), { cause: error });
+              }
+            }}
+          />
+        ),
+      },
       {
         path: "/signin",
         element: (
           <ZudokuSignInUi
             providers={this.providers}
+            enableUsernamePassword={this.enableUsernamePassword}
             onOAuthSignIn={async (providerId: string) => {
               useAuthState.setState({ isPending: true });
               const provider = await getProviderForId(providerId);
@@ -94,7 +228,7 @@ class FirebaseAuthenticationProvider
               const result = await signInWithPopup(this.auth, provider);
               useAuthState.setState({ isPending: false });
               useAuthState.getState().setLoggedIn({
-                providerData: { user: result.user },
+                providerData: { type: "firebase", user: result.user },
                 profile: {
                   sub: result.user.uid,
                   email: result.user.email ?? undefined,
@@ -109,11 +243,19 @@ class FirebaseAuthenticationProvider
               password: string,
             ) => {
               try {
-                await signInWithEmailAndPassword(this.auth, email, password);
+                useAuthState.setState({ isPending: true });
+                const result = await signInWithEmailAndPassword(
+                  this.auth,
+                  email,
+                  password,
+                );
+                await this.setUserLoggedIn(result.user);
               } catch (error) {
+                useAuthState.setState({ isPending: false });
                 throw Error(getFirebaseErrorMessage(error), { cause: error });
               }
             }}
+            enableEmailLink={this.enableEmailLink}
           />
         ),
       },
@@ -122,6 +264,8 @@ class FirebaseAuthenticationProvider
         element: (
           <ZudokuSignUpUi
             providers={this.providers}
+            enableUsernamePassword={this.enableUsernamePassword}
+            enableEmailLink={this.enableEmailLink}
             onOAuthSignUp={async (providerId: string) => {
               const provider = await getProviderForId(providerId);
               if (!provider) {
@@ -135,9 +279,70 @@ class FirebaseAuthenticationProvider
               email: string,
               password: string,
             ) => {
-              await createUserWithEmailAndPassword(this.auth, email, password);
+              useAuthState.setState({ isPending: true });
+              const createUser = await createUserWithEmailAndPassword(
+                this.auth,
+                email,
+                password,
+              );
+              await this.setUserLoggedIn(createUser.user);
             }}
           />
+        ),
+      },
+      {
+        path: "/signin/email-link",
+        element: (
+          <EmailLinkSignInUi
+            onSubmit={async (email: string, redirectTo?: string) => {
+              await this.sendEmailLink(email, redirectTo);
+            }}
+          />
+        ),
+      },
+      {
+        path: "/signin/email-link-sent",
+        element: (
+          <ClientOnly>
+            <EmailLinkSentUi
+              onResendEmailLink={async () => {
+                const email = localStorage.getItem(EMAIL_LINK_STORAGE_KEY);
+                if (!email) {
+                  throw new ZudokuError(
+                    "No email address found. Please go back and try again.",
+                    { title: "Email not found" },
+                  );
+                }
+                await this.sendEmailLink(email);
+              }}
+            />
+          </ClientOnly>
+        ),
+      },
+      {
+        path: "/signin/email-link-callback",
+        element: (
+          <ClientOnly>
+            <EmailLinkCallbackUi
+              onCompleteSignIn={async (email: string) => {
+                try {
+                  const result = await signInWithEmailLink(
+                    this.auth,
+                    email,
+                    window.location.href,
+                  );
+                  await this.setUserLoggedIn(result.user);
+                } catch (error) {
+                  throw Error(getFirebaseErrorMessage(error), {
+                    cause: error,
+                  });
+                }
+              }}
+              isEmailLinkUrl={(url: string) =>
+                isSignInWithEmailLink(this.auth, url)
+              }
+            />
+          </ClientOnly>
         ),
       },
       {
@@ -147,7 +352,7 @@ class FirebaseAuthenticationProvider
     ];
   };
 
-  signOut = async () => {
+  signOut = async ({ navigate }: AuthActionContext) => {
     await signOut(this.auth);
 
     useAuthState.setState({
@@ -156,19 +361,21 @@ class FirebaseAuthenticationProvider
       profile: undefined,
       providerData: undefined,
     });
+
+    void navigate(this.redirectToAfterSignOut, { replace: true });
   };
 
   onPageLoad = async () => {
     const user = this.auth.currentUser;
 
     if (user) {
-      await this.updateUserState(user);
+      await this.setUserLoggedIn(user);
     } else {
       useAuthState.setState({ isPending: false });
     }
   };
 
-  private async updateUserState(user: User) {
+  private async setUserLoggedIn(user: User) {
     useAuthState.getState().setLoggedIn({
       profile: {
         sub: user.uid,
@@ -177,16 +384,16 @@ class FirebaseAuthenticationProvider
         emailVerified: user.emailVerified,
         pictureUrl: user.photoURL ?? undefined,
       },
-      providerData: { user },
+      providerData: { type: "firebase", user },
     });
   }
 }
 
-const supabaseAuth: AuthenticationProviderInitializer<
+const firebaseAuth: AuthenticationProviderInitializer<
   FirebaseAuthenticationConfig
 > = (options) => new FirebaseAuthenticationProvider(options);
 
-export default supabaseAuth;
+export default firebaseAuth;
 
 const getProviderForId = async (providerId: string) => {
   switch (providerId) {

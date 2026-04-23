@@ -1,7 +1,8 @@
 import type { JSONSchema7 } from "json-schema";
 import { describe, expect, it, vi } from "vitest";
 import type { OpenAPIDocument } from "../oas/parser/index.js";
-import { flattenAllOf, flattenAllOfProcessor } from "./flattenAllOf.js";
+import { flattenAllOf } from "./flattenAllOf.js";
+import { flattenAllOfProcessor } from "./flattenAllOfProcessor.js";
 import invariant from "./invariant.js";
 
 describe("flattenAllOf", () => {
@@ -242,6 +243,38 @@ describe("flattenAllOf", () => {
     expect(flattenAllOf(objectSchema)).toEqual(objectSchema);
   });
 
+  it("should convert boolean true to empty object", () => {
+    // Empty objects merge to boolean true, should convert back to {}
+    const schema = { allOf: [{}] } as JSONSchema7;
+    const result = flattenAllOf(schema);
+    expect(result).toEqual({});
+  });
+
+  it("should convert boolean false to not schema", () => {
+    // Boolean false should convert to { not: {} }
+    const result = flattenAllOf(false);
+    expect(result).toEqual({ not: {} });
+  });
+
+  it("should handle empty schema objects in properties", () => {
+    // Reproduces issue #1837: _id: {} should not crash
+    const schema = {
+      type: "object",
+      properties: {
+        _id: {},
+        name: { type: "string" },
+      },
+    } as JSONSchema7;
+
+    const result = flattenAllOf(schema);
+
+    invariant(typeof result === "object", "Result is not a schema");
+
+    // Empty object should be preserved or converted to valid schema
+    expect(result.properties?._id).toBeDefined();
+    expect(result.properties?.name).toEqual({ type: "string" });
+  });
+
   it("should preserve description and other properties", () => {
     const schema = {
       description: "A test schema",
@@ -362,15 +395,12 @@ describe("flattenAllOf processor", () => {
       },
     };
 
-    const mockDereference = vi.fn().mockResolvedValue(schema);
-
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
-      dereference: mockDereference,
+      params: {},
+      dereference: vi.fn(),
     });
-
-    expect(mockDereference).toHaveBeenCalledWith(schema);
 
     const responseSchema =
       result.paths?.["/users"]?.get?.responses?.[200]?.content?.[
@@ -409,6 +439,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: mockDereference,
     });
 
@@ -423,31 +454,21 @@ describe("flattenAllOf processor", () => {
     expect(userSchema).not.toHaveProperty("allOf");
   });
 
-  it("should handle errors gracefully and return original schema", async () => {
+  it("should handle schemas without allOf gracefully", async () => {
     const schema: OpenAPIDocument = {
       openapi: "3.0.0",
       info: { title: "Test API", version: "1.0.0" },
       paths: {},
     };
 
-    const mockDereference = vi
-      .fn()
-      .mockRejectedValue(new Error("Dereference failed"));
-
-    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
-      dereference: mockDereference,
+      params: {},
+      dereference: vi.fn(),
     });
 
-    expect(result).toBe(schema);
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Failed to flatten"),
-    );
-
-    consoleSpy.mockRestore();
+    expect(result).toStrictEqual(schema);
   });
 
   it("should only flatten schema objects, not other OpenAPI structures", async () => {
@@ -490,6 +511,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: mockDereference,
     });
 
@@ -548,6 +570,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: mockDereference,
     });
 
@@ -613,6 +636,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: mockDereference,
     });
 
@@ -633,5 +657,73 @@ describe("flattenAllOf processor", () => {
       },
     });
     expect(containerSchema?.oneOf?.[1]).not.toHaveProperty("allOf");
+  });
+
+  it("should preserve $refs outside of allOf while flattening allOf with $refs", async () => {
+    // Schema with:
+    // 1. A reusable component (Base) that's referenced multiple times
+    // 2. An allOf that references Base (should be resolved for merging)
+    // 3. A property that references Base (should stay as $ref)
+    const schema = {
+      openapi: "3.0.0",
+      info: { title: "Test API", version: "1.0.0" },
+      paths: {},
+      components: {
+        schemas: {
+          Base: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              createdAt: { type: "string", format: "date-time" },
+            },
+          },
+          Extended: {
+            allOf: [
+              { $ref: "#/components/schemas/Base" },
+              {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                },
+              },
+            ],
+          },
+          Container: {
+            type: "object",
+            properties: {
+              // This $ref should NOT be expanded
+              nested: { $ref: "#/components/schemas/Base" },
+            },
+          },
+        },
+      },
+    } as OpenAPIDocument;
+
+    const result = await flattenAllOfProcessor({
+      schema,
+      file: "/test/schema.json",
+      params: {},
+      dereference: vi.fn(),
+    });
+
+    // Extended should have allOf flattened (merged with Base)
+    const extendedSchema = result.components?.schemas?.Extended;
+    expect(extendedSchema).not.toHaveProperty("allOf");
+    expect(extendedSchema).toMatchObject({
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        createdAt: { type: "string", format: "date-time" },
+        name: { type: "string" },
+      },
+    });
+
+    // Container.nested should still be a $ref (NOT expanded)
+    const containerSchema = result.components?.schemas
+      ?.Container as unknown as Record<string, unknown>;
+    const nestedProp = (containerSchema?.properties as Record<string, unknown>)
+      ?.nested as Record<string, unknown>;
+    expect(nestedProp).toHaveProperty("$ref");
+    expect(nestedProp.$ref).toBe("#/components/schemas/Base");
   });
 });

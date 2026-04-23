@@ -1,12 +1,13 @@
 import fs from "node:fs/promises";
-import http, { type Server } from "node:http";
+import type { Server } from "node:http";
+import http from "node:http";
 import https from "node:https";
 import path from "node:path";
-import express, { type Express } from "express";
 import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import {
   createServer as createViteServer,
   isRunnableDevEnvironment,
+  mergeConfig,
   type ViteDevServer,
 } from "vite";
 import { logger } from "../cli/common/logger.js";
@@ -21,35 +22,35 @@ import {
   getViteConfig,
   type ZudokuConfigEnv,
 } from "./config.js";
-import { errorMiddleware } from "./error-handler.js";
 import { getDevHtml } from "./html.js";
+import { buildPagefindDevIndex } from "./pagefind-dev-index.js";
 
 const DEFAULT_DEV_PORT = 3000;
 
 type EntryServerImport = typeof import("../app/entry.server.js");
 
+type DevServerOptions = {
+  dir: string;
+  ssr?: boolean;
+  open?: boolean;
+  argPort?: number;
+};
+
 export class DevServer {
-  private terminator: HttpTerminator | undefined;
-  public resolvedPort = 0;
-  public protocol = "http";
+  resolvedPort = 0;
+  protocol = "http";
+  #terminator: HttpTerminator | undefined;
+  #options: DevServerOptions;
 
-  constructor(
-    private options: {
-      dir: string;
-      ssr?: boolean;
-      open?: boolean;
-      argPort?: number;
-    },
-  ) {}
+  constructor(options: DevServerOptions) {
+    this.#options = options;
+  }
 
-  private async createNodeServer(
-    app: Express,
-    config: LoadedConfig,
-  ): Promise<Server> {
-    if (!config.https) return http.createServer(app);
+  private async createNodeServer(config: LoadedConfig): Promise<Server> {
+    if (!config.https) return http.createServer();
 
     this.protocol = "https";
-    const { dir } = this.options;
+    const { dir } = this.#options;
 
     const [key, cert, ca] = await Promise.all([
       fs.readFile(path.resolve(dir, config.https.key)),
@@ -59,73 +60,125 @@ export class DevServer {
         : undefined,
     ]);
 
-    return https.createServer({ key, cert, ca }, app);
+    return https.createServer({ key, cert, ca });
   }
 
-  async start(): Promise<{ vite: ViteDevServer; express: Express }> {
-    const app = express();
-
+  async start(): Promise<{ vite: ViteDevServer }> {
     const configEnv: ZudokuConfigEnv = {
       mode: "development",
       command: "serve",
-      isSsrBuild: this.options.ssr,
     };
-    const viteConfig = await getViteConfig(this.options.dir, configEnv);
-    const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+    const viteConfig = await getViteConfig(this.#options.dir, configEnv);
+    const { config } = await loadZudokuConfig(configEnv, this.#options.dir);
 
     this.resolvedPort = await findAvailablePort(
-      this.options.argPort ?? config.port ?? DEFAULT_DEV_PORT,
+      this.#options.argPort ?? config.port ?? DEFAULT_DEV_PORT,
     );
 
-    const server = await this.createNodeServer(app, config);
+    const server = await this.createNodeServer(config);
 
-    viteConfig.server = {
-      ...viteConfig.server,
-      hmr: { server },
-    };
+    const mergedViteConfig = mergeConfig(viteConfig, {
+      server: {
+        hmr: { server },
+      },
+      plugins: [
+        {
+          // Serves the client entry via Vite's client transform pipeline.
+          // Must be registered via configureServer so it runs before Vite's
+          // built-in transform middleware which would treat the path as a static asset.
+          name: "zudoku:entry-client",
+          configureServer(server: ViteDevServer) {
+            const entryPath = path.posix.join(
+              server.config.base,
+              "/__z/entry.client.tsx",
+            );
+            server.middlewares.use(entryPath, async (_req, res) => {
+              const transformed =
+                await server.environments.client.transformRequest(
+                  getAppClientEntryPath(),
+                );
 
-    const vite = await createViteServer(viteConfig);
-
-    const graphql = createGraphQLServer({
-      graphqlEndpoint: "/__z/graphql",
+              if (!transformed) {
+                res.writeHead(500);
+                res.end("Error transforming client entry");
+                return;
+              }
+              res.writeHead(200, { "Content-Type": "text/javascript" });
+              res.end(transformed.code);
+            });
+          },
+        },
+      ],
     });
 
-    const proxiedEntryClientPath = path.posix.join(
-      vite.config.base,
-      "/__z/entry.client.tsx",
-    );
+    const vite = await createViteServer(mergedViteConfig);
+    const graphql = createGraphQLServer({ graphqlEndpoint: "/__z/graphql" });
 
-    app.use(async (req, res, next) => {
-      const { config } = await loadZudokuConfig(configEnv, this.options.dir);
-      const base = config.basePath;
+    // Handle base path redirect
+    vite.middlewares.use((req, res, next) => {
       if (
-        req.method.toLowerCase() === "get" &&
-        req.url === "/" &&
-        base &&
-        base !== "/"
+        req.method === "GET" &&
+        req.originalUrl === "/" &&
+        config.basePath &&
+        config.basePath !== "/"
       ) {
-        return res.redirect(307, base);
+        res.writeHead(307, { Location: config.basePath });
+        res.end();
+        return;
       }
       next();
     });
 
-    app.use(graphql.graphqlEndpoint, graphql);
-    app.use(proxiedEntryClientPath, async (_req, res) => {
-      const transformed = await vite.environments.client.transformRequest(
-        getAppClientEntryPath(),
-      );
-      if (!transformed) throw new Error("Error transforming client entry");
+    vite.middlewares.use(graphql.graphqlEndpoint, graphql);
 
-      res
-        .status(200)
-        .set({ "Content-Type": "text/javascript" })
-        .end(transformed.code);
+    // Pagefind reindex endpoint (SSE)
+    vite.middlewares.use("/__z/pagefind-reindex", async (_req, res) => {
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+
+      const { config: currentConfig } = await loadZudokuConfig(
+        configEnv,
+        this.#options.dir,
+      );
+
+      const sendEvent = (data: unknown) =>
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+      if (currentConfig.search?.type !== "pagefind") {
+        sendEvent({
+          type: "complete",
+          success: false,
+          indexed: 0,
+          error: "Pagefind search is not enabled",
+        });
+        res.end();
+        return;
+      }
+
+      try {
+        for await (const event of buildPagefindDevIndex(vite, currentConfig)) {
+          sendEvent(event);
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+
+        sendEvent({
+          type: "complete",
+          success: false,
+          indexed: 0,
+          error: message,
+        });
+      }
+
+      res.end();
     });
 
-    app.use(vite.middlewares);
-
     printDiagnosticsToConsole(
-      `Server-side rendering ${this.options.ssr ? "enabled" : "disabled"}`,
+      `Server-side rendering ${this.#options.ssr ? "enabled" : "disabled"}`,
     );
 
     if (config.search?.type === "pagefind") {
@@ -134,64 +187,100 @@ export class DevServer {
         "pagefind/pagefind.js",
       );
       const exists = await fs.stat(pagefindPath).catch(() => false);
-
       if (!exists) {
         await fs.mkdir(path.dirname(pagefindPath), { recursive: true });
         await fs.writeFile(pagefindPath, 'throw new Error("NOT_BUILT_YET");');
       }
     }
 
-    app.use(/(.*)/, async (request, response, next) => {
-      const url = request.originalUrl;
+    vite.middlewares.use(async (req, res) => {
+      const url = req.originalUrl ?? req.url ?? "/";
 
+      if (url.startsWith("/.well-known/")) {
+        res.writeHead(404);
+        return res.end();
+      }
       const ssrEnvironment = vite.environments.ssr;
 
       if (!isRunnableDevEnvironment(ssrEnvironment)) {
-        throw new Error("Server-side rendering is not enabled");
+        res.writeHead(500);
+        res.end("SSR environment not available");
+        return;
       }
 
       try {
-        const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+        const { config: currentConfig } = await loadZudokuConfig(
+          configEnv,
+          this.#options.dir,
+        );
         const rawHtml = getDevHtml({
           jsEntry: "/__z/entry.client.tsx",
-          dir: config.site?.dir,
+          dir: currentConfig.site?.dir,
         });
         const template = await vite.transformIndexHtml(url, rawHtml);
 
-        if (this.options.ssr) {
-          const server = await ssrEnvironment.runner.import<EntryServerImport>(
-            getAppServerEntryPath(),
+        if (this.#options.ssr) {
+          const entryServer =
+            await ssrEnvironment.runner.import<EntryServerImport>(
+              getAppServerEntryPath(),
+            );
+
+          const hasBody = req.method !== "GET" && req.method !== "HEAD";
+          const request = new Request(
+            `${this.protocol}://${req.headers.host}${url}`,
+            {
+              method: req.method,
+              headers: req.headers as HeadersInit,
+              body: hasBody ? (req as unknown as BodyInit) : undefined,
+              // Required by Node when body is a readable stream
+              // @ts-expect-error Missing type definition
+              duplex: hasBody ? "half" : undefined,
+            },
           );
 
-          void server.render({
+          const response = await entryServer.handleRequest({
             template,
             request,
-            response,
-            routes: server.getRoutesByConfig(config),
-            basePath: config.basePath,
+            routes: entryServer.getRoutesByConfig(currentConfig),
+            basePath: currentConfig.basePath,
           });
+
+          for (const [key, value] of response.headers) {
+            res.appendHeader(key, value);
+          }
+          res.writeHead(response.status);
+
+          for await (const chunk of response.body ?? []) {
+            res.write(chunk);
+          }
+          res.end();
         } else {
-          response
-            .status(200)
-            .set({ "Content-Type": "text/html" })
-            .end(template);
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(template);
         }
       } catch (e) {
         logger.error(e);
-        next(e);
+        const html = `<!DOCTYPE html><html><body><script type="module">
+          import { ErrorOverlay } from '/@vite/client';
+          document.body.appendChild(new ErrorOverlay(${JSON.stringify({
+            message: e instanceof Error ? e.message : String(e),
+            stack: e instanceof Error ? e.stack : "",
+          })}));
+        </script></body></html>`;
+        res.writeHead(500, { "Content-Type": "text/html" });
+        res.end(html);
       }
     });
 
-    app.use(errorMiddleware(vite));
+    server.on("request", vite.middlewares);
 
     await new Promise<void>((resolve) => {
-      server.listen(this.resolvedPort, () => resolve());
+      server.listen(this.resolvedPort, resolve);
     });
 
-    this.terminator = createHttpTerminator({ server });
+    this.#terminator = createHttpTerminator({ server });
 
-    // Manually set resolved URLs on the Vite server since we're managing the HTTP server
-    if (this.options.open || process.env.ZUDOKU_OPEN_BROWSER) {
+    if (this.#options.open || process.env.ZUDOKU_OPEN_BROWSER) {
       const url = `${this.protocol}://localhost:${this.resolvedPort}`;
       vite.resolvedUrls = {
         local: [`${url}${vite.config.base || "/"}`],
@@ -200,10 +289,10 @@ export class DevServer {
       vite.openBrowser();
     }
 
-    return { vite, express: app };
+    return { vite };
   }
 
   async stop() {
-    await this.terminator?.terminate();
+    await this.#terminator?.terminate();
   }
 }

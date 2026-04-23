@@ -43,19 +43,62 @@ export const traverseNavigationItem = <T>(
   }
 };
 
+export const getItemPath = (item: NavigationItem): string | undefined => {
+  switch (item.type) {
+    case "doc":
+    case "custom-page":
+      return joinUrl(item.path);
+    case "link":
+      return item.to;
+    case "category":
+      return item.link ? joinUrl(item.link.path) : undefined;
+    default:
+      return undefined;
+  }
+};
+
+export const getFirstMatchingPath = (item: NavigationItem): string => {
+  switch (item.type) {
+    case "doc":
+    case "custom-page":
+      return joinUrl(item.path);
+    case "link":
+      return item.to;
+    case "category": {
+      if (item.link?.path) {
+        return joinUrl(item.link.path);
+      }
+      return (
+        traverseNavigationItem(item, (child) => {
+          if (
+            child.type !== "category" &&
+            child.type !== "separator" &&
+            child.type !== "section" &&
+            child.type !== "filter"
+          ) {
+            return getFirstMatchingPath(child);
+          }
+        }) ?? ""
+      );
+    }
+    default:
+      return "";
+  }
+};
+
 export const useCurrentItem = () => {
-  const location = useLocation();
+  const pathname = joinUrl(useLocation().pathname);
   const { navigation } = useCurrentNavigation();
 
   return traverseNavigation(navigation, (item) => {
-    if (item.type === "doc" && joinUrl(item.path) === location.pathname) {
+    if (item.type === "doc" && joinUrl(item.path) === pathname) {
       return item;
     }
   });
 };
 
 export const useIsCategoryOpen = (category: NavigationCategory) => {
-  const location = useLocation();
+  const pathname = joinUrl(useLocation().pathname);
 
   return traverseNavigationItem(category, (item) => {
     switch (item.type) {
@@ -63,10 +106,10 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
         if (!item.link) {
           return undefined;
         }
-        return joinUrl(item.link.path) === location.pathname ? true : undefined;
+        return joinUrl(item.link.path) === pathname ? true : undefined;
       case "custom-page":
       case "doc":
-        return joinUrl(item.path) === location.pathname ? true : undefined;
+        return joinUrl(item.path) === pathname ? true : undefined;
       default:
         return undefined;
     }
@@ -77,7 +120,7 @@ export const usePrevNext = (): {
   prev?: { label?: string; id: string };
   next?: { label?: string; id: string };
 } => {
-  const currentId = useLocation().pathname;
+  const currentId = joinUrl(useLocation().pathname);
   const { navigation } = useCurrentNavigation();
 
   let prev: { label?: string; id: string } | undefined;
@@ -86,6 +129,13 @@ export const usePrevNext = (): {
   let foundCurrent = false;
 
   traverseNavigation(navigation, (item) => {
+    if (
+      item.type === "separator" ||
+      item.type === "section" ||
+      item.type === "filter"
+    )
+      return;
+
     const itemId =
       item.type === "doc"
         ? joinUrl(item.path)
@@ -111,7 +161,7 @@ export const usePrevNext = (): {
 };
 
 export const navigationListItem = cva(
-  "relative flex items-center gap-2 px-(--padding-nav-item) my-0.5 py-1.5 rounded-lg hover:bg-accent tabular-nums",
+  "relative flex items-center gap-2 px-(--padding-nav-item) my-px py-1.5 rounded-lg hover:bg-accent tabular-nums",
   {
     variants: {
       isActive: {
@@ -133,9 +183,41 @@ export const navigationListItem = cva(
   },
 );
 
+export const itemMatchesFilter = (
+  item: NavigationItem,
+  query: string,
+): boolean => {
+  if (["separator", "section", "filter"].includes(item.type)) {
+    return true;
+  }
+  if (item.label?.toLowerCase().includes(query.toLowerCase())) {
+    return true;
+  }
+
+  if (item.type === "category") {
+    return item.items.some((child) => itemMatchesFilter(child, query));
+  }
+
+  return false;
+};
+
 export const shouldShowItem =
-  (auth: UseAuthReturn, context: ZudokuContext) =>
+  ({
+    auth,
+    context,
+    filterQuery,
+  }: {
+    auth: UseAuthReturn;
+    context: ZudokuContext;
+    filterQuery?: string;
+  }) =>
   (item: NavigationItem): boolean => {
+    if (item.type === "filter") return true;
+
+    if (filterQuery?.trim() && !itemMatchesFilter(item, filterQuery)) {
+      return false;
+    }
+
     if (typeof item.display === "function") {
       return item.display({ context, auth });
     }

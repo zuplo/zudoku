@@ -1,22 +1,29 @@
-import { InfoIcon } from "lucide-react";
-import { Fragment } from "react";
+import { EyeIcon, EyeOffIcon, InfoIcon } from "lucide-react";
+import { Fragment, useId, useLayoutEffect, useRef, useState } from "react";
 import {
   Frame,
   FrameDescription,
+  FrameFooter,
   FrameHeader,
   FramePanel,
 } from "zudoku/ui/Frame.js";
 import { ItemGroup, ItemSeparator } from "zudoku/ui/Item.js";
 import { Markdown } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
-import { groupBy } from "../../../util/groupBy.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
+import { SchemaRefLink } from "./SchemaRefLink.js";
 import { UnionView } from "./UnionView.js";
-import { isBasicType } from "./utils.js";
+import { getSchemaRefName, isArrayType, isBasicType } from "./utils.js";
+
+const RootRefLabel = ({ name }: { name: string }) => (
+  <div className="text-xs font-semibold flex items-center gap-1.5 px-4 py-2 border-b bg-muted/40">
+    <SchemaRefLink name={name} />
+  </div>
+);
 
 const renderMarkdown = (content?: string) =>
   content && (
@@ -54,16 +61,209 @@ const renderBasicSchema = (
   );
 };
 
+const PropertyGroup = ({
+  properties,
+  group,
+  defaultOpen,
+}: {
+  properties: [string, SchemaObject][];
+  group: "required" | "optional" | "deprecated";
+  defaultOpen: boolean;
+}) => (
+  <ItemGroup className="overflow-clip">
+    {properties.map(([name, schema], index) => (
+      <Fragment key={name}>
+        {index > 0 && <ItemSeparator />}
+        <SchemaPropertyItem
+          name={name}
+          schema={schema}
+          group={group}
+          defaultOpen={defaultOpen}
+        />
+      </Fragment>
+    ))}
+  </ItemGroup>
+);
+
+const DeprecatedToggle = ({
+  count,
+  showDeprecated,
+  onToggle,
+  controlsId,
+}: {
+  count: number;
+  showDeprecated: boolean;
+  onToggle: () => void;
+  controlsId: string;
+}) => (
+  <button
+    type="button"
+    onClick={onToggle}
+    aria-expanded={showDeprecated}
+    aria-controls={controlsId}
+    className="text-xs text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer"
+  >
+    {showDeprecated ? <EyeOffIcon size={14} /> : <EyeIcon size={14} />}
+    {showDeprecated
+      ? "Hide deprecated fields"
+      : `Show ${count} deprecated field${count !== 1 ? "s" : ""}`}
+  </button>
+);
+
+const ObjectSchemaView = ({
+  schema,
+  defaultOpen,
+  cardHeader,
+  embedded,
+  rootRefName,
+}: {
+  schema: SchemaObject;
+  defaultOpen: boolean;
+  cardHeader?: React.ReactNode;
+  embedded?: boolean;
+  rootRefName?: string;
+}) => {
+  const [showDeprecated, setShowDeprecated] = useState(false);
+  const deprecatedRef = useRef<HTMLDivElement>(null);
+  const deprecatedId = useId();
+
+  // Upgrade hidden → hidden="until-found" so browser Cmd+F can find text inside.
+  // Uses useLayoutEffect to set the attribute before paint, avoiding flash.
+  // Managed imperatively because React types don't support "until-found" value.
+  useLayoutEffect(() => {
+    const el = deprecatedRef.current;
+    if (!el) return;
+
+    if (!showDeprecated) {
+      el.setAttribute("hidden", "until-found");
+    } else {
+      el.removeAttribute("hidden");
+    }
+
+    const handler = () => setShowDeprecated(true);
+    el.addEventListener("beforematch", handler);
+    return () => el.removeEventListener("beforematch", handler);
+  }, [showDeprecated]);
+
+  const groupedProperties = Object.groupBy(
+    Object.entries(schema.properties ?? {}),
+    ([propertyName, property]) => {
+      return property.deprecated
+        ? "deprecated"
+        : schema.required?.includes(propertyName)
+          ? "required"
+          : "optional";
+    },
+  );
+
+  const nonDeprecatedGroupNames = ["required", "optional"] as const;
+  const nonDeprecatedGroups = nonDeprecatedGroupNames.flatMap((group) => {
+    const properties = groupedProperties[group];
+    return properties ? { group, properties } : [];
+  });
+
+  const deprecatedProperties = groupedProperties.deprecated;
+
+  const additionalObjectProperties = typeof schema.additionalProperties ===
+    "object" && <SchemaView schema={schema.additionalProperties} embedded />;
+
+  const itemsList = nonDeprecatedGroups.map(({ group, properties }, index) => (
+    <Fragment key={group}>
+      {index > 0 && <ItemSeparator />}
+      <PropertyGroup
+        properties={properties}
+        group={group}
+        defaultOpen={defaultOpen}
+      />
+    </Fragment>
+  ));
+
+  const deprecatedList = deprecatedProperties && (
+    <>
+      {nonDeprecatedGroups.length > 0 && <ItemSeparator />}
+      <PropertyGroup
+        properties={deprecatedProperties}
+        group="deprecated"
+        defaultOpen={defaultOpen}
+      />
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <>
+        {itemsList}
+        {deprecatedList}
+      </>
+    );
+  }
+
+  const hasPanelContent =
+    nonDeprecatedGroups.length > 0 ||
+    deprecatedProperties ||
+    additionalObjectProperties;
+
+  return (
+    <Frame>
+      {cardHeader}
+      {schema.description && (
+        <FrameHeader>
+          <FrameDescription>{schema.description}</FrameDescription>
+        </FrameHeader>
+      )}
+      {(hasPanelContent || rootRefName) && (
+        <FramePanel className="p-0!">
+          {rootRefName && <RootRefLabel name={rootRefName} />}
+          {itemsList}
+          {deprecatedProperties && (
+            <div ref={deprecatedRef} id={deprecatedId} hidden={!showDeprecated}>
+              {deprecatedList}
+            </div>
+          )}
+          {additionalObjectProperties}
+        </FramePanel>
+      )}
+      {(schema.additionalProperties === true || deprecatedProperties) && (
+        <FrameFooter className="flex-row items-center justify-between">
+          {schema.additionalProperties === true ? (
+            <a
+              className="text-sm flex items-center gap-1 hover:underline"
+              href="https://swagger.io/docs/specification/v3_0/data-models/dictionaries/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Additional properties are allowed
+              <InfoIcon size={14} />
+            </a>
+          ) : (
+            <span />
+          )}
+          {deprecatedProperties && (
+            <DeprecatedToggle
+              count={deprecatedProperties.length}
+              showDeprecated={showDeprecated}
+              onToggle={() => setShowDeprecated(!showDeprecated)}
+              controlsId={deprecatedId}
+            />
+          )}
+        </FrameFooter>
+      )}
+    </Frame>
+  );
+};
+
 export const SchemaView = ({
   schema,
   defaultOpen = false,
   cardHeader,
   embedded,
+  hideRootRef,
 }: {
   schema?: SchemaObject | null;
   defaultOpen?: boolean;
   cardHeader?: React.ReactNode;
   embedded?: boolean;
+  hideRootRef?: boolean;
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
@@ -90,77 +290,28 @@ export const SchemaView = ({
     return renderBasicSchema(schema, cardHeader, embedded);
   }
 
-  if (schema.type === "array" && typeof schema.items === "object") {
-    return <SchemaView schema={schema.items} cardHeader={cardHeader} />;
+  if (isArrayType(schema) && typeof schema.items === "object") {
+    const wrappedSchema: SchemaObject = {
+      type: "object",
+      properties: { "": schema },
+    };
+
+    return (
+      <SchemaView schema={wrappedSchema} cardHeader={cardHeader} defaultOpen />
+    );
   }
 
   if (schema.type === "object") {
-    const groupedProperties = groupBy(
-      Object.entries(schema.properties ?? {}),
-      ([propertyName, property]) => {
-        return property.deprecated
-          ? "deprecated"
-          : schema.required?.includes(propertyName)
-            ? "required"
-            : "optional";
-      },
-    );
-    const groupNames = ["required", "optional", "deprecated"] as const;
-
-    const additionalProperties =
-      typeof schema.additionalProperties === "object" ? (
-        <SchemaView schema={schema.additionalProperties} embedded />
-      ) : schema.additionalProperties === true ? (
-        <div className="text-sm p-4 flex items-center gap-1">
-          <span>Additional properties are allowed</span>
-          <a
-            className="p-0.5 -m-0.5"
-            href="https://swagger.io/docs/specification/v3_0/data-models/dictionaries/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <InfoIcon size={14} />
-          </a>
-        </div>
-      ) : null;
-
-    const itemsList = groupNames.map(
-      (group) =>
-        groupedProperties[group] && (
-          <ItemGroup key={group} className="overflow-clip">
-            {groupedProperties[group].map(([name, schema]) => (
-              <Fragment key={name}>
-                <SchemaPropertyItem
-                  name={name}
-                  schema={schema}
-                  group={group}
-                  defaultOpen={defaultOpen}
-                />
-                <ItemSeparator />
-              </Fragment>
-            ))}
-          </ItemGroup>
-        ),
-    );
-
-    if (embedded) {
-      return itemsList;
-    }
-
+    const rootRefName =
+      !embedded && !hideRootRef ? getSchemaRefName(schema) : undefined;
     return (
-      <Frame>
-        {cardHeader}
-        {schema.description && (
-          <FrameHeader>
-            <FrameDescription>{schema.description}</FrameDescription>
-          </FrameHeader>
-        )}
-
-        <FramePanel className="p-0!">
-          {itemsList}
-          {additionalProperties}
-        </FramePanel>
-      </Frame>
+      <ObjectSchemaView
+        schema={schema}
+        defaultOpen={defaultOpen}
+        cardHeader={cardHeader}
+        embedded={embedded}
+        rootRefName={rootRefName}
+      />
     );
   }
 };

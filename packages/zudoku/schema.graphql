@@ -4,6 +4,7 @@ schema {
 
 type Components {
   schemas: [SchemaItem!]
+  securitySchemes: [SecuritySchemeItem!]
 }
 
 type EncodingItem {
@@ -45,6 +46,25 @@ type MediaTypeObject {
   schema: JSONSchema
 }
 
+type OAuthFlowItem {
+  authorizationUrl: String
+  refreshUrl: String
+  scopes: [OAuthScopeItem!]!
+  tokenUrl: String
+}
+
+type OAuthFlowsItem {
+  authorizationCode: OAuthFlowItem
+  clientCredentials: OAuthFlowItem
+  implicit: OAuthFlowItem
+  password: OAuthFlowItem
+}
+
+type OAuthScopeItem {
+  description: String!
+  name: String!
+}
+
 type OperationItem {
   contentTypes: [String!]!
   deprecated: Boolean
@@ -56,6 +76,7 @@ type OperationItem {
   path: String!
   requestBody: RequestBodyObject
   responses: [ResponseItem!]!
+  security: [SecurityRequirementItem!]
   servers: [Server!]!
   slug: String!
   summary: String
@@ -110,8 +131,11 @@ type ResponseItem {
 
 type Schema {
   components: Components
+  contact: SchemaContact
   description: String
   extensions: JSONObject
+  externalDocs: SchemaExternalDocs
+  license: SchemaLicense
   openapi: String!
   operations(
     method: String
@@ -121,19 +145,39 @@ type Schema {
     untagged: Boolean
   ): [OperationItem!]!
   paths: [PathItem!]!
+  security: [SecurityRequirementItem!]
   servers: [Server!]!
   summary: String
   tag(name: String, slug: String, untagged: Boolean): SchemaTag
   tags: [SchemaTag!]!
+  termsOfService: String
   title: String!
   url: String
   version: String!
+  webhooks: [WebhookItem!]!
+}
+
+type SchemaContact {
+  email: String
+  name: String
+  url: String
+}
+
+type SchemaExternalDocs {
+  description: String
+  url: String!
 }
 
 type SchemaItem {
   extensions: JSONObject
   name: String!
   schema: JSONSchema!
+}
+
+type SchemaLicense {
+  identifier: String
+  name: String!
+  url: String
 }
 
 type SchemaTag {
@@ -153,6 +197,42 @@ enum SchemaType {
   url
 }
 
+type SecurityRequirementItem {
+  schemes: [SecurityRequirementScheme!]!
+}
+
+type SecurityRequirementScheme {
+  scheme: SecuritySchemeItem!
+  scopes: [String!]!
+}
+
+enum SecuritySchemeIn {
+  cookie
+  header
+  query
+}
+
+type SecuritySchemeItem {
+  bearerFormat: String
+  description: String
+  extensions: JSONObject
+  flows: OAuthFlowsItem
+  in: SecuritySchemeIn
+  name: String!
+  openIdConnectUrl: String
+  paramName: String
+  scheme: String
+  type: SecuritySchemeType!
+}
+
+enum SecuritySchemeType {
+  apiKey
+  http
+  mutualTLS
+  oauth2
+  openIdConnect
+}
+
 type Server {
   description: String
   url: String!
@@ -162,4 +242,12 @@ type TagItem {
   description: String
   extensions: JSONObject
   name: String!
+}
+
+type WebhookItem {
+  description: String
+  method: String!
+  name: String!
+  operationId: String
+  summary: String
 }

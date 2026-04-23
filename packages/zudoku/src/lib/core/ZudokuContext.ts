@@ -3,16 +3,23 @@ import { createNanoEvents } from "nanoevents";
 import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
-import type { z } from "zod";
-import type { Navigation } from "../../config/validators/NavigationSchema.js";
+import type { z } from "zod/mini";
+import type { HeaderNavigation } from "../../config/validators/HeaderNavigationSchema.js";
+import type {
+  Navigation,
+  ResolvedNavigationRule,
+} from "../../config/validators/NavigationSchema.js";
 import type {
   CallbackContext,
+  ProtectedRouteResult,
   ProtectedRoutesInput,
 } from "../../config/validators/ProtectedRoutesSchema.js";
-import type { FooterSchema } from "../../config/validators/validate.js";
+import type {
+  AiAssistantsConfig,
+  FooterSchema,
+} from "../../config/validators/ZudokuConfig.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
-import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
 import type { SlotType } from "../components/context/SlotProvider.js";
 import { joinUrl } from "../util/joinUrl.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
@@ -23,7 +30,6 @@ import {
   isEventConsumerPlugin,
   isNavigationPlugin,
   isProfileMenuPlugin,
-  type NavigationPlugin,
   needsInitialization,
   type ProfileNavigationItem,
   type ZudokuPlugin,
@@ -59,6 +65,7 @@ type Metadata = Partial<{
   authors: string[];
   creator: string;
   publisher: string;
+  robots: string;
 }>;
 
 type Site = Partial<{
@@ -73,7 +80,9 @@ type Site = Partial<{
     width?: string | number;
     alt?: string;
     href?: string;
+    reloadDocument?: boolean;
   };
+  notFoundPage?: ReactNode;
   banner?: {
     message: ReactNode;
     color?: "note" | "tip" | "info" | "caution" | "danger" | (string & {});
@@ -82,13 +91,25 @@ type Site = Partial<{
   footer?: z.infer<typeof FooterSchema>;
 }>;
 
+type HeaderConfig = {
+  navigation?: HeaderNavigation;
+  placements?: {
+    navigation?: "start" | "center" | "end";
+    search?: "start" | "center" | "end";
+    auth?: "start" | "center" | "end" | "navigation";
+  };
+};
+
 export type ZudokuContextOptions = {
   basePath?: string;
   canonicalUrlOrigin?: string;
   metadata?: Metadata;
   site?: Site;
+  header?: HeaderConfig;
+  aiAssistants?: AiAssistantsConfig;
   authentication?: AuthenticationPlugin;
   navigation?: Navigation;
+  navigationRules?: ResolvedNavigationRule[];
   plugins?: ZudokuPlugin[];
   slots?: Record<string, SlotType>;
   /**
@@ -98,17 +119,16 @@ export type ZudokuContextOptions = {
   mdx?: {
     components?: MdxComponentsType;
   };
-  overrides?: ComponentsContextType;
   protectedRoutes?: ProtectedRoutesInput;
   syntaxHighlighting?: {
-    highlighter: HighlighterCore;
+    highlighterPromise: Promise<HighlighterCore>;
     themes?: { light: BundledTheme; dark: BundledTheme };
   };
 };
 
-export const transformProtectedRoutes = (
+export const normalizeProtectedRoutes = (
   val: ProtectedRoutesInput,
-): Record<string, (c: CallbackContext) => boolean> | undefined => {
+): Record<string, (c: CallbackContext) => ProtectedRouteResult> | undefined => {
   if (!val) return undefined;
 
   if (Array.isArray(val)) {
@@ -124,43 +144,57 @@ export const transformProtectedRoutes = (
 };
 
 export class ZudokuContext {
-  public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   public navigation: Navigation;
-  public meta: ZudokuContextOptions["metadata"];
-  public site: ZudokuContextOptions["site"];
-  public readonly authentication?: ZudokuContextOptions["authentication"];
+  public navigationRules: ResolvedNavigationRule[];
+  public readonly authentication?: AuthenticationPlugin;
   public readonly getAuthState: () => AuthState;
   public readonly queryClient: QueryClient;
   public readonly options: ZudokuContextOptions;
-  private readonly navigationPlugins: NavigationPlugin[];
-  private emitter = createNanoEvents<ZudokuEvents>();
+  public readonly env: Record<string, string | undefined>;
+  public readonly notFoundPage?: ReactNode;
+  public readonly protectedRoutes: ReturnType<typeof normalizeProtectedRoutes>;
+  private readonly plugins: NonNullable<ZudokuContextOptions["plugins"]>;
+  private readonly emitter = createNanoEvents<ZudokuEvents>();
+  readonly initialize: Promise<void> | undefined;
 
-  constructor(options: ZudokuContextOptions, queryClient: QueryClient) {
+  constructor(
+    options: ZudokuContextOptions,
+    queryClient: QueryClient,
+    env: Record<string, string | undefined>,
+  ) {
+    this.queryClient = queryClient;
+    this.env = env;
+    this.options = options;
+    this.notFoundPage = options.site?.notFoundPage;
+    this.plugins = options.plugins ?? [];
+    this.authentication = this.plugins.find(isAuthenticationPlugin);
+    this.getAuthState = useAuthState.getState;
+
+    const pluginsToInit = this.plugins.filter(needsInitialization);
+    this.initialize =
+      pluginsToInit.length > 0
+        ? Promise.all(
+            pluginsToInit.map((plugin) => plugin.initialize?.(this)),
+          ).then(() => {})
+        : undefined;
+
     const pluginProtectedRoutes = Object.fromEntries(
-      (options.plugins ?? []).flatMap((plugin) => {
+      this.plugins.flatMap((plugin) => {
         if (!isNavigationPlugin(plugin)) return [];
         const routes = plugin.getProtectedRoutes?.();
         if (!routes) return [];
 
-        return Object.entries(transformProtectedRoutes(routes) ?? {});
+        return Object.entries(normalizeProtectedRoutes(routes) ?? {});
       }),
     );
 
-    const protectedRoutes = {
+    this.protectedRoutes = {
       ...pluginProtectedRoutes,
-      ...transformProtectedRoutes(options.protectedRoutes),
+      ...normalizeProtectedRoutes(options.protectedRoutes),
     };
 
-    this.queryClient = queryClient;
-    this.options = { ...options, protectedRoutes };
-    this.plugins = options.plugins ?? [];
     this.navigation = options.navigation ?? [];
-    this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
-    this.authentication = this.plugins.find(isAuthenticationPlugin);
-    this.getAuthState = useAuthState.getState;
-
-    this.meta = options.metadata;
-    this.site = options.site;
+    this.navigationRules = options.navigationRules ?? [];
     this.plugins.forEach((plugin) => {
       if (!isEventConsumerPlugin(plugin)) return;
 
@@ -177,14 +211,6 @@ export class ZudokuContext {
       });
     });
   }
-
-  initialize = async (): Promise<void> => {
-    await Promise.all(
-      this.plugins
-        .filter(needsInitialization)
-        .map((plugin) => plugin.initialize?.(this)),
-    );
-  };
 
   getApiIdentities = async () => {
     const keys = await Promise.all(
@@ -212,9 +238,9 @@ export class ZudokuContext {
 
   getPluginNavigation = async (path: string) => {
     const navigations = await Promise.all(
-      this.navigationPlugins.map((plugin) =>
-        plugin.getNavigation?.(joinUrl(path), this),
-      ),
+      this.plugins
+        .filter(isNavigationPlugin)
+        .map((plugin) => plugin.getNavigation?.(joinUrl(path), this)),
     );
 
     return navigations.flatMap((nav) => nav ?? []);
@@ -223,7 +249,7 @@ export class ZudokuContext {
   getProfileMenuItems = () => {
     const accountItems = this.plugins
       .filter((p) => isProfileMenuPlugin(p))
-      .flatMap((p) => p.getProfileMenuItems(this))
+      .flatMap((p) => p.getProfileMenuItems?.(this) ?? [])
       .sort(sortByCategory(["top", "middle", "bottom"]))
       .sort((i) => i.weight ?? 0);
 

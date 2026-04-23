@@ -8,42 +8,6 @@ import {
   createIntersector,
 } from "@x0k/json-schema-merge/lib/array";
 import type { JSONSchema7Definition } from "json-schema";
-import type { Processor } from "../../config/validators/BuildSchema.js";
-import type { OpenAPIDocument } from "../oas/parser/index.js";
-import { type RecordAny, traverse } from "./traverse.js";
-
-export const flattenAllOfProcessor: Processor = async ({
-  schema,
-  file,
-  dereference,
-}) => {
-  try {
-    const dereferenced = await dereference(schema);
-
-    const flattened = traverse(dereferenced, (spec) => {
-      if (!spec || typeof spec !== "object" || Array.isArray(spec)) {
-        return spec;
-      }
-
-      const isSchemaObject =
-        "type" in spec ||
-        "properties" in spec ||
-        "allOf" in spec ||
-        "anyOf" in spec ||
-        "oneOf" in spec;
-
-      return isSchemaObject ? (flattenAllOf(spec) as RecordAny) : spec;
-    }) as OpenAPIDocument;
-
-    return flattened;
-  } catch (error) {
-    // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.warn(
-      `Failed to flatten \`allOf\` in ${file}: ${error instanceof Error ? error.message : error}`,
-    );
-    return schema;
-  }
-};
 
 const { compareSchemaDefinitions, compareSchemaValues } = createComparator();
 const { mergeArrayOfSchemaDefinitions } = createMerger({
@@ -60,6 +24,13 @@ export const flattenAllOf = (
   schema: JSONSchema7Definition,
 ): JSONSchema7Definition => {
   const merged = shallowAllOfMerge(schema);
+
+  // Convert boolean schemas to object form for OpenAPI compatibility
+  // true (accepts anything) → {} (empty schema)
+  // false (rejects everything) → { not: {} } (schema that never validates)
+  if (typeof merged === "boolean") {
+    return merged ? {} : { not: {} };
+  }
 
   if (merged == null || typeof merged !== "object") {
     return merged;

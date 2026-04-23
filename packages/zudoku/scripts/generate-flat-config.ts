@@ -5,7 +5,7 @@ import { compile } from "json-schema-to-typescript-lite";
 import { bundledLanguages } from "shiki/langs";
 import { bundledThemes } from "shiki/themes";
 import { z } from "zod";
-import { ZudokuConfig } from "../src/config/validators/validate.js";
+import { ZudokuConfig } from "../src/config/validators/ZudokuConfig.js";
 
 const fileExists = (path: string) =>
   fs

@@ -18,7 +18,7 @@ exclude_all_private = true
 accept = [200, 201, 202, 203, 204, 301, 302, 303, 307, 308, 429]
 
 # Exclude patterns
-exclude = [    
+exclude = [
   "github.com/zuplo/zudoku/edit/(.*)",
   "github.com/zuplo/zudoku/issues",
   "github.com/zuplo/zudoku",
@@ -37,11 +37,6 @@ exclude = [
   "https://shiki.style/",
 ]
 
-exclude_path = [
-  "\\.(md|txt)$",
-]
+exclude_path = ["\\.(md|txt)$"]
 
-# Headers to send with requests
-[headers]
-user_agent = "Mozilla/5.0 (compatible; lychee/0.19.1)"
-accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+header = { "user-agent" = "Mozilla/5.0 (compatible; lychee/0.19.1)", "accept" = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" }

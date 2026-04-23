@@ -1,0 +1,409 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Fleet Operations API",
+    "description": "Unified API for managing the Cosmo Cargo fleet. Endpoints are versioned individually as capabilities evolve across warp drive generations.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Cosmo Cargo Fleet Engineering",
+      "email": "fleet@cosmocargo.dev"
+    }
+  },
+  "tags": [
+    {
+      "name": "Fleet Command",
+      "description": "Manage fleet vessels, assign missions, and monitor fleet-wide status. Available across all API versions."
+    },
+    {
+      "name": "Navigation",
+      "description": "Warp route calculation and hyperspace lane management. Introduced in v2 with quantum pathfinding."
+    },
+    {
+      "name": "Cargo Bays",
+      "description": "Cargo bay allocation and inventory tracking. Available in v1 and v2."
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://fleet.cosmocargo.dev",
+      "description": "Production"
+    }
+  ],
+  "security": [{ "ApiKeyAuth": [] }],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Fleet-Key"
+      }
+    },
+    "schemas": {
+      "Vessel": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "example": "ISS Horizon" },
+          "class": {
+            "type": "string",
+            "enum": ["freighter", "cruiser", "shuttle", "dreadnought"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["docked", "in-transit", "maintenance", "decommissioned"]
+          }
+        }
+      },
+      "Route": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "origin": { "type": "string", "example": "Sol-3" },
+          "destination": { "type": "string", "example": "Proxima-b" },
+          "distanceLightYears": { "type": "number", "example": 4.24 },
+          "estimatedWarpHours": { "type": "number", "example": 12.5 }
+        }
+      },
+      "CargoBay": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "vesselId": { "type": "string", "format": "uuid" },
+          "capacityTons": { "type": "number", "example": 5000 },
+          "usedTons": { "type": "number", "example": 3200 },
+          "temperature": {
+            "type": "string",
+            "enum": ["ambient", "cryo", "plasma-shielded"]
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/v1/fleet/vessels": {
+      "get": {
+        "tags": ["Fleet Command"],
+        "summary": "List all vessels",
+        "operationId": "listVessels_v1",
+        "responses": {
+          "200": {
+            "description": "Fleet roster",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Vessel" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/fleet/vessels": {
+      "get": {
+        "tags": ["Fleet Command"],
+        "summary": "List all vessels",
+        "description": "Returns fleet roster with real-time warp status telemetry.",
+        "operationId": "listVessels_v2",
+        "parameters": [
+          {
+            "name": "class",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["freighter", "cruiser", "shuttle", "dreadnought"]
+            },
+            "description": "Filter by vessel class"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fleet roster with telemetry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Vessel" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3/fleet/vessels": {
+      "get": {
+        "tags": ["Fleet Command"],
+        "summary": "List all vessels",
+        "description": "Returns fleet roster with quantum-entangled real-time positioning and predictive maintenance alerts.",
+        "operationId": "listVessels_v3",
+        "parameters": [
+          {
+            "name": "class",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["freighter", "cruiser", "shuttle", "dreadnought"]
+            }
+          },
+          {
+            "name": "sector",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter by galactic sector"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fleet roster with quantum positioning",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Vessel" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/fleet/vessels/{vesselId}": {
+      "get": {
+        "tags": ["Fleet Command"],
+        "summary": "Get vessel details",
+        "operationId": "getVessel_v1",
+        "parameters": [
+          {
+            "name": "vesselId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vessel details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Vessel" }
+              }
+            }
+          },
+          "404": {
+            "description": "Vessel not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/fleet/vessels/{vesselId}": {
+      "get": {
+        "tags": ["Fleet Command"],
+        "summary": "Get vessel details",
+        "description": "Includes warp core diagnostics and maintenance schedule.",
+        "operationId": "getVessel_v2",
+        "parameters": [
+          {
+            "name": "vesselId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vessel details with diagnostics",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Vessel" }
+              }
+            }
+          },
+          "404": {
+            "description": "Vessel not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/navigation/routes": {
+      "get": {
+        "tags": ["Navigation"],
+        "summary": "List warp routes",
+        "description": "Returns available hyperspace lanes with quantum pathfinding estimates.",
+        "operationId": "listRoutes_v2",
+        "responses": {
+          "200": {
+            "description": "Available routes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Route" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Navigation"],
+        "summary": "Calculate warp route",
+        "description": "Computes optimal hyperspace route between two systems.",
+        "operationId": "calculateRoute_v2",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["origin", "destination"],
+                "properties": {
+                  "origin": { "type": "string", "example": "Sol-3" },
+                  "destination": { "type": "string", "example": "Proxima-b" },
+                  "avoidSectors": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Route calculated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Route" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v3/navigation/routes": {
+      "get": {
+        "tags": ["Navigation"],
+        "summary": "List warp routes",
+        "description": "Returns routes with real-time gravitational anomaly warnings and fuel consumption estimates.",
+        "operationId": "listRoutes_v3",
+        "parameters": [
+          {
+            "name": "maxWarpHours",
+            "in": "query",
+            "schema": { "type": "number" },
+            "description": "Maximum acceptable travel time"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available routes with anomaly data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Route" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cargo/bays": {
+      "get": {
+        "tags": ["Cargo Bays"],
+        "summary": "List cargo bays",
+        "operationId": "listCargoBays_v1",
+        "responses": {
+          "200": {
+            "description": "All cargo bays",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CargoBay" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/cargo/bays": {
+      "get": {
+        "tags": ["Cargo Bays"],
+        "summary": "List cargo bays",
+        "description": "Includes real-time temperature monitoring and capacity projections.",
+        "operationId": "listCargoBays_v2",
+        "parameters": [
+          {
+            "name": "temperature",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["ambient", "cryo", "plasma-shielded"]
+            },
+            "description": "Filter by storage temperature"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cargo bays with monitoring data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CargoBay" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/cargo/bays/{bayId}": {
+      "get": {
+        "tags": ["Cargo Bays"],
+        "summary": "Get cargo bay details",
+        "operationId": "getCargoBay_v2",
+        "parameters": [
+          {
+            "name": "bayId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cargo bay details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CargoBay" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

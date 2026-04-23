@@ -11,6 +11,7 @@ export const BuildProcessorSchema = z.custom<
   (data: {
     file: string;
     schema: OpenAPIDocument;
+    params: Record<string, string>;
     dereference: (schema: OpenAPIDocument) => Promise<OpenAPIDocument>;
   }) => OpenAPIDocument | Promise<OpenAPIDocument>
 >((val) => typeof val === "function");
@@ -33,15 +34,31 @@ export const BuildConfigSchema = z.object({
   prerender: z.object({ workers: z.number().optional() }).optional(),
 });
 
+const zudokuBuildConfigFiles = [
+  "zudoku.build.js",
+  "zudoku.build.jsx",
+  "zudoku.build.ts",
+  "zudoku.build.tsx",
+  "zudoku.build.mjs",
+];
+
+async function getBuildConfigFilePath(rootDir: string) {
+  for (const fileName of zudokuBuildConfigFiles) {
+    const filepath = path.join(rootDir, fileName);
+    if (await fileExists(filepath)) {
+      return filepath;
+    }
+  }
+  return undefined;
+}
+
 export const getBuildConfig = async () => {
   const initialConfig = getCurrentConfig();
-  const buildFilePath = path.join(
+  const buildFilePath = await getBuildConfigFilePath(
     initialConfig.__meta.rootDir,
-    "zudoku.build.ts",
   );
 
-  const buildFileExists = await fileExists(buildFilePath);
-  if (!buildFileExists) return undefined;
+  if (!buildFilePath) return undefined;
 
   const buildModule = await runnerImport<{ default: BuildConfig }>(
     buildFilePath,

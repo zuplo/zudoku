@@ -6,6 +6,7 @@ import type { Navigation } from "zudoku";
  */
 
 export const docs: Navigation = [
+  { type: "filter", placeholder: "Filter documentation" },
   "docs/quickstart",
   // {
   //   type: "category",
@@ -61,6 +62,21 @@ export const docs: Navigation = [
     items: [
       "docs/configuration/api-reference",
       "docs/configuration/api-catalog",
+      {
+        type: "category",
+        label: "Supported Extensions",
+        icon: "puzzle",
+        items: [
+          "docs/openapi-extensions/x-mcp",
+          "docs/openapi-extensions/x-mcp-server",
+          "docs/openapi-extensions/x-code-samples",
+          "docs/openapi-extensions/x-tag-groups",
+          "docs/openapi-extensions/x-display-name",
+          "docs/openapi-extensions/x-zudoku-collapsed",
+          "docs/openapi-extensions/x-zudoku-collapsible",
+          "docs/openapi-extensions/x-zudoku-playground-enabled",
+        ],
+      },
     ],
   },
   {
@@ -69,6 +85,7 @@ export const docs: Navigation = [
     icon: "lock",
     items: [
       "docs/configuration/authentication",
+      "docs/configuration/oauth-security-schemes",
       "docs/configuration/protected-routes",
       {
         type: "category",
@@ -78,6 +95,7 @@ export const docs: Navigation = [
           "docs/configuration/authentication-auth0",
           "docs/configuration/authentication-clerk",
           "docs/configuration/authentication-azure-ad",
+          "docs/configuration/authentication-openid",
           "docs/configuration/authentication-pingfederate",
           "docs/configuration/authentication-supabase",
           "docs/configuration/authentication-firebase",
@@ -99,9 +117,12 @@ export const docs: Navigation = [
       "docs/guides/static-files",
       "docs/guides/environment-variables",
       "docs/guides/custom-pages",
-      "docs/guides/navigation-migration",
+      "docs/guides/mermaid",
       "docs/guides/using-multiple-apis",
       "docs/guides/managing-api-keys-and-identities",
+      "docs/guides/navigation-rules",
+      "docs/guides/redirects",
+      "docs/guides/mcp-servers",
       "docs/guides/transforming-examples",
       "docs/guides/processors",
     ],
@@ -112,6 +133,7 @@ export const docs: Navigation = [
     icon: "cloud-upload",
     link: "docs/deployment",
     items: [
+      "docs/deploy/zuplo",
       "docs/deploy/cloudflare-pages",
       "docs/deploy/github-pages",
       "docs/deploy/vercel",
@@ -128,6 +150,7 @@ export const docs: Navigation = [
       "docs/configuration/slots",
       "docs/custom-plugins",
       "docs/extending/events",
+      "docs/extending/hooks",
     ],
   },
 ];
@@ -151,6 +174,8 @@ export const components: Navigation = [
     type: "category",
     label: "Documentation",
     items: [
+      "docs/components/code-tabs",
+      "docs/components/mermaid",
       "docs/components/playground",
       "docs/components/secret",
       "docs/components/stepper",

@@ -2,7 +2,6 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cargo Container Specifications API",
-    "version": "2.1.0",
     "description": "Advanced cargo container booking and management for interplanetary shipping. This API demonstrates complex schema composition using allOf, anyOf, and oneOf patterns for maximum flexibility in container configuration.",
     "contact": {
       "name": "Cosmo Cargo Container Division",

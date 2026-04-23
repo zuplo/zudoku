@@ -1,0 +1,81 @@
+---
+title: Mermaid
+sidebar_icon: chart-network
+description: Render Mermaid diagrams dynamically with client-side rendering.
+---
+
+import { Mermaid } from "zudoku/mermaid";
+
+The `Mermaid` component renders [Mermaid diagrams](https://mermaid.js.org/) in the browser using
+client-side rendering.
+
+<br />
+
+:::info{title="Build-Time Alternative"}
+
+For static diagrams, consider [build-time rendering with rehype-mermaid](/docs/guides/mermaid).
+
+:::
+
+## Prerequisites
+
+Install the `mermaid` peer dependency:
+
+```bash
+npm install mermaid
+```
+
+## Import
+
+```tsx
+import { Mermaid } from "zudoku/mermaid";
+```
+
+## Props
+
+```ts
+type MermaidProps = {
+  chart: string; // Mermaid diagram definition
+  config?: MermaidConfig; // Optional Mermaid configuration
+} & ComponentProps<"div">;
+```
+
+## Usage
+
+### Basic Usage
+
+```tsx
+<Mermaid
+  chart={`graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;`}
+/>
+```
+
+<Mermaid
+  chart={`graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;`}
+/>
+
+### With Configuration
+
+```tsx
+<Mermaid
+  config={{ theme: "dark" }}
+  chart={`sequenceDiagram
+    Alice->>Bob: Hello Bob
+    Bob-->>Alice: Hi Alice`}
+/>
+```
+
+<Mermaid
+  config={{ theme: "dark" }}
+  chart={`sequenceDiagram
+    Alice->>Bob: Hello Bob
+    Bob-->>Alice: Hi Alice`}
+/>

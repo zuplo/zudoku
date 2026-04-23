@@ -11,7 +11,7 @@ export const initSentry = ({ dsn }: { dsn: string }) => {
   Sentry.init({
     dsn,
     integrations: [
-      Sentry.reactRouterV6BrowserTracingIntegration({
+      Sentry.reactRouterV7BrowserTracingIntegration({
         useEffect,
         useLocation,
         useNavigationType,

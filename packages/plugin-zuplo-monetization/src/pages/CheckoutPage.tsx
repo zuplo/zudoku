@@ -1,0 +1,67 @@
+import { useAuth, useZudoku } from "zudoku/hooks";
+import { ShieldIcon } from "zudoku/icons";
+import { useQuery } from "zudoku/react-query";
+import { Link, useSearchParams } from "zudoku/router";
+import { Alert, AlertAction, AlertDescription } from "zudoku/ui/Alert";
+import { Button } from "zudoku/ui/Button";
+import { RedirectPage } from "../components/RedirectPage.js";
+import { useDeploymentName } from "../hooks/useDeploymentName";
+import { useUrlUtils } from "../hooks/useUrlUtils";
+
+const CheckoutPage = () => {
+  const [searchParams] = useSearchParams();
+  const planId = searchParams.get("planId");
+  const zudoku = useZudoku();
+  const auth = useAuth();
+  const { generateUrl } = useUrlUtils();
+  const deploymentName = useDeploymentName();
+
+  if (!planId) {
+    throw new Error(`missing planId in URL`);
+  }
+
+  const checkoutLink = useQuery<{ url: string }>({
+    queryKey: [
+      `/v3/zudoku-metering/${deploymentName}/stripe/checkout`,
+      planId,
+      auth.profile?.sub,
+    ],
+    meta: {
+      context: zudoku,
+      request: {
+        method: "POST",
+        body: JSON.stringify({
+          planId,
+          successURL: generateUrl("/checkout-confirm", {
+            searchParams: { planId },
+          }),
+          cancelURL: generateUrl("/pricing"),
+        }),
+      },
+    },
+  });
+
+  return (
+    <RedirectPage
+      icon={ShieldIcon}
+      title="Establishing encrypted connection..."
+      description="Setting up your secure checkout experience"
+      url={checkoutLink.data?.url}
+    >
+      {checkoutLink.isError && (
+        <Alert variant="destructive">
+          <AlertDescription className="first-letter:uppercase">
+            {checkoutLink.error.message}
+          </AlertDescription>
+          <AlertAction>
+            <Button variant="outline" size="xs" asChild>
+              <Link to="/subscriptions">Back</Link>
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
+    </RedirectPage>
+  );
+};
+
+export default CheckoutPage;

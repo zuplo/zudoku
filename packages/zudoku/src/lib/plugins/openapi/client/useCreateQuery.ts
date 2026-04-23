@@ -1,4 +1,3 @@
-import { stripIgnoredCharacters } from "graphql";
 import { use } from "react";
 import type { TypedDocumentString } from "../graphql/graphql.js";
 import type { GraphQLClient } from "./GraphQLClient.js";
@@ -8,9 +7,8 @@ type NoExtraProps<T, U extends T = T> = U & {
   [K in Exclude<keyof U, keyof T>]?: never;
 };
 
-type VarArgs<TVariables> = TVariables extends Record<string, never>
-  ? []
-  : [NoExtraProps<TVariables>];
+type VarArgs<TVariables> =
+  TVariables extends Record<string, never> ? [] : [NoExtraProps<TVariables>];
 
 export const createQuery = <TResult, TVariables>(
   client: GraphQLClient,
@@ -21,7 +19,7 @@ export const createQuery = <TResult, TVariables>(
 ) => {
   return {
     queryFn: () => client.fetch(query, variables),
-    queryKey: [stripIgnoredCharacters(query.toString()), variables],
+    queryKey: [query.toString().replace(/\s+/g, " ").trim(), variables],
   } as const;
 };
 

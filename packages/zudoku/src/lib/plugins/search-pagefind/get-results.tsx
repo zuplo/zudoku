@@ -42,7 +42,7 @@ async function* searchResultGenerator({
 }: {
   search: PagefindSearchResults;
   transformFn: NonNullable<PagefindOptions["transformResults"]>;
-  auth: AuthState<unknown>;
+  auth: AuthState;
   context: ZudokuContext;
 }) {
   const batchSize = 5;

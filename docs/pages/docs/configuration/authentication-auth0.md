@@ -34,7 +34,10 @@ If you don't have an Auth0 account, you can sign up for a
      - Production: `https://your-site.com/oauth/callback`
      - Preview (wildcard): `https://*.your-domain.com/oauth/callback`
      - Local Development: `http://localhost:3000/oauth/callback`
-   - **Allowed Logout URLs**: Same as callback URLs above
+   - **Allowed Logout URLs**:
+     - Production: `https://your-site.com/oauth/logout-callback`
+     - Preview (wildcard): `https://*.your-domain.com/oauth/logout-callback`
+     - Local Development: `http://localhost:3000/oauth/logout-callback`
 
    - **Allowed Web Origins**:
      - Production: `https://your-site.com`
@@ -101,6 +104,24 @@ authentication: {
 }
 ```
 
+### Enabling Logout
+
+Zudoku supports logout functionality for Auth0 tenants. For tenants created **on or after November
+14, 2023**, logout is automatically enabled through the OIDC
+[RP-Initiated Logout](https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0)
+endpoint.
+
+To enable logout for your Auth0 application:
+
+1. Ensure your **Allowed Logout URLs** are configured in Auth0 (see
+   [Configure Auth0 Application](#setup-steps) above)
+2. The logout URL must use the `/oauth/logout-callback` path (e.g.,
+   `https://your-site.com/oauth/logout-callback` for production)
+
+For older tenants, you may need to enable **RP-Initiated Logout** in your tenant settings. See the
+[Auth0 logout documentation](https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0)
+for details.
+
 ### Customizing the Prompt Parameter
 
 By default, Zudoku sets `prompt="login"` in the Auth0 authorization request, which forces users to
@@ -142,8 +163,8 @@ When the prompt parameter is omitted (empty string), Auth0 will:
 
 2. **CORS Errors**: Add your site's domain to the Allowed Web Origins in Auth0.
 
-3. **Authentication Loop**: Check that your Auth0 domain includes the protocol (`https://`) but no
-   trailing slash.
+3. **Authentication Loop**: Check that your Auth0 domain is a plain hostname only (e.g.,
+   `your-domain.us.auth0.com`) without a protocol prefix (`https://`) or trailing slash.
 
 4. **Token Validation Errors**: Ensure the audience in your Zudoku configuration matches the
    identifier of the Auth0 API you created.

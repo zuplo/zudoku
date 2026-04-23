@@ -12,8 +12,10 @@ import {
   StaticRouterProvider,
 } from "react-router";
 import { RouterProvider } from "react-router/dom";
-import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
-import { BypassProtectedRoutesContext } from "./context/BypassProtectedRoutesContext.js";
+import {
+  RenderContext,
+  type RenderContextValue,
+} from "./context/RenderContext.js";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,13 +36,9 @@ const Bootstrap = ({
     <QueryClientProvider client={queryClient}>
       {/* biome-ignore lint/suspicious/noExplicitAny: Allow any type */}
       <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
-        <BypassProtectedRoutesContext value={false}>
-          <HelmetProvider>
-            <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
-              <RouterProvider router={router} />
-            </StaggeredRenderContext.Provider>
-          </HelmetProvider>
-        </BypassProtectedRoutesContext>
+        <HelmetProvider>
+          <RouterProvider router={router} />
+        </HelmetProvider>
       </HydrationBoundary>
     </QueryClientProvider>
   </StrictMode>
@@ -52,19 +50,25 @@ const BootstrapStatic = ({
   queryClient,
   helmetContext,
   bypassProtection = false,
+  renderContext,
 }: {
   helmetContext: HelmetData["context"];
   context: StaticHandlerContext;
   queryClient: QueryClient;
   router: ReturnType<typeof createStaticRouter>;
   bypassProtection?: boolean;
+  renderContext?: RenderContextValue;
 }) => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <HelmetProvider context={helmetContext}>
-        <BypassProtectedRoutesContext value={bypassProtection}>
+        <RenderContext
+          value={
+            renderContext ?? { status: 200, bypassProtection: bypassProtection }
+          }
+        >
           <StaticRouterProvider router={router} context={context} />
-        </BypassProtectedRoutesContext>
+        </RenderContext>
       </HelmetProvider>
     </QueryClientProvider>
   </StrictMode>

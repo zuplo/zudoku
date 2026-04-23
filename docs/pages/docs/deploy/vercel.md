@@ -22,7 +22,7 @@ guide.
 
 To get started you need to install the CLI:
 
-```command
+```bash
 npm i -g vercel
 ```
 
@@ -30,7 +30,7 @@ npm i -g vercel
 
 Next, set up a new Vercel project in the root of your docs:
 
-```command
+```bash
 vercel
 ```
 
@@ -74,7 +74,7 @@ information.
 
 :::caution{title="Redirects"}
 
-If you have redirects configured in your Zuplo configuration, you will need to also add those to
+If you have redirects configured in your Zudoku configuration, you will need to also add those to
 your `vercel.json` file. See the
 [Vercel Configuration](https://vercel.com/docs/projects/project-configuration#redirects) for more
 information.

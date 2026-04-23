@@ -3,7 +3,10 @@ import type { ZudokuConfig } from "zudoku";
 const config: ZudokuConfig = {
   site: {
     logo: {
-      src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
+      src: {
+        light: "https://cdn.zuplo.com/static/logos/zudoku-light.svg",
+        dark: "https://cdn.zuplo.com/static/logos/zudoku-dark.svg",
+      },
       alt: "Zudoku",
       width: 130,
     },
@@ -41,8 +44,8 @@ const config: ZudokuConfig = {
     supabaseKey: "sb_publishable_Owrp_sEczaIw9BthUQ8gAw_HDelnNHO",
   },
   apis: {
-    type: "url",
-    input: "https://rickandmorty.zuplo.io/openapi.json",
+    type: "file",
+    input: "./openapi.json",
     path: "api",
   },
 };

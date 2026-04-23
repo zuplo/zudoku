@@ -2,13 +2,21 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Shipment API",
-    "description": "This API allows you to create and track shipments through the Cosmo Cargo platform.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
+    "description": "The Shipment API provides programmatic access to Cosmo Cargo's interstellar logistics network. Create shipments, calculate rates, track packages in real-time, and manage customs documentation for cross-border deliveries.\n\n## Getting Started\n\nTo start shipping, create a shipment with origin and destination addresses, then calculate rates for your preferred service level. Once confirmed, use the tracking endpoints to monitor delivery progress.\n\n```sh\ncurl -X POST https://api.cosmocargo.com/v1/shipments \\\n  -H \"X-API-Key: your_api_key\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"recipientAddress\": {...}, \"senderAddress\": {...}, \"packages\": [...]}'\n```\n\n## Rate Limits\n\n| Plan       | Requests/min | Burst |\n|------------|-------------|-------|\n| Free       | 60          | 10    |\n| Pro        | 600         | 50    |\n| Enterprise | Custom      | Custom|\n\nRate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) are included in every response.\n\n## Idempotency\n\nPOST and PUT endpoints support idempotency keys via the `Idempotency-Key` header. Sending the same key within 24 hours returns the original response without creating duplicates.\n\n## Versioning\n\nThe API is versioned via the `X-API-Version` header. The current stable version is `2024-01`. Omitting the header defaults to the latest stable version.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Cosmo Cargo API Support",
       "email": "api@sh.example.com",
       "url": "https://developers.sh.example.com"
-    }
+    },
+    "license": {
+      "name": "MIT License",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "termsOfService": "https://example.com"
+  },
+  "externalDocs": {
+    "url": "https://example.com"
   },
   "x-tagGroups": [
     {
@@ -31,7 +39,7 @@
     },
     {
       "name": "International Shipping",
-      "description": "Operations for managing customs documentation, duties, and international shipment processes."
+      "description": "Operations for managing customs documentation, duties, and international shipment processes.\n\n<SpaceWarning sector=\"7G\">\nInterstellar customs regulations were updated in Stardate 2025.3. All shipments crossing the Outer Rim must include a Quantum Manifest.\n</SpaceWarning>"
     },
     {
       "name": "Documentation",
@@ -73,6 +81,9 @@
   "security": [
     {
       "ApiKeyAuth": []
+    },
+    {
+      "BearerAuth": []
     }
   ],
   "components": {
@@ -113,7 +124,14 @@
       "ApiKeyAuth": {
         "type": "apiKey",
         "in": "header",
-        "name": "X-API-Key"
+        "name": "X-API-Key",
+        "description": "API key passed via the `X-API-Key` header. Get your key from the [developer portal](https://developers.sh.example.com)."
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT bearer token obtained from the authentication service."
       }
     },
     "schemas": {
@@ -160,7 +178,9 @@
           },
           "trackingNumber": {
             "type": "string",
-            "pattern": "^[A-Z0-9]{10,20}$"
+            "pattern": "^[A-Z0-9]{10,20}$",
+            "deprecated": true,
+            "description": "Use the `tracking` endpoint instead. This field will be removed in a future version."
           },
           "createdAt": {
             "type": "string",
@@ -171,8 +191,7 @@
             "items": {
               "$ref": "#/components/schemas/Comment"
             },
-            "maxItems": 100,
-            "enum": ["PENDING", "APPROVED", "REJECTED"]
+            "maxItems": 100
           },
           "tags": {
             "type": "array",
@@ -209,6 +228,10 @@
             "type": "object",
             "description": "Empty object for future extensibility",
             "properties": {}
+          },
+          "legacyId": {
+            "deprecated": true,
+            "description": "Legacy identifier from the old system. Use `id` instead."
           },
           "customFields": {
             "type": "object",
@@ -341,17 +364,23 @@
       "Error": {
         "type": "object",
         "required": ["code", "message"],
+        "example": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "message": "The requested shipment could not be found"
+        },
         "properties": {
           "code": {
             "type": "string",
             "pattern": "^[A-Z_]+$",
             "minLength": 1,
-            "maxLength": 50
+            "maxLength": 50,
+            "example": "SHIPMENT_NOT_FOUND"
           },
           "message": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 500
+            "maxLength": 500,
+            "example": "The requested shipment could not be found"
           }
         }
       },
@@ -693,6 +722,24 @@
         "summary": "Create a new shipment",
         "description": "Creates a new shipment with the provided details.\n\nThis endpoint allows you to **create and register** a new shipment in the Cosmo Cargo platform. The shipment will be assigned a unique `trackingNumber` and will enter the `CREATED` status.\n\n### How to use with SDK\n\nHere's how to create a shipment using `@cosmo-cargo/sdk{:sh}`:\n\n```ts\nimport { CosmoCargoClient } from '@cosmo-cargo/sdk';\n\nconst client = new CosmoCargoClient({ key: process.env.COSMO_API_KEY });\n\nconst shipment = await client.shipments.create(config);\nconsole.log(`Shipment created: ${shipment.trackingNumber}`);\n```\n\n**Note:** Use the `X-Request-Priority` header to expedite processing for urgent shipments.",
         "operationId": "createShipment",
+        "x-code-samples": [
+          {
+            "lang": "shell",
+            "label": "cURL",
+            "source": "curl -X POST https://api.cosmocargo.com/v1/shipments \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: YOUR_API_KEY' \\\n  -d '{\n    \"recipientAddress\": {\n      \"name\": \"Zara Nebula\",\n      \"planet\": \"Mars\",\n      \"station\": \"Olympus Mons Hub\"\n    },\n    \"packages\": [{ \"weight\": 2.5, \"dimensions\": \"30x20x15\" }]\n  }'"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const response = await fetch(\n  'https://api.cosmocargo.com/v1/shipments',\n  {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'X-API-Key': 'YOUR_API_KEY',\n    },\n    body: JSON.stringify({\n      recipientAddress: {\n        name: 'Zara Nebula',\n        planet: 'Mars',\n        station: 'Olympus Mons Hub',\n      },\n      packages: [{ weight: 2.5, dimensions: '30x20x15' }],\n    }),\n  },\n);\n\nconst shipment = await response.json();"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nresponse = requests.post(\n    'https://api.cosmocargo.com/v1/shipments',\n    headers={\n        'Content-Type': 'application/json',\n        'X-API-Key': 'YOUR_API_KEY',\n    },\n    json={\n        'recipientAddress': {\n            'name': 'Zara Nebula',\n            'planet': 'Mars',\n            'station': 'Olympus Mons Hub',\n        },\n        'packages': [{'weight': 2.5, 'dimensions': '30x20x15'}],\n    },\n)\n\nshipment = response.json()"
+          }
+        ],
+        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/CorrelationId"
@@ -948,6 +995,7 @@
           {
             "name": "status",
             "in": "query",
+            "required": true,
             "description": "Filter by shipment status",
             "schema": {
               "type": "array",
@@ -1180,8 +1228,9 @@
       "delete": {
         "tags": ["Shipment Management"],
         "summary": "Cancel shipment",
-        "description": "Cancel a shipment that hasn't been picked up yet",
+        "description": "Cancel a shipment that hasn't been picked up yet.",
         "operationId": "cancelShipment",
+        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }],
         "parameters": [
           {
             "name": "trackingNumber",
@@ -1882,8 +1931,9 @@
       "post": {
         "tags": ["International Shipping"],
         "summary": "Pay import duties",
-        "description": "Pay import duties and taxes for an international shipment",
+        "description": "Pay import duties and taxes for an international shipment. Requires both an API key **and** a bearer token.",
         "operationId": "payDuties",
+        "security": [{ "ApiKeyAuth": [], "BearerAuth": [] }],
         "parameters": [
           {
             "name": "shipmentId",
@@ -2936,6 +2986,313 @@
         }
       }
     },
+    "/shipments/{shipmentId}/claims": {
+      "post": {
+        "tags": ["Shipment Management"],
+        "summary": "Create a lost shipment claim",
+        "description": "Submit a claim for a lost or damaged shipment. This endpoint accepts multipart/form-data to allow uploading photos and other evidence files along with the claim details.\n\n### Supported File Types\n- Images: JPEG, PNG, GIF, WebP (max 10MB each)\n- Documents: PDF (max 25MB each)\n\n### Maximum Files\nYou can upload up to 10 files per claim.",
+        "operationId": "createShipmentClaim",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the shipment",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["claimType", "description", "claimantEmail"],
+                "properties": {
+                  "claimType": {
+                    "type": "string",
+                    "enum": ["LOST", "DAMAGED", "DELAYED", "MISSING_CONTENTS"],
+                    "description": "The type of claim being filed"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 5000,
+                    "description": "Detailed description of the issue and circumstances"
+                  },
+                  "claimantEmail": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address for claim correspondence"
+                  },
+                  "claimantPhone": {
+                    "type": "string",
+                    "pattern": "^\\+[1-9]\\d{1,14}$",
+                    "description": "Phone number for claim correspondence (E.164 format)"
+                  },
+                  "declaredValue": {
+                    "type": "number",
+                    "format": "float",
+                    "minimum": 0,
+                    "description": "Declared value of the shipment contents in USD"
+                  },
+                  "incidentDate": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Date when the incident was discovered"
+                  },
+                  "photos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "maxItems": 10,
+                    "description": "Photos of damaged package or contents (JPEG, PNG, GIF, WebP)"
+                  },
+                  "documents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "maxItems": 5,
+                    "description": "Supporting documents such as receipts, invoices, or police reports (PDF only)"
+                  }
+                }
+              },
+              "encoding": {
+                "photos": {
+                  "contentType": "image/jpeg, image/png, image/gif, image/webp"
+                },
+                "documents": {
+                  "contentType": "application/pdf"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Claim created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "claimId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Unique identifier for the claim"
+                    },
+                    "shipmentId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "The shipment this claim is associated with"
+                    },
+                    "claimNumber": {
+                      "type": "string",
+                      "pattern": "^CLM-[A-Z0-9]{8}$",
+                      "description": "Human-readable claim reference number"
+                    },
+                    "claimType": {
+                      "type": "string",
+                      "enum": ["LOST", "DAMAGED", "DELAYED", "MISSING_CONTENTS"]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "SUBMITTED",
+                        "UNDER_REVIEW",
+                        "ADDITIONAL_INFO_REQUIRED",
+                        "APPROVED",
+                        "DENIED",
+                        "SETTLED"
+                      ],
+                      "description": "Current status of the claim"
+                    },
+                    "declaredValue": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "uploadedFiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "fileId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "fileName": {
+                            "type": "string"
+                          },
+                          "fileType": {
+                            "type": "string",
+                            "enum": ["PHOTO", "DOCUMENT"]
+                          },
+                          "uploadedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "estimatedResolutionDate": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Expected date for claim resolution"
+                    }
+                  }
+                },
+                "example": {
+                  "claimId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                  "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                  "claimNumber": "CLM-XK7M9P2Q",
+                  "claimType": "DAMAGED",
+                  "status": "SUBMITTED",
+                  "declaredValue": 299.99,
+                  "uploadedFiles": [
+                    {
+                      "fileId": "f1e2d3c4-b5a6-7890-1234-567890abcdef",
+                      "fileName": "damaged_box.jpg",
+                      "fileType": "PHOTO",
+                      "uploadedAt": "2025-01-15T10:30:00Z"
+                    },
+                    {
+                      "fileId": "a9b8c7d6-e5f4-3210-9876-543210fedcba",
+                      "fileName": "purchase_receipt.pdf",
+                      "fileType": "DOCUMENT",
+                      "uploadedAt": "2025-01-15T10:30:00Z"
+                    }
+                  ],
+                  "createdAt": "2025-01-15T10:30:00Z",
+                  "estimatedResolutionDate": "2025-01-29"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request - missing required fields or invalid file types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Validation failed",
+                  "details": [
+                    {
+                      "field": "description",
+                      "message": "Description must be at least 20 characters"
+                    },
+                    {
+                      "field": "photos[2]",
+                      "message": "File type not supported. Allowed: JPEG, PNG, GIF, WebP"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Shipment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Shipment with ID 123e4567-e89b-12d3-a456-426614174000 not found"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "File too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "maxSizeBytes": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "File exceeds maximum allowed size",
+                  "maxSizeBytes": 26214400
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Claim already exists for this shipment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "existingClaimId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "A claim already exists for this shipment",
+                  "existingClaimId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organizations": {
       "get": {
         "tags": ["Organization Management"],
@@ -3303,8 +3660,9 @@
     "/health": {
       "get": {
         "summary": "Health check",
-        "description": "Check if the API is up and running",
+        "description": "Check if the API is up and running. This endpoint is public and requires no authentication.",
         "operationId": "healthCheck",
+        "security": [],
         "responses": {
           "200": {
             "description": "API is healthy",
@@ -3336,8 +3694,9 @@
     "/version": {
       "get": {
         "summary": "Get API version",
-        "description": "Get information about the current API version",
+        "description": "Get information about the current API version. This endpoint is public.",
         "operationId": "getVersion",
+        "security": [],
         "responses": {
           "200": {
             "description": "Version information",

@@ -8,6 +8,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -49,9 +51,66 @@
   --font-serif: var(--font-serif);
 }
 
+@utility typography {
+  --tw-prose-body: color-mix(in oklch, currentColor 90%, transparent);
+  --tw-prose-headings: currentColor;
+  --tw-prose-lead: color-mix(in oklch, currentColor 65%, transparent);
+  --tw-prose-links: currentColor;
+  --tw-prose-bold: currentColor;
+  --tw-prose-counters: color-mix(in oklch, currentColor 55%, transparent);
+  --tw-prose-bullets: color-mix(in oklch, currentColor 30%, transparent);
+  --tw-prose-hr: color-mix(in oklch, currentColor 20%, transparent);
+  --tw-prose-quotes: currentColor;
+  --tw-prose-quote-borders: color-mix(in oklch, currentColor 20%, transparent);
+  --tw-prose-captions: color-mix(in oklch, currentColor 55%, transparent);
+  --tw-prose-code: currentColor;
+  --tw-prose-kbd: currentColor;
+  --tw-prose-th-borders: color-mix(in oklch, currentColor 30%, transparent);
+  --tw-prose-td-borders: color-mix(in oklch, currentColor 20%, transparent);
+  --tw-prose-invert-body: color-mix(in oklch, currentColor 90%, transparent);
+  --tw-prose-invert-headings: currentColor;
+  --tw-prose-invert-lead: color-mix(in oklch, currentColor 65%, transparent);
+  --tw-prose-invert-links: currentColor;
+  --tw-prose-invert-bold: currentColor;
+  --tw-prose-invert-counters: color-mix(
+    in oklch,
+    currentColor 55%,
+    transparent
+  );
+  --tw-prose-invert-bullets: color-mix(in oklch, currentColor 30%, transparent);
+  --tw-prose-invert-hr: color-mix(in oklch, currentColor 20%, transparent);
+  --tw-prose-invert-quotes: currentColor;
+  --tw-prose-invert-quote-borders: color-mix(
+    in oklch,
+    currentColor 20%,
+    transparent
+  );
+  --tw-prose-invert-captions: color-mix(
+    in oklch,
+    currentColor 55%,
+    transparent
+  );
+  --tw-prose-invert-code: currentColor;
+  --tw-prose-invert-kbd: currentColor;
+  --tw-prose-invert-th-borders: color-mix(
+    in oklch,
+    currentColor 30%,
+    transparent
+  );
+  --tw-prose-invert-td-borders: color-mix(
+    in oklch,
+    currentColor 20%,
+    transparent
+  );
+}
+
 @utility prose {
   a {
     @apply font-normal underline-offset-4 hover:text-primary;
+  }
+  td code,
+  th code {
+    @apply whitespace-nowrap;
   }
   blockquote {
     @apply not-italic text-neutral-500/75 dark:text-neutral-400;
@@ -64,7 +123,7 @@
     }
   }
   hr {
-    @apply border-border;
+    @apply border-border my-4;
   }
   code {
     font-weight: 400;
@@ -115,6 +174,11 @@
     --padding-nav-item: --spacing(2.5);
     --sidecar-grid-cols: 1fr minmax(200px, 260px);
     --scrollbar-width: calc(100vw - 100%);
+  }
+
+  * {
+    border-color: var(--border);
+    outline-color: var(--ring);
   }
 
   html {
@@ -187,7 +251,7 @@
     background-color: var(--shiki-dark-bg) !important;
   }
   .code-block .shiki {
-    @apply grid grid-rows-1;
+    @apply grid grid-rows-1 whitespace-pre;
     grid-auto-rows: 1lh;
   }
 
@@ -215,7 +279,7 @@
 
   .shiki.not-inline .line {
     @apply block -mx-4 px-4;
-    width: calc(100% + --spacing(4));
+    width: calc(100% + --spacing(7));
     --highlighted-bg: hsl(from var(--shiki-light-bg) h s calc(l - 6));
   }
   .dark .shiki.not-inline .line {
@@ -237,7 +301,12 @@
   }
 
   select {
-    @apply focus-visible:ring-primary focus-visible:ring-[1.5px] focus:outline-hidden;
+    @apply focus-visible:ring-primary focus-visible:ring-[1.5px] focus:outline-hidden scheme-light dark:scheme-dark;
+  }
+
+  select option {
+    color: CanvasText;
+    background-color: Canvas;
   }
 
   .CollapsibleContent {
@@ -337,6 +406,10 @@
 }
 
 @layer utilities {
+  .stepper {
+    @apply my-4;
+  }
+
   .stepper > ol {
     --bullet-size: 1.75rem;
     --line-spacing: 0.25rem;

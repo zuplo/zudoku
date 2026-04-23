@@ -1,11 +1,10 @@
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { cn } from "../../util/cn.js";
-import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
 import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
@@ -14,8 +13,9 @@ import { type FragmentType, useFragment } from "./graphql/index.js";
 import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
-import { Sidecar } from "./Sidecar.js";
 import { SchemaView } from "./schema/SchemaView.js";
+import { SecurityRequirements } from "./SecurityRequirements.js";
+import { Sidecar } from "./Sidecar.js";
 import { methodForColor } from "./util/methodToColor.js";
 
 const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
@@ -31,7 +31,7 @@ export const OperationListItem = ({
   shouldLazyHighlight?: boolean;
 }) => {
   const operation = useFragment(OperationsFragment, operationFragment);
-  const groupedParameters = groupBy(
+  const groupedParameters = Object.groupBy(
     operation.parameters ?? [],
     (param) => param.in,
   );
@@ -68,20 +68,25 @@ export const OperationListItem = ({
           {operation.summary}
         </Heading>
         {!isMCPEndpoint && (
-          <div className="text-sm flex gap-2 font-mono col-span-full">
-            <span className={methodForColor(operation.method)}>
-              {operation.method.toUpperCase()}
-            </span>
-            <SelectOnClick className="max-w-full truncate flex cursor-pointer">
-              {displayServerUrl && (
-                <div className="text-neutral-400 dark:text-neutral-500 truncate">
-                  {displayServerUrl.replace(/\/$/, "")}
+          <div className="flex flex-col gap-1.5 col-span-full">
+            <div className="text-sm flex gap-2 font-mono">
+              <span className={methodForColor(operation.method)}>
+                {operation.method.toUpperCase()}
+              </span>
+              <SelectOnClick className="max-w-full truncate flex cursor-pointer">
+                {displayServerUrl && (
+                  <div className="text-neutral-400 dark:text-neutral-500 truncate">
+                    {displayServerUrl.replace(/\/$/, "")}
+                  </div>
+                )}
+                <div className="text-neutral-900 dark:text-neutral-200">
+                  {operation.path}
                 </div>
-              )}
-              <div className="text-neutral-900 dark:text-neutral-200">
-                {operation.path}
-              </div>
-            </SelectOnClick>
+              </SelectOnClick>
+            </div>
+            {!options?.disableSecurity && (
+              <SecurityRequirements security={operation.security} />
+            )}
           </div>
         )}
 
@@ -89,6 +94,7 @@ export const OperationListItem = ({
           <div className="col-span-full">
             <MCPEndpoint
               serverUrl={displayServerUrl}
+              operationPath={operation.path}
               summary={operation.summary ?? undefined}
               data={operation.extensions?.["x-mcp-server"]}
             />
@@ -134,9 +140,9 @@ export const OperationListItem = ({
                     id={`${operation.slug}/request-body`}
                   >
                     {operation.summary && (
-                      <VisuallyHidden>
+                      <PagefindSearchMeta>
                         {operation.summary} &rsaquo;{" "}
-                      </VisuallyHidden>
+                      </PagefindSearchMeta>
                     )}
                     Request Body{" "}
                     {operation.requestBody?.required === false ? (
@@ -154,9 +160,9 @@ export const OperationListItem = ({
               <>
                 <Heading level={3} id={`${operation.slug}/responses`}>
                   {operation.summary && (
-                    <VisuallyHidden>
+                    <PagefindSearchMeta>
                       {operation.summary} &rsaquo;{" "}
-                    </VisuallyHidden>
+                    </PagefindSearchMeta>
                   )}
                   Responses
                 </Heading>

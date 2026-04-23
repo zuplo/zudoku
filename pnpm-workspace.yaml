@@ -1,15 +1,46 @@
 packages:
-  - "scripts"
-  - "packages/*"
-  - "examples/**"
-  - "website"
-  - "docs"
+  - scripts
+  - packages/*
+  - examples/**
+  - website
+  - docs
 
 catalog:
-  react: 19.2.0
-  react-dom: 19.2.0
-  react-is: 19.2.0
-  "@types/react": 19.2.0
-  "@types/react-dom": 19.2.0
+  "@testing-library/dom": 10.4.1
+  "@testing-library/jest-dom": 6.9.1
+  "@testing-library/react": 16.3.2
+  "@testing-library/user-event": 14.6.1
+  "@types/node": 22.19.1
+  "@types/react": 19.2.14
+  "@types/react-dom": 19.2.3
   "@types/react-is": 19.2.0
-  "@types/node": 22.13.5
+  happy-dom: 20.9.0
+  react: 19.2.5
+  react-dom: 19.2.5
+  react-is: 19.2.5
+  tsdown: 0.21.9
+  typescript: 6.0.3
+
+minimumReleaseAge: 4320
+
+minimumReleaseAgeExclude:
+  - zudoku
+
+onlyBuiltDependencies:
+  - esbuild
+
+overrides:
+  bs58: ">=6"
+  immutable: ">=3.8.3 <4"
+  js-yaml: ">=4.1.1"
+  minimatch: ">=10.2.3 <11"
+  qs: ">=6.14.1"
+  tar: ">=7.5.11 <8"
+  axios: ">=1.15.0 <2"
+  lodash: ">=4.18.0 <5"
+  lodash-es: ">=4.18.0 <5"
+  defu: ">=6.1.5 <7"
+  picomatch: ">=4.0.4 <5"
+
+patchedDependencies:
+  decode-named-character-reference@1.2.0: patches/decode-named-character-reference@1.2.0.patch

@@ -11,7 +11,7 @@ export function RouterError({ className }: { className?: string }) {
   }
 
   return (
-    <div className={cn("mx-4 max-w-2xl", className)}>
+    <div className={cn("mx-4 max-w-2xl", className)} data-pagefind-ignore="all">
       <ErrorAlert error={error} />
     </div>
   );

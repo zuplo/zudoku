@@ -47,6 +47,39 @@ const EXAMPLE_LANGUAGES = [
   { value: "swift", label: "Swift" },
 ];
 
+type CodeSample = {
+  lang: string;
+  label?: string;
+  source: string;
+};
+
+const isCodeSample = (sample: unknown): sample is CodeSample => {
+  if (typeof sample !== "object" || sample === null) return false;
+
+  const { lang, label, source } = sample as {
+    lang?: unknown;
+    label?: unknown;
+    source?: unknown;
+  };
+
+  return (
+    typeof lang === "string" &&
+    typeof source === "string" &&
+    (label === undefined || typeof label === "string")
+  );
+};
+
+const getCodeSamples = (
+  extensions: Record<string, unknown> | null | undefined,
+): CodeSample[] | undefined => {
+  const samples =
+    extensions?.["x-code-samples"] ?? extensions?.["x-codeSamples"];
+  if (!Array.isArray(samples) || samples.length === 0) return undefined;
+
+  const validSamples = samples.filter(isCodeSample);
+  return validSamples.length > 0 ? validSamples : undefined;
+};
+
 export const Sidecar = ({
   operation,
   selectedResponse,
@@ -67,7 +100,14 @@ export const Sidecar = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
 
-  const supportedLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
+  const codeSamples = getCodeSamples(operation.extensions);
+
+  const supportedLanguages = codeSamples
+    ? codeSamples.map((sample) => ({
+        value: sample.lang,
+        label: sample.label ?? sample.lang,
+      }))
+    : (options?.supportedLanguages ?? EXAMPLE_LANGUAGES);
 
   const preferredLang =
     searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
@@ -133,6 +173,11 @@ export const Sidecar = ({
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
+    if (codeSamples) {
+      const match = codeSamples.find((s) => s.lang === selectedLang);
+      return match?.source;
+    }
+
     const converted = options?.generateCodeSnippet?.({
       selectedLang,
       selectedServer,
@@ -149,18 +194,20 @@ export const Sidecar = ({
       selectedServer,
       exampleBody: currentExampleCode
         ? {
-            mimeType: "application/json",
+            mimeType: selectedContent?.mediaType ?? "application/json",
             text: JSON.stringify(currentExampleCode, null, 2),
           }
-        : { mimeType: "application/json" },
+        : { mimeType: selectedContent?.mediaType ?? "application/json" },
     });
 
     return getConverted(snippet, selectedLang);
   }, [
+    codeSamples,
     currentExampleCode,
     operation,
     selectedServer,
     selectedLang,
+    selectedContent,
     options,
     auth,
     context,
@@ -267,7 +314,7 @@ export const Sidecar = ({
         />
       ) : null}
 
-      {hasResponseExamples && (
+      {hasResponseExamples ? (
         <ResponsesSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
@@ -284,6 +331,22 @@ export const Sidecar = ({
                     content: response.content,
                   })
                 : response.content,
+          }))}
+        />
+      ) : (
+        <ResponsesSidecarBox
+          isGenerated
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
+          selectedResponse={selectedResponse}
+          responses={operation.responses.map((response) => ({
+            ...response,
+            content: response.content?.map((content) => ({
+              ...content,
+              examples: content.schema
+                ? [{ name: "", value: generateSchemaExample(content.schema) }]
+                : content.examples,
+            })),
           }))}
         />
       )}

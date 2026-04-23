@@ -1,5 +1,4 @@
 import { useMDXComponents } from "@mdx-js/react";
-import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
 import {
   CheckIcon,
@@ -12,13 +11,17 @@ import {
 import { type PropsWithChildren, useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
+import { ButtonGroup } from "zudoku/ui/ButtonGroup.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
+import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { useZudoku } from "../../components/context/ZudokuContext.js";
+import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
 import { Toc } from "../../components/navigation/Toc.js";
 import {
@@ -28,9 +31,9 @@ import {
 import { Pagination } from "../../components/Pagination.js";
 import { Typography } from "../../components/Typography.js";
 import { joinUrl } from "../../util/joinUrl.js";
+import { getMarkdownPathname } from "../../util/markdown.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
-import { ChatGPTLogo } from "./assets/ChatGPTLogo.js";
-import { ClaudeLogo } from "./assets/ClaudeLogo.js";
+import { slugify } from "../../util/slugify.js";
 import type { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
 
 declare global {
@@ -59,6 +62,7 @@ export const MdxPage = ({
   basePath,
   frontmatter = {},
   defaultOptions,
+  publishMarkdown,
   __filepath,
   tableOfContents,
   excerpt,
@@ -67,10 +71,12 @@ export const MdxPage = ({
     basePath: string;
     mdxComponent: MDXImport["default"];
     defaultOptions?: MarkdownPluginDefaultOptions;
+    publishMarkdown?: boolean;
   }
 >) => {
   const categoryTitle = useCurrentItem()?.categoryLabel;
   const location = useLocation();
+  const { options } = useZudoku();
   const [isCopied, setIsCopied] = useState(false);
 
   const title = frontmatter.title;
@@ -78,7 +84,7 @@ export const MdxPage = ({
   const category = frontmatter.category ?? categoryTitle;
   const hideToc = frontmatter.toc === false || defaultOptions?.toc === false;
   const pageTitle =
-    title ?? tableOfContents.find((item) => item.depth === 1)?.value;
+    title ?? tableOfContents.find((item) => item.depth === 1)?.text;
   const hidePager =
     frontmatter.disable_pager ??
     frontmatter.disablePager ??
@@ -104,7 +110,10 @@ export const MdxPage = ({
   const copyMarkdownConfig =
     frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
 
-  const markdownUrl = joinUrl(basePath, `${location.pathname}.md`);
+  const markdownUrl = joinUrl(
+    basePath,
+    `${getMarkdownPathname(location.pathname)}.md`,
+  );
 
   const handleCopyMarkdown = async () => {
     const response = await fetch(markdownUrl);
@@ -147,41 +156,44 @@ export const MdxPage = ({
       <Helmet>
         <title>{pageTitle}</title>
         {description && <meta name="description" content={description} />}
+        {publishMarkdown && (
+          <link rel="alternate" type="text/markdown" href={markdownUrl} />
+        )}
       </Helmet>
+
       <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
-        {(category || title) && (
-          <header className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              {category && <CategoryHeading>{category}</CategoryHeading>}
-              {title && (
-                <Heading level={1} id={slugify(title)}>
-                  {title}
-                </Heading>
-              )}
-            </div>
-            {copyMarkdownConfig && (
-              <div className="flex items-center border rounded-md">
+        <header className="flow-root">
+          {copyMarkdownConfig && (
+            <div
+              className="float-end ms-4 mt-1"
+              role="group"
+              aria-label="Page actions"
+            >
+              <ButtonGroup>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={handleCopyMarkdown}
-                  className="rounded-r-none border-r gap-2 h-7"
                 >
                   {isCopied ? (
-                    <CheckIcon size={14} className="text-emerald-600" />
+                    <CheckIcon
+                      size={14}
+                      className="text-emerald-600"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <CopyIcon size={14} />
+                    <CopyIcon size={14} aria-hidden="true" />
                   )}
                   <span>Copy page</span>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      className="rounded-l-none"
+                      variant="outline"
+                      size="icon-sm"
+                      aria-label="More actions"
                     >
-                      <ChevronDownIcon size={14} />
+                      <ChevronDownIcon size={14} aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -191,7 +203,7 @@ export const MdxPage = ({
                         void navigator.clipboard.writeText(window.location.href)
                       }
                     >
-                      <Link2Icon className="size-4" />
+                      <Link2Icon className="size-4" aria-hidden="true" />
                       Copy link to page
                     </DropdownMenuItem>
                     <DropdownMenuItem className="gap-2" asChild>
@@ -200,45 +212,35 @@ export const MdxPage = ({
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <ExternalLinkIcon className="size-4" />
+                        <ExternalLinkIcon
+                          className="size-4"
+                          aria-hidden="true"
+                        />
                         Open Markdown page
                       </a>
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="gap-2"
-                      onClick={() => {
-                        const prompt = encodeURIComponent(
-                          `Help me understand this documentation page: ${window.location.href}`,
-                        );
-                        window.open(
-                          `https://claude.ai/new?q=${prompt}`,
-                          "_blank",
-                        );
-                      }}
-                    >
-                      <ClaudeLogo className="size-4" />
-                      Open in Claude
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="gap-2"
-                      onClick={() => {
-                        const prompt = encodeURIComponent(
-                          `Help me understand this documentation page: ${window.location.href}`,
-                        );
-                        window.open(
-                          `https://chatgpt.com/?q=${prompt}`,
-                          "_blank",
-                        );
-                      }}
-                    >
-                      <ChatGPTLogo className="size-4" />
-                      Open in ChatGPT
-                    </DropdownMenuItem>
+                    <AiAssistantMenuItems
+                      aiAssistants={options.aiAssistants}
+                      getPageUrl={() => window.location.href}
+                      type="docs"
+                    />
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
-            )}
-          </header>
+              </ButtonGroup>
+            </div>
+          )}
+          {category && <CategoryHeading>{category}</CategoryHeading>}
+          {title && (
+            <Heading level={1} id={slugify(title)}>
+              {title}
+            </Heading>
+          )}
+        </header>
+
+        {frontmatter.draft && (
+          <DeveloperHint>
+            This page is a draft and is not visible in production.
+          </DeveloperHint>
         )}
 
         <MdxComponent
@@ -258,7 +260,7 @@ export const MdxPage = ({
                       rel="noopener noreferrer"
                       className="flex items-center gap-1"
                     >
-                      <EditIcon size={12} />
+                      <EditIcon size={12} aria-hidden="true" />
                       {editText}
                     </a>
                   </Button>

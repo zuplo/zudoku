@@ -149,8 +149,7 @@ docs: {
 
 #### `showLastModified`
 
-**Type:** `boolean`  
-**Default:** `false`
+**Type:** `boolean` **Default:** `true`
 
 Whether to show the last modified date by default.
 
@@ -205,8 +204,8 @@ The copy button provides:
 - A dropdown with additional options:
   - Copy link to page
   - Open markdown file (requires `publishMarkdown: true`)
-  - Open in Claude
-  - Open in ChatGPT
+  - AI assistant options (Claude, ChatGPT by default — see [AI Assistants](./ai-assistants.md) to
+    customize)
 
 > **Note:** The copy button requires `publishMarkdown: true` to be set in your docs config. If
 > `copyPage` is enabled but `publishMarkdown` is not, a warning will be displayed.

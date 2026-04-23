@@ -10,7 +10,7 @@ const BentoInternalTools = () => {
             <Icon className="absolute -top-8 left-5" />
           </BoxLongshadow>
         </div>
-        {/* 
+        {/*
         <BoxLongshadow className="w-full h-full bg-[#F2F4FF]">
           <BoxLongshadow className="rounded-full w-18 h-18 flex items-center justify-center">
             <LegoIcon size={24} />

@@ -32,6 +32,15 @@ const config = {
 
 ## URL Reference
 
+:::danger{title="Recommendation"}
+
+We strongly recommend using `type: "file"` for your OpenAPI schemas. When using URL based
+references, all schema processing occurs at runtime in the browser. This can cause noticeable
+performance issues with large OpenAPI documents and some features may not be fully supported due to
+the added complexity of runtime processing.
+
+:::
+
 If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing
 the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document
 if you want to test and play around):
@@ -57,8 +66,10 @@ hosting the document has the correct CORS policy in place to allow the Zudoku si
 
 ## Versioning
 
-When using `type: "file"`, you can provide an array of OpenAPI documents to create versioned API
-documentation:
+### File-based Versioning
+
+When using `type: "file"`, you can provide an array of file paths to create versioned API
+documentation. Version metadata is automatically extracted from each OpenAPI schema at build time:
 
 ```ts title=zudoku.config.ts
 const config = {
@@ -74,6 +85,109 @@ const config = {
 };
 ```
 
+If you need to override version metadata, you can specify it explicitly:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "file",
+    input: [
+      // Order of the array determines the order of the versions
+      {
+        path: "v2",
+        label: "Version 2.0",
+        input: "./openapi-v2.json",
+      },
+      {
+        path: "v1",
+        label: "Version 1.0",
+        input: "./openapi-v1.json",
+      },
+    ],
+    path: "/api",
+  },
+};
+```
+
+You can specify:
+
+- `input`: Path to the OpenAPI document (required)
+- `path`: Version identifier used in the URL path (e.g., `/api/v2`)
+- `label`: Optional display name for the version selector
+
+You can also mix strings and objects in the array - use strings for defaults and objects when you
+need to customize:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "file",
+    input: [
+      {
+        path: "latest",
+        label: "Latest (2.0)",
+        input: "./openapi-v2.json",
+      },
+      "./openapi-v1.json", // Uses info.version from the document
+    ],
+    path: "/api",
+  },
+};
+```
+
+### Splitting a Single Schema
+
+If you have one schema containing multiple API versions (e.g. `/v1/...` and `/v2/...` paths), you
+can split it into separate versions by appending query parameters to the input path:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "file",
+    input: ["openapi.json?prefix=/v2", "openapi.json?prefix=/v1"],
+    path: "/api",
+  },
+};
+```
+
+The query parameters are passed to [schema processors](../guides/processors) via the `params`
+argument, where you can filter the schema based on their values. See
+[Using Query Parameters to Split Schemas](../guides/processors#using-query-parameters-to-split-schemas)
+for a full example.
+
+### URL-based Versioning
+
+When using `type: "url"`, you can provide an array of version configurations. Since URL-based
+schemas cannot be processed at build time, you must explicitly specify the version identifier and
+optional label:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "url",
+    input: [
+      {
+        path: "v2",
+        label: "Version 2.0",
+        input: "https://api.example.com/openapi-v2.json",
+      },
+      {
+        path: "v1",
+        label: "Version 1.0",
+        input: "https://api.example.com/openapi-v1.json",
+      },
+    ],
+    path: "/api",
+  },
+};
+```
+
+Each URL version object requires:
+
+- `path`: Version identifier used in the URL path (e.g., `/api/v2`)
+- `input`: URL to the OpenAPI document
+- `label`: Optional display name for the version selector (defaults to `path` if not provided)
+
 ## Options
 
 The `options` field allows you to customize the API reference behavior:
@@ -86,10 +200,19 @@ const config = {
     path: "/api",
     options: {
       examplesLanguage: "shell", // Default language for code examples
+      supportedLanguages: [
+        { value: "shell", label: "cURL" },
+        { value: "javascript", label: "JavaScript" },
+      ],
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
+      disableSecurity: true, // Disable security scheme display and playground auth (default)
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
+      showInfoPage: true, // Show API information page as the index route
+      schemaDownload: {
+        enabled: true, // Enable schema download button
+      },
     },
   },
 };
@@ -98,12 +221,27 @@ const config = {
 Available options:
 
 - `examplesLanguage`: Set default language for code examples
+- `supportedLanguages`: Array of language options for code examples. Each option has `value` (code
+  identifier) and `label` (display name)
 - `disablePlayground`: Disable the interactive API playground globally
+- `disableSidecar`: Disable the sidecar panel completely
+- `disableSecurity`: Disable OpenAPI security scheme display (auth badges on operations, security
+  schemes section on the info page, and the Authorize dialog in the playground). Disabled by default
+  (`true`). Set to `false` to enable security scheme support
 - `showVersionSelect`: Control version selector visibility
   - `"if-available"`: Show version selector only when multiple versions exist (default)
   - `"always"`: Always show version selector (disabled if only one version)
   - `"hide"`: Never show version selector
 - `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
+- `showInfoPage`: Show the API information page as the index route (default: `true`). When disabled,
+  navigating to the API root redirects to the first tag instead
+- `schemaDownload`: Enable schema download functionality. When enabled, displays a button allowing
+  users to download the OpenAPI schema, copy it to clipboard, or open in a new tab.
+  - `enabled`: Enable or disable the schema download button
+- `transformExamples`: Function to transform request/response examples before rendering. See
+  [Transforming Examples](../guides/transforming-examples.md) for detailed usage
+- `generateCodeSnippet`: Function to generate custom code snippets for the API playground. See
+  [Advanced Configuration](#advanced-configuration) below
 
 ## Default Options
 
@@ -116,8 +254,14 @@ const config = {
     apis: {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
+      disableSidecar: false, // Disable the sidecar completely
+      disableSecurity: true, // Disable security scheme display and playground auth (default)
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
+      showInfoPage: true, // Show API information page as the index route
+      schemaDownload: {
+        enabled: true, // Enable schema download button
+      },
     },
   },
   apis: {
@@ -129,6 +273,66 @@ const config = {
 ```
 
 Individual API options will override these defaults when specified.
+
+## AI Assistants
+
+The schema download dropdown includes AI assistant options (Claude, ChatGPT) by default. You can
+customize or disable these using the top-level `aiAssistants` configuration. See
+[AI Assistants](./ai-assistants.md) for full documentation.
+
+## Advanced Configuration
+
+### Custom Code Snippets
+
+Use `generateCodeSnippet` to generate custom code snippets instead of the default HTTP examples.
+This is useful when you want to show SDK usage or language-specific implementations.
+
+```tsx title=zudoku.config.tsx
+const config: ZudokuConfig = {
+  apis: {
+    type: "file",
+    input: "./openapi.json",
+    path: "/api",
+    options: {
+      supportedLanguages: [
+        { value: "js", label: "JavaScript" },
+        { value: "python", label: "Python" },
+      ],
+      generateCodeSnippet: ({ selectedLang, selectedServer, operation, example }) => {
+        if (operation.operationId === "createUser") {
+          if (selectedLang === "js") {
+            return `
+import { Client } from "@mycompany/sdk";
+
+const client = new Client({ baseUrl: "${selectedServer}" });
+const user = await client.createUser(${JSON.stringify(example, null, 2)});
+            `.trim();
+          }
+          if (selectedLang === "python") {
+            return `
+from mycompany import Client
+
+client = Client(base_url="${selectedServer}")
+user = client.create_user(${JSON.stringify(example)})
+            `.trim();
+          }
+        }
+        // Return false to use default snippet generation
+        return false;
+      },
+    },
+  },
+};
+```
+
+The function receives:
+
+- `selectedLang`: Currently selected language from `supportedLanguages`
+- `selectedServer`: Currently selected server URL
+- `operation`: The OpenAPI operation object
+- `example`: The current request body example
+
+Return a string with the custom snippet, or `false` to fall back to default generation.
 
 ## Extensions
 

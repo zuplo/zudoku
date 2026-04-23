@@ -6,7 +6,6 @@ import { ActionButton } from "zudoku/ui/ActionButton.js";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button, type ButtonProps } from "zudoku/ui/Button.js";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -22,7 +21,8 @@ import {
   FormMessage,
 } from "../../ui/Form.js";
 import { cn } from "../../util/cn.js";
-import createVariantComponent from "../../util/createVariantComponent.js";
+import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
+import { AuthCard } from "./AuthCard.js";
 import AppleIcon from "./icons/Apple.js";
 import FacebookIcon from "./icons/Facebook.js";
 import GithubIcon from "./icons/Github.js";
@@ -137,8 +137,12 @@ export const ZudokuSignInUi = ({
   providers,
   onOAuthSignIn,
   onUsernamePasswordSignIn,
+  enableUsernamePassword,
+  enableEmailLink,
 }: {
   providers: string[];
+  enableUsernamePassword: boolean;
+  enableEmailLink?: boolean;
   onOAuthSignIn: (providerId: string) => Promise<void>;
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
 }) => {
@@ -146,27 +150,36 @@ export const ZudokuSignInUi = ({
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
+  const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
+
+  const invalidProviders = providers.filter(
+    (provider) => !isValidAuthProviderId(provider),
+  );
+
+  if (invalidProviders.length > 0) {
+    throw new Error(
+      `Unsupported auth provider: ${invalidProviders.join(", ")}`,
+    );
+  }
+
   if (!isAuthProviderIdArray(providers)) {
-    throw new Error("Invalid auth provider IDs");
+    throw new Error(`Unsupported auth provider: ${providers.join(", ")}`);
   }
 
   const signInUsernameMutation = useMutation({
-    mutationFn: async ({ email, password }: FormFields) => {
-      await onUsernamePasswordSignIn(email, password);
-    },
+    mutationFn: ({ email, password }: FormFields) =>
+      onUsernamePasswordSignIn(email, password),
     onSuccess: () => {
-      void navigate(redirectTo ?? "/");
+      void navigate(relativeRedirectTo);
     },
   });
   const signInByProviderMutation = useMutation({
-    mutationFn: async ({ providerId }: { providerId: string }) => {
-      await onOAuthSignIn(providerId);
-    },
+    mutationFn: ({ providerId }: { providerId: string }) =>
+      onOAuthSignIn(providerId),
     onSuccess: () => {
-      void navigate(redirectTo ?? "/");
+      void navigate(relativeRedirectTo);
     },
   });
-
   const form = useForm<FormFields>({
     defaultValues: {
       email: "",
@@ -178,6 +191,8 @@ export const ZudokuSignInUi = ({
     signInUsernameMutation.isPending || signInByProviderMutation.isPending;
 
   const error = signInUsernameMutation.error ?? signInByProviderMutation.error;
+
+  const hasEmailMethod = enableUsernamePassword || enableEmailLink;
 
   return (
     <AuthCard>
@@ -192,27 +207,55 @@ export const ZudokuSignInUi = ({
             <AlertDescription>{error?.message}</AlertDescription>
           </Alert>
         )}
-        <EmailPasswordForm
-          form={form}
-          onSubmit={(data) =>
-            void signInUsernameMutation.mutate({
-              email: data.email,
-              password: data.password,
-            })
-          }
-          submitLabel="Sign in"
-          isPending={pending}
-        />
-        <ProviderSeparator providers={providers} />
-        <ProviderButtons
-          providers={providers}
-          onClick={(providerId) =>
-            signInByProviderMutation.mutate({ providerId })
-          }
-        />
-        <Link to="/signup" className="text-sm text-muted-foreground">
-          Don't have an account? Sign up.
-        </Link>
+        {enableUsernamePassword && (
+          <>
+            <EmailPasswordForm
+              form={form}
+              onSubmit={(data) =>
+                void signInUsernameMutation.mutate({
+                  email: data.email,
+                  password: data.password,
+                })
+              }
+              submitLabel="Sign in"
+              isPending={pending}
+            />
+            <Link
+              to="/reset-password"
+              className="text-sm text-muted-foreground text-right -mt-2"
+            >
+              Forgot password?
+            </Link>
+          </>
+        )}
+        {hasEmailMethod && providers.length > 0 && (
+          <ProviderSeparator providers={providers} />
+        )}
+        {providers.length > 0 && (
+          <ProviderButtons
+            providers={providers}
+            onClick={(providerId) =>
+              signInByProviderMutation.mutate({ providerId })
+            }
+          />
+        )}
+        <div className="flex flex-col gap-1">
+          {enableEmailLink && (
+            <Link
+              to={
+                redirectTo
+                  ? `/signin/email-link?redirectTo=${encodeURIComponent(redirectTo)}`
+                  : "/signin/email-link"
+              }
+              className="text-sm text-muted-foreground"
+            >
+              Sign in with email link
+            </Link>
+          )}
+          <Link to="/signup" className="text-sm text-muted-foreground">
+            Don't have an account? Sign up.
+          </Link>
+        </div>
       </CardContent>
     </AuthCard>
   );
@@ -220,13 +263,23 @@ export const ZudokuSignInUi = ({
 
 export const ZudokuSignUpUi = ({
   providers,
+  enableUsernamePassword,
+  enableEmailLink,
   onOAuthSignUp,
   onUsernamePasswordSignUp,
 }: {
   providers: string[];
+  enableUsernamePassword: boolean;
+  enableEmailLink?: boolean;
   onOAuthSignUp: (providerId: string) => Promise<void>;
   onUsernamePasswordSignUp: (email: string, password: string) => Promise<void>;
 }) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
+
+  const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
+
   if (!isAuthProviderIdArray(providers)) {
     throw new Error("Invalid auth provider IDs");
   }
@@ -235,11 +288,17 @@ export const ZudokuSignUpUi = ({
     mutationFn: async ({ email, password }: FormFields) => {
       await onUsernamePasswordSignUp(email, password);
     },
+    onSuccess: () => {
+      void navigate(relativeRedirectTo);
+    },
   });
 
   const signUpByProviderMutation = useMutation({
     mutationFn: async ({ providerId }: { providerId: string }) => {
       await onOAuthSignUp(providerId);
+    },
+    onSuccess: () => {
+      void navigate(relativeRedirectTo);
     },
   });
 
@@ -255,6 +314,8 @@ export const ZudokuSignUpUi = ({
 
   const error = signUpUsernameMutation.error ?? signUpByProviderMutation.error;
 
+  const hasEmailMethod = enableUsernamePassword || enableEmailLink;
+
   return (
     <AuthCard>
       <CardHeader>
@@ -269,33 +330,51 @@ export const ZudokuSignUpUi = ({
           </Alert>
         )}
 
-        <EmailPasswordForm
-          form={form}
-          onSubmit={(data) =>
-            void signUpUsernameMutation.mutate({
-              email: data.email,
-              password: data.password,
-            })
-          }
-          submitLabel="Sign up"
-          isPending={pending}
-        />
-        <ProviderSeparator providers={providers} />
-        <ProviderButtons
-          providers={providers}
-          onClick={(providerId) =>
-            signUpByProviderMutation.mutate({ providerId })
-          }
-        />
-        <Link to="/signin" className="text-sm text-muted-foreground">
-          Already have an account? Sign in.
-        </Link>
+        {enableUsernamePassword && (
+          <EmailPasswordForm
+            form={form}
+            onSubmit={(data) =>
+              void signUpUsernameMutation.mutate({
+                email: data.email,
+                password: data.password,
+              })
+            }
+            submitLabel="Sign up"
+            isPending={pending}
+          />
+        )}
+        {hasEmailMethod && providers.length > 0 && (
+          <ProviderSeparator providers={providers} />
+        )}
+        {providers.length > 0 && (
+          <ProviderButtons
+            providers={providers}
+            onClick={(providerId) =>
+              signUpByProviderMutation.mutate({ providerId })
+            }
+          />
+        )}
+        <div className="flex flex-col gap-1">
+          {enableEmailLink && (
+            <Link
+              to={
+                redirectTo
+                  ? `/signin/email-link?redirectTo=${encodeURIComponent(redirectTo)}`
+                  : "/signin/email-link"
+              }
+              className="text-sm text-muted-foreground"
+            >
+              Sign in with email link
+            </Link>
+          )}
+          <Link to="/signin" className="text-sm text-muted-foreground">
+            Already have an account? Sign in.
+          </Link>
+        </div>
       </CardContent>
     </AuthCard>
   );
 };
-
-const AuthCard = createVariantComponent(Card, "max-w-md w-full mt-10 mx-auto");
 
 const ProviderButtons = ({
   providers,
@@ -331,5 +410,207 @@ const ProviderSeparator = ({ providers }: { providers: AuthProviderId[] }) => {
         </span>
       </Separator>
     )
+  );
+};
+
+export const ZudokuPasswordResetUi = ({
+  onPasswordReset,
+}: {
+  onPasswordReset: (email: string) => Promise<void>;
+}) => {
+  const [isSubmitted, setIsSubmitted] = React.useState(false);
+
+  const passwordResetMutation = useMutation({
+    mutationFn: async ({ email }: { email: string }) => {
+      await onPasswordReset(email);
+    },
+    onSuccess: () => {
+      setIsSubmitted(true);
+    },
+  });
+
+  const form = useForm<{ email: string }>({
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const error = passwordResetMutation.error;
+
+  return (
+    <AuthCard>
+      <CardHeader>
+        <CardTitle>Reset password</CardTitle>
+        <CardDescription>
+          {isSubmitted
+            ? "Check your email for a password reset link."
+            : "Enter your email address and we'll send you a link to reset your password."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error?.message}</AlertDescription>
+          </Alert>
+        )}
+        {isSubmitted ? (
+          <div className="flex flex-col gap-4">
+            <Alert>
+              <AlertTitle>Email sent</AlertTitle>
+              <AlertDescription>
+                If an account exists with that email address, you will receive a
+                password reset link shortly.
+              </AlertDescription>
+            </Alert>
+            <Link to="/signin">
+              <Button variant="outline" className="w-full">
+                Back to sign in
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit((data) =>
+                  passwordResetMutation.mutate({ email: data.email }),
+                )}
+                className="flex flex-col gap-2"
+              >
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="you@example.com"
+                      {...form.register("email")}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+                <ActionButton
+                  type="submit"
+                  isPending={passwordResetMutation.isPending}
+                >
+                  Reset password
+                </ActionButton>
+              </form>
+            </Form>
+            <Link to="/signin" className="text-sm text-muted-foreground">
+              Sign in
+            </Link>
+          </>
+        )}
+      </CardContent>
+    </AuthCard>
+  );
+};
+
+export const ZudokuPasswordUpdateUi = ({
+  onPasswordUpdate,
+}: {
+  onPasswordUpdate: (password: string) => Promise<void>;
+}) => {
+  const [isSubmitted, setIsSubmitted] = React.useState(false);
+
+  const passwordUpdateMutation = useMutation({
+    mutationFn: async ({ password }: { password: string }) => {
+      await onPasswordUpdate(password);
+    },
+    onSuccess: () => {
+      setIsSubmitted(true);
+    },
+  });
+
+  const form = useForm<{ password: string; confirmPassword: string }>({
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const error = passwordUpdateMutation.error;
+
+  const onSubmit = (data: { password: string; confirmPassword: string }) => {
+    if (data.password !== data.confirmPassword) {
+      form.setError("confirmPassword", {
+        message: "Passwords do not match",
+      });
+      return;
+    }
+    passwordUpdateMutation.mutate({ password: data.password });
+  };
+
+  return (
+    <AuthCard>
+      <CardHeader>
+        <CardTitle>Set new password</CardTitle>
+        <CardDescription>
+          {isSubmitted
+            ? "Your password has been updated successfully."
+            : "Enter your new password below."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error?.message}</AlertDescription>
+          </Alert>
+        )}
+        {isSubmitted ? (
+          <div className="flex flex-col gap-4">
+            <Alert>
+              <AlertTitle>Password updated</AlertTitle>
+              <AlertDescription>
+                Your password has been successfully updated. You can now sign in
+                with your new password.
+              </AlertDescription>
+            </Alert>
+            <Link to="/signin">
+              <Button variant="outline" className="w-full">
+                Sign in
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex flex-col gap-2"
+            >
+              <FormItem>
+                <FormLabel>New password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Enter new password"
+                    {...form.register("password")}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+              <FormItem>
+                <FormLabel>Confirm password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Confirm new password"
+                    {...form.register("confirmPassword")}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+              <ActionButton
+                type="submit"
+                isPending={passwordUpdateMutation.isPending}
+              >
+                Update password
+              </ActionButton>
+            </form>
+          </Form>
+        )}
+      </CardContent>
+    </AuthCard>
   );
 };

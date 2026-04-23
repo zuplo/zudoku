@@ -1,0 +1,28 @@
+{
+  "name": "search-algolia",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "zudoku dev",
+    "build": "zudoku build",
+    "preview": "zudoku preview"
+  },
+  "nx": {
+    "tags": [
+      "example"
+    ],
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "zudoku:build"
+        ]
+      }
+    }
+  },
+  "dependencies": {
+    "@zudoku/plugin-search-algolia": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zudoku": "workspace:*"
+  }
+}

@@ -10,7 +10,7 @@ your own server.
 
 To prepare the files you need to upload to your server, you will need to use the build command.
 
-```
+```bash
 npm run build
 ```
 

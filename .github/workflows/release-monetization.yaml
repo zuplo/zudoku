@@ -1,0 +1,110 @@
+name: Release Monetization Plugin
+on:
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: "Version bump type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release-monetization
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Update npm for OIDC trusted publishing support
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
+
+      - name: Build
+        run: pnpm --filter @zuplo/zudoku-plugin-monetization run build
+
+      - name: Bump version
+        working-directory: packages/plugin-zuplo-monetization
+        run: npm version ${{ github.event.inputs.releaseType }} --no-git-tag-version
+
+      - name: Get version
+        id: version
+        run: echo "version=$(node --print 'require(`./packages/plugin-zuplo-monetization/package.json`).version')" >> $GITHUB_OUTPUT
+
+      - name: Publish
+        working-directory: packages/plugin-zuplo-monetization
+        run: pnpm publish --provenance --access public --tag latest --no-git-checks
+
+      - name: Generate zudoku release token
+        id: zudoku-release-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.ZUDOKU_RELEASE_APP_ID }}
+          private-key: ${{ secrets.ZUDOKU_RELEASE_APP_PRIVATE_KEY }}
+          owner: zuplo
+          repositories: zudoku
+          permission-contents: write
+
+      - name: Commit and tag
+        run: |
+          git config user.email "integrations@zuplo.com"
+          git config user.name "Zuplo Integrations"
+          git add packages/plugin-zuplo-monetization/package.json
+          git commit -m "chore(release): @zuplo/zudoku-plugin-monetization v${{ steps.version.outputs.version }} [skip ci]"
+          git tag -a "monetization-v${{ steps.version.outputs.version }}" -m "Release monetization v${{ steps.version.outputs.version }}"
+
+      - name: Push Git Changes
+        env:
+          ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
+        run: |
+          echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
+          git push "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git" main --follow-tags
+
+      - name: Generate a token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.ZUDOKU_GH_APP_ID }}
+          private-key: ${{ secrets.ZUDOKU_GH_APP_PRIVATE_KEY }}
+          owner: zuplo
+          repositories: core
+
+      - name: Trigger zudoku builder rebuild
+        run: gh workflow run zudoku-builder.yaml --repo zuplo/core --ref main
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

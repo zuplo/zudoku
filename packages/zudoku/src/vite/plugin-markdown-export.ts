@@ -1,11 +1,11 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import matter from "gray-matter";
 import { matchPath } from "react-router";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { readFrontmatter } from "../lib/util/readFrontmatter.js";
 import {
   globMarkdownFiles,
   resolveCustomNavigationPaths,
@@ -22,8 +22,8 @@ export type MarkdownFileInfo = {
 const processMarkdownFile = async (
   filePath: string,
 ): Promise<{ content: string; title?: string; description?: string }> => {
-  const fileContent = await readFile(filePath, "utf-8");
-  const { content: markdownContent, data: frontmatter } = matter(fileContent);
+  const { content: markdownContent, data: frontmatter } =
+    await readFrontmatter(filePath);
 
   let finalMarkdown = markdownContent;
   if (frontmatter.title) {
@@ -49,6 +49,31 @@ const processMarkdownFile = async (
  *
  * It also writes metadata to markdown-info.json used by the llms.txt generator.
  */
+export const getMarkdownOutputPath = (distDir: string, routePath: string) => {
+  const segments =
+    routePath === "/" ? ["index"] : routePath.split("/").filter(Boolean);
+  return `${path.join(distDir, ...segments)}.md`;
+};
+
+/**
+ * Resolves a .md request URL to the route path used in the file mapping.
+ * Strips query/hash, removes the .md(x) extension, and reverses the
+ * "/index" → "/" mapping from getMarkdownPathname.
+ */
+export const resolveMarkdownRoutePath = (
+  requestUrl: string,
+  basePath: string,
+): string => {
+  const pathname = requestUrl.split(/[?#]/)[0] ?? requestUrl;
+  const routePath = joinUrl(
+    pathname.slice(basePath.length).replace(/\.mdx?$/, ""),
+  );
+  if (routePath === "/index") {
+    return "/";
+  }
+  return routePath;
+};
+
 const viteMarkdownExportPlugin = (): Plugin => {
   let markdownFiles: Record<string, string> = {};
   let markdownFileInfos: MarkdownFileInfo[] = [];
@@ -120,7 +145,7 @@ const viteMarkdownExportPlugin = (): Plugin => {
         }
 
         const basePath = joinUrl(config.basePath);
-        const routePath = req.url.slice(basePath.length).replace(/\.md$/, "");
+        const routePath = resolveMarkdownRoutePath(req.url, basePath);
         const filePath = markdownFiles[routePath];
 
         if (!filePath) return next();
@@ -178,9 +203,7 @@ const viteMarkdownExportPlugin = (): Plugin => {
             content: finalMarkdown,
           });
 
-          const outputFileName =
-            routePath === "/" ? "/index.md" : `${routePath}.md`;
-          const outputPath = path.join(distDir, outputFileName);
+          const outputPath = getMarkdownOutputPath(distDir, routePath);
 
           await mkdir(path.dirname(outputPath), { recursive: true });
 

@@ -3,44 +3,25 @@ import path from "node:path";
 import colors from "picocolors";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import type { MarkdownFileInfo } from "./plugin-markdown-export.js";
-import type { WorkerResult } from "./prerender/prerender.js";
-
 export async function generateLlmsTxtFiles({
   markdownFileInfos,
   outputUrls,
-  basePath,
   baseOutputDir,
+  basePath,
   siteName,
   llmsTxt,
   llmsTxtFull,
-  workerResults,
+  redirectUrls,
 }: {
-  // The path to the markdown info file
   markdownFileInfos: MarkdownFileInfo[];
-  // The base path of the site (e.g. `/docs`).
   basePath: string | undefined;
-  // The URLs of generated pages
   outputUrls: string[];
-  // The base output directory
   baseOutputDir: string;
-  // The site name for the header
   siteName?: string;
-  // The llms configuration
   llmsTxt?: boolean;
   llmsTxtFull?: boolean;
-  // The worker results from prerendering (used to filter redirects)
-  workerResults: WorkerResult[];
+  redirectUrls: Set<string>;
 }) {
-  // Filter out redirects
-  const redirectUrls = new Set(
-    workerResults
-      .filter((result) => result.redirect)
-      .map((result) => {
-        const redirect = result.redirect;
-        if (!redirect) return "";
-        return redirect.from.replace(basePath ?? "", "");
-      }),
-  );
   const nonRedirectUrls = outputUrls.filter((url) => !redirectUrls.has(url));
 
   const baseUrl = basePath ?? "";

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useSearchParams } from "react-router";
 import { Button, Link } from "zudoku/components";
 import {
   Card,
@@ -7,14 +8,19 @@ import {
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
+import { useLatest } from "../../util/useLatest.js";
 import { useAuth } from "../hook.js";
 
 export const SignUp = () => {
   const auth = useAuth();
+  const [search] = useSearchParams();
+  const redirectTo = search.get("redirect") ?? "/";
+
+  const signup = useLatest(auth.signup);
 
   useEffect(() => {
-    void auth.signup();
-  }, [auth]);
+    void signup.current({ redirectTo });
+  }, [signup, redirectTo]);
 
   return (
     <div className="flex items-center justify-center mt-8">

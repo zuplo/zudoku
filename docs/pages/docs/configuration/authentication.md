@@ -15,8 +15,8 @@ authentication provider you use.
 
 ## Authentication Providers
 
-Zudoku supports Clerk, Auth0, Supabase, Azure B2C, and any OpenID provider that supports the OpenID
-Connect protocol.
+Zudoku supports Clerk, Auth0, Supabase, Firebase, Azure B2C, and any OpenID Connect provider
+(including Okta, Keycloak, Authentik, and PingFederate).
 
 Not seeing your authentication provider? [Let us know](https://github.com/zuplo/zudoku/issues)
 
@@ -96,17 +96,46 @@ When configuring your OpenID provider, you will need to set the following:
 By default, the scopes "openid", "profile", and "email" are requested. You can customize these by
 providing your own array of scopes.
 
+For provider-specific guides (Okta, Keycloak, etc.), see the
+[OpenID Connect setup page](./authentication-openid.md).
+
+### Firebase
+
+For Firebase authentication, you will need your Firebase project configuration. You can find this in
+the Firebase console under Project Settings.
+
+```typescript title="zudoku.config.ts"
+{
+  // ...
+  authentication: {
+    type: "firebase",
+    apiKey: "<your-firebase-api-key>",
+    authDomain: "<your-project>.firebaseapp.com",
+    projectId: "<your-project-id>",
+    appId: "<your-app-id>",
+    providers: ["google", "github", "password"], // Optional
+  },
+  // ...
+}
+```
+
+The `providers` option configures which sign-in methods are available. Supported providers include:
+`google`, `facebook`, `twitter`, `github`, `microsoft`, `apple`, `yahoo`, `password`, and
+`emailLink`.
+
+For detailed setup instructions, see the [Firebase setup guide](./authentication-firebase.md).
+
 ### Supabase
 
 To use Supabase as your authentication provider, supply your project's URL, API key, and the OAuth
-provider to use.
+providers to use.
 
 ```typescript title="zudoku.config.ts"
 {
   // ...
   authentication: {
     type: "supabase",
-    provider: "github",
+    providers: ["github"],
     supabaseUrl: "https://your-project.supabase.co",
     supabaseKey: "<your-supabase-key>",
     redirectToAfterSignUp: "/",
@@ -117,10 +146,10 @@ provider to use.
 }
 ```
 
-The `provider` option can be any of Supabase Auth's supported providers, such as `apple`, `azure`,
-`bitbucket`, `discord`, `facebook`, `figma`, `github`, `gitlab`, `google`, `kakao`, `keycloak`,
-`linkedin`, `linkedin_oidc`, `notion`, `slack`, `slack_oidc`, `spotify`, `twitch`, `twitter`,
-`workos`, `zoom`, or `fly`.
+The `providers` option accepts an array of Supabase Auth's supported providers, such as `apple`,
+`azure`, `bitbucket`, `discord`, `facebook`, `figma`, `github`, `gitlab`, `google`, `kakao`,
+`keycloak`, `linkedin`, `linkedin_oidc`, `notion`, `slack`, `slack_oidc`, `spotify`, `twitch`,
+`twitter`, `workos`, `zoom`, or `fly`.
 
 ### Azure B2C
 
@@ -168,19 +197,32 @@ If the provider does not return a field, it will be left blank.
 ## Protected Routes
 
 Once authentication is configured, you can protect specific routes in your documentation to require
-users to be authenticated or meet custom authorization requirements.
+users to be authenticated or meet custom authorization requirements. Routes can be protected with a
+simple array of patterns, or with custom callback functions that support reason codes for
+distinguishing between unauthorized and forbidden access.
 
 ```typescript title="zudoku.config.ts"
 {
   // ...
+  // Simple array format: requires authentication
   protectedRoutes: [
-    "/admin/*",     // Protect all routes under /admin
-    "/settings",    // Protect the settings page
-    "/api/*",       // Protect all API-related routes
+    "/admin/*",
+    "/settings",
+    "/api/*",
   ],
+
+  // Or object format: custom authorization with reason codes
+  protectedRoutes: {
+    "/admin/*": ({ auth, reasonCode }) =>
+      !auth.isAuthenticated
+        ? reasonCode.UNAUTHORIZED
+        : auth.profile?.email?.endsWith("@example.com")
+          ? true
+          : reasonCode.FORBIDDEN,
+  },
   // ...
 }
 ```
 
 See the [Protected Routes](./protected-routes.md) documentation for detailed information on
-configuring route protection with simple patterns or advanced authorization logic.
+configuring route protection, reason codes, and navigation behavior.

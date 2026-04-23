@@ -17,7 +17,7 @@ import ParamsGrid, {
 import type { Header, PlaygroundForm } from "./Playground.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
 
-// biome-ignore format: Easier to read
+// prettier-ignore
 const headerOptions = Object.freeze([
   "Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Cache-Control", "Connection",
   "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Range",
@@ -68,7 +68,7 @@ export const Headers = ({
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
-        <TableOfContentsIcon size={14} />
+        <TableOfContentsIcon size={14} aria-hidden="true" />
         <CollapsibleHeader>Headers</CollapsibleHeader>
       </CollapsibleHeaderTrigger>
       <CollapsibleContent className="CollapsibleContent">
@@ -82,7 +82,7 @@ export const Headers = ({
                       key={field.id}
                       className="opacity-50 cursor-not-allowed font-mono text-xs min-h-10"
                     >
-                      <LockIcon size={16} />
+                      <LockIcon size={16} aria-hidden="true" />
                       <ParamsGridInput value={field.name} disabled />
                       <div>{field.value}</div>
                     </ParamsGridItem>
@@ -125,6 +125,7 @@ export const Headers = ({
                             !isHidden && "hidden",
                           )}
                           size={16}
+                          aria-hidden="true"
                         />
                       </TooltipTrigger>
                       <TooltipContent

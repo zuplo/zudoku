@@ -1,5 +1,5 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 import colors from "picocolors";
 import {
   type ConfigEnv,
@@ -11,37 +11,23 @@ import {
 import packageJson from "../../package.json" with { type: "json" };
 import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
+import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
-import { CdnUrlSchema } from "../config/validators/validate.js";
-import { defaultHighlightOptions, defaultLanguages } from "../lib/shiki.js";
+import { CdnUrlSchema } from "../config/validators/ZudokuConfig.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
+import { getZuploSystemConfigurations } from "./zuplo.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
 };
 
-export function getModuleDir() {
-  // NOTE: This is relative to the /dist folder because the dev server
-  // runs the compiled JS files, but vite uses the raw TS files
-  const moduleDir = fileURLToPath(new URL("../../", import.meta.url))
-    // Windows compat
-    .replaceAll(path.sep, path.posix.sep);
+export const getAppClientEntryPath = () =>
+  path.posix.join(getZudokuRootDir(), "src/app/entry.client.tsx");
 
-  return moduleDir.endsWith(path.posix.sep)
-    ? moduleDir.slice(0, -1)
-    : moduleDir;
-}
-
-export function getAppClientEntryPath() {
-  const modDir = getModuleDir();
-  return path.posix.join(modDir, "src", "app", "entry.client.tsx");
-}
-
-export function getAppServerEntryPath() {
-  const modDir = getModuleDir();
-  return path.posix.join(modDir, "src", "app", "entry.server.tsx");
-}
+export const getAppServerEntryPath = () =>
+  path.posix.join(getZudokuRootDir(), "src/app/entry.server.tsx");
 
 // the vite config gets loaded multiple times, so we only log the CDN info once
 let hasLoggedCdnInfo = false;
@@ -78,40 +64,6 @@ export async function getViteConfig(
     hasLoggedCdnInfo = true;
   }
 
-  // These dependencies are listed explicitly to prevent cascading page reloads that occur during auto-discovery
-  const zudokuIncludeOptimizedDeps = [
-    "@sindresorhus/slugify",
-    "react-hook-form",
-    "cmdk",
-    "@radix-ui/react-tabs",
-    "@radix-ui/react-tooltip",
-    "@radix-ui/react-select",
-    "@radix-ui/react-popover",
-    "@radix-ui/react-checkbox",
-    "@radix-ui/react-label",
-    "@radix-ui/react-radio-group",
-    "@radix-ui/react-slot",
-    "@envelop/core",
-    "@pothos/core",
-    "graphql-yoga",
-    "graphql",
-    "graphql/index.js",
-    "graphql/error/index.js",
-    "openapi-types",
-    "@zudoku/httpsnippet",
-    "graphql-type-json",
-    "yaml",
-    "@clerk/clerk-js",
-    "@scalar/openapi-parser",
-    "allof-merge",
-    ...(config.syntaxHighlighting?.languages ?? defaultLanguages).map(
-      (lang) => `@shikijs/langs/${lang}`,
-    ),
-    ...Object.values(
-      config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
-    ).map((theme) => `@shikijs/themes/${theme}`),
-  ].map((dep) => `zudoku > ${dep}`);
-
   // We define public env vars as `process.env` vars because Vite only exposes them as `import.meta.env` vars
   const publicVarsProcessEnvDefine = Object.fromEntries(
     Object.entries(publicEnv).map(([key, value]) => [
@@ -119,6 +71,18 @@ export async function getViteConfig(
       value,
     ]),
   );
+
+  if (ZuploEnv.isZuplo) {
+    dotenv.config({
+      path: path.resolve(config.__meta.rootDir, "../.env.zuplo"),
+      quiet: true,
+    });
+  }
+
+  const deploymentName =
+    ZuploEnv.buildConfig?.deploymentName ||
+    getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
+      ?.__ZUPLO_DEPLOYMENT_NAME;
 
   const viteConfig: InlineConfig = {
     root: dir,
@@ -130,6 +94,7 @@ export async function getViteConfig(
     customLogger: logger,
     envPrefix,
     resolve: {
+      dedupe: ["react", "react-dom"],
       alias: {
         "@mdx-js/react": import.meta.resolve("@mdx-js/react"),
       },
@@ -138,22 +103,22 @@ export async function getViteConfig(
       "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
       "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
       "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
+      "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME":
+        JSON.stringify(deploymentName),
       ...defineEnvVars([
         "SENTRY_DSN",
         "ZUPLO_BUILD_ID",
         "ZUPLO_BUILD_CONFIG",
         "ZUPLO_ENVIRONMENT_TYPE",
         "ZUPLO_SERVER_URL",
+        "ZUPLO_GATEWAY_SERVICE_URL",
       ]),
       ...publicVarsProcessEnvDefine,
-    },
-    ssr: {
-      target: "node",
-      noExternal: ["@mdx-js/react"],
     },
     server: {
       middlewareMode: true,
       open: true,
+      forwardConsole: false,
       watch: {
         ignored: [
           `${dir}/dist`,
@@ -165,28 +130,41 @@ export async function getViteConfig(
       },
     },
     build: {
-      ssr: configEnv.isSsrBuild,
       sourcemap: true,
       target: "es2022",
-      outDir: path.resolve(
-        path.join(
-          dir,
-          "dist",
-          config.basePath ?? "",
-          configEnv.isSsrBuild ? "server" : "",
-        ),
-      ),
-      emptyOutDir: true,
-      rollupOptions: {
-        input:
-          configEnv.command === "build"
-            ? configEnv.isSsrBuild
-              ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
-              : "zudoku/app/entry.client.tsx"
-            : undefined,
-        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
-      },
       chunkSizeWarningLimit: 1500,
+      outDir: path.resolve(path.join(dir, "dist", config.basePath ?? "")),
+      emptyOutDir: false,
+      rolldownOptions: {
+        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+        logLevel: process.env.ZUDOKU_ENV === "internal" ? "info" : "warn",
+        checks: {
+          pluginTimings: process.env.ZUDOKU_ENV === "internal",
+        },
+      },
+    },
+    environments: {
+      client: {
+        build: {
+          rolldownOptions: {
+            input: "zudoku/app/entry.client.tsx",
+          },
+        },
+      },
+      ssr: {
+        resolve: {
+          noExternal: [/zudoku/, "@mdx-js/react"],
+          external: ["@shikijs/themes", "@shikijs/langs"],
+        },
+        build: {
+          outDir: path.resolve(
+            path.join(dir, "dist", config.basePath ?? "", "server"),
+          ),
+          rolldownOptions: {
+            input: ["zudoku/app/entry.server.tsx", config.__meta.configPath],
+          },
+        },
+      },
     },
     experimental: {
       renderBuiltUrl(filename) {
@@ -202,18 +180,13 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: "es2022",
-      },
-      entries: [
-        configEnv.isSsrBuild
-          ? getAppServerEntryPath()
-          : getAppClientEntryPath(),
-      ],
+      entries: [path.posix.join(getZudokuRootDir(), "src/{app,lib}/**")],
+      exclude: ["zudoku"],
       include: [
+        "@mdx-js/react",
         "react-dom/client",
+        "zudoku/icons",
         ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
-        ...zudokuIncludeOptimizedDeps,
       ],
     },
     assetsInclude: [
@@ -229,32 +202,39 @@ export async function getViteConfig(
       removePluginHookHandleHotUpdate: "warn",
       removePluginHookSsrArgument: "warn",
       removeServerHot: "warn",
+      removeServerPluginContainer: "warn",
+      removeServerReloadModule: "warn",
     },
   };
 
-  // If the user has supplied a vite.config file, merge it with ours
-  const userConfig = await loadConfigFromFile(
-    configEnv,
-    undefined,
-    dir,
-    undefined,
-    undefined,
-    "runner",
+  // Merge vite configs from plugin directories and user's project
+  const configRoots = await Promise.all(
+    (config.__pluginDirs ?? []).map(findPackageRoot),
   );
+  configRoots.push(dir);
 
-  if (userConfig) {
-    const merged: InlineConfig = mergeConfig(
-      viteConfig,
-      userConfig.config,
-      true,
+  let mergedViteConfig = viteConfig;
+
+  for (const root of configRoots) {
+    if (!root) continue;
+    const loaded = await loadConfigFromFile(
+      configEnv,
+      undefined,
+      root,
+      undefined,
+      undefined,
+      "runner",
     );
+    if (!loaded) continue;
 
-    logger.info(colors.blue(`merged with custom user Vite config`), {
-      timestamp: true,
-    });
+    mergedViteConfig = mergeConfig(mergedViteConfig, loaded.config, true);
 
-    return merged;
+    if (root === dir) {
+      logger.info(colors.blue(`merged with custom user Vite config`), {
+        timestamp: true,
+      });
+    }
   }
 
-  return viteConfig;
+  return mergedViteConfig;
 }

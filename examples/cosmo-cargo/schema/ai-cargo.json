@@ -283,7 +283,19 @@
         "operationId": "mcpUniversal",
         "x-mcp-server": {
           "name": "Cosmo Cargo AI",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "security": [
+            {
+              "ApiKeyAuth": []
+            }
+          ],
+          "securitySchemes": {
+            "ApiKeyAuth": {
+              "type": "apiKey",
+              "in": "header",
+              "name": "X-API-Key"
+            }
+          }
         },
         "requestBody": {
           "required": true,
@@ -575,6 +587,33 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mpthreetest.mp3": {
+      "get": {
+        "servers": [
+          {
+            "url": "https://archive.org/download/testmp3testfile",
+            "description": "Audio sample"
+          }
+        ],
+        "tags": ["AI Operations"],
+        "summary": "Sample audio playback",
+        "description": "Demo endpoint for audio player feature. Returns a sample MP3 file from a public CDN.",
+        "operationId": "getSampleAudio",
+        "responses": {
+          "200": {
+            "description": "Audio file",
+            "content": {
+              "audio/mpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }

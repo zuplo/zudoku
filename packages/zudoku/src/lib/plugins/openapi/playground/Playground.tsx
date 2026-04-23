@@ -23,8 +23,13 @@ import { useHotkey } from "../../../hooks/useHotkey.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
-import type { MediaTypeObject } from "../graphql/graphql.js";
+import type {
+  MediaTypeObject,
+  SecuritySchemeIn,
+  SecuritySchemeType,
+} from "../graphql/graphql.js";
 import { useSelectedServer } from "../state.js";
+import { AuthorizeDialog } from "./AuthorizeDialog.js";
 import BodyPanel from "./BodyPanel.js";
 import {
   CollapsibleHeader,
@@ -37,14 +42,21 @@ import { IdentityDialog } from "./IdentityDialog.js";
 import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
-import RequestLoginDialog from "./RequestLoginDialog.js";
 import { useIdentityStore } from "./rememberedIdentity.js";
 import { UrlPath } from "./request-panel/UrlPath.js";
 import { UrlQueryParams } from "./request-panel/UrlQueryParams.js";
+import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
+import {
+  applySecurityCredentials,
+  getSecurityLockedHeaders,
+  getSecurityQueryParams,
+  useSecurityCredentialsStore,
+} from "./securityCredentialsStore.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
 export const NO_IDENTITY = "__none";
+export const SECURITY_SCHEME_PREFIX = "__security:";
 
 export type Header = {
   name: string;
@@ -62,6 +74,9 @@ export type QueryParam = {
   isRequired?: boolean;
   enum?: string[];
   type?: string;
+  style?: string;
+  explode?: boolean;
+  allowReserved?: boolean;
 };
 
 export type PathParam = {
@@ -84,6 +99,10 @@ export type PlaygroundForm = {
     value: string;
     active: boolean;
     enum?: string[];
+    type?: string;
+    style?: string;
+    explode?: boolean;
+    allowReserved?: boolean;
   }>;
   pathParams: Array<{ name: string; value: string }>;
   headers: Array<{
@@ -112,6 +131,41 @@ export type PlaygroundResult = {
   };
 };
 
+export type SecurityRequirementProp = {
+  schemes: Array<{
+    scopes: Array<string>;
+    scheme: {
+      name: string;
+      type: SecuritySchemeType;
+      description?: string | null;
+      in?: SecuritySchemeIn | null;
+      paramName?: string | null;
+      scheme?: string | null;
+      bearerFormat?: string | null;
+      openIdConnectUrl?: string | null;
+      flows?: {
+        implicit?: {
+          authorizationUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+        password?: {
+          tokenUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+        clientCredentials?: {
+          tokenUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+        authorizationCode?: {
+          authorizationUrl?: string | null;
+          tokenUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+      } | null;
+    };
+  }>;
+};
+
 export type PlaygroundContentProps = {
   server?: string;
   servers?: string[];
@@ -122,6 +176,18 @@ export type PlaygroundContentProps = {
   pathParams?: PathParam[];
   defaultBody?: string;
   examples?: MediaTypeObject[];
+  security?: SecurityRequirementProp[];
+  securitySchemes?: Array<{
+    name: string;
+    type: SecuritySchemeType;
+    description?: string | null;
+    in?: SecuritySchemeIn | null;
+    paramName?: string | null;
+    scheme?: string | null;
+    bearerFormat?: string | null;
+    openIdConnectUrl?: string | null;
+    flows?: Record<string, unknown> | null;
+  }>;
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
@@ -137,6 +203,8 @@ export const Playground = ({
   pathParams = [],
   defaultBody = "",
   examples,
+  security,
+  securitySchemes = [],
   requiresLogin = false,
   onLogin,
   onSignUp,
@@ -145,6 +213,7 @@ export const Playground = ({
     servers.map((url) => ({ url })),
   );
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
+  const [showAuthorizeDialog, setShowAuthorizeDialog] = useState(false);
   const identities = useApiIdentities();
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
@@ -179,6 +248,10 @@ export const Playground = ({
                 value: param.defaultValue ?? "",
                 active: param.defaultActive ?? false,
                 enum: param.enum ?? [],
+                type: param.type,
+                style: param.style,
+                explode: param.explode,
+                allowReserved: param.allowReserved,
               }))
             : [{ name: "", value: "", active: false, enum: [] }],
         pathParams: sortedPathParams.map((param) => ({
@@ -195,6 +268,7 @@ export const Playground = ({
             : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
+          ...securitySchemes.map((s) => `${SECURITY_SCHEME_PREFIX}${s.name}`),
           ...(identities.data?.map((i) => i.id) ?? []),
         ]),
       },
@@ -205,6 +279,22 @@ export const Playground = ({
     () => identities.data?.find((i) => i.id === identity)?.authorizationFields,
     [identities.data, identity],
   );
+
+  const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
+
+  const selectedSchemeName = identity?.startsWith(SECURITY_SCHEME_PREFIX)
+    ? identity.slice(SECURITY_SCHEME_PREFIX.length)
+    : undefined;
+
+  const securityLockedHeaders = useMemo(() => {
+    const cred = selectedSchemeName
+      ? securityCredentials[selectedSchemeName]
+      : undefined;
+    if (!selectedSchemeName || !cred) return [];
+    return getSecurityLockedHeaders(security, {
+      [selectedSchemeName]: cred,
+    });
+  }, [security, securityCredentials, selectedSchemeName]);
 
   useEffect(() => {
     if (identity) {
@@ -227,7 +317,7 @@ export const Playground = ({
 
       switch (data.bodyMode) {
         case "file":
-          body = data.file ?? undefined;
+          body = data.file || undefined;
           headers.delete("Content-Type");
           break;
         case "multipart": {
@@ -241,16 +331,42 @@ export const Playground = ({
           break;
         }
         default:
-          body = data.body ?? undefined;
+          body = data.body || undefined;
           break;
       }
 
-      const request = new Request(
-        createUrl(server ?? selectedServer, url, data),
-        { method, headers, body },
-      );
+      const upperMethod = method.toUpperCase();
+      const requestUrl = createUrl(server ?? selectedServer, url, data);
 
-      if (data.identity !== NO_IDENTITY) {
+      const schemeName = data.identity?.startsWith(SECURITY_SCHEME_PREFIX)
+        ? data.identity.slice(SECURITY_SCHEME_PREFIX.length)
+        : undefined;
+
+      const schemeCredentials = (() => {
+        if (!schemeName) return {};
+        const cred =
+          useSecurityCredentialsStore.getState().credentials[schemeName];
+        return cred ? { [schemeName]: cred } : {};
+      })();
+
+      if (schemeName) {
+        for (const [key, value] of getSecurityQueryParams(
+          security,
+          schemeCredentials,
+        )) {
+          requestUrl.searchParams.set(key, value);
+        }
+      }
+
+      const request = new Request(requestUrl, {
+        method: upperMethod,
+        headers,
+        body: ["GET", "HEAD"].includes(upperMethod) ? null : body,
+      });
+
+      if (schemeName) {
+        applySecurityCredentials(request, security, schemeCredentials);
+      } else if (data.identity !== NO_IDENTITY) {
         await identities.data
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
@@ -371,7 +487,7 @@ export const Playground = ({
   }, []);
 
   const serverSelect = (
-    <div className="inline-block opacity-50 hover:opacity-100 transition">
+    <div className="inline-block align-middle -translate-y-px opacity-50 hover:opacity-100 transition">
       {server ? (
         <span>{server.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span>
       ) : (
@@ -383,7 +499,7 @@ export const Playground = ({
             value={selectedServer}
             defaultValue={selectedServer}
           >
-            <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto translate-y-[4px]">
+            <SelectTrigger className="p-0! h-6! shadow-none border-none flex-row-reverse bg-transparent text-xs gap-0.5">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -457,18 +573,18 @@ export const Playground = ({
 
           <div className="grid grid-cols-[1fr_1px_1fr] text-sm">
             <div className="col-span-3 p-4 border-b flex gap-2 items-stretch">
-              <div className="flex flex-1 items-center w-full border rounded-md relative overflow-hidden">
-                <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
+              <div className="flex flex-1 items-stretch w-full min-h-8 border rounded-md relative overflow-hidden">
+                <div className="border-r px-2 bg-muted rounded-l-md font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="items-center px-2 font-mono text-xs break-all leading-6 relative h-full w-full">
-                  <div className="h-full py-1.5">
+                <div className="flex-1 min-w-0 px-2 font-mono text-xs break-all leading-6 flex items-center">
+                  <div>
                     {serverSelect}
                     <UrlPath url={url} />
                     <UrlQueryParams />
                   </div>
                 </div>
-                <div className="px-1">
+                <div className="px-1 flex items-center">
                   <Button
                     type="button"
                     onClick={() => {
@@ -482,15 +598,20 @@ export const Playground = ({
                     }}
                     variant="ghost"
                     size="icon-xs"
+                    aria-label="Copy URL"
                     className={cn(
                       "hover:opacity-100 transition",
                       isCopied ? "text-emerald-600 opacity-100" : "opacity-50",
                     )}
                   >
                     {isCopied ? (
-                      <CheckIcon className="text-green-500" size={14} />
+                      <CheckIcon
+                        className="text-green-500"
+                        size={14}
+                        aria-hidden="true"
+                      />
                     ) : (
-                      <CopyIcon size={14} />
+                      <CopyIcon size={14} aria-hidden="true" />
                     )}
                   </Button>
                 </div>
@@ -513,18 +634,43 @@ export const Playground = ({
               </Button>
             </div>
             <div className="relative overflow-y-auto h-[80vh]">
-              {identities.data?.length !== 0 && (
+              {(identities.data?.length !== 0 ||
+                securitySchemes.length > 0) && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
-                    <IdCardLanyardIcon size={16} />
+                    <IdCardLanyardIcon size={16} aria-hidden="true" />
                     <CollapsibleHeader>Authentication</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <IdentitySelector
                       value={identity}
                       identities={identities.data ?? []}
-                      setValue={(value) => setValue("identity", value)}
+                      setValue={(value) => {
+                        if (value.startsWith(SECURITY_SCHEME_PREFIX)) {
+                          const schemeName = value.slice(
+                            SECURITY_SCHEME_PREFIX.length,
+                          );
+                          if (!securityCredentials[schemeName]?.isAuthorized) {
+                            setShowAuthorizeDialog(true);
+                          }
+                        }
+                        setValue("identity", value);
+                      }}
+                      securitySchemes={
+                        securitySchemes.length > 0 ? securitySchemes : undefined
+                      }
+                      securityCredentials={securityCredentials}
+                      onConfigureScheme={() => setShowAuthorizeDialog(true)}
                     />
+                    {selectedSchemeName && (
+                      <AuthorizeDialog
+                        securitySchemes={securitySchemes.filter(
+                          (s) => s.name === selectedSchemeName,
+                        )}
+                        open={showAuthorizeDialog}
+                        onOpenChange={setShowAuthorizeDialog}
+                      />
+                    )}
                   </CollapsibleContent>
                 </Collapsible>
               )}
@@ -532,7 +678,7 @@ export const Playground = ({
               {sortedPathParams.length > 0 && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
-                    <ShapesIcon size={16} />
+                    <ShapesIcon size={16} aria-hidden="true" />
                     <CollapsibleHeader>Path Parameters</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
@@ -546,7 +692,10 @@ export const Playground = ({
               <Headers
                 control={control}
                 schemaHeaders={headers}
-                lockedHeaders={authorizationFields?.headers}
+                lockedHeaders={[
+                  ...(authorizationFields?.headers ?? []),
+                  ...securityLockedHeaders,
+                ]}
               />
               {isBodySupported && <BodyPanel content={examples} />}
             </div>

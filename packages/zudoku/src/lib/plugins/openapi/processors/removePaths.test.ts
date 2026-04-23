@@ -27,6 +27,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -43,6 +44,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -60,6 +62,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -75,6 +78,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -89,6 +93,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -104,6 +109,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -119,6 +125,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -131,6 +138,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -144,6 +152,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -158,6 +167,7 @@ describe("removePaths", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 

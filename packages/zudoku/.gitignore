@@ -2,4 +2,5 @@
 /lib
 /standalone
 
-stats.html
+stats.html.tmp
+/docs

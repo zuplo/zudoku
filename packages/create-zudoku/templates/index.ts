@@ -5,7 +5,6 @@ import path from "node:path";
 import { bold, cyan } from "picocolors";
 import { copy } from "../helpers/copy";
 import { install } from "../helpers/install";
-
 import type { GetTemplateFileArgs, InstallTemplateArgs } from "./types";
 
 // When bundled by ncc, __dirname points to dist/, but templates are at dist/templates/
@@ -107,7 +106,7 @@ export const installTemplate = async ({
       "@types/node": "^22",
       "@types/react": "^19",
       "@types/react-dom": "^19",
-      typescript: "^5",
+      typescript: "^6",
     };
   }
 

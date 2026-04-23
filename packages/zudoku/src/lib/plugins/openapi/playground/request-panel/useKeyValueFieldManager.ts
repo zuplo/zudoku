@@ -1,7 +1,6 @@
 import {
   type ComponentPropsWithoutRef,
   type KeyboardEvent,
-  startTransition,
   useCallback,
   useEffect,
   useRef,
@@ -95,6 +94,14 @@ export const useKeyValueFieldManager = <
   const lastEditedIndexRef = useRef(-1);
   const prevLengthRef = useRef(-1);
 
+  const shouldSetActive = useCallback(
+    (item: T) => {
+      if (customShouldSetActive) return customShouldSetActive(item);
+      return Boolean(item.name || item.value);
+    },
+    [customShouldSetActive],
+  );
+
   const setValue = useCallback<SetValueFn>(
     (index, field, value, options) => {
       if (field === "value" || field === "name") {
@@ -103,6 +110,19 @@ export const useKeyValueFieldManager = <
 
       // biome-ignore lint/suspicious/noExplicitAny: Can't infer the type of the value here
       internalSetValue(`${name}.${index}.${field}`, value as any);
+
+      // Auto-set active state when name or value changes
+      if (field === "name" || field === "value") {
+        const current = watchedFields?.[index];
+        if (current) {
+          const updated = { ...current, [field]: value };
+          const shouldBeActive = shouldSetActive(updated as T);
+          if (current.active !== shouldBeActive) {
+            // biome-ignore lint/suspicious/noExplicitAny: Can't infer the type of the value here
+            internalSetValue(`${name}.${index}.active`, shouldBeActive as any);
+          }
+        }
+      }
 
       if (options?.focus === "next") {
         setFocus(
@@ -118,7 +138,7 @@ export const useKeyValueFieldManager = <
         );
       }
     },
-    [name, internalSetValue, setFocus],
+    [name, internalSetValue, setFocus, watchedFields, shouldSetActive],
   );
 
   const isEmpty = useCallback(
@@ -127,14 +147,6 @@ export const useKeyValueFieldManager = <
       return !item.name && !item.value;
     },
     [customIsEmpty],
-  );
-
-  const shouldSetActive = useCallback(
-    (item: T) => {
-      if (customShouldSetActive) return customShouldSetActive(item);
-      return Boolean(item.name || item.value);
-    },
-    [customShouldSetActive],
   );
 
   // Handle auto append/remove of rows
@@ -227,27 +239,6 @@ export const useKeyValueFieldManager = <
     setFocus,
     shouldSetActive,
   ]);
-
-  // Auto set active state of row checkbox
-  useEffect(() => {
-    if (!watchedFields) return;
-
-    const updates: Array<() => void> = [];
-
-    for (let i = 0; i < watchedFields.length; i++) {
-      const field = watchedFields[i];
-      if (!field) continue;
-
-      const shouldBeActive = shouldSetActive(field);
-      if (field.active === shouldBeActive) continue;
-
-      updates.push(() => setValue(i, "active", shouldBeActive));
-    }
-
-    if (updates.length === 0) return;
-
-    startTransition(() => updates.forEach((update) => update()));
-  }, [watchedFields, shouldSetActive, setValue]);
 
   const isFieldEmpty = useCallback(
     (index: number) => {

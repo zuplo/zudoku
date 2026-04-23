@@ -46,9 +46,7 @@ category: Getting Started
 ---
 ```
 
-### `navigation_label`
-
-_Deprecated (`sidebar_label`)_
+### `sidebar_label`
 
 Sets a custom label for the page in the sidebar navigation, allowing you to use a shorter or
 different title than the main page title.
@@ -56,20 +54,33 @@ different title than the main page title.
 ```md
 ---
 title: My Very Long Documentation Page Title
-navigation_label: Short Title
+sidebar_label: Short Title
 ---
 ```
 
-### `navigation_icon`
+The legacy name `navigation_label` is also supported but `sidebar_label` is preferred.
 
-_Deprecated (`sidebar_icon`)_
+### `sidebar_icon`
 
 Specifies a [Lucide icon](https://lucide.dev/icons) to display next to the page in the sidebar
 navigation.
 
 ```md
 ---
-navigation_icon: compass
+sidebar_icon: compass
+---
+```
+
+The legacy name `navigation_icon` is also supported but `sidebar_icon` is preferred.
+
+### `navigation_display`
+
+Specifies the display property of the navigation item. See the
+[Navigation guide](/docs/configuration/navigation#display-control)
+
+```md
+---
+navigation_display: auth
 ---
 ```
 
@@ -95,6 +106,39 @@ disable_pager: true
 ---
 ```
 
+### `showLastModified`
+
+Controls whether the last modified date is displayed for this page. Can be used to override the
+[default option](/docs/configuration/docs#showlastmodified).
+
+```md
+---
+showLastModified: false
+---
+```
+
+### `draft`
+
+Marks a document as a draft. Draft documents are only visible when running in development mode and
+are excluded from production builds. This is useful for working on content that isn't ready to be
+published.
+
+```md
+---
+draft: true
+---
+```
+
+:::info
+
+When `draft: true` is set:
+
+- The document will be visible when running `zudoku dev`
+- The document will be excluded from builds created with `zudoku build`
+- The document won't appear in the navigation or be accessible via URL in production
+
+:::
+
 ### `lastModifiedTime`
 
 The last modified timestamp for the page. This property is automatically set by Zudoku during the
@@ -108,6 +152,8 @@ lastModifiedTime: 2025-11-20T10:30:00.000Z
 ---
 ```
 
+::if{mode=opensource}
+
 :::info
 
 For accurate last modified dates in deployment environments, ensure full Git history is available
@@ -115,6 +161,8 @@ during builds. See the [Vercel deployment guide](/docs/deploy/vercel#accurate-la
 for configuration details.
 
 :::
+
+::
 
 ## Complete Example
 
@@ -125,10 +173,11 @@ Here's an example showing multiple frontmatter properties used together:
 title: Advanced Configuration Guide
 description: Learn how to configure advanced features in Zudoku
 category: Configuration
-navigation_label: Advanced Config
-navigation_icon: settings
+sidebar_label: Advanced Config
+sidebar_icon: settings
 toc: true
 disable_pager: false
+draft: false
 ---
 
 This page content follows the frontmatter...

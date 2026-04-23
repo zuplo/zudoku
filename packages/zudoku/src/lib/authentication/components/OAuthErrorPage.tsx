@@ -1,5 +1,6 @@
 import { HomeIcon } from "lucide-react";
 import { Link } from "react-router";
+import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
 import { Typography } from "../../components/Typography.js";
 import { Button } from "../../ui/Button.js";
@@ -12,19 +13,17 @@ const errorDetailsMap: Record<string, { message: string }> = {
       "The authentication request was invalid. Please try signing in again.",
   },
   unauthorized_client: {
-    message:
-      "This application is not authorized to access your account. Please contact support.",
+    message: "This application is not authorized to access your account.",
   },
   access_denied: {
     message:
       "You denied access to this application. To continue, please sign in and grant access.",
   },
   unsupported_response_type: {
-    message:
-      "The authentication method is not supported. Please contact support.",
+    message: "The authentication method is not supported.",
   },
   invalid_scope: {
-    message: "The requested permissions are invalid. Please contact support.",
+    message: "The requested permissions are invalid.",
   },
   server_error: {
     message:
@@ -36,15 +35,14 @@ const errorDetailsMap: Record<string, { message: string }> = {
   },
   // Token errors
   invalid_client: {
-    message: "Invalid application credentials. Please contact support.",
+    message: "Invalid application credentials.",
   },
   invalid_grant: {
     message:
       "The authentication code has expired or is invalid. Please sign in again.",
   },
   unsupported_grant_type: {
-    message:
-      "The authentication method is not supported. Please contact support.",
+    message: "The authentication method is not supported.",
   },
   // Custom errors
   invalid_state: {
@@ -63,8 +61,7 @@ const errorDetailsMap: Record<string, { message: string }> = {
     message: "Your authentication session has expired. Please sign in again.",
   },
   configuration_error: {
-    message:
-      "There is an issue with the authentication configuration. Please contact support.",
+    message: "There is an issue with the authentication configuration.",
   },
   unknown_error: {
     message:
@@ -79,8 +76,13 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
     throw error;
   }
 
-  const oauthError = error.error;
-  const type = oauthError.error;
+  const oauthError = error.error as
+    | { error?: string; error_description?: string; error_uri?: string }
+    | undefined;
+  const type =
+    oauthError && typeof oauthError === "object" && "error" in oauthError
+      ? String(oauthError.error)
+      : "unknown_error";
 
   const details = errorDetailsMap[type] ?? errorDetailsMap.unknown_error;
 
@@ -96,10 +98,31 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
             {details?.message}
           </Typography>
 
-          {/* Technical details for developers (only in development) */}
+          <DeveloperHint>
+            <p>
+              <strong>Error:</strong> <code>{type}</code>
+            </p>
+            {oauthError?.error_description != null && (
+              <p>
+                <strong>Description:</strong> {oauthError.error_description}
+              </p>
+            )}
+            {oauthError?.error_uri?.startsWith("http") && (
+              <p>
+                <strong>More info:</strong>{" "}
+                <a
+                  href={oauthError.error_uri}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  {oauthError.error_uri}
+                </a>
+              </p>
+            )}
+          </DeveloperHint>
         </div>
 
-        {/* Action Buttons */}
         <div className="space-y-3 pt-4">
           <div className="space-y-2">
             {(type === "access_denied" ||
@@ -125,7 +148,6 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
           </div>
         </div>
 
-        {/* Additional Help */}
         {helpMessages[type] && (
           <Typography className="text-sm text-gray-500 dark:text-gray-400">
             {helpMessages[type]}

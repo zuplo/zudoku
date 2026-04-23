@@ -1,5 +1,4 @@
 import type { Clerk } from "@clerk/clerk-js";
-import { LogOutIcon } from "lucide-react";
 import type { ZudokuPlugin } from "zudoku/plugins";
 import type { ClerkAuthenticationConfig } from "../../../config/config.js";
 import type {
@@ -10,7 +9,50 @@ import type {
 import { SignIn } from "../components/SignIn.js";
 import { SignOut } from "../components/SignOut.js";
 import { SignUp } from "../components/SignUp.js";
-import { useAuthState } from "../state.js";
+import { type UserProfile, useAuthState } from "../state.js";
+import { getClerkFrontendApi } from "./util.js";
+
+export type ClerkProviderData = {
+  type: "clerk";
+  user: NonNullable<Clerk["session"]>["user"] | undefined;
+};
+
+declare module "../state.js" {
+  interface ProviderDataRegistry {
+    clerk: ClerkProviderData;
+  }
+}
+
+let clerkPromise: Promise<Clerk> | undefined;
+
+const loadClerk = (publishableKey: string): Promise<Clerk> => {
+  if (clerkPromise) return clerkPromise;
+
+  clerkPromise = new Promise<void>((resolve, reject) => {
+    const frontendApiUrl = getClerkFrontendApi(publishableKey);
+
+    const script = document.createElement("script");
+    script.src = `https://${frontendApiUrl}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`;
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    script.dataset.clerkPublishableKey = publishableKey;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      clerkPromise = undefined;
+      reject(new Error("Failed to load Clerk from CDN"));
+    };
+    document.head.appendChild(script);
+  }).then(async () => {
+    const clerk = (window as { Clerk?: Clerk }).Clerk;
+    if (!clerk) {
+      throw new Error("Clerk script loaded but window.Clerk is not available");
+    }
+    await clerk.load();
+    return clerk;
+  });
+
+  return clerkPromise;
+};
 
 const clerkAuth: AuthenticationProviderInitializer<
   ClerkAuthenticationConfig
@@ -21,55 +63,77 @@ const clerkAuth: AuthenticationProviderInitializer<
   redirectToAfterSignUp,
   redirectToAfterSignIn,
 }): AuthenticationPlugin & ZudokuPlugin => {
-  let clerkApi: Clerk | undefined;
-  const ensureLoaded = (async () => {
-    if (typeof window === "undefined") return;
-    const { Clerk } = await import("@clerk/clerk-js");
-    clerkApi = new Clerk(clerkPubKey);
-
-    await clerkApi.load();
-
-    if (clerkApi.user) {
-      const verifiedEmail = clerkApi.user.emailAddresses.find(
-        (email) => email.verification.status === "verified",
-      );
-      useAuthState.getState().setLoggedIn({
-        profile: {
-          sub: clerkApi.user.id,
-          name: clerkApi.user.fullName ?? undefined,
-          email:
-            verifiedEmail?.emailAddress ??
-            clerkApi.user.emailAddresses[0]?.emailAddress,
-          emailVerified: verifiedEmail !== undefined,
-          pictureUrl: clerkApi.user.imageUrl,
-        },
-        providerData: {
-          user: {
-            publicMetadata: clerkApi.user.publicMetadata,
-            id: clerkApi.user.id,
-            emailAddresses: clerkApi.user.emailAddresses,
-            imageUrl: clerkApi.user.imageUrl,
-            fullName: clerkApi.user.fullName,
-          },
-        },
-      });
+  const getClerk = (): Promise<Clerk> => {
+    if (typeof window === "undefined") {
+      return Promise.reject(new Error("Clerk is not available during SSR"));
     }
-
-    return clerkApi;
-  })();
+    return loadClerk(clerkPubKey);
+  };
 
   async function getAccessToken() {
-    await ensureLoaded;
-    if (!clerkApi?.session) {
+    const clerk = await getClerk();
+
+    if (!clerk.session) {
       throw new Error("No session available");
     }
-    const response = await clerkApi.session.getToken({
+    const response = await clerk.session.getToken({
       template: jwtTemplateName,
     });
     if (!response) {
       throw new Error("Could not get access token from Clerk");
     }
     return response;
+  }
+
+  async function getUserProfile(
+    clerk: Clerk,
+  ): Promise<UserProfile | undefined> {
+    const user = clerk.session?.user;
+    if (!user) return undefined;
+
+    const verifiedEmail = user.emailAddresses.find(
+      (email) => email.verification.status === "verified",
+    );
+
+    return {
+      sub: user.id ?? "",
+      email:
+        verifiedEmail?.emailAddress ??
+        user.emailAddresses[0]?.emailAddress ??
+        "",
+      name: user.fullName ?? undefined,
+      emailVerified: !!verifiedEmail?.emailAddress,
+      pictureUrl: user.imageUrl ?? undefined,
+    };
+  }
+
+  async function refreshUserProfile() {
+    const clerk = await getClerk().catch((e) => {
+      // biome-ignore lint/suspicious/noConsole: Intentional warning
+      console.warn("Clerk unavailable during profile refresh:", e);
+      return undefined;
+    });
+    if (!clerk) return false;
+
+    await clerk.session?.user?.reload();
+
+    const profile = await getUserProfile(clerk);
+
+    if (!profile) {
+      return false;
+    }
+
+    useAuthState.setState({
+      isAuthenticated: true,
+      isPending: false,
+      profile,
+      providerData: {
+        type: "clerk",
+        user: clerk.session?.user,
+      },
+    });
+
+    return true;
   }
 
   async function signRequest(request: Request): Promise<Request> {
@@ -79,81 +143,59 @@ const clerkAuth: AuthenticationProviderInitializer<
   }
 
   return {
-    getRoutes: () => {
-      return [
-        {
-          path: "/signout",
-          element: <SignOut />,
-        },
-        {
-          path: "/signin",
-          element: <SignIn />,
-        },
-        {
-          path: "/signup",
-          element: <SignUp />,
-        },
-      ];
-    },
-
+    getRoutes: () => [
+      { path: "/signout", element: <SignOut /> },
+      { path: "/signin", element: <SignIn /> },
+      { path: "/signup", element: <SignUp /> },
+    ],
+    refreshUserProfile,
     getProfileMenuItems() {
-      return [
-        {
-          label: "Logout",
-          path: "/signout",
-          category: "bottom",
-          icon: LogOutIcon,
-        } as const,
-      ];
+      return [];
     },
     initialize: async () => {
-      const clerk = await ensureLoaded;
+      if (typeof window === "undefined") return;
 
-      if (!clerk) {
-        return;
-      }
+      const clerk = await getClerk().catch((e) => {
+        // biome-ignore lint/suspicious/noConsole: Intentional error logging
+        console.error("Clerk failed to initialize:", e);
+        return undefined;
+      });
+      if (!clerk) return;
 
       if (clerk.session) {
-        const verifiedEmail = clerk.session.user.emailAddresses.find(
-          (email) => email.verification.status === "verified",
-        );
+        const profile = await getUserProfile(clerk);
+
+        if (!profile) {
+          useAuthState.getState().setLoggedOut();
+          return;
+        }
+
         useAuthState.getState().setLoggedIn({
-          profile: {
-            sub: clerk.session.user.id,
-            name: clerk.session.user.fullName ?? undefined,
-            email:
-              verifiedEmail?.emailAddress ??
-              clerk.session.user.emailAddresses[0]?.emailAddress,
-            emailVerified: verifiedEmail !== undefined,
-            pictureUrl: clerk.session.user.imageUrl,
-          },
+          profile,
           providerData: {
+            type: "clerk",
             user: clerk.session.user,
           },
         });
       } else {
-        useAuthState.setState({
-          isAuthenticated: false,
-          isPending: false,
-          profile: undefined,
-        });
+        useAuthState.getState().setLoggedOut();
       }
     },
     getAccessToken,
     signRequest,
     signOut: async () => {
-      await ensureLoaded;
-      await clerkApi?.signOut({
+      const clerk = await getClerk();
+      useAuthState.getState().setLoggedOut();
+      await clerk.signOut({
         redirectUrl: window.location.origin + redirectToAfterSignOut,
       });
-      useAuthState.getState().setLoggedOut();
     },
     signIn: async (
       _: AuthActionContext,
       { redirectTo }: { redirectTo?: string } = {},
     ) => {
-      await ensureLoaded;
-      await clerkApi?.redirectToSignIn({
+      const clerk = await getClerk();
+      await clerk.redirectToSignIn({
         signInForceRedirectUrl: redirectToAfterSignIn
           ? window.location.origin + redirectToAfterSignIn
           : redirectTo,
@@ -166,8 +208,8 @@ const clerkAuth: AuthenticationProviderInitializer<
       _: AuthActionContext,
       { redirectTo }: { redirectTo?: string } = {},
     ) => {
-      await ensureLoaded;
-      await clerkApi?.redirectToSignUp({
+      const clerk = await getClerk();
+      await clerk.redirectToSignUp({
         signInForceRedirectUrl: redirectToAfterSignIn
           ? window.location.origin + redirectToAfterSignIn
           : redirectTo,

@@ -1,14 +1,19 @@
 import { stat } from "node:fs/promises";
 import path from "node:path";
 import colors from "picocolors";
-import type { RollupOutput, RollupWatcher } from "rollup";
-import { type ConfigEnv, runnerImport, loadEnv as viteLoadEnv } from "vite";
+import {
+  type ConfigEnv,
+  runnerImport,
+  loadEnv as viteLoadEnv,
+  type Plugin as VitePlugin,
+} from "vite";
 import { logger } from "../cli/common/logger.js";
+import { getZudokuRootDir } from "../cli/common/package-json.js";
+import { runPluginTransformConfig } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
-import { getModuleDir } from "../vite/config.js";
 import { fileExists } from "./file-exists.js";
-import type { ZudokuConfig } from "./validators/validate.js";
-import { validateConfig } from "./validators/validate.js";
+import type { ZudokuConfig } from "./validators/ZudokuConfig.js";
+import { validateConfig } from "./validators/ZudokuConfig.js";
 
 export type ConfigWithMeta = ZudokuConfig & {
   __meta: {
@@ -43,6 +48,18 @@ async function getConfigFilePath(rootDir: string) {
   throw new Error(`No zudoku config file found in project root.`);
 }
 
+// Stub virtual modules so transitive imports don't fail during config loading.
+// The real Vite server replaces these with actual values at runtime.
+const virtualModuleStubPlugin: VitePlugin = {
+  name: "zudoku-virtual-module-stubs",
+  resolveId(id) {
+    if (id.startsWith("virtual:")) return `\0${id}`;
+  },
+  load(id) {
+    if (id.startsWith("\0virtual:")) return "export default {}";
+  },
+};
+
 async function loadZudokuConfigWithMeta(
   rootDir: string,
 ): Promise<ConfigWithMeta> {
@@ -51,6 +68,18 @@ async function loadZudokuConfigWithMeta(
   const { module, dependencies } = await runnerImport<{
     default: ZudokuConfig;
   }>(configPath, {
+    plugins: [virtualModuleStubPlugin],
+    environments: {
+      inline: {
+        resolve: {
+          // Prevent Node.js from trying to load zudoku's raw .ts source
+          // directly, which fails with ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING
+          // when --experimental-strip-types is enabled. Uses regex to also
+          // catch plugins that re-export from zudoku (e.g. @zuplo/zudoku-plugin-*).
+          noExternal: [/zudoku/],
+        },
+      },
+    },
     server: {
       // this allows us to 'load' CSS files in the config
       // see https://github.com/vitejs/vite/pull/19577
@@ -66,7 +95,7 @@ async function loadZudokuConfigWithMeta(
     ...config,
     __meta: {
       rootDir,
-      moduleDir: getModuleDir(),
+      moduleDir: getZudokuRootDir(),
       mode: process.env.ZUDOKU_ENV,
       dependencies,
       configPath,
@@ -74,23 +103,6 @@ async function loadZudokuConfigWithMeta(
   };
 
   return configWithMetadata;
-}
-
-export function findOutputPathOfServerConfig(
-  output: RollupOutput | RollupOutput[] | RollupWatcher,
-) {
-  if (Array.isArray(output)) {
-    throw new Error("Expected a single output, but got an array");
-  }
-  if ("output" in output) {
-    const result = output.output.find(
-      (o) => "isEntry" in o && o.isEntry && o.fileName === "zudoku.config.js",
-    );
-    if (result) {
-      return result.fileName;
-    }
-  }
-  throw new Error("Could not find server config output file");
 }
 
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
@@ -169,7 +181,8 @@ export async function loadZudokuConfig(
   ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
 
   try {
-    config = await loadZudokuConfigWithMeta(rootDir);
+    const loadedConfig = await loadZudokuConfigWithMeta(rootDir);
+    config = await runPluginTransformConfig(loadedConfig);
 
     logger.info(
       colors.cyan(`loaded config file `) + colors.dim(config.__meta.configPath),
@@ -195,7 +208,7 @@ export const setStandaloneConfig = (rootDir: string) => {
   config = {
     __meta: {
       rootDir,
-      moduleDir: getModuleDir(),
+      moduleDir: getZudokuRootDir(),
       mode: "standalone",
       dependencies: [],
       configPath: "",

@@ -1,0 +1,8 @@
+**/*.test.*
+**/*.spec.*
+**/test/
+**/tests/
+**/__tests__/
+**/fixtures/
+codegen.ts
+cli/

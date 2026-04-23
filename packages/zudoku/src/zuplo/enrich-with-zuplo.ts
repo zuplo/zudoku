@@ -91,7 +91,7 @@ const enrichWithRateLimitData = (
   return operationObject;
 };
 
-// biome-ignore format: for readability
+// prettier-ignore
 export const operations = [
   "get", "put", "post", "delete",
   "options", "head", "patch", "trace",
@@ -193,7 +193,8 @@ export const enrichWithZuploData = ({
             (policy) =>
               inboundPolicies.includes(policy.name) &&
               (policy.handler.export === "ApiAuthKeyInboundPolicy" ||
-                policy.handler.export === "ApiKeyInboundPolicy") &&
+                policy.handler.export === "ApiKeyInboundPolicy" ||
+                policy.handler.export === "MonetizationInboundPolicy") &&
               !policy.handler.options
                 ?.disableAutomaticallyAddingKeyHeaderToOpenApi,
           ) ?? [];
@@ -225,7 +226,8 @@ export const enrichWithZuploData = ({
       policiesConfig.policies?.some(
         (policy) =>
           policy.handler.export === "ApiAuthKeyInboundPolicy" ||
-          policy.handler.export === "ApiKeyInboundPolicy",
+          policy.handler.export === "ApiKeyInboundPolicy" ||
+          policy.handler.export === "MonetizationInboundPolicy",
       )
     ) {
       if (!schema.components) schema.components = {};

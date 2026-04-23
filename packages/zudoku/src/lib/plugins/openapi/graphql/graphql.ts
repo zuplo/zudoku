@@ -38,6 +38,7 @@ export type Scalars = {
 export type Components = {
   __typename?: "Components";
   schemas?: Maybe<Array<SchemaItem>>;
+  securitySchemes?: Maybe<Array<SecuritySchemeItem>>;
 };
 
 export type EncodingItem = {
@@ -67,6 +68,28 @@ export type MediaTypeObject = {
   schema?: Maybe<Scalars["JSONSchema"]["output"]>;
 };
 
+export type OAuthFlowItem = {
+  __typename?: "OAuthFlowItem";
+  authorizationUrl?: Maybe<Scalars["String"]["output"]>;
+  refreshUrl?: Maybe<Scalars["String"]["output"]>;
+  scopes: Array<OAuthScopeItem>;
+  tokenUrl?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type OAuthFlowsItem = {
+  __typename?: "OAuthFlowsItem";
+  authorizationCode?: Maybe<OAuthFlowItem>;
+  clientCredentials?: Maybe<OAuthFlowItem>;
+  implicit?: Maybe<OAuthFlowItem>;
+  password?: Maybe<OAuthFlowItem>;
+};
+
+export type OAuthScopeItem = {
+  __typename?: "OAuthScopeItem";
+  description: Scalars["String"]["output"];
+  name: Scalars["String"]["output"];
+};
+
 export type OperationItem = {
   __typename?: "OperationItem";
   contentTypes: Array<Scalars["String"]["output"]>;
@@ -79,6 +102,7 @@ export type OperationItem = {
   path: Scalars["String"]["output"];
   requestBody?: Maybe<RequestBodyObject>;
   responses: Array<ResponseItem>;
+  security?: Maybe<Array<SecurityRequirementItem>>;
   servers: Array<Server>;
   slug: Scalars["String"]["output"];
   summary?: Maybe<Scalars["String"]["output"]>;
@@ -139,18 +163,24 @@ export type ResponseItem = {
 export type Schema = {
   __typename?: "Schema";
   components?: Maybe<Components>;
+  contact?: Maybe<SchemaContact>;
   description?: Maybe<Scalars["String"]["output"]>;
   extensions?: Maybe<Scalars["JSONObject"]["output"]>;
+  externalDocs?: Maybe<SchemaExternalDocs>;
+  license?: Maybe<SchemaLicense>;
   openapi: Scalars["String"]["output"];
   operations: Array<OperationItem>;
   paths: Array<PathItem>;
+  security?: Maybe<Array<SecurityRequirementItem>>;
   servers: Array<Server>;
   summary?: Maybe<Scalars["String"]["output"]>;
   tag?: Maybe<SchemaTag>;
   tags: Array<SchemaTag>;
+  termsOfService?: Maybe<Scalars["String"]["output"]>;
   title: Scalars["String"]["output"];
   url?: Maybe<Scalars["String"]["output"]>;
   version: Scalars["String"]["output"];
+  webhooks: Array<WebhookItem>;
 };
 
 export type SchemaOperationsArgs = {
@@ -167,11 +197,31 @@ export type SchemaTagArgs = {
   untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
+export type SchemaContact = {
+  __typename?: "SchemaContact";
+  email?: Maybe<Scalars["String"]["output"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
+  url?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type SchemaExternalDocs = {
+  __typename?: "SchemaExternalDocs";
+  description?: Maybe<Scalars["String"]["output"]>;
+  url: Scalars["String"]["output"];
+};
+
 export type SchemaItem = {
   __typename?: "SchemaItem";
   extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   name: Scalars["String"]["output"];
   schema: Scalars["JSONSchema"]["output"];
+};
+
+export type SchemaLicense = {
+  __typename?: "SchemaLicense";
+  identifier?: Maybe<Scalars["String"]["output"]>;
+  name: Scalars["String"]["output"];
+  url?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type SchemaTag = {
@@ -188,6 +238,40 @@ export type SchemaTag = {
 
 export type SchemaType = "file" | "raw" | "url";
 
+export type SecurityRequirementItem = {
+  __typename?: "SecurityRequirementItem";
+  schemes: Array<SecurityRequirementScheme>;
+};
+
+export type SecurityRequirementScheme = {
+  __typename?: "SecurityRequirementScheme";
+  scheme: SecuritySchemeItem;
+  scopes: Array<Scalars["String"]["output"]>;
+};
+
+export type SecuritySchemeIn = "cookie" | "header" | "query";
+
+export type SecuritySchemeItem = {
+  __typename?: "SecuritySchemeItem";
+  bearerFormat?: Maybe<Scalars["String"]["output"]>;
+  description?: Maybe<Scalars["String"]["output"]>;
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
+  flows?: Maybe<OAuthFlowsItem>;
+  in?: Maybe<SecuritySchemeIn>;
+  name: Scalars["String"]["output"];
+  openIdConnectUrl?: Maybe<Scalars["String"]["output"]>;
+  paramName?: Maybe<Scalars["String"]["output"]>;
+  scheme?: Maybe<Scalars["String"]["output"]>;
+  type: SecuritySchemeType;
+};
+
+export type SecuritySchemeType =
+  | "apiKey"
+  | "http"
+  | "mutualTLS"
+  | "oauth2"
+  | "openIdConnect";
+
 export type Server = {
   __typename?: "Server";
   description?: Maybe<Scalars["String"]["output"]>;
@@ -199,6 +283,15 @@ export type TagItem = {
   description?: Maybe<Scalars["String"]["output"]>;
   extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   name: Scalars["String"]["output"];
+};
+
+export type WebhookItem = {
+  __typename?: "WebhookItem";
+  description?: Maybe<Scalars["String"]["output"]>;
+  method: Scalars["String"]["output"];
+  name: Scalars["String"]["output"];
+  operationId?: Maybe<Scalars["String"]["output"]>;
+  summary?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type ServersQueryQueryVariables = Exact<{
@@ -240,6 +333,7 @@ export type OperationsFragmentFragment = {
     schema?: any | null;
     style?: string | null;
     explode?: boolean | null;
+    allowReserved?: boolean | null;
     examples?: Array<{
       __typename?: "ExampleItem";
       name: string;
@@ -248,6 +342,64 @@ export type OperationsFragmentFragment = {
       value?: any | null;
       summary?: string | null;
     }> | null;
+  }> | null;
+  security?: Array<{
+    __typename?: "SecurityRequirementItem";
+    schemes: Array<{
+      __typename?: "SecurityRequirementScheme";
+      scopes: Array<string>;
+      scheme: {
+        __typename?: "SecuritySchemeItem";
+        name: string;
+        type: SecuritySchemeType;
+        description?: string | null;
+        in?: SecuritySchemeIn | null;
+        paramName?: string | null;
+        scheme?: string | null;
+        bearerFormat?: string | null;
+        openIdConnectUrl?: string | null;
+        flows?: {
+          __typename?: "OAuthFlowsItem";
+          implicit?: {
+            __typename?: "OAuthFlowItem";
+            authorizationUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          password?: {
+            __typename?: "OAuthFlowItem";
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          clientCredentials?: {
+            __typename?: "OAuthFlowItem";
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          authorizationCode?: {
+            __typename?: "OAuthFlowItem";
+            authorizationUrl?: string | null;
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+        } | null;
+      };
+    }>;
   }> | null;
   requestBody?: {
     __typename?: "RequestBodyObject";
@@ -289,16 +441,6 @@ export type OperationsFragmentFragment = {
     }> | null;
   }>;
 } & { " $fragmentName"?: "OperationsFragmentFragment" };
-
-export type SchemaWarmupQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
-  type: SchemaType;
-}>;
-
-export type SchemaWarmupQuery = {
-  __typename?: "Query";
-  schema: { __typename?: "Schema"; openapi: string };
-};
 
 export type OperationsForTagQueryVariables = Exact<{
   input: Scalars["JSON"]["input"];
@@ -342,6 +484,113 @@ export type OperationsForTagQuery = {
         extensions?: any | null;
       } | null;
     } | null;
+  };
+};
+
+export type SchemaInfoQueryVariables = Exact<{
+  input: Scalars["JSON"]["input"];
+  type: SchemaType;
+}>;
+
+export type SchemaInfoQuery = {
+  __typename?: "Query";
+  schema: {
+    __typename?: "Schema";
+    termsOfService?: string | null;
+    description?: string | null;
+    summary?: string | null;
+    title: string;
+    url?: string | null;
+    version: string;
+    servers: Array<{
+      __typename?: "Server";
+      url: string;
+      description?: string | null;
+    }>;
+    license?: {
+      __typename?: "SchemaLicense";
+      name: string;
+      url?: string | null;
+      identifier?: string | null;
+    } | null;
+    externalDocs?: {
+      __typename?: "SchemaExternalDocs";
+      description?: string | null;
+      url: string;
+    } | null;
+    contact?: {
+      __typename?: "SchemaContact";
+      name?: string | null;
+      url?: string | null;
+      email?: string | null;
+    } | null;
+    tags: Array<{
+      __typename?: "SchemaTag";
+      name?: string | null;
+      description?: string | null;
+      extensions?: any | null;
+    }>;
+    components?: {
+      __typename?: "Components";
+      securitySchemes?: Array<{
+        __typename?: "SecuritySchemeItem";
+        name: string;
+        type: SecuritySchemeType;
+        description?: string | null;
+        in?: SecuritySchemeIn | null;
+        paramName?: string | null;
+        scheme?: string | null;
+        bearerFormat?: string | null;
+        openIdConnectUrl?: string | null;
+        flows?: {
+          __typename?: "OAuthFlowsItem";
+          implicit?: {
+            __typename?: "OAuthFlowItem";
+            authorizationUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          password?: {
+            __typename?: "OAuthFlowItem";
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          clientCredentials?: {
+            __typename?: "OAuthFlowItem";
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          authorizationCode?: {
+            __typename?: "OAuthFlowItem";
+            authorizationUrl?: string | null;
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+        } | null;
+      }> | null;
+    } | null;
+    webhooks: Array<{
+      __typename?: "WebhookItem";
+      name: string;
+      method: string;
+      summary?: string | null;
+      description?: string | null;
+    }>;
   };
 };
 
@@ -414,6 +663,16 @@ export type GetNavigationOperationsQuery = {
   };
 };
 
+export type SchemaWarmupQueryVariables = Exact<{
+  input: Scalars["JSON"]["input"];
+  type: SchemaType;
+}>;
+
+export type SchemaWarmupQuery = {
+  __typename?: "Query";
+  schema: { __typename?: "Schema"; openapi: string };
+};
+
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -458,12 +717,59 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
     schema
     style
     explode
+    allowReserved
     examples {
       name
       description
       externalValue
       value
       summary
+    }
+  }
+  security {
+    schemes {
+      scopes
+      scheme {
+        name
+        type
+        description
+        in
+        paramName
+        scheme
+        bearerFormat
+        openIdConnectUrl
+        flows {
+          implicit {
+            authorizationUrl
+            scopes {
+              name
+              description
+            }
+          }
+          password {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          clientCredentials {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          authorizationCode {
+            authorizationUrl
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+        }
+      }
     }
   }
   requestBody {
@@ -520,16 +826,6 @@ export const ServersQueryDocument = new TypedDocumentString(`
   ServersQueryQuery,
   ServersQueryQueryVariables
 >;
-export const SchemaWarmupDocument = new TypedDocumentString(`
-    query SchemaWarmup($input: JSON!, $type: SchemaType!) {
-  schema(input: $input, type: $type) {
-    openapi
-  }
-}
-    `) as unknown as TypedDocumentString<
-  SchemaWarmupQuery,
-  SchemaWarmupQueryVariables
->;
 export const OperationsForTagDocument = new TypedDocumentString(`
     query OperationsForTag($input: JSON!, $type: SchemaType!, $tag: String, $untagged: Boolean) {
   schema(input: $input, type: $type) {
@@ -584,12 +880,59 @@ export const OperationsForTagDocument = new TypedDocumentString(`
     schema
     style
     explode
+    allowReserved
     examples {
       name
       description
       externalValue
       value
       summary
+    }
+  }
+  security {
+    schemes {
+      scopes
+      scheme {
+        name
+        type
+        description
+        in
+        paramName
+        scheme
+        bearerFormat
+        openIdConnectUrl
+        flows {
+          implicit {
+            authorizationUrl
+            scopes {
+              name
+              description
+            }
+          }
+          password {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          clientCredentials {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          authorizationCode {
+            authorizationUrl
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+        }
+      }
     }
   }
   requestBody {
@@ -632,6 +975,93 @@ export const OperationsForTagDocument = new TypedDocumentString(`
 }`) as unknown as TypedDocumentString<
   OperationsForTagQuery,
   OperationsForTagQueryVariables
+>;
+export const SchemaInfoDocument = new TypedDocumentString(`
+    query SchemaInfo($input: JSON!, $type: SchemaType!) {
+  schema(input: $input, type: $type) {
+    servers {
+      url
+      description
+    }
+    license {
+      name
+      url
+      identifier
+    }
+    termsOfService
+    externalDocs {
+      description
+      url
+    }
+    contact {
+      name
+      url
+      email
+    }
+    description
+    summary
+    title
+    url
+    version
+    tags {
+      name
+      description
+      extensions
+    }
+    components {
+      securitySchemes {
+        name
+        type
+        description
+        in
+        paramName
+        scheme
+        bearerFormat
+        openIdConnectUrl
+        flows {
+          implicit {
+            authorizationUrl
+            scopes {
+              name
+              description
+            }
+          }
+          password {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          clientCredentials {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          authorizationCode {
+            authorizationUrl
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+        }
+      }
+    }
+    webhooks {
+      name
+      method
+      summary
+      description
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<
+  SchemaInfoQuery,
+  SchemaInfoQueryVariables
 >;
 export const GetSchemasDocument = new TypedDocumentString(`
     query GetSchemas($input: JSON!, $type: SchemaType!) {
@@ -691,4 +1121,14 @@ export const GetNavigationOperationsDocument = new TypedDocumentString(`
     `) as unknown as TypedDocumentString<
   GetNavigationOperationsQuery,
   GetNavigationOperationsQueryVariables
+>;
+export const SchemaWarmupDocument = new TypedDocumentString(`
+    query SchemaWarmup($input: JSON!, $type: SchemaType!) {
+  schema(input: $input, type: $type) {
+    openapi
+  }
+}
+    `) as unknown as TypedDocumentString<
+  SchemaWarmupQuery,
+  SchemaWarmupQueryVariables
 >;

@@ -10,9 +10,10 @@ Zudoku offers search functionality that enhances user experience by enabling con
 across your site. When configured, a search bar will appear in the header, allowing users to quickly
 find relevant information on any page.
 
-We currently support two search providers:
+We currently support three search providers:
 
 - [Pagefind](https://pagefind.app/)
+- [Algolia DocSearch](https://docsearch.algolia.com/)
 - [Inkeep](https://inkeep.com/)
 
 ## Pagefind
@@ -74,6 +75,48 @@ The type of `result` is the same as
 
 For more information about how Pagefind's ranking system works and how to customize it for your
 content, see the [Pagefind ranking documentation](https://pagefind.app/docs/ranking/).
+
+## Algolia DocSearch
+
+[Algolia DocSearch](https://docsearch.algolia.com/) is a free search solution for open-source
+documentation sites. You can apply for the free DocSearch program or use your own Algolia account.
+
+:::note
+
+Algolia DocSearch is provided as a separate plugin package (`@zudoku/plugin-search-algolia`). We are
+experimenting with external plugin packages as a distribution model for new integrations.
+
+:::
+
+### Installation
+
+```bash
+npm install @zudoku/plugin-search-algolia
+```
+
+### Configuration
+
+Import the plugin and add it to the `plugins` array in your Zudoku configuration:
+
+```typescript
+import { algoliaSearchPlugin } from "@zudoku/plugin-search-algolia";
+
+const config = {
+  plugins: [
+    algoliaSearchPlugin({
+      appId: "YOUR_APP_ID",
+      apiKey: "YOUR_SEARCH_API_KEY",
+      indices: ["YOUR_INDEX_NAME"],
+    }),
+  ],
+};
+```
+
+You can get your credentials by [applying for DocSearch](https://docsearch.algolia.com/apply/) or
+creating an index through the [Algolia dashboard](https://www.algolia.com/dashboard).
+
+Any additional [DocSearch options](https://docsearch.algolia.com/docs/api/) can be passed alongside
+the required fields.
 
 ## Inkeep
 

@@ -1,8 +1,13 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import type { OpenAPIV3_1 } from "openapi-types";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { LoadedConfig } from "../../config/config.js";
+import type { ConfigWithMeta } from "../../config/loader.js";
+import type { Processor } from "../../config/validators/BuildSchema.js";
+import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
+import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
+import invariant from "../../lib/util/invariant.js";
 import { SchemaManager } from "./SchemaManager.js";
 
 const mockSchema = {
@@ -17,10 +22,18 @@ const mockSchema = {
 describe("SchemaManager", () => {
   let tempDir: string;
   let storeDir: string;
+  let __meta: ConfigWithMeta["__meta"];
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "zudoku-test-"));
     storeDir = path.join(tempDir, "store");
+    __meta = {
+      rootDir: tempDir,
+      moduleDir: path.join(tempDir, "node_modules"),
+      mode: "module",
+      dependencies: [],
+      configPath: path.join(tempDir, "zudoku.config.ts"),
+    };
     await fs.mkdir(storeDir);
   });
 
@@ -32,21 +45,9 @@ describe("SchemaManager", () => {
     const schemaPath = path.join(tempDir, "openapi.json");
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
 
-    const config: LoadedConfig = {
-      __meta: {
-        rootDir: tempDir,
-        moduleDir: path.join(tempDir, "node_modules"),
-        mode: "module",
-        dependencies: [],
-        configPath: path.join(tempDir, "zudoku.config.ts"),
-      },
-      apis: [
-        {
-          type: "file",
-          path: "test-api",
-          input: schemaPath,
-        },
-      ],
+    const config: ConfigWithMeta = {
+      __meta,
+      apis: [{ type: "file", path: "test-api", input: schemaPath }],
     };
 
     const manager = new SchemaManager({ storeDir, config, processors: [] });
@@ -71,14 +72,8 @@ describe("SchemaManager", () => {
       }),
     );
 
-    const config: LoadedConfig = {
-      __meta: {
-        rootDir: tempDir,
-        moduleDir: path.join(tempDir, "node_modules"),
-        mode: "module",
-        dependencies: [],
-        configPath: path.join(tempDir, "zudoku.config.ts"),
-      },
+    const config: ConfigWithMeta = {
+      __meta,
       apis: [
         {
           type: "file",
@@ -98,23 +93,29 @@ describe("SchemaManager", () => {
     expect(schemas?.[1]?.version).toBe("1.0.0"); // v1 second
   });
 
-  it("should track processed files", async () => {
+  it("should handle multiple versions with overridden path and label", async () => {
     const schemaPath = path.join(tempDir, "openapi.json");
-    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+    const schemaPathV2 = path.join(tempDir, "openapi-v2.json");
 
-    const config: LoadedConfig = {
-      __meta: {
-        rootDir: tempDir,
-        moduleDir: path.join(tempDir, "node_modules"),
-        mode: "module",
-        dependencies: [],
-        configPath: path.join(tempDir, "zudoku.config.ts"),
-      },
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+    await fs.writeFile(
+      schemaPathV2,
+      JSON.stringify({
+        ...mockSchema,
+        info: { ...mockSchema.info, version: "2.0.0" },
+      }),
+    );
+
+    const config: ConfigWithMeta = {
+      __meta,
       apis: [
         {
           type: "file",
           path: "test-api",
-          input: schemaPath,
+          input: [
+            { input: schemaPathV2, label: "2.0.0 (latest)", path: "latest" },
+            schemaPath,
+          ],
         },
       ],
     };
@@ -123,7 +124,263 @@ describe("SchemaManager", () => {
 
     await manager.processAllSchemas();
 
+    const schemas = manager.getSchemasForPath("test-api");
+    expect(schemas).toHaveLength(2);
+    expect(schemas?.[0]?.version).toBe("2.0.0");
+    expect(schemas?.[0]?.label).toBe("2.0.0 (latest)");
+    expect(schemas?.[0]?.path).toBe("latest");
+    expect(schemas?.[0]?.downloadUrl).toBe("/test-api/latest/schema.json");
+    expect(schemas?.[1]?.version).toBe("1.0.0");
+    expect(schemas?.[1]?.label).toBeUndefined();
+    expect(schemas?.[1]?.path).toBe("1.0.0");
+    expect(schemas?.[1]?.downloadUrl).toBe("/test-api/1.0.0/schema.json");
+  });
+
+  it("should track processed files", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+
+    const config: ConfigWithMeta = {
+      __meta,
+      apis: [{ type: "file", path: "test-api", input: schemaPath }],
+    };
+
+    const manager = new SchemaManager({ storeDir, config, processors: [] });
+
+    await manager.processAllSchemas();
+
     expect(manager.getAllTrackedFiles().length).toBeGreaterThan(0);
     expect(manager.getAllTrackedFiles()).toContain(schemaPath);
+  });
+
+  it("should preserve $refs outside allOf while flattening allOf", async () => {
+    const schemaWithRefs = {
+      openapi: "3.0.0",
+      info: { title: "Test API", version: "1.0.0" },
+      paths: {
+        "/items": {
+          get: {
+            responses: {
+              "200": {
+                description: "Success",
+                content: {
+                  "application/json": {
+                    // This $ref should be preserved (not inside allOf)
+                    schema: { $ref: "#/components/schemas/Item" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: {
+          Base: { type: "object", properties: { id: { type: "string" } } },
+          Item: {
+            // allOf with $ref should be flattened
+            allOf: [
+              { $ref: "#/components/schemas/Base" },
+              { type: "object", properties: { name: { type: "string" } } },
+            ],
+          },
+          Container: {
+            type: "object",
+            // This $ref should be preserved (not inside allOf)
+            properties: { item: { $ref: "#/components/schemas/Base" } },
+          },
+        },
+      },
+    } satisfies OpenAPIV3_1.Document;
+
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(schemaPath, JSON.stringify(schemaWithRefs));
+
+    const config: ConfigWithMeta = {
+      __meta,
+      apis: [{ type: "file", path: "test-api", input: schemaPath }],
+    };
+
+    const manager = new SchemaManager({
+      storeDir,
+      config,
+      processors: [flattenAllOfProcessor],
+    });
+
+    await manager.processAllSchemas();
+    const schemas = manager.getSchemasForPath("test-api");
+    invariant(schemas?.[0]?.importKey, "Processed schema not found");
+    const generatedCode = await fs.readFile(schemas[0].importKey, "utf-8");
+
+    expect(generatedCode).toContain("__refMap");
+    expect(generatedCode).toContain("#/components/schemas/Base");
+    expect(generatedCode).toContain("#/components/schemas/Item");
+    expect(generatedCode).not.toContain('"allOf"');
+  });
+
+  it("should flatten allOf with $refs nested inside oneOf variants", async () => {
+    // Simulates bundle() output: shared base is inlined at oneOf/0/allOf/0 and
+    // referenced via $ref from oneOf/1/allOf/0. After flattening, allOf/0 is
+    // gone, so the $ref must be resolved before flattening or generateCode throws.
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test API", version: "1.0.0" },
+      components: {
+        schemas: {
+          Result: {
+            oneOf: [
+              {
+                allOf: [
+                  { type: "object", properties: { id: { type: "string" } } },
+                  { type: "object", properties: { a: { type: "string" } } },
+                ],
+              },
+              {
+                allOf: [
+                  { $ref: "#/components/schemas/Result/oneOf/0/allOf/0" },
+                  { type: "object", properties: { b: { type: "string" } } },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    } satisfies OpenAPIV3_1.Document;
+
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(schemaPath, JSON.stringify(schema));
+
+    const manager = new SchemaManager({
+      storeDir,
+      config: {
+        __meta,
+        apis: [{ type: "file", path: "test-api", input: schemaPath }],
+      },
+      processors: [flattenAllOfProcessor],
+    });
+
+    await expect(manager.processAllSchemas()).resolves.not.toThrow();
+
+    const oneOf =
+      manager.getLatestSchema("test-api")?.schema.components?.schemas?.Result
+        ?.oneOf;
+    expect(oneOf?.[1]).not.toHaveProperty("allOf");
+    expect(oneOf?.[1]).not.toHaveProperty("$ref");
+    expect(oneOf?.[1]?.properties).toHaveProperty("id");
+  });
+
+  it("should split same file into multiple versions using query params", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(
+      schemaPath,
+      JSON.stringify({
+        openapi: "3.0.0",
+        info: { title: "Test API", version: "1.0.0" },
+        paths: {
+          "/v1/users": { get: { responses: { "200": { description: "OK" } } } },
+          "/v1/posts": { get: { responses: { "200": { description: "OK" } } } },
+          "/v2/users": { get: { responses: { "200": { description: "OK" } } } },
+        },
+      }),
+    );
+
+    const filterByPrefix: Processor = ({ schema, params }) => {
+      const prefix = params.prefix;
+      if (!prefix) return schema;
+      return {
+        ...schema,
+        paths: Object.fromEntries(
+          Object.entries(schema.paths ?? {}).filter(([p]) =>
+            p.startsWith(prefix),
+          ),
+        ),
+      } satisfies OpenAPIDocument;
+    };
+
+    const config: ConfigWithMeta = {
+      __meta,
+      apis: [
+        {
+          type: "file",
+          path: "test-api",
+          input: [`${schemaPath}?prefix=/v1`, `${schemaPath}?prefix=/v2`],
+        },
+      ],
+    };
+
+    const manager = new SchemaManager({
+      storeDir,
+      config,
+      processors: [filterByPrefix],
+    });
+
+    await manager.processAllSchemas();
+
+    const schemas = manager.getSchemasForPath("test-api");
+    expect(schemas).toHaveLength(2);
+
+    expect(schemas?.[0]?.inputPath).toBe(schemaPath);
+    expect(schemas?.[1]?.inputPath).toBe(schemaPath);
+    expect(schemas?.[0]?.params).toEqual({ prefix: "/v1" });
+    expect(schemas?.[1]?.params).toEqual({ prefix: "/v2" });
+
+    expect(schemas?.[0]?.importKey).not.toBe(schemas?.[1]?.importKey);
+
+    // Auto-generated version paths are unique when using query params
+    expect(schemas?.[0]?.path).not.toBe(schemas?.[1]?.path);
+    // Auto-generated labels from param values
+    expect(schemas?.[0]?.label).toBe("/v1");
+    expect(schemas?.[1]?.label).toBe("/v2");
+
+    const v1Paths = Object.keys(schemas?.[0]?.schema.paths ?? {});
+    const v2Paths = Object.keys(schemas?.[1]?.schema.paths ?? {});
+    expect(v1Paths).toEqual(["/v1/users", "/v1/posts"]);
+    expect(v2Paths).toEqual(["/v2/users"]);
+
+    expect(manager.getSchemaImports()).toHaveLength(2);
+
+    // Param variants have unique download URLs
+    expect(schemas?.[0]?.downloadUrl).not.toBe(schemas?.[1]?.downloadUrl);
+    // Download URLs are .json for param variants
+    expect(schemas?.[0]?.downloadUrl).toMatch(/\.json$/);
+
+    // Processed JSON files are written to disk for param variants
+    expect(schemas?.[0]?.processedJsonPath).toBeTruthy();
+    invariant(schemas?.[0]?.processedJsonPath, "Processed JSON path not found");
+    const downloadedJson = JSON.parse(
+      await fs.readFile(schemas[0].processedJsonPath, "utf-8"),
+    );
+    expect(Object.keys(downloadedJson.paths)).toEqual([
+      "/v1/users",
+      "/v1/posts",
+    ]);
+  });
+
+  it("should reprocess all param variants when file changes", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+
+    const config: ConfigWithMeta = {
+      __meta,
+      apis: [
+        {
+          type: "file",
+          path: "test-api",
+          input: [`${schemaPath}?prefix=/v1`, `${schemaPath}?prefix=/v2`],
+        },
+      ],
+    };
+
+    const manager = new SchemaManager({ storeDir, config, processors: [] });
+    await manager.processAllSchemas();
+
+    const filesToReprocess = manager.getFilesToReprocess(schemaPath);
+    expect(filesToReprocess).toHaveLength(2);
+    expect(filesToReprocess).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ params: { prefix: "/v1" } }),
+        expect.objectContaining({ params: { prefix: "/v2" } }),
+      ]),
+    );
   });
 });

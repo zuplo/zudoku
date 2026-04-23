@@ -46,58 +46,48 @@ const program = new Command(packageJson.name)
     "-v, --version",
     "Output the current version of create-zudoku.",
   )
-  .argument("[directory]")
+  .description(
+    "Create a new Zudoku API documentation project.\n\nRun without arguments for an interactive setup, or use --yes for a quick start with sensible defaults.",
+  )
+  .argument("[directory]", 'Project directory (defaults to "my-app")')
   .usage("[directory] [options]")
   .helpOption("-h, --help", "Display this help message.")
-  .option("--ts, --typescript", "Initialize as a TypeScript project. (default)")
+  .option("--ts, --typescript", "Initialize as a TypeScript project (default).")
   .option("--js, --javascript", "Initialize as a JavaScript project.")
   .option("--eslint", "Initialize with ESLint config.")
   .option(
     "--import-alias <prefix/*>",
     'Specify import alias to use (default "@/*").',
   )
-  .option(
-    "--use-npm",
-    "Explicitly tell the CLI to bootstrap the application using npm.",
-  )
-  .option(
-    "--use-pnpm",
-    "Explicitly tell the CLI to bootstrap the application using pnpm.",
-  )
-  .option(
-    "--use-yarn",
-    "Explicitly tell the CLI to bootstrap the application using Yarn.",
-  )
-  .option(
-    "--use-bun",
-    "Explicitly tell the CLI to bootstrap the application using Bun.",
-  )
+  .option("--use-npm", "Use npm as the package manager.")
+  .option("--use-pnpm", "Use pnpm as the package manager.")
+  .option("--use-yarn", "Use Yarn as the package manager.")
+  .option("--use-bun", "Use Bun as the package manager.")
   .option(
     "--reset, --reset-preferences",
     "Reset the preferences saved for create-zudoku.",
   )
+  .option("--skip-install", "Skip installing packages after scaffolding.")
   .option(
-    "--skip-install",
-    "Explicitly tell the CLI to skip installing packages.",
+    "-y, --yes",
+    'Skip all prompts and use defaults (TypeScript, ESLint, directory "my-app").',
   )
-  .option("--yes", "Use saved preferences or defaults for unprovided options.")
   .option(
     "-e, --example <example-name|github-url>",
-    `
-
-  An example to bootstrap the app with. You can use an example name
-  from the official Zudoku repo or a public GitHub URL. The URL can use
-  any branch and/or subdirectory.
-`,
+    "Bootstrap from an example in the Zudoku repo or a public GitHub URL.",
   )
   .option(
     "--example-path <path-to-example>",
+    "Path to the example within the repo (use when the branch name contains slashes).",
+  )
+  .addHelpText(
+    "after",
     `
-
-  In a rare case, your GitHub URL might contain a branch name with
-  a slash (e.g. bug/fix-1) and the path to the example (e.g. foo/bar).
-  In this case, you must specify the path to the example separately:
-  --example-path foo/bar
+Examples:
+  $ npm create zudoku@latest
+  $ npm create zudoku@latest my-docs
+  $ npm create zudoku@latest my-docs --yes
+  $ npm create zudoku@latest --yes --js --skip-install
 `,
   )
   .action((name) => {
@@ -144,28 +134,38 @@ async function run(): Promise<void> {
     process.exit(0);
   }
 
+  /**
+   * If the user does not provide the necessary flags, prompt them for their
+   * preferences, unless `--yes` option was specified, or when running in CI.
+   */
+  const skipPrompt = ciInfo.isCI || opts.yes;
+
   if (typeof projectPath === "string") {
     projectPath = projectPath.trim();
   }
 
   if (!projectPath) {
-    const res = await prompts({
-      onState: onPromptState,
-      type: "text",
-      name: "path",
-      message: "What is your project named?",
-      initial: "my-app",
-      validate: (name) => {
-        const validation = validateNpmName(basename(resolve(name)));
-        if (validation.valid) {
-          return true;
-        }
-        return `Invalid project name: ${validation.problems[0]}`;
-      },
-    });
+    if (skipPrompt) {
+      projectPath = "my-app";
+    } else {
+      const res = await prompts({
+        onState: onPromptState,
+        type: "text",
+        name: "path",
+        message: "What is your project named?",
+        initial: "my-app",
+        validate: (name) => {
+          const validation = validateNpmName(basename(resolve(name)));
+          if (validation.valid) {
+            return true;
+          }
+          return `Invalid project name: ${validation.problems[0]}`;
+        },
+      });
 
-    if (typeof res.path === "string") {
-      projectPath = res.path.trim();
+      if (typeof res.path === "string") {
+        projectPath = res.path.trim();
+      }
     }
   }
 
@@ -213,12 +213,6 @@ async function run(): Promise<void> {
     string,
     boolean | string
   >;
-
-  /**
-   * If the user does not provide the necessary flags, prompt them for their
-   * preferences, unless `--yes` option was specified, or when running in CI.
-   */
-  const skipPrompt = ciInfo.isCI || opts.yes;
 
   if (!example) {
     const defaults: typeof preferences = {
