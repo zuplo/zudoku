@@ -34,6 +34,7 @@ import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
 import {
   ZudokuPasswordResetUi,
   ZudokuSignInUi,
+  ZudokuSignUpDisabledUi,
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
 
@@ -59,11 +60,13 @@ class FirebaseAuthenticationProvider
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
   private readonly enableEmailLink: boolean;
+  private readonly allowSignUp: boolean;
   private readonly redirectToAfterSignOut: string;
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
     this.redirectToAfterSignOut = config.redirectToAfterSignOut ?? "/";
+    this.allowSignUp = config.allowSignUp ?? true;
 
     this.app = initializeApp({
       apiKey: config.apiKey,
@@ -217,6 +220,7 @@ class FirebaseAuthenticationProvider
           <ZudokuSignInUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
+            allowSignUp={this.allowSignUp}
             onOAuthSignIn={async (providerId: string) => {
               useAuthState.setState({ isPending: true });
               const provider = await getProviderForId(providerId);
@@ -261,7 +265,7 @@ class FirebaseAuthenticationProvider
       },
       {
         path: "/signup",
-        element: (
+        element: this.allowSignUp ? (
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
@@ -288,6 +292,8 @@ class FirebaseAuthenticationProvider
               await this.setUserLoggedIn(createUser.user);
             }}
           />
+        ) : (
+          <ZudokuSignUpDisabledUi />
         ),
       },
       {
@@ -445,7 +451,10 @@ const getFirebaseErrorMessage = (error: unknown): string => {
     case "auth/operation-not-allowed":
       return "This sign-in method is not enabled. Please contact support.";
     case "auth/weak-password":
-      return "The password must be at least 6 characters long.";
+      return (
+        error.message ||
+        "The password doesn't meet the minimum requirements. Please choose a stronger password."
+      );
     case "auth/user-disabled":
       return "This account has been disabled. Please contact support.";
     case "auth/user-not-found":
