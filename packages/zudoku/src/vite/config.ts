@@ -15,6 +15,7 @@ import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/ZudokuConfig.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import type { SSRAdapter } from "./build.js";
 import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
 import { getZuploSystemConfigurations } from "./zuplo.js";
@@ -45,7 +46,7 @@ const defineEnvVars = (vars: string[]) =>
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
-  options: { adapter?: "node" | "cloudflare" | "vercel" } = {},
+  options: { adapter?: SSRAdapter } = {},
 ): Promise<InlineConfig> {
   const { config, publicEnv, envPrefix } = await loadZudokuConfig(
     configEnv,
@@ -158,10 +159,14 @@ export async function getViteConfig(
         },
       },
       ssr: {
-        resolve: {
-          noExternal: [/zudoku/, "@mdx-js/react"],
-          external: ["@shikijs/themes", "@shikijs/langs"],
-        },
+        // Build: bundle all for self-contained SSR output; dev uses minimal externals for speed.
+        resolve:
+          configEnv.command === "build"
+            ? { noExternal: true }
+            : {
+                noExternal: [/zudoku/, "@mdx-js/react"],
+                external: ["@shikijs/themes", "@shikijs/langs"],
+              },
         build: {
           outDir: path.resolve(
             path.join(dir, "dist", config.basePath ?? "", "server"),

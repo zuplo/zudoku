@@ -15,10 +15,12 @@ import { prerender } from "./prerender/prerender.js";
 
 const DIST_DIR = "dist";
 
+export type SSRAdapter = "node" | "cloudflare" | "vercel" | "lambda";
+
 export type BuildOptions = {
   dir: string;
   ssr?: boolean;
-  adapter?: "node" | "cloudflare" | "vercel";
+  adapter?: SSRAdapter;
 };
 
 export async function runBuild(options: BuildOptions) {
@@ -91,6 +93,13 @@ export async function runBuild(options: BuildOptions) {
       html,
       basePath: config.basePath,
     });
+    // Mark the output as ESM so runtimes without a surrounding package.json
+    // (e.g. unzipped Lambda at /var/task) don't fall back to CommonJS.
+    await writeFile(
+      path.join(distDir, "package.json"),
+      `${JSON.stringify({ type: "module" }, null, 2)}\n`,
+      "utf-8",
+    );
     await rm(path.join(clientOutDir, "index.html"), { force: true });
   } else {
     // SSG: prerender and clean up server
@@ -191,7 +200,7 @@ const runPrerender = async (options: PrerenderOptions) => {
 
 type SSREntryOptions = {
   dir: string;
-  adapter: "node" | "cloudflare" | "vercel";
+  adapter: SSRAdapter;
   serverOutDir: string;
   html: string;
   basePath?: string;
@@ -221,7 +230,7 @@ const bundleSSREntry = async (options: SSREntryOptions) => {
     await esbuild({
       entryPoints: [tempEntryPath],
       bundle: true,
-      platform: adapter === "node" ? "node" : "neutral",
+      platform: adapter === "node" || adapter === "lambda" ? "node" : "neutral",
       target: "es2022",
       format: "esm",
       outfile: path.join(serverOutDir, "entry.js"),
