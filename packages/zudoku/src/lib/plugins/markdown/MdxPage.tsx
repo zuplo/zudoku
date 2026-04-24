@@ -173,7 +173,7 @@ export const MdxPage = ({
   const title = frontmatter.title;
   const description = frontmatter.description ?? excerpt;
   const category = frontmatter.category ?? categoryTitle;
-  const hideToc = frontmatter.toc === false || defaultOptions?.toc === false;
+  const tocEnabled = frontmatter.toc ?? defaultOptions?.toc ?? true;
   const fullWidth = frontmatter.fullWidth ?? defaultOptions?.fullWidth ?? false;
   const pageTitle =
     title ?? tableOfContents.find((item) => item.depth === 1)?.text;
@@ -221,7 +221,7 @@ export const MdxPage = ({
     // if `title` is provided by frontmatter it does not appear in the table of contents
     tableOfContents.filter((item) => item.depth === 2);
 
-  const showToc = !hideToc && tocEntries.length > 0;
+  const showToc = tocEnabled && tocEntries.length > 0;
   const showTocSidebar = showToc && !fullWidth;
   const showTocPopover = showToc && fullWidth;
 
