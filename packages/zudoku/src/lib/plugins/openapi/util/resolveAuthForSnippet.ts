@@ -58,9 +58,10 @@ export const resolveSchemeAuth = ({
 
 export const resolveIdentityAuth = async (
   identity: ApiIdentity,
+  url: string,
 ): Promise<ResolvedAuth> => {
   try {
-    const baseRequest = new Request(PLACEHOLDER_URL);
+    const baseRequest = new Request(URL.canParse(url) ? url : PLACEHOLDER_URL);
     const authorized = await identity.authorizeRequest(baseRequest);
     const queryString = Array.from(
       new URL(authorized.url).searchParams.entries(),
@@ -86,11 +87,13 @@ export const resolveAuthForSnippet = async ({
   identityId,
   identities,
   credentials,
+  url = PLACEHOLDER_URL,
 }: {
   operation: OperationsFragmentFragment;
   identityId: string | null | undefined;
   identities: ApiIdentity[] | undefined;
   credentials: Record<string, SecurityCredential>;
+  url?: string;
 }): Promise<ResolvedAuth> => {
   if (!identityId || identityId === NO_IDENTITY) return EMPTY_RESOLVED_AUTH;
 
@@ -104,5 +107,5 @@ export const resolveAuthForSnippet = async ({
 
   const identity = identities?.find((i) => i.id === identityId);
   if (!identity) return EMPTY_RESOLVED_AUTH;
-  return resolveIdentityAuth(identity);
+  return resolveIdentityAuth(identity, url);
 };

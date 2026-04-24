@@ -17,10 +17,12 @@ export const useResolvedAuth = ({
   operation,
   identityId,
   identities,
+  url,
 }: {
   operation: OperationsFragmentFragment;
   identityId: string | null | undefined;
   identities: ApiIdentity[] | undefined;
+  url: string;
 }): ResolvedAuth => {
   const credentials = useSecurityCredentialsStore((s) => s.credentials);
 
@@ -46,9 +48,9 @@ export const useResolvedAuth = ({
   const { data: identityAuth, error } = useQuery({
     enabled: identity !== undefined,
     retry: false,
-    queryKey: ["resolved-identity-auth", identity?.id],
+    queryKey: ["resolved-identity-auth", identity?.id, url],
     // biome-ignore lint/style/noNonNullAssertion: guarded by enabled
-    queryFn: () => resolveIdentityAuth(identity!),
+    queryFn: () => resolveIdentityAuth(identity!, url),
   });
 
   if (error) {

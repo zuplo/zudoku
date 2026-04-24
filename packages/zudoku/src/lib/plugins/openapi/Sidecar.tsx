@@ -11,6 +11,7 @@ import { useAuthState } from "../../authentication/state.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import { cn } from "../../util/cn.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
@@ -204,6 +205,7 @@ export const Sidecar = ({
     operation,
     identityId: rememberedIdentity,
     identities: identityList,
+    url: joinUrl(selectedServer, operation.path),
   });
 
   const inapplicableSchemeName = useMemo(() => {
