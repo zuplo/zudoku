@@ -6,7 +6,10 @@ import {
   SECURITY_SCHEME_PREFIX,
 } from "../playground/constants.js";
 import type { SecurityCredential } from "../playground/securityCredentialsStore.js";
-import { resolveAuthForSnippet } from "./resolveAuthForSnippet.js";
+import {
+  resolveAuthForSnippet,
+  resolveIdentityAuth,
+} from "./resolveAuthForSnippet.js";
 
 const makeOperation = (
   schemes: Array<{
@@ -195,6 +198,38 @@ describe("resolveAuthForSnippet", () => {
       expect.stringContaining("broken"),
       expect.any(Error),
     );
+    warn.mockRestore();
+  });
+});
+
+describe("resolveIdentityAuth", () => {
+  const echoUrlIdentity: ApiIdentity = {
+    id: "echo",
+    label: "Echo",
+    authorizeRequest: async (request) => {
+      request.headers.set("X-Seen-Url", request.url);
+      return request;
+    },
+  };
+
+  it("passes the provided URL through to authorizeRequest", async () => {
+    const url = "https://api.example.com/users/{id}";
+    const result = await resolveIdentityAuth(echoUrlIdentity, url);
+    expect(result.headers).toContainEqual({
+      name: "x-seen-url",
+      // Request constructor URL-encodes braces
+      value: "https://api.example.com/users/%7Bid%7D",
+    });
+  });
+
+  it("falls back to placeholder when URL is not absolute", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const result = await resolveIdentityAuth(echoUrlIdentity, "/users");
+    expect(result.headers).toContainEqual({
+      name: "x-seen-url",
+      value: "https://zudoku.invalid/",
+    });
+    expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });
 });
