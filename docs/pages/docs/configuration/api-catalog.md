@@ -8,10 +8,9 @@ creates an overview of all your APIs and lets you organize them into categories 
 
 ## Enable API Catalog
 
-The first step to enable the API Catalog, you need to add a `catalogs` object to your Zudoku
-configuration file.
+To enable the API Catalog, add a `catalogs` object to your Zudoku configuration file.
 
-```js title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   // ...
   catalogs: {
@@ -25,32 +24,56 @@ const config = {
 You can then add your APIs to the catalog by adding the `categories` property to your API
 configuration.
 
-```js title=zudoku.config.ts
+:::caution{title="Important: API paths must be nested under the catalog path"}
+
+APIs that appear in the catalog **must** have their `path` prefixed with the catalog path. For
+example, if your catalog is at `/catalog`, an API path must start with `/catalog/` (e.g.,
+`/catalog/api-users`). APIs with paths outside the catalog path will not appear in the catalog.
+
+:::
+
+```ts title=zudoku.config.ts
 const config = {
-  // ...
+  catalogs: {
+    path: "/catalog",
+    label: "API Catalog",
+  },
   apis: [
-    // ...
     {
       type: "file",
       input: "./operational.json",
-      path: "/api-operational",
+      path: "/catalog/api-operational", // Must be under /catalog/
       categories: [{ label: "General", tags: ["Operational"] }],
     },
     {
       type: "file",
       input: "./enduser.json",
-      path: "/api-enduser",
+      path: "/catalog/api-enduser", // Must be under /catalog/
       categories: [{ label: "General", tags: ["End-User"] }],
     },
     {
       type: "file",
       input: "./openapi.json",
-      path: "/api-auth",
+      path: "/catalog/api-auth", // Must be under /catalog/
       categories: [{ label: "Other", tags: ["Authentication"] }],
     },
-    // ...
   ],
-  // ...
+};
+```
+
+To add the catalog to your navigation, use a link item:
+
+```ts title=zudoku.config.ts
+const config = {
+  navigation: [
+    {
+      type: "link",
+      label: "API Catalog",
+      to: "/catalog",
+      icon: "square-library",
+    },
+  ],
+  // ... catalogs and apis config
 };
 ```
 
@@ -61,9 +84,8 @@ const config = {
 You can select which APIs are shown in the catalog by using the `items` property. The `items`
 property is an array of navigation IDs of the APIs you want to show in the catalog.
 
-```js title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
-  // ...
   catalogs: {
     path: "/catalog",
     label: "API Catalog",
@@ -71,21 +93,19 @@ const config = {
     items: ["api-operational"],
   },
   apis: [
-    // ...
     {
       type: "file",
       input: "./operational.json",
-      path: "/api-operational",
+      path: "/catalog/api-operational",
       categories: [{ label: "General", tags: ["Operational"] }],
     },
     {
       type: "file",
       input: "./enduser.json",
-      path: "/api-enduser",
+      path: "/catalog/api-enduser",
       categories: [{ label: "General", tags: ["End-User"] }],
     },
   ],
-  // ...
 };
 ```
 
@@ -94,9 +114,8 @@ const config = {
 You can filter which APIs are shown in the catalog by using the `filterItems` property. The function
 receives the items and context as arguments.
 
-```js title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
-  // ...
   catalogs: {
     path: "/catalog",
     label: "API Catalog",
@@ -104,6 +123,32 @@ const config = {
       return items.filter((item) => item.tags.includes("public"));
     },
   },
-  // ...
 };
 ```
+
+## Standalone APIs (without catalog)
+
+APIs that are **not** part of a catalog can use any path and will appear as standalone API reference
+pages. These APIs don't need `categories` and their paths don't need to be nested under a catalog.
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: [
+    {
+      type: "file",
+      input: "./openapi.json",
+      path: "/api", // standalone, not under a catalog
+    },
+  ],
+  navigation: [
+    {
+      type: "link",
+      label: "API Reference",
+      to: "/api",
+    },
+  ],
+};
+```
+
+See the [API Reference](/docs/configuration/api-reference) page for full details on configuring
+individual APIs, including versioning and customization options.
