@@ -420,6 +420,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
         ]),
       )
       .optional(),
+    disableSignUp: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -486,6 +487,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     provider: z.string().optional(),
     providers: z.array(z.string()).optional(),
     onlyThirdPartyProviders: z.boolean().optional(),
+    disableSignUp: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),

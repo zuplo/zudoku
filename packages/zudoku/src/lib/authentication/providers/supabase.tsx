@@ -22,6 +22,7 @@ import {
   ZudokuPasswordResetUi,
   ZudokuPasswordUpdateUi,
   ZudokuSignInUi,
+  ZudokuSignUpDisabledUi,
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
 
@@ -44,6 +45,7 @@ class SupabaseAuthenticationProvider
   private readonly config: SupabaseAuthenticationConfig;
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
+  private readonly disableSignUp: boolean;
 
   constructor(config: SupabaseAuthenticationConfig) {
     const { supabaseUrl, supabaseKey } = config;
@@ -63,6 +65,7 @@ class SupabaseAuthenticationProvider
       : (config.providers ?? []);
     this.providers = configuredProviders;
     this.enableUsernamePassword = !config.onlyThirdPartyProviders;
+    this.disableSignUp = config.disableSignUp ?? false;
 
     this.client.auth.onAuthStateChange(async (event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
@@ -313,6 +316,7 @@ class SupabaseAuthenticationProvider
           <ZudokuSignInUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
+            disableSignUp={this.disableSignUp}
             onOAuthSignIn={this.onOAuthSignIn}
             onUsernamePasswordSignIn={this.onUsernamePasswordSignIn}
           />
@@ -320,7 +324,9 @@ class SupabaseAuthenticationProvider
       },
       {
         path: "/signup",
-        element: (
+        element: this.disableSignUp ? (
+          <ZudokuSignUpDisabledUi />
+        ) : (
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
@@ -378,12 +384,6 @@ const getSupabaseErrorMessage = (error: unknown): string => {
   }
   if (errorMessage.includes("User already registered")) {
     return "The email address is already used by another account.";
-  }
-  if (
-    errorMessage.includes("Password should be at least") ||
-    errorMessage.includes("Password must be at least")
-  ) {
-    return "The password must be at least 6 characters long.";
   }
   if (errorMessage.includes("Invalid email")) {
     return "That email address isn't correct.";
