@@ -19,11 +19,8 @@ import { GeneratedExampleSidecarBox } from "./GeneratedExampleSidecarBox.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { AuthorizeDialog } from "./playground/AuthorizeDialog.js";
+import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./playground/constants.js";
 import IdentitySelector from "./playground/IdentitySelector.js";
-import {
-  NO_IDENTITY,
-  SECURITY_SCHEME_PREFIX,
-} from "./playground/Playground.js";
 import { useIdentityStore } from "./playground/rememberedIdentity.js";
 import { useSecurityCredentialsStore } from "./playground/securityCredentialsStore.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";

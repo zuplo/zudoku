@@ -4,7 +4,7 @@ import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 import {
   NO_IDENTITY,
   SECURITY_SCHEME_PREFIX,
-} from "../playground/Playground.js";
+} from "../playground/constants.js";
 import type { SecurityCredential } from "../playground/securityCredentialsStore.js";
 import { resolveAuthForSnippet } from "./resolveAuthForSnippet.js";
 

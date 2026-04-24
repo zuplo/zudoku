@@ -5,7 +5,7 @@ import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 import {
   NO_IDENTITY,
   SECURITY_SCHEME_PREFIX,
-} from "../playground/Playground.js";
+} from "../playground/constants.js";
 import { useSecurityCredentialsStore } from "../playground/securityCredentialsStore.js";
 import { EMPTY_RESOLVED_AUTH, type ResolvedAuth } from "./createHttpSnippet.js";
 import {
@@ -46,7 +46,7 @@ export const useResolvedAuth = ({
   const { data: identityAuth, error } = useQuery({
     enabled: identity !== undefined,
     retry: false,
-    queryKey: ["resolved-identity-auth", operation.slug, identity?.id],
+    queryKey: ["resolved-identity-auth", identity?.id],
     // biome-ignore lint/style/noNonNullAssertion: guarded by enabled
     queryFn: () => resolveIdentityAuth(identity!),
   });
