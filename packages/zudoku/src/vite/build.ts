@@ -12,6 +12,11 @@ import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
+import {
+  assertNoProtectedLeaks,
+  moveProtectedChunks,
+  warnUnmatchedProtectedPatterns,
+} from "./protected/build.js";
 
 const DIST_DIR = "dist";
 
@@ -93,6 +98,9 @@ export async function runBuild(options: BuildOptions) {
       html,
       basePath: config.basePath,
     });
+    assertNoProtectedLeaks(clientResult.output);
+    warnUnmatchedProtectedPatterns(config);
+    await moveProtectedChunks(clientOutDir, serverOutDir);
     // Mark the output as ESM so runtimes without a surrounding package.json
     // (e.g. unzipped Lambda at /var/task) don't fall back to CommonJS.
     await writeFile(

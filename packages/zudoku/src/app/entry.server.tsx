@@ -20,7 +20,20 @@ import type { SSRAuthState } from "../lib/components/context/RenderContext.js";
 import { ServerError } from "../lib/errors/ServerError.js";
 import { highlighterPromise } from "../lib/shiki.js";
 import { getRoutesByConfig } from "./main.js";
+import { protectedAssets as rawProtectedAssets } from "./protectedAssets.js";
+import { wrapProtectedRoutes } from "./wrapProtectedRoutes.js";
 export { getRoutesByConfig };
+
+// Pre-wires the configured provider's verifier so templates don't need to
+// know about auth. Leaves `verifyAccessToken` opt-in for callers that want
+// to override (tests).
+export const protectedAssets: typeof rawProtectedAssets = (opts) =>
+  rawProtectedAssets({
+    verifyAccessToken: configuredAuthProvider?.verifyAccessToken?.bind(
+      configuredAuthProvider,
+    ),
+    ...opts,
+  });
 
 const safeSerialize = (data: unknown) =>
   JSON.stringify(data).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
@@ -46,7 +59,25 @@ export const handleRequest = async ({
   basePath?: string;
   bypassProtection?: boolean;
 }): Promise<Response> => {
-  const { query, dataRoutes } = createStaticHandler(routes, {
+  const { accessToken, profile } = parseCookies(request);
+  // Emit auth state when configured, even if profile is null, so the client
+  // knows whether the server checked auth.
+  const ssrAuth: SSRAuthState | undefined = configuredAuthProvider
+    ? { accessToken, profile: profile ?? null }
+    : undefined;
+
+  // No-op lazy() on protected subtrees for unauthed requests so loaders
+  // don't run for a 401 render.
+  const url = new URL(request.url);
+  const effectiveRoutes = wrapProtectedRoutes(
+    routes,
+    config.protectedRoutes,
+    url.pathname,
+    !!ssrAuth?.profile,
+    basePath,
+  );
+
+  const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {
     basename: basePath,
   });
   const queryClient = new QueryClient();
@@ -71,13 +102,6 @@ export const handleRequest = async ({
     }
   }
 
-  const { accessToken, profile } = parseCookies(request);
-  // Emit auth state when configured, even if profile is null, so the client
-  // knows whether the server checked auth.
-  const ssrAuth: SSRAuthState | undefined = configuredAuthProvider
-    ? { accessToken, profile: profile ?? null }
-    : undefined;
-
   const router = createStaticRouter(dataRoutes, context);
   const helmetContext = {} as HelmetData["context"];
   const renderContext = {
@@ -101,9 +125,7 @@ export const handleRequest = async ({
     const reactStream = await renderToReadableStream(App, {
       onError(error) {
         status = 500;
-        if (import.meta.env.PROD) {
-          logger.error("SSR Error:", error);
-        }
+        logger.error(`SSR Error (${request.method} ${request.url}):`, error);
       },
     });
 
@@ -180,6 +202,10 @@ export const handleRequest = async ({
       headers,
     });
   } catch (error) {
+    logger.error(
+      `SSR fatal render error (${request.method} ${request.url}):`,
+      error,
+    );
     const html = renderToStaticMarkup(<ServerError error={error} />);
     return new Response(html, {
       status: 500,

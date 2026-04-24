@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "zudoku dev",
     "build": "zudoku build --experimental-ssr --adapter lambda",
-    "zip": "cd dist && zip -rqX ../function.zip . -x '*.DS_Store' '__MACOSX/*' '*.map'",
+    "zip": "rm -f function.zip && cd dist && zip -rqX ../function.zip . -x '*.DS_Store' '__MACOSX/*' '*.map'",
     "predeploy": "pnpm build && pnpm zip",
     "deploy": "aws lambda update-function-code --function-name ${LAMBDA_FUNCTION_NAME:-zudoku} --zip-file fileb://function.zip"
   },

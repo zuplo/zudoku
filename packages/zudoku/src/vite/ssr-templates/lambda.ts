@@ -4,7 +4,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { handle } from "hono/aws-lambda";
 // @ts-expect-error - entry.server.js will be bundled
-import { createServer } from "./entry.server.js";
+import { createServer, protectedAssets } from "./entry.server.js";
 
 const template = "__TEMPLATE__";
 const basePath = "__BASE_PATH__";
@@ -15,6 +15,7 @@ const staticDir = join(__dirname, "..");
 const app = new Hono();
 
 app.all("/server/*", (c) => c.notFound());
+app.use(protectedAssets({ serverDir: __dirname, serveStatic, basePath }));
 app.use("*", serveStatic({ root: staticDir }));
 app.route("/", createServer({ template, basePath }));
 
