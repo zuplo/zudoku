@@ -51,21 +51,47 @@ declare global {
   }
 }
 
+const findTocEntry = (
+  entries: TocEntry[],
+  id: string,
+): TocEntry | undefined => {
+  for (const entry of entries) {
+    if (entry.id === id) return entry;
+    const found = entry.children ? findTocEntry(entry.children, id) : undefined;
+    if (found) return found;
+  }
+};
+
 const TocPopoverButton = ({
   tocEntries,
+  variant = "inline",
   className,
 }: {
   tocEntries: TocEntry[];
+  variant?: "inline" | "button";
   className?: string;
 }) => {
   const [open, setOpen] = useState(false);
   const { activeAnchor } = useViewportAnchor();
   const activeAnchorText = activeAnchor
-    ? document.getElementById(activeAnchor)?.textContent
+    ? findTocEntry(tocEntries, activeAnchor)?.text
     : null;
+  const label = activeAnchorText ?? "On this page";
 
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
+  const trigger =
+    variant === "button" ? (
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          aria-label="Toggle table of contents"
+          className={cn("max-w-48", className)}
+        >
+          <ListTreeIcon size={14} aria-hidden="true" />
+          <span className="truncate">{label}</span>
+        </Button>
+      </PopoverTrigger>
+    ) : (
       <PopoverTrigger
         className={cn(
           "flex items-center gap-1 text-muted-foreground hover:text-accent-foreground",
@@ -74,14 +100,17 @@ const TocPopoverButton = ({
         aria-label="Toggle table of contents"
       >
         <ListTreeIcon aria-hidden="true" className="size-3" />
-        <span className="text-xs font-medium">
-          {activeAnchorText ?? "On this page"}
-        </span>
+        <span className="text-xs font-medium truncate">{label}</span>
       </PopoverTrigger>
+    );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      {trigger}
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="max-w-sm overflow-y-auto p-4 text-sm"
+        className="max-w-sm max-h-[calc(100vh-var(--header-height))] overflow-y-auto p-4 text-sm"
         onCloseAutoFocus={(e) => e.preventDefault()}
         onClick={(e) => {
           if (e.target instanceof HTMLElement && e.target.closest("a")) {
@@ -140,7 +169,6 @@ export const MdxPage = ({
   const location = useLocation();
   const { options } = useZudoku();
   const [isCopied, setIsCopied] = useState(false);
-  const [isTocOpen, setIsTocOpen] = useState(false);
 
   const title = frontmatter.title;
   const description = frontmatter.description ?? excerpt;
@@ -196,7 +224,6 @@ export const MdxPage = ({
   const showToc = !hideToc && tocEntries.length > 0;
   const showTocSidebar = showToc && !fullWidth;
   const showTocPopover = showToc && fullWidth;
-  const showTocDrawer = showToc && !fullWidth;
 
   const { prev, next } = usePrevNext();
 
@@ -238,7 +265,7 @@ export const MdxPage = ({
         )}
       >
         <header className="flow-root">
-          {showTocDrawer && (
+          {showTocSidebar && (
             <>
               <Slot.Source name="top-navigation-side" type="append">
                 <TocPopoverButton
@@ -258,29 +285,7 @@ export const MdxPage = ({
               aria-label="Page actions"
             >
               {showTocPopover && (
-                <Popover open={isTocOpen} onOpenChange={setIsTocOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      aria-label="Toggle table of contents"
-                    >
-                      <ListTreeIcon size={14} aria-hidden="true" />
-                      <span>On this page</span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    align="end"
-                    className="w-72 max-h-[calc(100vh-var(--header-height)-2rem)] overflow-y-auto p-3 text-sm"
-                    onClick={(e) => {
-                      if ((e.target as HTMLElement).closest("a")) {
-                        setIsTocOpen(false);
-                      }
-                    }}
-                  >
-                    <TocContent entries={tocEntries} showHeader={false} />
-                  </PopoverContent>
-                </Popover>
+                <TocPopoverButton tocEntries={tocEntries} variant="button" />
               )}
               {copyMarkdownConfig && (
                 <ButtonGroup>

@@ -194,7 +194,7 @@ Combine with `toc: false` to hide the table of contents entirely.
 ```tsx title="zudoku.config.tsx"
 docs: {
   defaultOptions: {
-    fullWidth: true; // Use full-width layout for all pages by default
+    fullWidth: true, // Use full-width layout for all pages by default
   }
 }
 ```
