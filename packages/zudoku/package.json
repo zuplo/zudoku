@@ -111,7 +111,7 @@
     "@radix-ui/react-tooltip": "1.2.8",
     "@radix-ui/react-visually-hidden": "1.2.4",
     "@scalar/openapi-parser": "0.23.13",
-    "@sentry/node": "10.42.0",
+    "@sentry/node": "10.49.0",
     "@shikijs/langs": "4.0.2",
     "@shikijs/rehype": "4.0.2",
     "@shikijs/themes": "4.0.2",
