@@ -95,6 +95,25 @@ toc: false
 ---
 ```
 
+### `fullWidth`
+
+Removes the table of contents sidebar and lets the page content span the full available width. When
+enabled, the table of contents is still accessible via an "On this page" toggle in the page header
+(unless `toc: false` is also set, in which case it is hidden entirely).
+
+```md
+---
+fullWidth: true
+---
+```
+
+| `fullWidth` | `toc`   | Result                                                          |
+| ----------- | ------- | --------------------------------------------------------------- |
+| `false`     | `true`  | TOC shown in the sidebar (default).                             |
+| `false`     | `false` | TOC hidden; content keeps its standard width.                   |
+| `true`      | `true`  | Content spans full width; TOC is available via a toggle button. |
+| `true`      | `false` | Content spans full width; TOC is not available at all.          |
+
 ### `disable_pager`
 
 Controls whether the previous/next page navigation is displayed at the bottom of the page. Set to

@@ -73,7 +73,7 @@ export const Heading = ({
       {id && (
         <a
           href={`#${id}`}
-          className="ms-[0.33em] rounded text-[0.8em] text-muted-foreground p-0.5 -m-0.5 opacity-0 group-hover:opacity-50 hover:text-primary hover:!opacity-100 transition-opacity duration-200 inline-flex items-center align-middle"
+          className="ms-[0.33em] rounded text-[0.8em] text-muted-foreground p-0.5 -m-0.5 opacity-0 group-hover:opacity-50 hover:text-primary hover:opacity-100! transition-opacity duration-200 inline-flex items-center align-middle"
           aria-label={`Link to ${id}`}
         >
           <LinkIcon className="size-[0.75em] min-w-4 min-h-4" />
