@@ -219,11 +219,11 @@ const config = {
 Zudoku exposes several CSS variables for controlling layout dimensions. These can be overridden
 using `customCss`:
 
-| Variable             | Default         | Description          |
-| -------------------- | --------------- | -------------------- |
-| `--side-nav-width`   | `--spacing(72)` | Sidebar width        |
-| `--header-height`    | (auto)          | Header height        |
-| `--padding-nav-item` | (theme default) | Sidebar item padding |
+| Variable             | Default                                                                         | Description             |
+| -------------------- | ------------------------------------------------------------------------------- | ----------------------- |
+| `--side-nav-width`   | `--spacing(72)`                                                                 | Sidebar width           |
+| `--header-height`    | `calc(var(--top-header-height) + var(--top-nav-height) + var(--banner-height))` | Header height (derived) |
+| `--padding-nav-item` | `--spacing(2.5)`                                                                | Sidebar item padding    |
 
 ```ts title="Example: wider sidebar"
 const config = {

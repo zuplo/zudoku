@@ -24,11 +24,12 @@ const config = {
 You can then add your APIs to the catalog by adding the `categories` property to your API
 configuration.
 
-:::caution{title="Important: API paths must be nested under the catalog path"}
+:::caution{title="Recommendation: nest API paths under the catalog path"}
 
-APIs that appear in the catalog **must** have their `path` prefixed with the catalog path. For
-example, if your catalog is at `/catalog`, an API path must start with `/catalog/` (e.g.,
-`/catalog/api-users`). APIs with paths outside the catalog path will not appear in the catalog.
+For a consistent user experience, APIs that appear in the catalog should have their `path` prefixed
+with the catalog path. For example, if your catalog is at `/catalog`, an API path should start with
+`/catalog/` (e.g., `/catalog/api-users`). APIs with paths outside the catalog path still appear in
+the catalog, but clicking them navigates the user outside the catalog section.
 
 :::
 
@@ -79,40 +80,11 @@ const config = {
 
 ## Advanced Configuration
 
-### Select APIs to show in the catalog
-
-You can select which APIs are shown in the catalog by using the `items` property. The `items`
-property is an array of navigation IDs of the APIs you want to show in the catalog.
-
-```ts title=zudoku.config.ts
-const config = {
-  catalogs: {
-    path: "/catalog",
-    label: "API Catalog",
-    // Only show the operational API in the catalog
-    items: ["api-operational"],
-  },
-  apis: [
-    {
-      type: "file",
-      input: "./operational.json",
-      path: "/catalog/api-operational",
-      categories: [{ label: "General", tags: ["Operational"] }],
-    },
-    {
-      type: "file",
-      input: "./enduser.json",
-      path: "/catalog/api-enduser",
-      categories: [{ label: "General", tags: ["End-User"] }],
-    },
-  ],
-};
-```
-
 ### Filtering catalog items
 
 You can filter which APIs are shown in the catalog by using the `filterItems` property. The function
-receives the items and context as arguments.
+receives the items and the catalog context (including `auth`) as arguments. Each item has a
+`categories` array where each category has a `label` and `tags`.
 
 ```ts title=zudoku.config.ts
 const config = {
@@ -120,7 +92,9 @@ const config = {
     path: "/catalog",
     label: "API Catalog",
     filterItems: (items, { auth }) => {
-      return items.filter((item) => item.tags.includes("public"));
+      return items.filter((item) =>
+        item.categories.some((category) => category.tags.includes("public")),
+      );
     },
   },
 };
