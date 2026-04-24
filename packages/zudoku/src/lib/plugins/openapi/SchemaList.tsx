@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import { ChevronRightIcon } from "lucide-react";
 import { Button } from "zudoku/ui/Button.js";
 import {
@@ -52,10 +52,10 @@ export function SchemaList() {
   if (!schemas.length) {
     return (
       <div>
-        <Helmet>
+        <Head>
           <title>Schemas {showVersions ? version : ""}</title>
           <meta name="description" content="List of schemas used by the API." />
-        </Helmet>
+        </Head>
         No schemas found
       </div>
     );
@@ -68,10 +68,10 @@ export function SchemaList() {
       data-pagefind-meta="section:openapi"
     >
       <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
-      <Helmet>
+      <Head>
         <title>Schemas {showVersions ? version : ""}</title>
         <meta name="description" content="List of schemas used by the API." />
-      </Helmet>
+      </Head>
       <div className="pt-(--padding-content-top) pb-(--padding-content-bottom)">
         <ApiHeader title={title} heading="Schemas" headingId="schemas" />
         <hr className="my-8" />

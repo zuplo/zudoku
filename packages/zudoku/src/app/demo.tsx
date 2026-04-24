@@ -1,3 +1,4 @@
+import { createHead } from "@unhead/react/client";
 import logger from "loglevel";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter } from "react-router";
@@ -74,4 +75,4 @@ const routes = getRoutesByConfig(config);
 const router = createBrowserRouter(routes, {
   basename: window.location.pathname,
 });
-createRoot(root).render(<Bootstrap router={router} />);
+createRoot(root).render(<Bootstrap router={router} head={createHead()} />);

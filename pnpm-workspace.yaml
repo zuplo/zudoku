@@ -25,6 +25,8 @@ minimumReleaseAge: 4320
 
 minimumReleaseAgeExclude:
   - zudoku
+  - unhead
+  - "@unhead/*"
 
 onlyBuiltDependencies:
   - esbuild

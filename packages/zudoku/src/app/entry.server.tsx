@@ -1,5 +1,5 @@
 import { dehydrate, QueryClient } from "@tanstack/react-query";
-import type { HelmetData } from "@zudoku/react-helmet-async";
+import { createHead, transformHtmlTemplate } from "@unhead/react/server";
 import logger from "loglevel";
 import { renderToReadableStream, renderToStaticMarkup } from "react-dom/server";
 import {
@@ -63,7 +63,7 @@ export const handleRequest = async ({
   }
 
   const router = createStaticRouter(dataRoutes, context);
-  const helmetContext = {} as HelmetData["context"];
+  const head = createHead();
   const renderContext = {
     status: 200,
     bypassProtection: bypassProtection ?? false,
@@ -74,7 +74,7 @@ export const handleRequest = async ({
       router={router}
       context={context}
       queryClient={queryClient}
-      helmetContext={helmetContext}
+      head={head}
       bypassProtection={bypassProtection}
       renderContext={renderContext}
     />
@@ -97,22 +97,14 @@ export const handleRequest = async ({
       throw new Error("No <!--app-html--> found in template");
     }
 
+    const headHtml = await transformHtmlTemplate(head, htmlStart);
+
     const encoder = new TextEncoder();
     const reader = reactStream.getReader();
 
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
-        const helmetHtml = [
-          helmetContext.helmet?.title?.toString() ?? "",
-          helmetContext.helmet?.meta?.toString() ?? "",
-          helmetContext.helmet?.link?.toString() ?? "",
-          helmetContext.helmet?.style?.toString() ?? "",
-          helmetContext.helmet?.script?.toString() ?? "",
-        ].join("\n");
-
-        controller.enqueue(
-          encoder.encode(htmlStart.replace("<!--app-helmet-->", helmetHtml)),
-        );
+        controller.enqueue(encoder.encode(headHtml));
 
         while (true) {
           const { done, value } = await reader.read();

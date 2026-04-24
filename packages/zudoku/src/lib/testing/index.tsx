@@ -3,7 +3,7 @@ import {
   QueryClientProvider,
   type QueryKey,
 } from "@tanstack/react-query";
-import { HelmetProvider } from "@zudoku/react-helmet-async";
+import { createHead, UnheadProvider } from "@unhead/react/client";
 import { Suspense } from "react";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { createRedirectRoutes } from "../../app/utils/createRedirectRoutes.js";
@@ -99,6 +99,7 @@ const StaticZudoku = ({
     queryClient.setQueryData(queryKey, data);
   }
 
+  const head = createHead();
   const routes = getRoutesByOptions(options);
   const router = createMemoryRouter(
     [
@@ -130,11 +131,11 @@ const StaticZudoku = ({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HelmetProvider>
+      <UnheadProvider head={head}>
         <RenderContext value={{ status: 200, bypassProtection: false }}>
           <RouterProvider router={router} />
         </RenderContext>
-      </HelmetProvider>
+      </UnheadProvider>
     </QueryClientProvider>
   );
 };
