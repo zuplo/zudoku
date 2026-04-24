@@ -2,6 +2,7 @@ import type { AuthState } from "../../authentication/state.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import type { SchemaImports } from "../../oas/graphql/index.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
+import type { ResolvedAuth } from "./util/createHttpSnippet.js";
 
 type DynamicInput = () => Promise<unknown>;
 
@@ -60,6 +61,7 @@ export type GenerateCodeSnippetFn = (options: {
   operation: OperationsFragmentFragment;
   // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   example?: any | null;
+  resolvedAuth?: ResolvedAuth;
 }) => string | false;
 
 type BaseOasConfig = {

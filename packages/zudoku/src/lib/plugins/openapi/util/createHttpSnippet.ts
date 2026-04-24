@@ -1,4 +1,5 @@
 import { HTTPSnippet } from "@zudoku/httpsnippet";
+import { joinUrl } from "../../../util/joinUrl.js";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 
 const toFormDataParams = (text?: string) => {
@@ -18,10 +19,21 @@ const toFormDataParams = (text?: string) => {
   }
 };
 
+export type ResolvedAuth = {
+  headers: Array<{ name: string; value: string }>;
+  queryString: Array<{ name: string; value: string }>;
+};
+
+export const EMPTY_RESOLVED_AUTH: ResolvedAuth = {
+  headers: [],
+  queryString: [],
+};
+
 export const createHttpSnippet = ({
   operation,
   selectedServer,
   exampleBody,
+  resolvedAuth,
 }: {
   operation: OperationsFragmentFragment;
   selectedServer: string;
@@ -29,6 +41,7 @@ export const createHttpSnippet = ({
     mimeType: string;
     text?: string;
   };
+  resolvedAuth?: ResolvedAuth;
 }) => {
   const isMultipart =
     exampleBody.mimeType === "multipart/form-data" ||
@@ -41,47 +54,66 @@ export const createHttpSnippet = ({
       }
     : exampleBody;
 
+  const baseHeaders = [
+    ...(exampleBody.text
+      ? [{ name: "Content-Type", value: exampleBody.mimeType }]
+      : []),
+    ...(operation.parameters
+      ?.filter((p) => p.in === "header" && p.required === true)
+      .map((p) => ({
+        name: p.name,
+        value:
+          p.schema?.default ??
+          p.examples?.find((x) => x.value)?.value ??
+          (p.schema?.type === "string"
+            ? "<string>"
+            : p.schema?.type === "number" || p.schema?.type === "integer"
+              ? "<number>"
+              : p.schema?.type === "boolean"
+                ? "<bool>"
+                : "<value>"),
+      })) ?? []),
+  ];
+
+  const baseQueryString =
+    operation.parameters
+      ?.filter((p) => p.in === "query" && p.required === true)
+      .map((p) => ({
+        name: p.name,
+        value:
+          p.schema?.default ??
+          p.examples?.find((x) => x.value)?.value ??
+          (p.schema?.type === "string"
+            ? "<string>"
+            : p.schema?.type === "number" || p.schema?.type === "integer"
+              ? "<number>"
+              : p.schema?.type === "boolean"
+                ? "<bool>"
+                : "<value>"),
+      })) ?? [];
+
+  const authHeaderNames = new Set(
+    resolvedAuth?.headers.map((h) => h.name.toLowerCase()) ?? [],
+  );
+  const authQueryNames = new Set(
+    resolvedAuth?.queryString.map((q) => q.name) ?? [],
+  );
+
   return new HTTPSnippet({
     method: operation.method.toUpperCase(),
-    url:
-      selectedServer + operation.path.replaceAll("{", ":").replaceAll("}", ""),
+    url: joinUrl(
+      selectedServer,
+      operation.path.replaceAll("{", ":").replaceAll("}", ""),
+    ),
     postData,
     headers: [
-      ...(exampleBody.text
-        ? [{ name: "Content-Type", value: exampleBody.mimeType }]
-        : []),
-      ...(operation.parameters
-        ?.filter((p) => p.in === "header" && p.required === true)
-        .map((p) => ({
-          name: p.name,
-          value:
-            p.schema?.default ??
-            p.examples?.find((x) => x.value)?.value ??
-            (p.schema?.type === "string"
-              ? "<string>"
-              : p.schema?.type === "number" || p.schema?.type === "integer"
-                ? "<number>"
-                : p.schema?.type === "boolean"
-                  ? "<bool>"
-                  : "<value>"),
-        })) ?? []),
+      ...baseHeaders.filter((h) => !authHeaderNames.has(h.name.toLowerCase())),
+      ...(resolvedAuth?.headers ?? []),
     ],
-    queryString:
-      operation.parameters
-        ?.filter((p) => p.in === "query" && p.required === true)
-        .map((p) => ({
-          name: p.name,
-          value:
-            p.schema?.default ??
-            p.examples?.find((x) => x.value)?.value ??
-            (p.schema?.type === "string"
-              ? "<string>"
-              : p.schema?.type === "number" || p.schema?.type === "integer"
-                ? "<number>"
-                : p.schema?.type === "boolean"
-                  ? "<bool>"
-                  : "<value>"),
-        })) ?? [],
+    queryString: [
+      ...baseQueryString.filter((q) => !authQueryNames.has(q.name)),
+      ...(resolvedAuth?.queryString ?? []),
+    ],
     httpVersion: "",
     cookies: [],
     headersSize: 0,

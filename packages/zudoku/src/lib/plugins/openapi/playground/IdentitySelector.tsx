@@ -3,7 +3,7 @@ import { Button } from "zudoku/ui/Button.js";
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import type { ApiIdentity } from "../../../core/ZudokuContext.js";
-import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./Playground.js";
+import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./constants.js";
 import type { SecurityCredential } from "./securityCredentialsStore.js";
 
 const IdentitySelector = ({

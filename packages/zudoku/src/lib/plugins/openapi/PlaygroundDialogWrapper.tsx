@@ -4,6 +4,7 @@ import type {
   OperationsFragmentFragment,
 } from "./graphql/graphql.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
+import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 
 export const PlaygroundDialogWrapper = ({
   server,
@@ -55,17 +56,9 @@ export const PlaygroundDialogWrapper = ({
 
   const { options } = useOasConfig();
 
-  // Extract unique security schemes from the operation's security requirements
-  const securitySchemes =
-    operation.security && !options?.disableSecurity
-      ? Array.from(
-          new Map(
-            operation.security.flatMap((req) =>
-              req.schemes.map((s) => [s.scheme.name, s.scheme]),
-            ),
-          ).values(),
-        )
-      : [];
+  const securitySchemes = options?.disableSecurity
+    ? []
+    : extractOperationSecuritySchemes(operation);
 
   return (
     <PlaygroundDialog

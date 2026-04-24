@@ -35,6 +35,7 @@ import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
+import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./constants.js";
 import { createUrl } from "./createUrl.js";
 import { extractFileName, isBinaryContentType } from "./fileUtils.js";
 import { Headers } from "./Headers.js";
@@ -55,8 +56,7 @@ import {
 } from "./securityCredentialsStore.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
-export const NO_IDENTITY = "__none";
-export const SECURITY_SCHEME_PREFIX = "__security:";
+export { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./constants.js";
 
 export type Header = {
   name: string;

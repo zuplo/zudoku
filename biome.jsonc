@@ -91,6 +91,20 @@
       }
     },
     {
+      "includes": [
+        "packages/**/*.test.{ts,tsx}",
+        "packages/**/*.test-d.{ts,tsx}",
+        "packages/**/*.spec.{ts,tsx}"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/zudoku/src/cli/**"],
       "linter": {
         "rules": {
@@ -101,7 +115,6 @@
       }
     },
     {
-      // main.css:
       "includes": ["packages/zudoku/src/app/main.css"],
       "linter": {
         "rules": {
