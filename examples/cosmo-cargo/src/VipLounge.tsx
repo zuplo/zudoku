@@ -125,7 +125,9 @@ export const VipLounge = () => {
             <span className="inline-block -rotate-1 rounded-3xl bg-primary px-3 py-1 text-primary-foreground">
               VIP Lounge
             </span>
-            <span className="ml-2">🥂</span>
+            <span aria-hidden className="ml-2">
+              🥂
+            </span>
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground">
             Good to see you, <strong>{memberName}</strong>. The champagne is
