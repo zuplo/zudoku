@@ -198,7 +198,7 @@
   },
   "devDependencies": {
     "@clerk/clerk-js": "^6.7.4",
-    "@graphql-codegen/cli": "6.3.0",
+    "@graphql-codegen/cli": "6.3.1",
     "@inkeep/cxkit-types": "0.5.117",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
