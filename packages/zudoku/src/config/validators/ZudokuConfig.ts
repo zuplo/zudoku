@@ -722,17 +722,20 @@ export function validateConfig(config: unknown, configPath?: string) {
   const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
+    const prettyErrors = z.prettifyError(validationResult.error);
+    const location = configPath ? ` at ${configPath}` : "";
+
     // In production (build mode), throw an error to fail the build
     if (process.env.NODE_ENV === "production") {
       throw new Error(
-        `Whoops, looks like there's an issue with your ${configPath ?? "config"}:\n${z.prettifyError(validationResult.error)}`,
+        `Invalid Zudoku configuration${location}:\n${prettyErrors}`,
       );
     }
 
     // In development mode, log warnings but don't fail
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.log(colors.yellow("Validation errors:"));
+    console.log(colors.yellow(`Invalid Zudoku configuration${location}:`));
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.log(colors.yellow(z.prettifyError(validationResult.error)));
+    console.log(colors.yellow(prettyErrors));
   }
 }
