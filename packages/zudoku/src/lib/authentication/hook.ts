@@ -21,6 +21,8 @@ export const useRefreshUserProfile = ({
 
   return useQuery({
     refetchOnWindowFocus,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
     queryKey: ["refresh-user-profile"],
     enabled:
       isAuthEnabled && typeof authentication?.refreshUserProfile === "function",
@@ -35,7 +37,7 @@ export const useVerifiedEmail = () => {
   const isAuthEnabled = typeof authentication !== "undefined";
 
   const { refetch: refreshUserProfile } = useRefreshUserProfile({
-    refetchOnWindowFocus: "always",
+    refetchOnWindowFocus: true,
   });
 
   return {
