@@ -46,7 +46,7 @@ export class OpenIDAuthenticationProvider
 {
   protected client: oauth.Client;
   protected issuer: string;
-  protected authorizationServer: oauth.AuthorizationServer | undefined;
+  protected authorizationServer: Promise<oauth.AuthorizationServer> | undefined;
 
   protected callbackUrlPath: string;
 
@@ -105,14 +105,11 @@ export class OpenIDAuthenticationProvider
   }
 
   protected async getAuthServer() {
-    if (!this.authorizationServer) {
+    this.authorizationServer ??= (async () => {
       const issuerUrl = new URL(this.issuer);
       const response = await oauth.discoveryRequest(issuerUrl);
-      this.authorizationServer = await oauth.processDiscoveryResponse(
-        issuerUrl,
-        response,
-      );
-    }
+      return oauth.processDiscoveryResponse(issuerUrl, response);
+    })();
     return this.authorizationServer;
   }
 
