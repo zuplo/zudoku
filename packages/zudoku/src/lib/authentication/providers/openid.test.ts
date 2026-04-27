@@ -32,8 +32,21 @@ const AUTH_SERVER: oauth.AuthorizationServer = {
   issuer: "https://issuer.example.com",
 };
 
+class TestProvider extends OpenIDAuthenticationProvider {
+  publicGetAuthServer() {
+    return this.getAuthServer();
+  }
+}
+
 const createProvider = () =>
   new OpenIDAuthenticationProvider({
+    type: "openid",
+    issuer: "https://issuer.example.com",
+    clientId: "test-client",
+  });
+
+const createTestProvider = () =>
+  new TestProvider({
     type: "openid",
     issuer: "https://issuer.example.com",
     clientId: "test-client",
@@ -288,6 +301,55 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       expect(profile?.sub).toBe("user-1");
       expect(profile?.email).toBe("user@example.com");
       expect(profile?.emailVerified).toBe(true);
+    });
+  });
+
+  describe("getAuthServer", () => {
+    beforeEach(() => {
+      vi.mocked(oauth.discoveryRequest).mockClear();
+      vi.mocked(oauth.processDiscoveryResponse).mockClear();
+    });
+
+    test("dedupes concurrent calls to a single discovery request", async () => {
+      const provider = createTestProvider();
+
+      const results = await Promise.all([
+        provider.publicGetAuthServer(),
+        provider.publicGetAuthServer(),
+        provider.publicGetAuthServer(),
+      ]);
+
+      expect(oauth.discoveryRequest).toHaveBeenCalledTimes(1);
+      expect(oauth.processDiscoveryResponse).toHaveBeenCalledTimes(1);
+      for (const result of results) {
+        expect(result).toBe(AUTH_SERVER);
+      }
+    });
+
+    test("reuses the cached discovery response across sequential calls", async () => {
+      const provider = createTestProvider();
+
+      await provider.publicGetAuthServer();
+      await provider.publicGetAuthServer();
+
+      expect(oauth.discoveryRequest).toHaveBeenCalledTimes(1);
+      expect(oauth.processDiscoveryResponse).toHaveBeenCalledTimes(1);
+    });
+
+    test("clears the cache on failure so retries can succeed", async () => {
+      const provider = createTestProvider();
+
+      vi.mocked(oauth.discoveryRequest).mockRejectedValueOnce(
+        new Error("network down"),
+      );
+
+      await expect(provider.publicGetAuthServer()).rejects.toThrow(
+        "network down",
+      );
+
+      const result = await provider.publicGetAuthServer();
+      expect(result).toBe(AUTH_SERVER);
+      expect(oauth.discoveryRequest).toHaveBeenCalledTimes(2);
     });
   });
 

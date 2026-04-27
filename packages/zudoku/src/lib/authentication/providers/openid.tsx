@@ -46,7 +46,9 @@ export class OpenIDAuthenticationProvider
 {
   protected client: oauth.Client;
   protected issuer: string;
-  protected authorizationServer: oauth.AuthorizationServer | undefined;
+  protected authorizationServerPromise:
+    | Promise<oauth.AuthorizationServer>
+    | undefined;
 
   protected callbackUrlPath: string;
 
@@ -88,15 +90,19 @@ export class OpenIDAuthenticationProvider
   }
 
   protected async getAuthServer() {
-    if (!this.authorizationServer) {
+    // Cache the in-flight promise so concurrent callers share a single
+    // discovery request. Reset on failure so retries can succeed later.
+    if (!this.authorizationServerPromise) {
       const issuerUrl = new URL(this.issuer);
-      const response = await oauth.discoveryRequest(issuerUrl);
-      this.authorizationServer = await oauth.processDiscoveryResponse(
-        issuerUrl,
-        response,
-      );
+      this.authorizationServerPromise = oauth
+        .discoveryRequest(issuerUrl)
+        .then((response) => oauth.processDiscoveryResponse(issuerUrl, response))
+        .catch((error) => {
+          this.authorizationServerPromise = undefined;
+          throw error;
+        });
     }
-    return this.authorizationServer;
+    return this.authorizationServerPromise;
   }
 
   /**
