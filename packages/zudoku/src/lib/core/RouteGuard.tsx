@@ -1,21 +1,6 @@
 import { Helmet } from "@zudoku/react-helmet-async";
-import { use, useCallback, useEffect, useMemo } from "react";
-import {
-  matchPath,
-  Outlet,
-  useBlocker,
-  useLocation,
-  useNavigate,
-} from "react-router";
-import { Button } from "zudoku/ui/Button.js";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "zudoku/ui/Dialog.js";
+import { use, useCallback, useEffect, useMemo, useRef } from "react";
+import { matchPath, Outlet, useBlocker, useLocation } from "react-router";
 import { REASON_CODES } from "../../config/validators/reason-codes.js";
 import { useAuth } from "../authentication/hook.js";
 import { RenderContext } from "../components/context/RenderContext.js";
@@ -24,39 +9,6 @@ import { Layout } from "../components/Layout.js";
 import { ZudokuError } from "../util/invariant.js";
 
 export const SEARCH_PROTECTED_SECTION = "protected";
-
-type LoginDialogProps = {
-  open: boolean;
-  onCancel: () => void;
-  onLogin: () => void;
-  onRegister: () => void;
-};
-
-const LoginDialog = ({
-  open,
-  onCancel,
-  onLogin,
-  onRegister,
-}: LoginDialogProps) => (
-  <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onCancel()}>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Login to continue</DialogTitle>
-      </DialogHeader>
-      <DialogDescription>Please login to access this page.</DialogDescription>
-      <DialogFooter>
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <div className="w-full" />
-        <Button variant="secondary" onClick={onRegister}>
-          Register
-        </Button>
-        <Button onClick={onLogin}>Login</Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-);
 
 const BypassRoute = ({ isProtectedRoute }: { isProtectedRoute: boolean }) => (
   <>
@@ -89,10 +41,15 @@ const ForbiddenPage = () => {
   );
 };
 
+const RedirectingToLogin = () => (
+  <div className="flex items-center justify-center min-h-[50vh]">
+    <p className="text-muted-foreground">Redirecting to login…</p>
+  </div>
+);
+
 export const RouteGuard = () => {
   const auth = useAuth();
   const zudoku = useZudoku();
-  const navigate = useNavigate();
   const location = useLocation();
   const renderContext = use(RenderContext);
   const shouldBypass = renderContext.bypassProtection;
@@ -133,7 +90,7 @@ export const RouteGuard = () => {
   });
   const isBlocked = blocker.state === "blocked";
 
-  // Proceed after successful login
+  // Proceed after successful login (e.g. user authenticated in another tab while we were redirecting)
   useEffect(() => {
     if (!auth.isAuthenticated || !isBlocked) return;
     const check = getAuthCheck(blocker.location.pathname);
@@ -154,6 +111,35 @@ export const RouteGuard = () => {
     getAuthCheck,
   ]);
 
+  const isUnauthorizedDestination = needsToSignIn || isBlocked;
+  const blockerLocation = isBlocked ? blocker.location : null;
+  const redirectTo = blockerLocation
+    ? blockerLocation.pathname + blockerLocation.search + blockerLocation.hash
+    : location.pathname + location.search + location.hash;
+
+  // Auto-redirect to the auth provider when unauthorized.
+  // Ref guard prevents duplicate calls if auth.signup's identity changes between renders.
+  const redirectInitiatedRef = useRef(false);
+  useEffect(() => {
+    if (!isUnauthorizedDestination) {
+      redirectInitiatedRef.current = false;
+      return;
+    }
+    if (auth.isPending) return;
+    if (!auth.isAuthEnabled) return;
+    if (shouldBypass) return;
+    if (redirectInitiatedRef.current) return;
+    redirectInitiatedRef.current = true;
+    void auth.signup({ redirectTo });
+  }, [
+    isUnauthorizedDestination,
+    auth.isPending,
+    auth.isAuthEnabled,
+    auth.signup,
+    redirectTo,
+    shouldBypass,
+  ]);
+
   if (isForbidden) {
     return <ForbiddenPage />;
   }
@@ -170,24 +156,17 @@ export const RouteGuard = () => {
     });
   }
 
-  if (needsToSignIn && auth.isPending && typeof window !== "undefined") {
+  if (
+    isUnauthorizedDestination &&
+    auth.isPending &&
+    typeof window !== "undefined"
+  ) {
     return null;
   }
 
-  const showDialog = needsToSignIn || isBlocked;
-  const redirectTo = isBlocked
-    ? blocker.location.pathname + blocker.location.search
-    : location.pathname + location.search;
+  if (isUnauthorizedDestination) {
+    return <RedirectingToLogin />;
+  }
 
-  return (
-    <>
-      {!needsToSignIn && <Outlet />}
-      <LoginDialog
-        open={showDialog}
-        onCancel={needsToSignIn ? () => navigate(-1) : () => blocker.reset?.()}
-        onLogin={() => void auth.login({ redirectTo })}
-        onRegister={() => void auth.signup({ redirectTo })}
-      />
-    </>
-  );
+  return <Outlet />;
 };

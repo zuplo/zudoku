@@ -38,9 +38,9 @@ authenticated to access these routes.
 }
 ```
 
-When a user tries to access a protected route, a login dialog will appear prompting them to sign in
-or register. After logging in, they are automatically redirected back to the route they were trying
-to access.
+When a user tries to access a protected route, they are automatically redirected to the
+authentication provider's sign-up flow. After signing in, they are returned to the route they were
+trying to access (including any query string and hash fragment).
 
 ## Object Format
 
@@ -81,20 +81,20 @@ The callback function receives an object with:
 
 The callback can return a `boolean` or a reason code string:
 
-| Return value              | Behavior                                          |
-| ------------------------- | ------------------------------------------------- |
-| `true`                    | Allow access to the route                         |
-| `false`                   | Treated as `UNAUTHORIZED` - prompts login         |
-| `reasonCode.UNAUTHORIZED` | Show a login dialog prompting the user to sign in |
-| `reasonCode.FORBIDDEN`    | Show a 403 "Access Denied" page                   |
+| Return value              | Behavior                                                   |
+| ------------------------- | ---------------------------------------------------------- |
+| `true`                    | Allow access to the route                                  |
+| `false`                   | Treated as `UNAUTHORIZED` — redirects to the auth provider |
+| `reasonCode.UNAUTHORIZED` | Redirect to the authentication provider                    |
+| `reasonCode.FORBIDDEN`    | Show a 403 "Access Denied" page                            |
 
 ## Reason Codes
 
 Reason codes allow you to distinguish between users who need to sign in and users who are signed in
 but lack permission. This is useful for building role-based or attribute-based access control.
 
-- **`UNAUTHORIZED`** - The user is not authenticated. A login dialog is shown, and navigation to the
-  route is blocked until the user signs in.
+- **`UNAUTHORIZED`** - The user is not authenticated. They are automatically redirected to the
+  authentication provider, and returned to the route after signing in.
 - **`FORBIDDEN`** - The user is authenticated but does not have permission. A 403 "Access Denied"
   page is displayed instead of the route content.
 
@@ -121,13 +121,13 @@ but lack permission. This is useful for building role-based or attribute-based a
 
 ## Navigation Blocking
 
-When a user navigates to a route that returns `false` or `UNAUTHORIZED`, navigation is intercepted
-before the page changes. The user stays on the current page while a login dialog is displayed. If
-the user cancels, they remain on the current page. If they log in successfully, navigation
-automatically proceeds to the protected route.
+When a user navigates to a route that returns `false` or `UNAUTHORIZED`, the redirect to the
+authentication provider is initiated immediately. If they have configured `redirectToAfterSignIn`,
+they will land there after signing in; otherwise they are returned to the route they originally
+requested.
 
-Routes that return `FORBIDDEN` do not block navigation — the user navigates to the route and sees
-the "Access Denied" page.
+Routes that return `FORBIDDEN` do not redirect — the user navigates to the route and sees the
+"Access Denied" page.
 
 ## Path Patterns
 
