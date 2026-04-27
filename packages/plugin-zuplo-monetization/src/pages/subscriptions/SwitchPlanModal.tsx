@@ -21,10 +21,10 @@ import {
 import { Item, ItemContent, ItemDescription, ItemTitle } from "zudoku/ui/Item";
 import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import { usePlans } from "../../hooks/usePlans.js";
-import type { Subscription } from "../../hooks/useSubscriptions.js";
 import { useUrlUtils } from "../../hooks/useUrlUtils.js";
 import { useMonetizationConfig } from "../../MonetizationContext";
 import type { Plan } from "../../types/PlanType.js";
+import type { Subscription } from "../../types/SubscriptionType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPrice } from "../../utils/formatPrice.js";
@@ -243,6 +243,9 @@ const ChangeIndicator = ({
   }
   return <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />;
 };
+
+const isPrivatePlan = (plan: Plan) =>
+  plan.metadata?.zuplo_private_plan === "true";
 
 const modeLabelMap: Record<SwitchPlanTarget["mode"], string> = {
   upgrade: "Upgrade",
@@ -487,12 +490,60 @@ export const SwitchPlanModal = ({
   );
 
   const { upgrades, downgrades, privatePlans } = useMemo(() => {
-    if (!plansData?.items || !currentPlan) {
-      return { upgrades: [], downgrades: [], privatePlans: [] };
+    if (!plansData?.items) {
+      return {
+        upgrades: [],
+        downgrades: [],
+        privatePlans: [],
+      };
     }
 
-    const isPrivatePlan = (plan: Plan) =>
-      plan.metadata?.zuplo_private_plan === "true";
+    // If the current plan isn't present in the pricing page response (common for
+    // private/unlisted plans), we still want to allow switching to visible plans.
+    if (!currentPlan) {
+      const currentIndex = -1;
+      const allComparisons = plansData.items.map((plan, targetIndex) =>
+        comparePlans(
+          undefined,
+          plan,
+          currentIndex,
+          targetIndex,
+          pricing?.units,
+        ),
+      );
+
+      return {
+        upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
+        downgrades: [],
+        privatePlans: [],
+      };
+    }
+
+    // If the user is currently on a private plan, treat all available targets as a "switch"
+    // (not an upgrade/downgrade) to avoid an empty modal and confusing labels.
+    if (isPrivatePlan(currentPlan)) {
+      const currentIndex = plansData.items.findIndex(
+        (p) => p.id === currentPlan.id,
+      );
+      const allComparisons = plansData.items
+        .filter((p) => p.id !== currentPlan.id)
+        .map((plan) => {
+          const targetIndex = plansData.items.indexOf(plan);
+          return comparePlans(
+            currentPlan,
+            plan,
+            currentIndex,
+            targetIndex,
+            pricing?.units,
+          );
+        });
+
+      return {
+        upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
+        downgrades: [],
+        privatePlans: [],
+      };
+    }
 
     const currentIndex = plansData.items.findIndex(
       (p) => p.id === currentPlan.id,
@@ -551,6 +602,16 @@ export const SwitchPlanModal = ({
                   <ItemTitle>Current Plan</ItemTitle>
                   <ItemDescription className="text-lg font-bold">
                     {currentPlan.name}
+                  </ItemDescription>
+                </ItemContent>
+              </Item>
+            )}
+            {!currentPlan && (
+              <Item variant="outline">
+                <ItemContent>
+                  <ItemTitle>Current Plan</ItemTitle>
+                  <ItemDescription className="text-lg font-bold">
+                    {subscription.plan.name}
                   </ItemDescription>
                 </ItemContent>
               </Item>
