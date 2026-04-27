@@ -197,7 +197,7 @@
     "zustand": "5.0.12"
   },
   "devDependencies": {
-    "@clerk/clerk-js": "^6.7.4",
+    "@clerk/clerk-js": "^6.7.5",
     "@graphql-codegen/cli": "6.3.0",
     "@inkeep/cxkit-types": "0.5.117",
     "@testing-library/dom": "catalog:",
