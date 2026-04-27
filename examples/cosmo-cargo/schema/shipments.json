@@ -136,6 +136,7 @@
     },
     "schemas": {
       "Shipment": {
+        "title": "Shipment",
         "type": "object",
         "required": ["recipientAddress", "senderAddress", "packages"],
         "properties": {
@@ -362,6 +363,7 @@
         }
       },
       "Error": {
+        "title": "Error",
         "type": "object",
         "required": ["code", "message"],
         "example": {
