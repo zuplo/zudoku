@@ -7,6 +7,7 @@ import type {
 } from "zudoku";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
+import { MembersOnly } from "./src/MembersOnly";
 import { NotFound } from "./src/NotFound";
 import { VipLounge } from "./src/VipLounge";
 
@@ -335,7 +336,7 @@ const config: ZudokuConfig = {
       path: "/only-members",
       label: "Only members",
       display: "auth",
-      element: <div>Only members are allowed in here.</div>,
+      element: <MembersOnly />,
     },
     {
       type: "custom-page",
