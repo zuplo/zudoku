@@ -42,9 +42,21 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v5
 
+      - name: Detect monetization plugin changes
+        if: github.event_name == 'pull_request'
+        id: monetization-changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            monetization:
+              - 'packages/plugin-zuplo-monetization/**'
+
       - run: pnpm check
+
       - name: Typecheck monetization plugin
+        if: github.event_name == 'pull_request' && steps.monetization-changes.outputs.monetization == 'true'
         run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
+
       - run: nx run-many -t build:ci
       - run: pnpm test:coverage
 
