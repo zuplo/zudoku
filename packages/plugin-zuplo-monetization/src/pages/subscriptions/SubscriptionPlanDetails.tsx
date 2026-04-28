@@ -140,17 +140,12 @@ const getEntitlementsFromItems = (
   return { features };
 };
 
-type PhaseRowBase = {
+type FeatureRow = {
   key: string;
   name: string;
   phaseId: string;
-  phaseName: string;
   activeFrom: string;
   activeTo?: string;
-};
-
-type FeatureRow = PhaseRowBase & {
-  kind: "feature";
   entitlementType: "metered" | "boolean" | "static";
   limit?: number;
   period?: string;
@@ -182,7 +177,6 @@ const getPhaseRows = (opts: {
 
     for (const f of features) {
       featureRows.push({
-        kind: "feature",
         key: f.key,
         name: f.name,
         entitlementType: f.entitlementType,
@@ -192,7 +186,6 @@ const getPhaseRows = (opts: {
           f.entitlementType === "metered" ? f.overagePrice : undefined,
         value: f.entitlementType === "static" ? f.value : undefined,
         phaseId: phase.id,
-        phaseName: phase.name,
         activeFrom: phase.activeFrom,
         activeTo: phase.activeTo,
       });
@@ -298,8 +291,8 @@ export const SubscriptionPlanDetails = ({
                     >
                       <div className="flex items-start gap-2 text-muted-foreground sm:col-span-2">
                         <span>
-                          <span className="text-foreground">
-                            <b>{row.name}</b>{" "}
+                          <span className="text-foreground font-medium">
+                            {row.name}{" "}
                           </span>
                           {row.entitlementType === "static" && row.value
                             ? `: ${row.value}`
