@@ -43,6 +43,8 @@ jobs:
       - uses: nrwl/nx-set-shas@v5
 
       - run: pnpm check
+      - name: Typecheck monetization plugin
+        run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
       - run: nx run-many -t build:ci
       - run: pnpm test:coverage
 

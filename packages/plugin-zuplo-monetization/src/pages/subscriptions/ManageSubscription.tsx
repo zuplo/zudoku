@@ -4,7 +4,7 @@ import { CreditCardIcon, RefreshCcw, Settings } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
-import type { Subscription } from "../../hooks/useSubscriptions.js";
+import type { Subscription } from "../../types/SubscriptionType.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
 import { RestoreSubscriptionDialog } from "./RestoreSubscriptionDialog.js";
 import { SwitchPlanModal } from "./SwitchPlanModal.js";
