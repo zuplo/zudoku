@@ -210,12 +210,15 @@ export class ZudokuContext {
       });
     });
 
-    useAuthState.subscribe((state, prevState) => {
-      this.emitEvent("auth", {
-        prev: prevState,
-        next: state,
+    // Client-only: Avoid subscribing in SSR to prevent memory leaks from persistent subscribers.
+    if (typeof window !== "undefined") {
+      useAuthState.subscribe((state, prevState) => {
+        this.emitEvent("auth", {
+          prev: prevState,
+          next: state,
+        });
       });
-    });
+    }
   }
 
   getApiIdentities = async () => {
