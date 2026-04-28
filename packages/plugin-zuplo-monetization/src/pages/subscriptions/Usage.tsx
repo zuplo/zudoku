@@ -14,7 +14,7 @@ import {
 } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
-import type { Item, Subscription } from "../../hooks/useSubscriptions";
+import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDurationAdjective } from "../../utils/formatDuration.js";
 import { SwitchPlanModal } from "./SwitchPlanModal";
 
