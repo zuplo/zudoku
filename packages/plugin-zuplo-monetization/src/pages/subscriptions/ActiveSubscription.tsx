@@ -7,9 +7,10 @@ import {
   DismissibleAlert,
   DismissibleAlertAction,
 } from "zudoku/ui/DismissibleAlert";
-import type { Subscription } from "../../hooks/useSubscriptions";
+import type { Subscription } from "../../types/SubscriptionType.js";
 import { ApiKeysList } from "./ApiKeysList";
 import { ManageSubscription } from "./ManageSubscription";
+import { SubscriptionPlanDetails } from "./SubscriptionPlanDetails";
 import { Usage, type UsageResult } from "./Usage";
 
 type LocationState = {
@@ -64,6 +65,8 @@ const ActiveSubscription = ({
           <DismissibleAlertAction />
         </DismissibleAlert>
       )}
+
+      <SubscriptionPlanDetails subscription={subscription} />
 
       <Usage
         currentItems={activePhase?.items}
