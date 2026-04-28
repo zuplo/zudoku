@@ -1,6 +1,7 @@
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import type { HelmetData } from "@zudoku/react-helmet-async";
 import { Hono } from "hono";
+import { compress } from "hono/compress";
 import logger from "loglevel";
 import { renderToReadableStream, renderToStaticMarkup } from "react-dom/server";
 import {
@@ -221,6 +222,7 @@ export const createServer = (options: {
   const routes = getRoutesByConfig(config);
   const app = new Hono();
 
+  app.use(compress());
   app.route("/__z/auth/session", createSessionHandler(configuredAuthProvider));
   app.all("*", (c) =>
     handleRequest({
