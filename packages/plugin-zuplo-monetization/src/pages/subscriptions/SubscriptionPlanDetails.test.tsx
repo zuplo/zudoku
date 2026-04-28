@@ -49,7 +49,7 @@ const makeSubscription = (
               featureId: "feat-1",
               featureKey: "api",
               id: "ent-1",
-              isSoftLimit: false,
+              isSoftLimit: true,
               isUnlimited: false,
               issueAfterReset: 1000,
               subjectKey: "sub",
@@ -194,6 +194,10 @@ describe("SubscriptionPlanDetails", () => {
     expect(screen.getByText("Subscription ID")).toBeInTheDocument();
     expect(screen.getByText("sub-1")).toBeInTheDocument();
     expect(screen.getByText("Active since")).toBeInTheDocument();
+    expect(screen.getByText("Current period")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Apr\s+1,\s+2026\s+–\s+May\s+1,\s+2026/),
+    ).toBeInTheDocument();
 
     // Metered row
     const api = screen.getByText("API").closest("li");
@@ -213,7 +217,7 @@ describe("SubscriptionPlanDetails", () => {
     expect(screen.getAllByText("v2").length).toBeGreaterThan(0);
   });
 
-  it("only shows date range when the item does not cover the whole billing period", () => {
+  it('renders "Starts <date>" when activeTo is missing', () => {
     render(<SubscriptionPlanDetails subscription={makeSubscription()} />);
 
     // Date ranges are displayed per row.
@@ -229,5 +233,38 @@ describe("SubscriptionPlanDetails", () => {
     expect(
       within(boolRow).getByText(/Starts\s+May\s+1,\s+2026/),
     ).toBeInTheDocument();
+  });
+
+  it("does not show overage price for hard-limit meters", () => {
+    const base = makeSubscription();
+    const baseEntitlement = base.phases[0]?.items[0]?.included?.entitlement;
+    if (!baseEntitlement) {
+      throw new Error("Expected base metered entitlement");
+    }
+
+    const subscription = makeSubscription({
+      phases: [
+        {
+          ...base.phases[0],
+          items: [
+            {
+              ...base.phases[0].items[0],
+              included: {
+                ...base.phases[0].items[0].included,
+                entitlement: {
+                  ...baseEntitlement,
+                  isSoftLimit: false,
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    render(<SubscriptionPlanDetails subscription={subscription} />);
+    const api = screen.getByText("API").closest("li");
+    if (!api) throw new Error("Expected API row");
+    expect(within(api).queryByText(/Overage:/)).not.toBeInTheDocument();
   });
 });

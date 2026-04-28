@@ -9,10 +9,7 @@ import {
 } from "zudoku/ui/Card";
 import { useMonetizationConfig } from "../../MonetizationContext.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
-import {
-  formatDuration,
-  formatDurationInterval,
-} from "../../utils/formatDuration.js";
+import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 
@@ -28,6 +25,11 @@ const formatDate = (dateString: string) => {
   });
 };
 
+const formatDateRange = (from: string, to: string) =>
+  `${formatDate(from)} – ${formatDate(to)}`;
+
+const formatNumber = (value: number) => value.toLocaleString("en-US");
+
 const getOveragePriceFromItem = (
   item: Item,
   currency: string | undefined,
@@ -36,7 +38,14 @@ const getOveragePriceFromItem = (
   const tiers = item.price?.tiers;
   if (!tiers || tiers.length === 0) return undefined;
 
-  const overageTier = tiers.find((t) => !t.upToAmount) ?? tiers.at(-1);
+  // Align with `categorizeRateCards`: overage is only meaningful when there's a
+  // non-zero unit price tier (regardless of `upToAmount` shape).
+  const overageTier = tiers.find((t) => {
+    const amount = t.unitPrice?.amount;
+    if (!amount) return false;
+    const parsed = parseFloat(amount);
+    return Number.isFinite(parsed) && parsed > 0;
+  });
   const amount = overageTier?.unitPrice?.amount;
   if (!amount) return undefined;
 
@@ -87,7 +96,10 @@ const getEntitlementsFromItems = (
         name: item.name ?? item.featureKey ?? item.key,
         limit: entitlement.issueAfterReset,
         period: cadence ? formatDuration(cadence) : "month",
-        overagePrice: getOveragePriceFromItem(item, currency, units),
+        overagePrice:
+          entitlement.isSoftLimit !== false
+            ? getOveragePriceFromItem(item, currency, units)
+            : undefined,
       });
       continue;
     }
@@ -203,34 +215,22 @@ export const SubscriptionPlanDetails = ({
   const { pricing } = useMonetizationConfig();
   const plan = subscription.plan;
   const currency = subscription.currency ?? plan.currency;
-
   const priceInfo = getPriceFromPlan(plan);
-  const isEnterprise = plan.key === "enterprise";
 
-  const showYearly =
-    pricing?.showYearlyPrice &&
-    plan.yearlyPrice != null &&
-    parseFloat(plan.yearlyPrice) > 0;
-
-  const subscriptionBillingLabel = formatDurationInterval(
-    subscription.billingCadence,
-  );
-
-  const primaryPrice = isEnterprise ? (
-    <span className="text-primary font-medium">Custom pricing</span>
-  ) : priceInfo.monthly === 0 && priceInfo.yearly === 0 ? (
-    <span className="text-primary font-medium">Free</span>
-  ) : (
-    <>
-      <span className="text-primary font-medium text-lg">
-        {formatPrice(priceInfo.monthly, currency)}
-      </span>
-      <span className="text-muted-foreground">
-        {" / "}
-        {formatDuration(plan.billingCadence)}
-      </span>
-    </>
-  );
+  const primaryPrice =
+    priceInfo.monthly === 0 && priceInfo.yearly === 0 ? (
+      <span className="text-primary font-medium">Free</span>
+    ) : (
+      <>
+        <span className="text-primary font-medium text-lg">
+          {formatPrice(priceInfo.monthly, currency)}
+        </span>
+        <span className="text-muted-foreground">
+          {" / "}
+          {formatDuration(plan.billingCadence)}
+        </span>
+      </>
+    );
 
   const { featureRows } = getPhaseRows({
     subscription,
@@ -272,23 +272,16 @@ export const SubscriptionPlanDetails = ({
               </dd>
             </div>
             <div>
-              <dt className={detailLabelClassName}>Billing</dt>
-              <dd className="text-foreground capitalize">
-                {subscriptionBillingLabel}
+              <dt className={detailLabelClassName}>Current period</dt>
+              <dd className="text-foreground">
+                {subscription.alignment?.currentAlignedBillingPeriod
+                  ? formatDateRange(
+                      subscription.alignment.currentAlignedBillingPeriod.from,
+                      subscription.alignment.currentAlignedBillingPeriod.to,
+                    )
+                  : "—"}
               </dd>
             </div>
-            {showYearly ? (
-              <div>
-                <dt className={detailLabelClassName}>Yearly price</dt>
-                <dd className="text-foreground font-medium">
-                  {formatPrice(priceInfo.yearly, currency)}
-                  <span className="text-muted-foreground font-normal">
-                    {" / "}
-                    year
-                  </span>
-                </dd>
-              </div>
-            ) : null}
           </dl>
 
           {featureRows.length > 0 ? (
@@ -318,7 +311,7 @@ export const SubscriptionPlanDetails = ({
                         {row.entitlementType === "metered" &&
                         row.limit != null ? (
                           <>
-                            {row.limit.toLocaleString()}
+                            {formatNumber(row.limit)}
                             {row.period ? ` / ${row.period}` : ""}
                             {row.overagePrice ? (
                               <div className="text-xs mt-0.5">
