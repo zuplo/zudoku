@@ -93,7 +93,7 @@ jobs:
           VERSION=$(pnpm view zudoku@local version --registry http://localhost:4873)
           echo "Using locally-published zudoku version: $VERSION"
           cd examples/cosmo-cargo
-          pnpm pkg set "devDependencies.zudoku=$VERSION"
+          npm pkg set "devDependencies.zudoku=$VERSION"
 
       - name: Run second pnpm install
         run: pnpm install --no-frozen-lockfile --prefer-offline --registry http://localhost:4873
