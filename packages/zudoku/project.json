@@ -16,7 +16,7 @@
       "options": {
         "cwd": "packages/zudoku",
         "commands": [
-          "pnpm version prerelease --preid local --git-tag-version=false --commit-hooks=false",
+          "pnpm version prerelease --preid local --git-tag-version=false --commit-hooks=false --no-git-checks",
           "pnpm publish --filter zudoku --tag local --registry http://localhost:4873 --no-git-checks"
         ],
         "parallel": false
