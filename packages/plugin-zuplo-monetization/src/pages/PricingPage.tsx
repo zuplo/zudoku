@@ -5,6 +5,10 @@ import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
 import type { SubscriptionsResponse } from "../hooks/useSubscriptions";
 import { useMonetizationConfig } from "../MonetizationContext";
+import {
+  collectDefaultTaxBehaviors,
+  taxBehaviorLegendSentence,
+} from "../utils/pricingTaxLegend.js";
 import { PricingCard } from "./pricing/PricingCard";
 
 const PricingPage = () => {
@@ -15,6 +19,7 @@ const PricingPage = () => {
   const auth = useAuth();
 
   const { data: pricingTable } = usePlans();
+  const taxLegendBehaviors = collectDefaultTaxBehaviors(pricingTable.items);
 
   const { data: subscriptions = { items: [] } } =
     useQuery<SubscriptionsResponse>({
@@ -54,18 +59,43 @@ const PricingPage = () => {
           </p>
         </div>
       ) : (
-        <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
-          {pricingTable.items.map((plan) => (
-            <PricingCard
-              key={plan.id}
-              plan={plan}
-              isPopular={plan.metadata?.zuplo_most_popular === "true"}
-              isSubscribed={subscriptions.items.some((subscription) =>
-                ["active", "canceled"].includes(subscription.status),
+        <>
+          <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
+            {pricingTable.items.map((plan) => (
+              <PricingCard
+                key={plan.id}
+                plan={plan}
+                isPopular={plan.metadata?.zuplo_most_popular === "true"}
+                isSubscribed={subscriptions.items.some((subscription) =>
+                  ["active", "canceled"].includes(subscription.status),
+                )}
+              />
+            ))}
+          </div>
+          {taxLegendBehaviors.length > 0 && (
+            <div
+              role="note"
+              className="mt-10 pt-6 border-t border-border max-w-2xl mx-auto text-center space-y-2"
+            >
+              <p className="text-xs font-medium text-muted-foreground">
+                Tax & Pricing
+              </p>
+              {taxLegendBehaviors.length === 1 ? (
+                <p className="text-xs text-muted-foreground">
+                  {taxBehaviorLegendSentence(taxLegendBehaviors[0])}
+                </p>
+              ) : (
+                <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1 text-left sm:text-center">
+                  {taxLegendBehaviors.map((behavior) => (
+                    <li key={behavior}>
+                      {taxBehaviorLegendSentence(behavior)}
+                    </li>
+                  ))}
+                </ul>
               )}
-            />
-          ))}
-        </div>
+            </div>
+          )}
+        </>
       )}
       <Slot.Target name="pricing-page-after" />
     </div>
