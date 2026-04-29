@@ -36,5 +36,7 @@ export const ZuploEnv = {
     return process.env.ZUPLO_SERVER_URL;
   },
 
-  buildConfig: getZuploBuildConfig(),
+  get buildConfig() {
+    return getZuploBuildConfig();
+  },
 };
