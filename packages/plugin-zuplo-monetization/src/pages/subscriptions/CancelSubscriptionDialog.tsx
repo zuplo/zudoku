@@ -23,18 +23,28 @@ export const CancelSubscriptionDialog = ({
   planName,
   subscriptionId,
   billingPeriodEnd,
+  hasCurrentBillables,
+  hasFutureBillables,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   planName: string;
   subscriptionId: string;
   billingPeriodEnd: string;
+  hasCurrentBillables: boolean;
+  hasFutureBillables: boolean;
 }) => {
   const [confirmationText, setConfirmationText] = useState("");
   const isConfirmed = planName.startsWith(confirmationText);
   const deploymentName = useDeploymentName();
   const context = useZudoku();
   const queryClient = useQueryClient();
+
+  // Monetization backend rejects `next_billing_cycle` when the active phase has no
+  // billable items (free plans, in-trial paid plans). Fall back to immediate.
+  const cancelTiming = hasCurrentBillables ? "next_billing_cycle" : "immediate";
+  const isImmediateCancel = !hasCurrentBillables;
+  const isTrialCancel = isImmediateCancel && hasFutureBillables;
 
   const cancelSubscriptionMutation = useMutation({
     mutationKey: [
@@ -44,7 +54,7 @@ export const CancelSubscriptionDialog = ({
       context,
       request: {
         method: "POST",
-        body: JSON.stringify({ timing: "next_billing_cycle" }),
+        body: JSON.stringify({ timing: cancelTiming }),
       },
     },
     onSuccess: async () => {
@@ -64,24 +74,56 @@ export const CancelSubscriptionDialog = ({
         <div className="space-y-4 mt-4">
           <Alert variant="warning">
             <CalendarIcon className="size-4" />
-            <AlertTitle>
-              Your plan will be canceled at the end of your billing cycle.
-            </AlertTitle>
-            <AlertDescription>
-              You'll retain access until {formatDate(billingPeriodEnd)}. After
-              your billing period ends, this plan will not renew and you would
-              need to subscribe again to continue.
-            </AlertDescription>
+            {isTrialCancel ? (
+              <>
+                <AlertTitle>Cancel your trial of {planName}?</AlertTitle>
+                <AlertDescription>
+                  Your subscription will end now and you won't be charged when
+                  the trial would have converted to {planName}.
+                </AlertDescription>
+              </>
+            ) : isImmediateCancel ? (
+              <>
+                <AlertTitle>Cancel your {planName} subscription?</AlertTitle>
+                <AlertDescription>
+                  Your subscription will end immediately. You'll lose access to
+                  its entitlements right away.
+                </AlertDescription>
+              </>
+            ) : (
+              <>
+                <AlertTitle>
+                  Your plan will be canceled at the end of your billing cycle.
+                </AlertTitle>
+                <AlertDescription>
+                  You'll retain access until {formatDate(billingPeriodEnd)}.
+                  After your billing period ends, this plan will not renew and
+                  you would need to subscribe again to continue.
+                </AlertDescription>
+              </>
+            )}
           </Alert>
 
           <Alert variant="info">
             <InfoIcon className="size-4" />
-            <AlertTitle>You can still resume before then</AlertTitle>
-            <AlertDescription>
-              If you change your mind you have until{" "}
-              {formatDate(billingPeriodEnd)} to remove this cancellation from
-              Manage subscription.
-            </AlertDescription>
+            {isImmediateCancel ? (
+              <>
+                <AlertTitle>You can subscribe again at any time</AlertTitle>
+                <AlertDescription>
+                  After cancelling, you can return to the pricing page and start
+                  a new subscription whenever you're ready.
+                </AlertDescription>
+              </>
+            ) : (
+              <>
+                <AlertTitle>You can still resume before then</AlertTitle>
+                <AlertDescription>
+                  If you change your mind you have until{" "}
+                  {formatDate(billingPeriodEnd)} to remove this cancellation
+                  from Manage subscription.
+                </AlertDescription>
+              </>
+            )}
           </Alert>
 
           <div className="space-y-2">
