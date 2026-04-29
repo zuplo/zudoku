@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Badge } from "../../../ui/Badge.js";
 import { Frame, FramePanel } from "../../../ui/Frame.js";
+import { ItemGroup, ItemSeparator } from "zudoku/ui/Item.js";
 import { cn } from "../../../util/cn.js";
+import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   decideExclusivity,
@@ -87,6 +89,14 @@ export const UnionView = ({
 
   if (!mode) return null;
 
+  // Determine common properties (those on parent but NOT in any variant)
+  const variantPropNames = new Set(
+    variants.flatMap((v) => Object.keys(v.properties ?? {})),
+  );
+  const commonEntries = Object.entries(schema.properties ?? {}).filter(
+    ([key]) => !variantPropNames.has(key),
+  );
+
   const exclusivity = decideExclusivity(schema);
 
   const semanticsMessage =
@@ -107,25 +117,86 @@ export const UnionView = ({
   const currentVariant =
     currentVariantIndex >= 0 ? variants[currentVariantIndex] : null;
 
+  const unionSection = (
+    <div className="flex flex-col gap-4 p-4">
+      <div className="flex items-center gap-2">
+        <Badge variant="outline">{mode}</Badge>
+        <div className="flex-1">
+          <span className="text-sm">{semanticsMessage}</span>
+        </div>
+      </div>
+
+      <DecisionTable
+        variants={variants}
+        schema={schema}
+        selectedVariant={selectedVariant}
+        onSelectVariant={setSelectedVariant}
+      />
+      <strong>Properties for {selectedVariant}:</strong>
+      {currentVariant && <SchemaView schema={currentVariant} embedded />}
+    </div>
+  );
+
+  // If there are common properties, render them as normal property items
+  // followed by the oneOf section inline
+  if (commonEntries.length > 0) {
+    const requiredCommon = commonEntries.filter(([name]) =>
+      schema.required?.includes(name),
+    );
+    const optionalCommon = commonEntries.filter(
+      ([name]) => !schema.required?.includes(name),
+    );
+
+    return (
+      <Frame>
+        {cardHeader}
+        <FramePanel className="p-0!">
+          {unionSection}
+          <ItemSeparator />
+          {requiredCommon.length > 0 && (
+            <ItemGroup className="overflow-clip">
+              {requiredCommon.map(([name, prop], index) => (
+                <Fragment key={name}>
+                  {index > 0 && <ItemSeparator />}
+                  <SchemaPropertyItem
+                    name={name}
+                    schema={prop as SchemaObject}
+                    group="required"
+                    defaultOpen={false}
+                  />
+                </Fragment>
+              ))}
+            </ItemGroup>
+          )}
+          {optionalCommon.length > 0 && (
+            <>
+              {requiredCommon.length > 0 && <ItemSeparator />}
+              <ItemGroup className="overflow-clip">
+                {optionalCommon.map(([name, prop], index) => (
+                  <Fragment key={name}>
+                    {index > 0 && <ItemSeparator />}
+                    <SchemaPropertyItem
+                      name={name}
+                      schema={prop as SchemaObject}
+                      group="optional"
+                      defaultOpen={false}
+                    />
+                  </Fragment>
+                ))}
+              </ItemGroup>
+            </>
+          )}
+        </FramePanel>
+      </Frame>
+    );
+  }
+
+  // No common properties — just render the union section
   return (
     <Frame>
       {cardHeader}
-      <FramePanel className="text-sm flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">{mode}</Badge>
-          <div className="flex-1 p-2">
-            <span className="text-sm">{semanticsMessage}</span>
-          </div>
-        </div>
-
-        <DecisionTable
-          variants={variants}
-          schema={schema}
-          selectedVariant={selectedVariant}
-          onSelectVariant={setSelectedVariant}
-        />
-        <strong>Properties for {selectedVariant}:</strong>
-        {currentVariant && <SchemaView schema={currentVariant} />}
+      <FramePanel className="p-0!">
+        {unionSection}
       </FramePanel>
     </Frame>
   );
