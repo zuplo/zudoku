@@ -5,6 +5,12 @@ export type AuthActionContext = { navigate: NavigateFunction };
 export type AuthActionOptions = { redirectTo?: string; replace?: boolean };
 
 export interface AuthenticationPlugin {
+  /**
+   * When true, the UI hides Register/Sign up affordances. This is purely
+   * visual; sign-ups are still enforced at the identity provider.
+   */
+  disableSignUp?: boolean;
+
   initialize?(context: ZudokuContext): Promise<void>;
   onPageLoad?(): void;
 

@@ -25,6 +25,7 @@ import {
   ZudokuSignUpDisabledUi,
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
+import { redirectToSignUpUrl } from "./util.js";
 
 export type SupabaseProviderData = {
   type: "supabase";
@@ -45,7 +46,8 @@ class SupabaseAuthenticationProvider
   private readonly config: SupabaseAuthenticationConfig;
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
-  private readonly disableSignUp: boolean;
+  public readonly disableSignUp: boolean;
+  private readonly signUpConfig?: SupabaseAuthenticationConfig["signUp"];
 
   constructor(config: SupabaseAuthenticationConfig) {
     const { supabaseUrl, supabaseKey } = config;
@@ -66,6 +68,7 @@ class SupabaseAuthenticationProvider
     this.providers = configuredProviders;
     this.enableUsernamePassword = !config.onlyThirdPartyProviders;
     this.disableSignUp = config.disableSignUp ?? false;
+    this.signUpConfig = config.signUp;
 
     this.client.auth.onAuthStateChange(async (event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
@@ -111,8 +114,12 @@ class SupabaseAuthenticationProvider
 
   signUp = async (
     { navigate }: AuthActionContext,
-    { redirectTo }: AuthActionOptions,
+    { redirectTo, replace = false }: AuthActionOptions = {},
   ) => {
+    if (this.signUpConfig) {
+      redirectToSignUpUrl(this.signUpConfig.url, navigate, replace);
+      return;
+    }
     void navigate(
       redirectTo
         ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`

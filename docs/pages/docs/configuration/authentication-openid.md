@@ -92,6 +92,33 @@ You can confirm your issuer URL is correct by opening `<issuer>/.well-known/open
 a browser. It should return a JSON document listing `authorization_endpoint`, `token_endpoint`,
 `userinfo_endpoint`, and `jwks_uri`.
 
+## Customizing Sign-up
+
+By default Register and Sign in both call the OIDC authorize endpoint, so users land on the same
+login page. Two options change that:
+
+```typescript title="zudoku.config.ts"
+{
+  authentication: {
+    type: "openid",
+    clientId: "<your-client-id>",
+    issuer: "<the-issuer-url>",
+
+    // Send Register to a separate URL (absolute → external redirect, relative → in-app navigate)
+    signUp: { url: "/register" },
+
+    // Or pass extra params to the authorize URL on sign-up only (e.g. Keycloak)
+    signUp: { authorizationParams: { kc_action: "register" } },
+
+    // Hide Register UI entirely. Visual only — still configure your IdP to block sign-ups.
+    disableSignUp: true,
+  },
+}
+```
+
+When `disableSignUp` is `true`, the Register button on the protected-route login dialog is hidden
+and `/signup` shows an "Invitation required" page.
+
 ## User Profile
 
 After sign-in Zudoku calls the provider's

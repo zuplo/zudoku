@@ -30,6 +30,7 @@ type LoginDialogProps = {
   onCancel: () => void;
   onLogin: () => void;
   onRegister: () => void;
+  showRegister: boolean;
 };
 
 const LoginDialog = ({
@@ -37,6 +38,7 @@ const LoginDialog = ({
   onCancel,
   onLogin,
   onRegister,
+  showRegister,
 }: LoginDialogProps) => (
   <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onCancel()}>
     <DialogContent>
@@ -49,9 +51,11 @@ const LoginDialog = ({
           Cancel
         </Button>
         <div className="w-full" />
-        <Button variant="secondary" onClick={onRegister}>
-          Register
-        </Button>
+        {showRegister && (
+          <Button variant="secondary" onClick={onRegister}>
+            Register
+          </Button>
+        )}
         <Button onClick={onLogin}>Login</Button>
       </DialogFooter>
     </DialogContent>
@@ -187,6 +191,7 @@ export const RouteGuard = () => {
         onCancel={needsToSignIn ? () => navigate(-1) : () => blocker.reset?.()}
         onLogin={() => void auth.login({ redirectTo })}
         onRegister={() => void auth.signup({ redirectTo })}
+        showRegister={!auth.disableSignUp}
       />
     </>
   );

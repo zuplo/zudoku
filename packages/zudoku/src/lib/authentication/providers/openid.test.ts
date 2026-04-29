@@ -291,6 +291,98 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
     });
   });
 
+  describe("signUp config", () => {
+    const mockLocation = () => {
+      const loc = {
+        href: "http://localhost/",
+        origin: "http://localhost",
+        pathname: "/",
+        search: "",
+        hash: "",
+        assign: vi.fn(),
+        replace: vi.fn(),
+      };
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: loc,
+      });
+      return loc;
+    };
+
+    test("signUp({ url }) bypasses OpenID flow via location.assign", async () => {
+      const loc = mockLocation();
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        signUp: { url: "https://app.example.com/register" },
+      });
+
+      await provider.signUp({ navigate: vi.fn() }, {});
+
+      expect(loc.assign).toHaveBeenCalledWith(
+        "https://app.example.com/register",
+      );
+      expect(loc.replace).not.toHaveBeenCalled();
+    });
+
+    test("signUp({ url }) with relative path uses navigate", async () => {
+      mockLocation();
+      const navigate = vi.fn();
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        signUp: { url: "/register" },
+      });
+
+      await provider.signUp({ navigate }, { replace: true });
+
+      expect(navigate).toHaveBeenCalledWith("/register", { replace: true });
+    });
+
+    test("signUp({ url }) with replace uses location.replace", async () => {
+      const loc = mockLocation();
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        signUp: { url: "https://app.example.com/register" },
+      });
+
+      await provider.signUp({ navigate: vi.fn() }, { replace: true });
+
+      expect(loc.replace).toHaveBeenCalledWith(
+        "https://app.example.com/register",
+      );
+      expect(loc.assign).not.toHaveBeenCalled();
+    });
+
+    test("signUp({ authorizationParams }) merges params on signup but not signin", async () => {
+      vi.mocked(oauth.processDiscoveryResponse).mockResolvedValue({
+        ...AUTH_SERVER,
+        authorization_endpoint: "https://issuer.example.com/authorize",
+      });
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        signUp: { authorizationParams: { kc_action: "register" } },
+      });
+
+      const signupLoc = mockLocation();
+      await provider.signUp({ navigate: vi.fn() }, {});
+      const signupUrl = new URL(signupLoc.href);
+      expect(signupUrl.searchParams.get("kc_action")).toBe("register");
+
+      const signinLoc = mockLocation();
+      await provider.signIn({ navigate: vi.fn() }, {});
+      const signinUrl = new URL(signinLoc.href);
+      expect(signinUrl.searchParams.get("kc_action")).toBeNull();
+    });
+  });
+
   test("self heals providerData when providerData.type is undefined", async () => {
     const provider = createProvider();
 
