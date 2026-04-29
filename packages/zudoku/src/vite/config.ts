@@ -74,7 +74,10 @@ export async function getViteConfig(
 
   if (ZuploEnv.isZuplo) {
     dotenv.config({
-      path: path.resolve(config.__meta.rootDir, "../.env.zuplo"),
+      path: [
+        path.resolve(config.__meta.rootDir, "../.env.zuplo"),
+        path.resolve(config.__meta.rootDir, ".env.local"),
+      ],
       quiet: true,
     });
   }
