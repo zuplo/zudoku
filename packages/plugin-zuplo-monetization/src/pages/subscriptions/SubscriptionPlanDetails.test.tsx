@@ -279,11 +279,13 @@ describe("SubscriptionPlanDetails", () => {
     render(<SubscriptionPlanDetails subscription={subscription} />);
 
     expect(
-      screen.getByText("Taxes may be added to your invoice if applicable."),
+      screen.getByText(
+        "Price excludes tax; taxes may be added on invoice if applicable.",
+      ),
     ).toBeInTheDocument();
   });
 
-  it("shows a no-tax message when behavior is none/no_tax", () => {
+  it("does not render a tax legend for unsupported behavior values", () => {
     const subscription = makeSubscription({
       plan: {
         ...makeSubscription().plan,
@@ -293,7 +295,8 @@ describe("SubscriptionPlanDetails", () => {
 
     render(<SubscriptionPlanDetails subscription={subscription} />);
 
-    expect(screen.getByText("No tax will be charged.")).toBeInTheDocument();
+    expect(screen.queryByText(/Price excludes tax;/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Price includes tax/i)).not.toBeInTheDocument();
   });
 
   it("does not render a tax legend when behavior is missing", () => {

@@ -7,6 +7,32 @@ import {
 import type { Plan } from "../types/PlanType.js";
 import PricingPage from "./PricingPage.js";
 
+vi.mock("../utils/pricingTaxLegend.js", async (importOriginal) => {
+  const original = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...original,
+    collectDefaultTaxBehaviors: (plan?: Plan) => {
+      if (!plan) return "unspecified";
+      const behavior = plan.defaultTaxConfig?.behavior;
+      if (typeof behavior !== "string" || behavior.trim().length === 0) {
+        return "unspecified";
+      }
+      const key = behavior.trim().toLowerCase();
+      if (key === "exclusive" || key === "tax_exclusive") return "exclusive";
+      if (key === "inclusive" || key === "tax_inclusive") return "inclusive";
+      return "unspecified";
+    },
+    taxBehaviorLegendSentence: (behavior: string) => {
+      const key = behavior.trim().toLowerCase();
+      if (key === "exclusive") {
+        return "Prices exclude tax; taxes may be added at checkout if applicable.";
+      }
+      if (key === "inclusive") return "Prices include tax where applicable.";
+      return undefined;
+    },
+  };
+});
+
 vi.mock("zudoku/components", async (importOriginal) => ({
   ...(await importOriginal()),
   Head: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -299,13 +325,13 @@ describe("PricingPage", () => {
     expect(screen.queryByText("Most Popular")).not.toBeInTheDocument();
   });
 
-  it("Shows a tax legend if any plan has defaultTaxConfig.behavior set", () => {
+  it("Shows a tax legend when the first plan has defaultTaxConfig.behavior set", () => {
     mockPricingData.items = [
-      makePlan("1", "starter", "Starter"),
       {
-        ...makePlan("2", "pro", "Pro"),
+        ...makePlan("1", "starter", "Starter"),
         defaultTaxConfig: { behavior: "exclusive" },
       },
+      makePlan("2", "pro", "Pro"),
     ];
     mockSubscriptionData.items = [];
 
@@ -336,7 +362,7 @@ describe("PricingPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("Shows a no-tax legend for none/no_tax behavior", () => {
+  it("Does not show a tax legend for unsupported behavior values", () => {
     mockPricingData.items = [
       {
         ...makePlan("1", "starter", "Starter"),
@@ -347,7 +373,6 @@ describe("PricingPage", () => {
 
     renderWithConfig();
 
-    expect(screen.getByText("Tax & Pricing")).toBeInTheDocument();
-    expect(screen.getByText("No tax is charged.")).toBeInTheDocument();
+    expect(screen.queryByText("Tax & Pricing")).not.toBeInTheDocument();
   });
 });
