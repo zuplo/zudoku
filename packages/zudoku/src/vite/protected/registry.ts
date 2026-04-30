@@ -34,12 +34,10 @@ export const protectedRegistryEntries = (): ReadonlyMap<
 
 export type ProtectedSourceMatcher = (moduleId: string) => boolean;
 
-// True when `pattern` covers `scope`. Route scopes match exactly (RR
-// matchPath semantics); subtree scopes match when the pattern sits at or
-// below the root. The subtree case diverges from runtime matchPath on
-// purpose: a plugin registers one module that emits a whole tree of
-// routes, and pattern `/admin` should gate them all at build time even
-// though RR would require `/admin/*` to match nested paths at runtime.
+// True when `pattern` covers `scope`, using react-router matchPath
+// semantics so build-time gating mirrors runtime behavior. A bare pattern
+// like "/admin" only matches the exact path; "/admin/*" matches /admin
+// and all descendants.
 export const scopeMatchesPattern = (
   scope: ModuleScope,
   pattern: string,
@@ -47,15 +45,13 @@ export const scopeMatchesPattern = (
   if (scope.type === "route") {
     return matchPath({ path: pattern, end: true }, scope.path) != null;
   }
-  const root = scope.root.replace(/^\/+|\/+$/g, "");
-  const norm = pattern.replace(/\/+$/, "");
-  if (!root) return true;
-  return (
-    norm === `/${root}` ||
-    norm.startsWith(`/${root}/`) ||
-    (norm.includes("*") &&
-      matchPath({ path: norm, end: false }, `/${root}`) != null)
-  );
+  // Subtree scopes require an explicit glob pattern so the user opts in
+  // to descendant gating, mirroring how react-router needs `/*` to match
+  // nested paths.
+  if (!pattern.includes("*")) {
+    return matchPath({ path: pattern, end: true }, scope.root) != null;
+  }
+  return matchPath({ path: pattern, end: false }, scope.root) != null;
 };
 
 // Predicate: is this module id gated by any configured protected pattern?

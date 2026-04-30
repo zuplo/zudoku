@@ -41,11 +41,11 @@ describe("scopeMatchesPattern", () => {
       expect(scopeMatchesPattern(scope, "/api")).toBe(true);
     });
 
-    it("matches a pattern under the root", () => {
-      expect(scopeMatchesPattern(scope, "/api/users")).toBe(true);
+    it("does not match a deeper bare pattern (must use a glob to gate descendants)", () => {
+      expect(scopeMatchesPattern(scope, "/api/users")).toBe(false);
     });
 
-    it("matches a splat pattern rooted under it", () => {
+    it("matches a splat pattern rooted at it", () => {
       expect(scopeMatchesPattern(scope, "/api/*")).toBe(true);
     });
 
@@ -57,10 +57,10 @@ describe("scopeMatchesPattern", () => {
       expect(scopeMatchesPattern(scope, "/api/")).toBe(true);
     });
 
-    it("treats an empty root as matching everything", () => {
-      expect(
-        scopeMatchesPattern({ type: "subtree", root: "/" }, "/anything/*"),
-      ).toBe(true);
+    it("subtree at / matches a glob pattern targeting any path", () => {
+      expect(scopeMatchesPattern({ type: "subtree", root: "/" }, "/*")).toBe(
+        true,
+      );
     });
 
     it("does not match a sibling with a shared prefix (e.g. /apiv2 vs root /api)", () => {
