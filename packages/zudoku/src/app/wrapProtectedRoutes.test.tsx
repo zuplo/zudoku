@@ -64,6 +64,19 @@ describe("wrapProtectedRoutes", () => {
     expect(await invokeLazy(wrapped[0])).toEqual({ element: null });
   });
 
+  it("never calls the original lazy for unauthed users on a protected path", async () => {
+    const originalLazy = vi.fn(lazy);
+    const routes: RouteObject[] = [{ path: "/protected", lazy: originalLazy }];
+    const wrapped = wrapProtectedRoutes(
+      routes,
+      ["/protected"],
+      "/protected",
+      false,
+    );
+    await invokeLazy(wrapped[0]);
+    expect(originalLazy).not.toHaveBeenCalled();
+  });
+
   it("walks nested children", async () => {
     const routes = buildRoutes();
     const wrapped = wrapProtectedRoutes(

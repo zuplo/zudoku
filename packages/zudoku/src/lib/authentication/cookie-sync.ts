@@ -5,11 +5,24 @@ type TokenBearer = { accessToken?: string; refreshToken?: string };
 
 const readTokens = (providerData: unknown): TokenBearer => {
   if (!providerData || typeof providerData !== "object") return {};
-  const { accessToken, refreshToken } = providerData as TokenBearer;
+  const data = providerData as Record<string, unknown>;
   return {
-    accessToken: typeof accessToken === "string" ? accessToken : undefined,
-    refreshToken: typeof refreshToken === "string" ? refreshToken : undefined,
+    accessToken:
+      typeof data.accessToken === "string" ? data.accessToken : undefined,
+    refreshToken:
+      typeof data.refreshToken === "string" ? data.refreshToken : undefined,
   };
+};
+
+// In-flight controller so a later auth event can abort an earlier request.
+// Without this, a logout can race a slow login and the late POST would
+// re-establish the session after the user explicitly signed out.
+let inflight: AbortController | undefined;
+
+const send = (init: RequestInit) => {
+  inflight?.abort();
+  inflight = new AbortController();
+  return fetch("/__z/auth/session", { ...init, signal: inflight.signal });
 };
 
 const postSession = async (providerData: unknown) => {
@@ -17,7 +30,7 @@ const postSession = async (providerData: unknown) => {
   if (!accessToken) return;
 
   try {
-    const r = await fetch("/__z/auth/session", {
+    const r = await send({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accessToken, refreshToken }),
@@ -28,16 +41,21 @@ const postSession = async (providerData: unknown) => {
       console.error("SSR auth cookie sync failed:", r.status);
     }
   } catch (e) {
+    if ((e as Error)?.name === "AbortError") return;
     // biome-ignore lint/suspicious/noConsole: Surface SSR auth failures
     console.error("SSR auth cookie sync error:", e);
   }
 };
 
-const clearSession = () =>
-  fetch("/__z/auth/session", { method: "DELETE" }).catch((e) => {
+const clearSession = async () => {
+  try {
+    await send({ method: "DELETE" });
+  } catch (e) {
+    if ((e as Error)?.name === "AbortError") return;
     // biome-ignore lint/suspicious/noConsole: Surface SSR auth failures
     console.error("SSR auth cookie clear failed:", e);
-  });
+  }
+};
 
 /**
  * Mirror the client auth state to SSR cookies so the next HTML render is

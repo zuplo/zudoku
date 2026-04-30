@@ -24,15 +24,19 @@ export const protectedAssets = (opts: {
   });
   const verify = opts.verifyAccessToken;
 
+  const unauthorized = (c: Parameters<MiddlewareHandler>[0]) =>
+    c.text("Unauthorized", 401, {
+      "Cache-Control": "private, no-store",
+      Vary: "Cookie",
+    });
+
   return async (c, next) => {
     if (!c.req.path.startsWith(`${prefix}/`)) return next();
     const { accessToken } = parseCookies(c.req.raw);
-    if (!accessToken) return c.text("Unauthorized", 401);
+    if (!accessToken) return unauthorized(c);
     if (verify) {
       try {
-        if (!(await verify(accessToken))) {
-          return c.text("Unauthorized", 401);
-        }
+        if (!(await verify(accessToken))) return unauthorized(c);
       } catch (error) {
         // Upstream verifier failure (JWKS down, misconfig). Fail closed, but
         // log so operators can distinguish this from normal rejections.
@@ -40,7 +44,7 @@ export const protectedAssets = (opts: {
           `protectedAssets: verifyAccessToken threw for ${c.req.path}:`,
           error,
         );
-        return c.text("Unauthorized", 401);
+        return unauthorized(c);
       }
     }
     return serve(c, next);

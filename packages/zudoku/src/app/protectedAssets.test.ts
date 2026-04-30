@@ -79,6 +79,28 @@ describe("protectedAssets", () => {
     expect(res.status).toBe(401);
   });
 
+  it("does not match a path that lacks the trailing slash after _protected", async () => {
+    const res = await buildApp().request("/_protected");
+    expect(await res.text()).toBe("fall-through");
+  });
+
+  it("does not match case-mismatched prefix", async () => {
+    const res = await buildApp().request("/_PROTECTED/chunk.js");
+    expect(await res.text()).toBe("fall-through");
+  });
+
+  it("falls through for paths that share the prefix but live elsewhere", async () => {
+    const res = await buildApp().request("/_protected-public/chunk.js");
+    expect(await res.text()).toBe("fall-through");
+  });
+
+  it("401 response includes Cache-Control: no-store and Vary: Cookie", async () => {
+    const res = await buildApp().request("/_protected/chunk.js");
+    expect(res.status).toBe(401);
+    expect(res.headers.get("cache-control")).toBe("private, no-store");
+    expect(res.headers.get("vary")).toBe("Cookie");
+  });
+
   it("returns 401 when the Cookie header is missing entirely", async () => {
     const res = await buildApp().request("/_protected/chunk.js");
     expect(res.status).toBe(401);
