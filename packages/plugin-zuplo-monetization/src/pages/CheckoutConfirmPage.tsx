@@ -6,13 +6,11 @@ import { Link, useNavigate, useSearchParams } from "zudoku/router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
-import { FeatureItem } from "../components/FeatureItem";
-import { QuotaItem } from "../components/QuotaItem";
+import { PlanEntitlements } from "../components/PlanEntitlements.js";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePurchaseDetails } from "../hooks/usePurchaseDetails";
 import { useMonetizationConfig } from "../MonetizationContext";
 import type { Subscription } from "../types/SubscriptionType.js";
-import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatBillingCycle } from "../utils/formatBillingCycle";
 import { formatDuration } from "../utils/formatDuration";
 import { formatMinorCurrencyAmount, formatPrice } from "../utils/formatPrice";
@@ -41,12 +39,6 @@ const CheckoutConfirmPage = () => {
   const taxAmount = getTaxAmountFromPurchaseDetails(purchaseDetails.data);
   const taxLabel = getTaxLabelFromPurchaseDetails(purchaseDetails.data);
   const taxInclusive = isTaxInclusiveFromPurchaseDetails(purchaseDetails.data);
-  const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
-  const { quotas, features } = categorizeRateCards(rateCards ?? [], {
-    currency: selectedPlan?.currency,
-    units: pricing?.units,
-    planBillingCadence: selectedPlan?.billingCadence,
-  });
   const price = selectedPlan ? getPriceFromPlan(selectedPlan) : null;
   const billingCycle = selectedPlan?.billingCadence
     ? formatDuration(selectedPlan.billingCadence)
@@ -146,22 +138,13 @@ const CheckoutConfirmPage = () => {
                 <div className="text-sm font-medium mb-3 mt-3">
                   What's included:
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                  {quotas.map((quota) => (
-                    <QuotaItem
-                      key={quota.key}
-                      quota={quota}
-                      className="text-muted-foreground"
-                    />
-                  ))}
-                  {features.map((feature) => (
-                    <FeatureItem
-                      key={feature.key}
-                      feature={feature}
-                      className="text-muted-foreground"
-                    />
-                  ))}
-                </div>
+                <PlanEntitlements
+                  phases={selectedPlan.phases}
+                  currency={selectedPlan.currency}
+                  billingCadence={selectedPlan.billingCadence}
+                  units={pricing?.units}
+                  itemClassName="text-muted-foreground"
+                />
               </CardContent>
             </Card>
           )}
