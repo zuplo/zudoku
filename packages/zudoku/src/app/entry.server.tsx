@@ -26,18 +26,22 @@ import { wrapProtectedRoutes } from "./wrapProtectedRoutes.js";
 export { getRoutesByConfig };
 
 // Pre-wires the configured provider's verifier so templates don't need to
-// know about auth. Leaves `verifyAccessToken` opt-in for callers that want
-// to override (tests).
+// know about auth. An explicit `verifyAccessToken: undefined` from a caller
+// would otherwise silently disable the gate, so the precedence is explicit.
 export const protectedAssets: typeof rawProtectedAssets = (opts) =>
   rawProtectedAssets({
-    verifyAccessToken: configuredAuthProvider?.verifyAccessToken?.bind(
-      configuredAuthProvider,
-    ),
     ...opts,
+    verifyAccessToken:
+      opts.verifyAccessToken ??
+      configuredAuthProvider?.verifyAccessToken?.bind(configuredAuthProvider),
   });
 
 const safeSerialize = (data: unknown) =>
-  JSON.stringify(data).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
+  JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 
 // Statically importing shiki.ts here ensures it's in the SSR bundle.
 // main.tsx dynamically imports it instead to enable lazy loading on the client.
@@ -60,11 +64,27 @@ export const handleRequest = async ({
   basePath?: string;
   bypassProtection?: boolean;
 }): Promise<Response> => {
-  const { accessToken, profile } = parseCookies(request);
-  // Emit auth state when configured, even if profile is null, so the client
-  // knows whether the server checked auth.
+  const { accessToken } = parseCookies(request);
+  // Always derive profile from the verifier, never trust the client cookie.
+  // An unverified profile would let a stale/forged cookie render protected HTML.
+  let verifiedProfile: SSRAuthState["profile"] = null;
+  if (accessToken && configuredAuthProvider?.verifyAccessToken) {
+    try {
+      const verified =
+        await configuredAuthProvider.verifyAccessToken(accessToken);
+      if (verified) verifiedProfile = verified.profile;
+    } catch (error) {
+      logger.error(
+        `SSR auth verifier error (${request.method} ${request.url}):`,
+        error,
+      );
+    }
+  }
   const ssrAuth: SSRAuthState | undefined = configuredAuthProvider
-    ? { accessToken, profile: profile ?? null }
+    ? {
+        accessToken: verifiedProfile ? accessToken : undefined,
+        profile: verifiedProfile,
+      }
     : undefined;
 
   // No-op lazy() on protected subtrees for unauthed requests so loaders
