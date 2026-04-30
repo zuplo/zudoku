@@ -11,6 +11,7 @@ import { useMonetizationConfig } from "../../MonetizationContext.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPrice } from "../../utils/formatPrice.js";
+import { formatTieredPriceBreakdown } from "../../utils/formatTieredPriceBreakdown.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 import {
   planHasDefaultTaxBehavior,
@@ -60,6 +61,29 @@ const getOveragePriceFromItem = (
   return `${formatPrice(parsed, currency)}/${unitLabel}`;
 };
 
+const getTierPricesFromItem = (
+  item: Item,
+  currency: string | undefined,
+  units?: Record<string, string>,
+): string[] | undefined => {
+  if (item.price?.type !== "tiered") return;
+  const tiers = item.price.tiers;
+  if (!tiers || tiers.length <= 1) return;
+
+  const unitLabel = units?.[item.key] ?? units?.[item.featureKey] ?? "unit";
+  return formatTieredPriceBreakdown({
+    tiers: tiers.map((t) => ({
+      upToAmount: t.upToAmount,
+      unitPriceAmount: t.unitPrice?.amount,
+      flatPriceAmount: t.flatPrice?.amount,
+    })),
+    currency,
+    unitLabel,
+    includedLabel: "Included",
+    omitIncludedUpToAmount: item.included?.entitlement?.issueAfterReset,
+  });
+};
+
 const getEntitlementsFromItems = (
   items: Item[],
   currency: string | undefined,
@@ -74,6 +98,7 @@ const getEntitlementsFromItems = (
         limit: number;
         period: string;
         overagePrice?: string;
+        tierPrices?: string[];
       }
     | {
         entitlementType: "boolean";
@@ -104,6 +129,7 @@ const getEntitlementsFromItems = (
           entitlement.isSoftLimit !== false
             ? getOveragePriceFromItem(item, currency, units)
             : undefined,
+        tierPrices: getTierPricesFromItem(item, currency, units),
       });
       continue;
     }
@@ -154,7 +180,16 @@ type FeatureRow = {
   limit?: number;
   period?: string;
   overagePrice?: string;
+  tierPrices?: string[];
   value?: string;
+};
+
+type PhaseGroup = {
+  id: string;
+  name: string;
+  activeFrom: string;
+  activeTo?: string;
+  rows: FeatureRow[];
 };
 
 const getPhaseRows = (opts: {
@@ -169,7 +204,7 @@ const getPhaseRows = (opts: {
       new Date(a.activeFrom).getTime() - new Date(b.activeFrom).getTime(),
   );
 
-  const featureRows: FeatureRow[] = [];
+  const phaseGroups: PhaseGroup[] = [];
 
   for (const phase of phases) {
     const { features } = getEntitlementsFromItems(
@@ -179,8 +214,9 @@ const getPhaseRows = (opts: {
       subscription.billingCadence,
     );
 
+    const rows: FeatureRow[] = [];
     for (const f of features) {
-      featureRows.push({
+      rows.push({
         key: f.key,
         name: f.name,
         entitlementType: f.entitlementType,
@@ -188,15 +224,26 @@ const getPhaseRows = (opts: {
         period: f.entitlementType === "metered" ? f.period : undefined,
         overagePrice:
           f.entitlementType === "metered" ? f.overagePrice : undefined,
+        tierPrices: f.entitlementType === "metered" ? f.tierPrices : undefined,
         value: f.entitlementType === "static" ? f.value : undefined,
         phaseId: phase.id,
         activeFrom: phase.activeFrom,
         activeTo: phase.activeTo,
       });
     }
+
+    if (rows.length > 0) {
+      phaseGroups.push({
+        id: phase.id,
+        name: phase.name,
+        activeFrom: phase.activeFrom,
+        activeTo: phase.activeTo,
+        rows,
+      });
+    }
   }
 
-  return { featureRows };
+  return { phaseGroups };
 };
 
 const formatActiveRange = (activeFrom: string, activeTo?: string) => {
@@ -232,7 +279,7 @@ export const SubscriptionPlanDetails = ({
       </>
     );
 
-  const { featureRows } = getPhaseRows({
+  const { phaseGroups } = getPhaseRows({
     subscription,
     currency,
     units: pricing?.units,
@@ -291,54 +338,75 @@ export const SubscriptionPlanDetails = ({
             </div>
           </dl>
 
-          {featureRows.length > 0 ? (
+          {phaseGroups.length > 0 ? (
             <div className="space-y-5 pt-2 border-t border-border">
               <div className="space-y-2">
                 <p className={cn(sectionLabelClassName, "mb-5")}>
                   Entitlements
                 </p>
-                <ul className="space-y-3">
-                  {featureRows.map((row) => (
-                    <li
-                      key={`${row.key}:${row.phaseId}`}
-                      className="grid gap-1 text-sm sm:grid-cols-4 sm:items-center sm:gap-4"
-                    >
-                      <div className="flex items-start gap-2 text-muted-foreground sm:col-span-2">
-                        <span>
-                          <span className="text-foreground font-medium">
-                            {row.name}{" "}
+                <div className="space-y-5">
+                  {phaseGroups.map((phase) => (
+                    <div key={phase.id} className="space-y-3">
+                      {phaseGroups.length > 1 ? (
+                        <div className="text-sm font-medium text-card-foreground">
+                          {phase.name}
+                          <span className="text-muted-foreground font-normal">
+                            {" "}
+                            &mdash;{" "}
+                            {formatActiveRange(
+                              phase.activeFrom,
+                              phase.activeTo,
+                            )}
                           </span>
-                          {row.entitlementType === "static" && row.value
-                            ? `: ${row.value}`
-                            : ""}
-                        </span>
-                      </div>
+                        </div>
+                      ) : null}
 
-                      <div className="text-muted-foreground sm:text-right">
-                        {row.entitlementType === "metered" &&
-                        row.limit != null ? (
-                          <>
-                            {formatNumber(row.limit)}
-                            {row.period ? ` / ${row.period}` : ""}
-                            {row.overagePrice ? (
-                              <div className="text-xs mt-0.5">
-                                Overage: {row.overagePrice}
+                      <ul className="space-y-3">
+                        {phase.rows.map((row) => (
+                          <li
+                            key={`${row.key}:${row.phaseId}`}
+                            className="text-sm"
+                          >
+                            <div className="flex flex-col gap-1">
+                              <div className="text-foreground font-medium">
+                                {row.name}
+                                {row.entitlementType === "static" && row.value
+                                  ? `: ${row.value}`
+                                  : ""}
                               </div>
-                            ) : null}
-                          </>
-                        ) : row.entitlementType === "static" && row.value ? (
-                          row.value
-                        ) : (
-                          "Included"
-                        )}
-                      </div>
 
-                      <div className="text-xs text-muted-foreground sm:text-right">
-                        {formatActiveRange(row.activeFrom, row.activeTo)}
-                      </div>
-                    </li>
+                              <div className="text-muted-foreground">
+                                {row.entitlementType === "metered" &&
+                                row.limit != null ? (
+                                  <>
+                                    {formatNumber(row.limit)}
+                                    {row.period ? ` / ${row.period}` : ""}
+                                    {row.tierPrices &&
+                                    row.tierPrices.length > 0 ? (
+                                      <ul className="text-xs mt-1 space-y-0.5">
+                                        {row.tierPrices.map((line) => (
+                                          <li key={line}>{line}</li>
+                                        ))}
+                                      </ul>
+                                    ) : null}
+                                    {row.overagePrice ? (
+                                      <div className="text-xs mt-0.5">
+                                        Overage: {row.overagePrice}
+                                      </div>
+                                    ) : null}
+                                  </>
+                                ) : row.entitlementType === "static" &&
+                                  row.value ? null : (
+                                  "Included"
+                                )}
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             </div>
           ) : null}

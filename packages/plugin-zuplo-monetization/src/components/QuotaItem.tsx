@@ -15,6 +15,13 @@ export const QuotaItem = ({
       <div className="text-sm">
         <span className="font-medium">{quota.name}:</span>{" "}
         {quota.limit.toLocaleString()} / {quota.period}
+        {quota.tierPrices && quota.tierPrices.length > 0 && (
+          <ul className="text-xs text-muted-foreground mt-1 space-y-0.5">
+            {quota.tierPrices.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
         {quota.overagePrice && (
           <div className="text-xs text-muted-foreground mt-0.5">
             +{quota.overagePrice} after quota

@@ -1,6 +1,7 @@
 import type { Feature, Quota, RateCard } from "../types/PlanType.js";
 import { formatDuration } from "./formatDuration.js";
 import { formatPrice } from "./formatPrice.js";
+import { formatTieredPriceBreakdown } from "./formatTieredPriceBreakdown.js";
 
 export const categorizeRateCards = (
   rateCards: RateCard[],
@@ -20,18 +21,29 @@ export const categorizeRateCards = (
 
     if (et.type === "metered" && et.issueAfterReset != null) {
       let overagePrice: string | undefined;
-      if (
-        et.isSoftLimit !== false &&
-        rc.price?.type === "tiered" &&
-        rc.price.tiers
-      ) {
+      let tierPrices: string[] | undefined;
+      if (rc.price?.type === "tiered" && rc.price.tiers) {
+        const unitLabel =
+          units?.[rc.key] ?? units?.[rc.featureKey ?? ""] ?? "unit";
+
+        // Build a readable tier breakdown (useful for graduated/volume).
+        tierPrices = formatTieredPriceBreakdown({
+          tiers: rc.price.tiers.map((t) => ({
+            upToAmount: t.upToAmount,
+            unitPriceAmount: t.unitPrice?.amount,
+            flatPriceAmount: t.flatPrice?.amount,
+          })),
+          currency,
+          unitLabel,
+          includedLabel: "Included",
+          omitIncludedUpToAmount: et.issueAfterReset,
+        });
+
         const overageTier = rc.price.tiers.find(
           (t) => t.unitPrice?.amount && parseFloat(t.unitPrice.amount) > 0,
         );
-        if (overageTier?.unitPrice) {
+        if (et.isSoftLimit !== false && overageTier?.unitPrice) {
           const amount = parseFloat(overageTier.unitPrice.amount);
-          const unitLabel =
-            units?.[rc.key] ?? units?.[rc.featureKey ?? ""] ?? "unit";
           overagePrice = `${formatPrice(amount, currency)}/${unitLabel}`;
         }
       }
@@ -45,6 +57,7 @@ export const categorizeRateCards = (
             ? formatDuration(planBillingCadence)
             : "month",
         overagePrice,
+        tierPrices,
       });
     } else if (et.type === "boolean") {
       features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
