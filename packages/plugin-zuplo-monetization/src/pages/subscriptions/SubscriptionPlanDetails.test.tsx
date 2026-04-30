@@ -204,6 +204,10 @@ describe("SubscriptionPlanDetails", () => {
       screen.getByText(/Apr\s+1,\s+2026\s+–\s+May\s+1,\s+2026/),
     ).toBeInTheDocument();
 
+    // Phase headers
+    expect(screen.getByText("Trial")).toBeInTheDocument();
+    expect(screen.getByText("Paid")).toBeInTheDocument();
+
     // Metered row
     const api = screen.getByText("API").closest("li");
     expect(api).not.toBeNull();
@@ -226,18 +230,12 @@ describe("SubscriptionPlanDetails", () => {
   it('renders "Starts <date>" when activeTo is missing', () => {
     render(<SubscriptionPlanDetails subscription={makeSubscription()} />);
 
-    // Date ranges are displayed per row.
-    const api = screen.getByText("API").closest("li");
-    if (!api) throw new Error("Expected API row");
+    // Date ranges are displayed in the phase headers.
     expect(
-      within(api).getByText(/Starts\s+Apr\s+1,\s+2026/),
+      screen.getByText(/Trial\s+—\s+Starts\s+Apr\s+1,\s+2026/),
     ).toBeInTheDocument();
-
-    // Paid phase starts later -> should show Starts <date>.
-    const boolRow = screen.getByText("Boolean feature").closest("li");
-    if (!boolRow) throw new Error("Expected boolean row");
     expect(
-      within(boolRow).getByText(/Starts\s+May\s+1,\s+2026/),
+      screen.getByText(/Paid\s+—\s+Starts\s+May\s+1,\s+2026/),
     ).toBeInTheDocument();
   });
 
