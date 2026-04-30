@@ -207,6 +207,7 @@ export async function getViteConfig(
           outDir: path.resolve(
             path.join(dir, "dist", config.basePath ?? "", "server"),
           ),
+          copyPublicDir: false,
           rolldownOptions: {
             logLevel: "warn",
             input: ["zudoku/app/entry.server.tsx", config.__meta.configPath],
