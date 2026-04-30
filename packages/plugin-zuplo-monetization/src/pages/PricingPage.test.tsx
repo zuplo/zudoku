@@ -7,6 +7,32 @@ import {
 import type { Plan } from "../types/PlanType.js";
 import PricingPage from "./PricingPage.js";
 
+vi.mock("../utils/pricingTaxLegend.js", async (importOriginal) => {
+  const original = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...original,
+    collectDefaultTaxBehaviors: (plan?: Plan) => {
+      if (!plan) return "unspecified";
+      const behavior = plan.defaultTaxConfig?.behavior;
+      if (typeof behavior !== "string" || behavior.trim().length === 0) {
+        return "unspecified";
+      }
+      const key = behavior.trim().toLowerCase();
+      if (key === "exclusive" || key === "tax_exclusive") return "exclusive";
+      if (key === "inclusive" || key === "tax_inclusive") return "inclusive";
+      return "unspecified";
+    },
+    taxBehaviorLegendSentence: (behavior: string) => {
+      const key = behavior.trim().toLowerCase();
+      if (key === "exclusive") {
+        return "Prices exclude tax; taxes may be added at checkout if applicable.";
+      }
+      if (key === "inclusive") return "Prices include tax where applicable.";
+      return undefined;
+    },
+  };
+});
+
 vi.mock("zudoku/components", async (importOriginal) => ({
   ...(await importOriginal()),
   Head: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -297,5 +323,56 @@ describe("PricingPage", () => {
     renderWithConfig();
 
     expect(screen.queryByText("Most Popular")).not.toBeInTheDocument();
+  });
+
+  it("Shows a tax legend when the first plan has defaultTaxConfig.behavior set", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        defaultTaxConfig: { behavior: "exclusive" },
+      },
+      makePlan("2", "pro", "Pro"),
+    ];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.getByText("Tax & Pricing")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Prices exclude tax; taxes may be added at checkout if applicable.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("Normalizes defaultTaxConfig.behavior case for legend copy", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        defaultTaxConfig: { behavior: "Inclusive" },
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.getByText("Tax & Pricing")).toBeInTheDocument();
+    expect(
+      screen.getByText("Prices include tax where applicable."),
+    ).toBeInTheDocument();
+  });
+
+  it("Does not show a tax legend for unsupported behavior values", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        defaultTaxConfig: { behavior: "no_tax" },
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.queryByText("Tax & Pricing")).not.toBeInTheDocument();
   });
 });

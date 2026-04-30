@@ -101,6 +101,7 @@ export interface Quota {
   limit: number;
   period: string;
   overagePrice?: string;
+  tierPrices?: string[];
 }
 
 export interface Feature {
@@ -124,6 +125,11 @@ export interface ValidationError {
   code?: string;
 }
 
+export interface PlanDefaultTaxConfig {
+  /** When set (e.g. Stripe-style `exclusive` / `inclusive`), pricing may include or exclude tax. */
+  behavior?: string;
+}
+
 export interface Plan {
   id: string;
   key: string;
@@ -134,6 +140,7 @@ export interface Plan {
   version?: number; // defaults to 1
   currency?: string;
   billingCadence: string;
+  defaultTaxConfig?: PlanDefaultTaxConfig;
   status?: "draft" | "active" | "archived" | "scheduled";
   effectiveFrom?: string;
   effectiveTo?: string;
