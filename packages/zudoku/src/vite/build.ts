@@ -90,6 +90,22 @@ export async function runBuild(options: BuildOptions) {
   });
 
   if (ssr) {
+    // Cloudflare Workers and Vercel Edge runtimes don't have a filesystem
+    // static server we can plug into protectedAssets, so /_protected/*
+    // chunks would 404 instead of being auth-gated. Fail closed until we
+    // ship adapter-specific implementations.
+    const ADAPTERS_WITH_PROTECTED_GATE: SSRAdapter[] = ["node", "lambda"];
+    if (
+      config.protectedRoutes &&
+      !ADAPTERS_WITH_PROTECTED_GATE.includes(adapter)
+    ) {
+      throw new Error(
+        `protectedRoutes is configured but the "${adapter}" SSR adapter does ` +
+          `not yet support gating /_protected chunks. Supported adapters: ` +
+          `${ADAPTERS_WITH_PROTECTED_GATE.join(", ")}. Either remove ` +
+          `protectedRoutes or switch adapters.`,
+      );
+    }
     // SSR: bundle entry.js and remove index.html
     await bundleSSREntry({
       dir,
