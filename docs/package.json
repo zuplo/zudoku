@@ -11,7 +11,7 @@
   "dependencies": {
     "@joshwooding/vite-plugin-react-docgen-typescript": "^0.6.4",
     "mermaid": "^11.12.2",
-    "motion": "12.35.1",
+    "motion": "12.38.0",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
