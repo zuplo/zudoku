@@ -60,6 +60,14 @@ export class OpenIDAuthenticationProvider
   protected readonly redirectToAfterSignOut: string;
   private readonly audience?: string;
   private readonly scopes: string[];
+  protected readonly authorizationParams?: Record<string, string>;
+  protected readonly forwardAuthorizationParams: string[];
+  protected static readonly DEFAULT_FORWARD_AUTHORIZATION_PARAMS = [
+    "login_hint",
+    "domain_hint",
+    "ui_locales",
+    "acr_values",
+  ];
 
   constructor({
     issuer,
@@ -70,6 +78,8 @@ export class OpenIDAuthenticationProvider
     redirectToAfterSignOut = "/",
     basePath,
     scopes,
+    authorizationParams,
+    forwardAuthorizationParams,
   }: OpenIDAuthenticationConfig) {
     super();
     this.client = {
@@ -85,6 +95,13 @@ export class OpenIDAuthenticationProvider
     this.redirectToAfterSignUp = redirectToAfterSignUp;
     this.redirectToAfterSignIn = redirectToAfterSignIn;
     this.redirectToAfterSignOut = redirectToAfterSignOut;
+    this.authorizationParams = authorizationParams;
+    this.forwardAuthorizationParams = Array.from(
+      new Set([
+        ...OpenIDAuthenticationProvider.DEFAULT_FORWARD_AUTHORIZATION_PARAMS,
+        ...(forwardAuthorizationParams ?? []),
+      ]),
+    );
   }
 
   protected async getAuthServer() {
@@ -276,6 +293,22 @@ export class OpenIDAuthenticationProvider
     );
     if (this.audience) {
       authorizationUrl.searchParams.set("audience", this.audience);
+    }
+
+    if (this.authorizationParams) {
+      for (const [key, value] of Object.entries(this.authorizationParams)) {
+        authorizationUrl.searchParams.set(key, value);
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      const incoming = new URLSearchParams(window.location.search);
+      for (const name of this.forwardAuthorizationParams) {
+        const value = incoming.get(name);
+        if (value !== null) {
+          authorizationUrl.searchParams.set(name, value);
+        }
+      }
     }
 
     this.onAuthorizationUrl?.(authorizationUrl, {

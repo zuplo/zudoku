@@ -11,6 +11,8 @@ import {
   OpenIDAuthenticationProvider,
 } from "./openid.js";
 
+const AUTH0_FORWARD_PARAMS = ["organization", "invitation", "connection"];
+
 class Auth0AuthenticationProvider
   extends OpenIDAuthenticationProvider
   implements AuthenticationPlugin
@@ -24,6 +26,11 @@ class Auth0AuthenticationProvider
       clientId: config.clientId,
       audience: config.audience,
       scopes: config.scopes,
+      authorizationParams: config.authorizationParams,
+      forwardAuthorizationParams: [
+        ...AUTH0_FORWARD_PARAMS,
+        ...(config.forwardAuthorizationParams ?? []),
+      ],
     });
     this.options = config.options;
   }
