@@ -224,18 +224,25 @@ describe("SubscriptionPlanDetails", () => {
 
     // Static row shows value
     expect(screen.getByText(/Static feature/i)).toBeInTheDocument();
-    expect(screen.getAllByText("v2").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Static feature.*v2/i)).toBeInTheDocument();
   });
 
   it('renders "Starts <date>" when activeTo is missing', () => {
     render(<SubscriptionPlanDetails subscription={makeSubscription()} />);
 
     // Date ranges are displayed in the phase headers.
+    const trialHeader = screen.getByText("Trial").closest("div");
+    expect(trialHeader).not.toBeNull();
+    if (!trialHeader) throw new Error("Expected Trial phase header");
     expect(
-      screen.getByText(/Trial\s+—\s+Starts\s+Apr\s+1,\s+2026/),
+      within(trialHeader).getByText(/Starts\s+Apr\s+1,\s+2026/),
     ).toBeInTheDocument();
+
+    const paidHeader = screen.getByText("Paid").closest("div");
+    expect(paidHeader).not.toBeNull();
+    if (!paidHeader) throw new Error("Expected Paid phase header");
     expect(
-      screen.getByText(/Paid\s+—\s+Starts\s+May\s+1,\s+2026/),
+      within(paidHeader).getByText(/Starts\s+May\s+1,\s+2026/),
     ).toBeInTheDocument();
   });
 
