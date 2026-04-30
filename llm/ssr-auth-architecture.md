@@ -104,6 +104,14 @@ recover tokens from on reload. Weaker posture but the only option in a pure-stat
 In SSR mode the rehydrate path never fires at all — `noopStorage` means there's no persisted state
 to rehydrate from. The SDK's subsequent `setLoggedIn` drives the POST instead.
 
+### Server-side CSRF check
+
+`session-handler.ts` rejects POST/DELETE that don't look same-origin. The check prefers the
+browser's `Sec-Fetch-Site` header (a forbidden header that JS can't forge) and falls back to an
+`Origin`/`Host` host comparison if missing. The fallback breaks under any proxy/CDN that rewrites
+`Host` (CloudFront's `AllViewerExceptHostHeader` policy, for example), so the Sec-Fetch-Site path is
+what makes the endpoint work behind a CDN.
+
 ## Protected routes: chunk-level gating
 
 Distinct but related concern: `protectedRoutes` in user config gates access at the **bundle** level,

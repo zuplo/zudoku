@@ -32,20 +32,22 @@ const MAX_COOKIE_SIZE = 3900; // Leave margin under 4096 browser limit
 const sameOriginCheck = (c: {
   req: { header: (name: string) => string | undefined };
 }): boolean => {
+  // Sec-Fetch-Site is set by the browser and cannot be forged from JS, so
+  // prefer it. The Origin/Host comparison breaks behind any proxy/CDN that
+  // rewrites the Host header (CloudFront, etc.).
+  const fetchSite = c.req.header("Sec-Fetch-Site");
+  if (fetchSite) {
+    return fetchSite === "same-origin" || fetchSite === "same-site";
+  }
+
   const origin = c.req.header("Origin");
   const host = c.req.header("Host");
-
   if (origin && host) {
     try {
       return new URL(origin).host === host;
     } catch {
       return false;
     }
-  }
-
-  const fetchSite = c.req.header("Sec-Fetch-Site");
-  if (fetchSite) {
-    return fetchSite === "same-origin" || fetchSite === "same-site";
   }
 
   return false;
