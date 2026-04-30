@@ -12,6 +12,10 @@ import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
+import {
+  planHasDefaultTaxBehavior,
+  subscriptionTaxLegendSentence,
+} from "../../utils/pricingTaxLegend.js";
 
 const detailLabelClassName = "text-sm font-semibold tracking-wide mb-1";
 const sectionLabelClassName = "text-base font-semibold tracking-wide mb-3 mt-2";
@@ -209,6 +213,9 @@ export const SubscriptionPlanDetails = ({
   const plan = subscription.plan;
   const currency = subscription.currency ?? plan.currency;
   const priceInfo = getPriceFromPlan(plan);
+  const taxLegendSentence = planHasDefaultTaxBehavior(plan)
+    ? subscriptionTaxLegendSentence(plan.defaultTaxConfig?.behavior ?? "")
+    : undefined;
 
   const primaryPrice =
     priceInfo.monthly === 0 && priceInfo.yearly === 0 ? (
@@ -260,8 +267,15 @@ export const SubscriptionPlanDetails = ({
 
             <div>
               <dt className={detailLabelClassName}>Price</dt>
-              <dd className="flex flex-wrap items-baseline gap-1">
-                {primaryPrice}
+              <dd>
+                <div className="flex flex-wrap items-baseline gap-1">
+                  {primaryPrice}
+                </div>
+                {taxLegendSentence ? (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {taxLegendSentence}
+                  </p>
+                ) : null}
               </dd>
             </div>
             <div>
