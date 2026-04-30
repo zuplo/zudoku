@@ -19,7 +19,8 @@ const PricingPage = () => {
   const auth = useAuth();
 
   const { data: pricingTable } = usePlans();
-  const taxLegendBehaviors = collectDefaultTaxBehaviors(pricingTable.items);
+  const taxLegendBehaviors = collectDefaultTaxBehaviors(pricingTable.items[0]);
+  const taxLegendSentence = taxBehaviorLegendSentence(taxLegendBehaviors);
 
   const { data: subscriptions = { items: [] } } =
     useQuery<SubscriptionsResponse>({
@@ -72,7 +73,7 @@ const PricingPage = () => {
               />
             ))}
           </div>
-          {taxLegendBehaviors.length > 0 && (
+          {taxLegendSentence && (
             <div
               role="note"
               className="mt-10 pt-6 border-t border-border max-w-2xl mx-auto text-center space-y-2"
@@ -80,19 +81,9 @@ const PricingPage = () => {
               <p className="text-xs font-medium text-muted-foreground">
                 Tax & Pricing
               </p>
-              {taxLegendBehaviors.length === 1 ? (
-                <p className="text-xs text-muted-foreground">
-                  {taxBehaviorLegendSentence(taxLegendBehaviors[0])}
-                </p>
-              ) : (
-                <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1 text-left sm:text-center">
-                  {taxLegendBehaviors.map((behavior) => (
-                    <li key={behavior}>
-                      {taxBehaviorLegendSentence(behavior)}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <p className="text-xs text-muted-foreground">
+                {taxLegendSentence}
+              </p>
             </div>
           )}
         </>

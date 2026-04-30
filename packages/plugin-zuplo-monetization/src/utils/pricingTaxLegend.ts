@@ -1,29 +1,60 @@
 import type { Plan } from "../types/PlanType.js";
 
+type CanonicalTaxBehavior = "exclusive" | "inclusive" | "unspecified";
+
+const normalizeTaxBehavior = (behavior: string): CanonicalTaxBehavior => {
+  const key = behavior.trim().toLowerCase();
+
+  switch (key) {
+    case "exclusive":
+    case "tax_exclusive":
+      return "exclusive";
+    case "inclusive":
+    case "tax_inclusive":
+      return "inclusive";
+    default:
+      return "unspecified";
+  }
+};
+
 export const planHasDefaultTaxBehavior = (plan: Plan): boolean => {
   const behavior = plan.defaultTaxConfig?.behavior;
   return typeof behavior === "string" && behavior.trim().length > 0;
 };
 
-export const collectDefaultTaxBehaviors = (plans: Plan[]): string[] => {
-  const seen = new Set<string>();
-  for (const plan of plans) {
-    const behavior = plan.defaultTaxConfig?.behavior;
-    if (typeof behavior === "string" && behavior.trim().length > 0) {
-      seen.add(behavior.trim());
-    }
-  }
-  return [...seen].sort((a, b) => a.localeCompare(b));
+export const collectDefaultTaxBehaviors = (
+  plan: Plan,
+): CanonicalTaxBehavior => {
+  const behavior = plan.defaultTaxConfig?.behavior;
+  return typeof behavior === "string" && behavior.trim().length > 0
+    ? normalizeTaxBehavior(behavior)
+    : "unspecified";
 };
 
-export const taxBehaviorLegendSentence = (behavior: string): string => {
-  const key = behavior.trim().toLowerCase();
+export const taxBehaviorLegendSentence = (
+  behavior: string,
+): string | undefined => {
+  const key = normalizeTaxBehavior(behavior);
   switch (key) {
     case "exclusive":
-      return "Prices exclude tax; applicable taxes are calculated at checkout.";
+      return "Prices exclude tax; taxes may be added at checkout if applicable.";
     case "inclusive":
-      return "Prices include applicable tax where required.";
+      return "Prices include tax where applicable.";
     default:
-      return ``;
+      return undefined;
+  }
+};
+
+export const subscriptionTaxLegendSentence = (
+  behavior: string,
+): string | undefined => {
+  const key = normalizeTaxBehavior(behavior);
+  switch (key) {
+    case "exclusive":
+      return "Price excludes tax; taxes may be added on invoice if applicable.";
+    case "inclusive":
+      return "Price includes tax where applicable.";
+    default:
+      return undefined;
   }
 };

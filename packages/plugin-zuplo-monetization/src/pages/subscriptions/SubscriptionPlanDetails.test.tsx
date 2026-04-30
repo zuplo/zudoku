@@ -267,4 +267,39 @@ describe("SubscriptionPlanDetails", () => {
     if (!api) throw new Error("Expected API row");
     expect(within(api).queryByText(/Overage:/)).not.toBeInTheDocument();
   });
+
+  it("shows a subscription tax legend under Price when plan.defaultTaxConfig.behavior is set", () => {
+    const subscription = makeSubscription({
+      plan: {
+        ...makeSubscription().plan,
+        defaultTaxConfig: { behavior: "exclusive" },
+      },
+    });
+
+    render(<SubscriptionPlanDetails subscription={subscription} />);
+
+    expect(
+      screen.getByText("Taxes may be added to your invoice if applicable."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a no-tax message when behavior is none/no_tax", () => {
+    const subscription = makeSubscription({
+      plan: {
+        ...makeSubscription().plan,
+        defaultTaxConfig: { behavior: "NONE" },
+      },
+    });
+
+    render(<SubscriptionPlanDetails subscription={subscription} />);
+
+    expect(screen.getByText("No tax will be charged.")).toBeInTheDocument();
+  });
+
+  it("does not render a tax legend when behavior is missing", () => {
+    render(<SubscriptionPlanDetails subscription={makeSubscription()} />);
+    expect(
+      screen.queryByText(/Taxes may be added to your invoice/i),
+    ).not.toBeInTheDocument();
+  });
 });

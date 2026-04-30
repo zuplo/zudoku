@@ -298,4 +298,56 @@ describe("PricingPage", () => {
 
     expect(screen.queryByText("Most Popular")).not.toBeInTheDocument();
   });
+
+  it("Shows a tax legend if any plan has defaultTaxConfig.behavior set", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      {
+        ...makePlan("2", "pro", "Pro"),
+        defaultTaxConfig: { behavior: "exclusive" },
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.getByText("Tax & Pricing")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Prices exclude tax; taxes may be added at checkout if applicable.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("Normalizes defaultTaxConfig.behavior case for legend copy", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        defaultTaxConfig: { behavior: "Inclusive" },
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.getByText("Tax & Pricing")).toBeInTheDocument();
+    expect(
+      screen.getByText("Prices include tax where applicable."),
+    ).toBeInTheDocument();
+  });
+
+  it("Shows a no-tax legend for none/no_tax behavior", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        defaultTaxConfig: { behavior: "no_tax" },
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.getByText("Tax & Pricing")).toBeInTheDocument();
+    expect(screen.getByText("No tax is charged.")).toBeInTheDocument();
+  });
 });
