@@ -3,6 +3,7 @@ import * as oauth from "oauth4webapi";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { OAuthAuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
+import auth0Auth from "./auth0.js";
 import {
   OpenIDAuthenticationProvider,
   type OpenIdProviderData,
@@ -405,6 +406,68 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
 
       const url = await captureAuthorizeUrl(provider);
       expect(url.searchParams.get("tenant")).toBe("acme");
+    });
+
+    test("protected core params cannot be overridden via authorizationParams", async () => {
+      setLocation("http://localhost/");
+      setAuthEndpoint();
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        authorizationParams: {
+          client_id: "evil",
+          redirect_uri: "https://evil.example.com/cb",
+          response_type: "token",
+          scope: "evil",
+        },
+      });
+
+      const url = await captureAuthorizeUrl(provider);
+      expect(url.searchParams.get("client_id")).toBe("test-client");
+      expect(url.searchParams.get("redirect_uri")).toBe(
+        "http://localhost/oauth/callback",
+      );
+      expect(url.searchParams.get("response_type")).toBe("code");
+      expect(url.searchParams.get("scope")).toBe("openid profile email");
+    });
+
+    test("protected core params cannot be overridden via forwarded URL params", async () => {
+      setLocation("http://localhost/?redirect_uri=https://evil.example.com/cb");
+      setAuthEndpoint();
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        forwardAuthorizationParams: ["redirect_uri"],
+      });
+
+      const url = await captureAuthorizeUrl(provider);
+      expect(url.searchParams.get("redirect_uri")).toBe(
+        "http://localhost/oauth/callback",
+      );
+    });
+
+    test("Auth0 provider forwards organization, invitation, connection by default", async () => {
+      setLocation(
+        "http://localhost/?organization=org_x&invitation=inv_y&connection=google-oauth2",
+      );
+      setAuthEndpoint();
+
+      const provider = auth0Auth({
+        type: "auth0",
+        domain: "issuer.example.com",
+        clientId: "test-client",
+      });
+
+      const url = await captureAuthorizeUrl(
+        provider as OpenIDAuthenticationProvider,
+      );
+      expect(url.searchParams.get("organization")).toBe("org_x");
+      expect(url.searchParams.get("invitation")).toBe("inv_y");
+      expect(url.searchParams.get("connection")).toBe("google-oauth2");
     });
   });
 

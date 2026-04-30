@@ -282,19 +282,7 @@ export class OpenIDAuthenticationProvider
     redirectUrl.search = "";
     redirectUrl.hash = "";
 
-    authorizationUrl.searchParams.set("client_id", this.client.client_id);
-    authorizationUrl.searchParams.set("redirect_uri", redirectUrl.toString());
-    authorizationUrl.searchParams.set("response_type", "code");
-    authorizationUrl.searchParams.set("scope", this.scopes.join(" "));
-    authorizationUrl.searchParams.set("code_challenge", codeChallenge);
-    authorizationUrl.searchParams.set(
-      "code_challenge_method",
-      code_challenge_method,
-    );
-    if (this.audience) {
-      authorizationUrl.searchParams.set("audience", this.audience);
-    }
-
+    // Apply user-supplied params first so core OIDC params below cannot be overridden (client_id, etc.)
     if (this.authorizationParams) {
       for (const [key, value] of Object.entries(this.authorizationParams)) {
         authorizationUrl.searchParams.set(key, value);
@@ -309,6 +297,19 @@ export class OpenIDAuthenticationProvider
           authorizationUrl.searchParams.set(name, value);
         }
       }
+    }
+
+    authorizationUrl.searchParams.set("client_id", this.client.client_id);
+    authorizationUrl.searchParams.set("redirect_uri", redirectUrl.toString());
+    authorizationUrl.searchParams.set("response_type", "code");
+    authorizationUrl.searchParams.set("scope", this.scopes.join(" "));
+    authorizationUrl.searchParams.set("code_challenge", codeChallenge);
+    authorizationUrl.searchParams.set(
+      "code_challenge_method",
+      code_challenge_method,
+    );
+    if (this.audience) {
+      authorizationUrl.searchParams.set("audience", this.audience);
     }
 
     this.onAuthorizationUrl?.(authorizationUrl, {
