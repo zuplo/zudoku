@@ -144,8 +144,14 @@ describe("PlanEntitlements", () => {
     expect(screen.getByText("API Request:")).toBeInTheDocument();
     expect(screen.getByText("Boolean feature")).toBeInTheDocument();
 
-    const quotaRow = screen.getByText("API Request:").closest("div");
-    const featureRow = screen.getByText("Boolean feature").closest("div");
+    const quotaInner = screen.getByText("API Request:").closest("div");
+    const featureInner = screen.getByText("Boolean feature").closest("div");
+    expect(quotaInner).not.toBeNull();
+    expect(featureInner).not.toBeNull();
+
+    // `itemClassName` is applied on the outer row container.
+    const quotaRow = quotaInner?.parentElement;
+    const featureRow = featureInner?.parentElement;
     expect(quotaRow).not.toBeNull();
     expect(featureRow).not.toBeNull();
     expect(quotaRow).toHaveClass("text-muted-foreground");
