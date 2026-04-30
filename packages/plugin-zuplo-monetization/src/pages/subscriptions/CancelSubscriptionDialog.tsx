@@ -110,7 +110,7 @@ export const CancelSubscriptionDialog = ({
               <>
                 <AlertTitle>You can subscribe again at any time</AlertTitle>
                 <AlertDescription>
-                  After cancelling, you can return to the pricing page and start
+                  After canceling, you can return to the pricing page and start
                   a new subscription whenever you're ready.
                 </AlertDescription>
               </>

@@ -28,8 +28,6 @@ export const ManageSubscription = ({
   const canResumeCanceledSubscription =
     subscription.status === "canceled" &&
     new Date(billingPeriodEnd) > new Date();
-  const hasCurrentBillables = activePhaseHasBillables(subscription);
-  const futureBillables = hasFutureBillables(subscription);
 
   return (
     <Card>
@@ -39,8 +37,8 @@ export const ManageSubscription = ({
         planName={planName}
         subscriptionId={subscription.id}
         billingPeriodEnd={billingPeriodEnd}
-        hasCurrentBillables={hasCurrentBillables}
-        hasFutureBillables={futureBillables}
+        hasCurrentBillables={activePhaseHasBillables(subscription)}
+        hasFutureBillables={hasFutureBillables(subscription)}
       />
       <RestoreSubscriptionDialog
         open={restoreDialogOpen}
