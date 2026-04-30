@@ -148,12 +148,24 @@ origin.
 After the client build, `vite/build.ts` runs three guards in `vite/protected/build.ts`:
 
 - `assertNoProtectedLeaks(output)` — walks static import edges from every public entry chunk; a
-  protected chunk reached through static edges fails the build. Dynamic edges are skipped (they're
-  how route-split lazy loads reach gated content).
-- `assertAllPatternsMatched(config)` — throws if any `protectedRoutes` pattern has no registered
-  content. Catches typos and dynamically-generated routes that would ship unprotected.
+  protected chunk reached through static edges fails the build. Also fails if any chunk under
+  `_protected/` is itself an entry, since entries are loaded outside the gated import path. Dynamic
+  edges are skipped (they're how route-split lazy loads reach gated content).
+- `warnUnmatchedProtectedPatterns(config)` — warns (does not fail the build) if any
+  `protectedRoutes` pattern has no registered content. Usually a typo or a route served by an inline
+  element / dynamic path. RouteGuard still blocks rendering, but the JS won't be gated.
 - `moveProtectedChunks(clientOut, serverOut)` — physically moves `_protected/` out of the
-  publicly-served client output into the server bundle.
+  publicly-served client output into the server bundle. After moving, asserts the source dir is
+  empty; a partial rename failure (e.g. EXDEV across filesystems) fails the build instead of
+  silently shipping leftovers publicly.
+
+### Adapter coverage
+
+`/_protected/*` gating only works on the `lambda` and `node` SSR adapters today. The build fails
+fast if `protectedRoutes` is configured with `cloudflare` or `vercel` as the adapter. The Cloudflare
+Workers and Vercel Edge runtimes don't have a filesystem-style static server compatible with the
+current `protectedAssets` middleware, and putting the chunks in their public asset bindings would
+defeat the gate. Adapter-specific gating is follow-up work.
 
 ### Client-side: `wrapProtectedRoutes` (runtime)
 
@@ -169,10 +181,60 @@ render its sign-in prompt with full interactivity.
 
 ### Server-side middleware: `protectedAssets`
 
-`app/protectedAssets.ts` is the Hono middleware that gates `_protected/*` chunk requests behind a
-cookie-presence check. Prefix is composed via `joinUrl(basePath, "/_protected")` so subpath
-deployments match correctly. This is **cookie-presence only**, matching the SSR HTML gate — chunks
-contain no secrets beyond what the SSR origin already serves.
+`app/protectedAssets.ts` is the Hono middleware that gates `_protected/*` chunk requests. Prefix is
+composed via `joinUrl(basePath, "/_protected")` so subpath deployments match correctly. The cookie
+is verified via the configured auth provider's `verifyAccessToken` (same as `session-handler.ts`
+during cookie issuance) so a forged cookie value can't bypass the gate. Verifier failures fail
+closed. 401 responses set `Cache-Control: private, no-store` and `Vary: Cookie` so a CDN can't cache
+the rejection against the URL-without-cookie.
+
+The SSR HTML render path also calls `verifyAccessToken` in `entry.server.tsx` before treating the
+profile cookie as authoritative — a stale or forged profile cookie won't produce an authenticated
+HTML render.
+
+### Pattern matching semantics
+
+`protectedRoutes` patterns use react-router `matchPath` semantics consistently across build, runtime
+route gating (`wrapProtectedRoutes`), and `RouteGuard`:
+
+- Bare patterns match exactly: `protectedRoutes: ["/admin"]` gates `/admin` but not `/admin/users`.
+- To gate descendants, use a glob: `protectedRoutes: ["/admin/*"]` gates `/admin` and everything
+  under it.
+
+This applies to subtree scopes (modules registered as covering an entire subtree, e.g. the openapi
+plugin's catalog routes) too: a bare pattern matching the subtree root only gates the root path; a
+glob pattern is required to gate descendants.
+
+### Cookie size and body limits
+
+- Each cookie value (access token, refresh token, profile JSON) is capped at 3.9 KB to stay below
+  the 4 KB browser cookie limit. Oversized values return 413.
+- `/__z/auth/session` POST bodies are capped at 64 KB.
+- The session cookie's `maxAge` is also capped at 1 hour, regardless of what the verifier returns in
+  `expiresAt`. Long-lived tokens get refreshed via `cookie-sync` on subsequent client-side events.
+  This is defense-in-depth against stolen cookies.
+
+### Plugin author contract
+
+The annotator at `vite/protected/annotator.ts` auto-registers protected scopes for two route shapes:
+
+- ObjectExpression with a string-literal `path` property and a nested dynamic `import()`. Covers
+  React Router route objects and `openApiPlugin({ path, schemaImports })`.
+- A dict literal whose keys are path-like strings (`/foo`, no dot) mapped to `() => import(...)`
+  arrows. Covers plugin-docs's `fileImports` output.
+
+Shapes the annotator does NOT detect:
+
+- Template-literal paths (``{ path: `/admin/${section}`, lazy }``)
+- Variable-bound paths (`{ path: ADMIN, lazy }` where `ADMIN` is a const)
+- Object spreads (`{ path: "/admin", ...rest }` with `lazy` in `rest`)
+- Async function bodies (`async () => import(...)`)
+- JSX-style `createElement("Route", { path, lazy })`
+
+A plugin author whose code generation doesn't match either supported shape must call
+`registerProtectedScope(moduleId, scope)` directly so the registry knows the module is gateable. If
+the annotator's parse fails on a module, the registry is left empty for that module and the gating
+won't apply. The build emits a warning in that case.
 
 ### Sign-in UI surfaces
 
