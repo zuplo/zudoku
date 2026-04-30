@@ -231,9 +231,8 @@ const ObjectSchemaView = ({
           )}
           {additionalObjectProperties}
           {unionSection &&
-            (nonDeprecatedGroups.length > 0 || deprecatedProperties) && (
-              <ItemSeparator />
-            )}
+            (nonDeprecatedGroups.length > 0 ||
+              (showDeprecated && deprecatedProperties)) && <ItemSeparator />}
           {unionSection}
         </FramePanel>
       )}
@@ -299,7 +298,9 @@ export const SchemaView = ({
   const hasUnion = Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf);
 
   if (hasUnion && !schema.properties) {
-    return <UnionView schema={schema} cardHeader={cardHeader} />;
+    return (
+      <UnionView schema={schema} cardHeader={cardHeader} embedded={embedded} />
+    );
   }
 
   if (isBasicType(schema.type)) {
