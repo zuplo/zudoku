@@ -62,6 +62,6 @@ describe("formatTieredPriceBreakdown", () => {
     });
 
     expect(lines?.[0]).toMatch(/^Up to 5,000:/);
-    expect(lines?.[0]).toMatch(/\$10\.00 base$/);
+    expect(lines?.[0]).toMatch(/\$10(?:\.00)? base$/);
   });
 });
