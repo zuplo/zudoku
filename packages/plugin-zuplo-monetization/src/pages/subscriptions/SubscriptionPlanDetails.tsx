@@ -11,6 +11,7 @@ import { useMonetizationConfig } from "../../MonetizationContext.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPrice } from "../../utils/formatPrice.js";
+import { formatTieredPriceBreakdown } from "../../utils/formatTieredPriceBreakdown.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 import {
   planHasDefaultTaxBehavior,
@@ -60,6 +61,29 @@ const getOveragePriceFromItem = (
   return `${formatPrice(parsed, currency)}/${unitLabel}`;
 };
 
+const getTierPricesFromItem = (
+  item: Item,
+  currency: string | undefined,
+  units?: Record<string, string>,
+): string[] | undefined => {
+  if (item.price?.type !== "tiered") return;
+  const tiers = item.price.tiers;
+  if (!tiers || tiers.length <= 1) return;
+
+  const unitLabel = units?.[item.key] ?? units?.[item.featureKey] ?? "unit";
+  return formatTieredPriceBreakdown({
+    tiers: tiers.map((t) => ({
+      upToAmount: t.upToAmount,
+      unitPriceAmount: t.unitPrice?.amount,
+      flatPriceAmount: t.flatPrice?.amount,
+    })),
+    currency,
+    unitLabel,
+    includedLabel: "Included",
+    omitIncludedUpToAmount: item.included?.entitlement?.issueAfterReset,
+  });
+};
+
 const getEntitlementsFromItems = (
   items: Item[],
   currency: string | undefined,
@@ -74,6 +98,7 @@ const getEntitlementsFromItems = (
         limit: number;
         period: string;
         overagePrice?: string;
+        tierPrices?: string[];
       }
     | {
         entitlementType: "boolean";
@@ -104,6 +129,7 @@ const getEntitlementsFromItems = (
           entitlement.isSoftLimit !== false
             ? getOveragePriceFromItem(item, currency, units)
             : undefined,
+        tierPrices: getTierPricesFromItem(item, currency, units),
       });
       continue;
     }
@@ -154,6 +180,7 @@ type FeatureRow = {
   limit?: number;
   period?: string;
   overagePrice?: string;
+  tierPrices?: string[];
   value?: string;
 };
 
@@ -188,6 +215,7 @@ const getPhaseRows = (opts: {
         period: f.entitlementType === "metered" ? f.period : undefined,
         overagePrice:
           f.entitlementType === "metered" ? f.overagePrice : undefined,
+        tierPrices: f.entitlementType === "metered" ? f.tierPrices : undefined,
         value: f.entitlementType === "static" ? f.value : undefined,
         phaseId: phase.id,
         activeFrom: phase.activeFrom,
@@ -320,6 +348,13 @@ export const SubscriptionPlanDetails = ({
                           <>
                             {formatNumber(row.limit)}
                             {row.period ? ` / ${row.period}` : ""}
+                            {row.tierPrices && row.tierPrices.length > 0 ? (
+                              <ul className="text-xs mt-1 space-y-0.5">
+                                {row.tierPrices.map((line) => (
+                                  <li key={line}>{line}</li>
+                                ))}
+                              </ul>
+                            ) : null}
                             {row.overagePrice ? (
                               <div className="text-xs mt-0.5">
                                 Overage: {row.overagePrice}

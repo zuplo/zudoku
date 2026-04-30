@@ -101,6 +101,7 @@ export interface Quota {
   limit: number;
   period: string;
   overagePrice?: string;
+  tierPrices?: string[];
 }
 
 export interface Feature {

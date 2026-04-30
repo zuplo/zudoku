@@ -72,6 +72,11 @@ const makeSubscription = (
             tiers: [
               {
                 flatPrice: { amount: "0", type: "money" },
+                unitPrice: { amount: "0", type: "money" },
+                upToAmount: "3000",
+              },
+              {
+                flatPrice: { amount: "0", type: "money" },
                 unitPrice: { amount: "0.1", type: "money" },
               },
             ],
@@ -204,6 +209,7 @@ describe("SubscriptionPlanDetails", () => {
     expect(api).not.toBeNull();
     if (!api) throw new Error("Expected API row");
     expect(within(api).getByText("1,000 / month")).toBeInTheDocument();
+    expect(within(api).getByText(/Over 3,000:/)).toBeInTheDocument();
     expect(within(api).getByText("Overage: $0.10/call")).toBeInTheDocument();
 
     // Boolean row

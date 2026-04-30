@@ -144,6 +144,11 @@ describe("PlanEntitlements", () => {
     expect(screen.getByText("API Request:")).toBeInTheDocument();
     expect(screen.getByText("Boolean feature")).toBeInTheDocument();
 
+    // When the quota limit is already shown (1,000 / month), we omit the redundant
+    // "Up to 1,000: Included" line and only show the "Over ..." tier.
+    expect(screen.queryByText(/Up to 1,000:/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Over 1,000:/)).toBeInTheDocument();
+
     const quotaInner = screen.getByText("API Request:").closest("div");
     const featureInner = screen.getByText("Boolean feature").closest("div");
     expect(quotaInner).not.toBeNull();
