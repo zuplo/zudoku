@@ -93,6 +93,16 @@ describe("assertNoProtectedLeaks", () => {
     ];
     expect(() => assertNoProtectedLeaks(output)).not.toThrow();
   });
+
+  it("throws when a chunk under _protected/ is itself an entry", () => {
+    const output = [
+      chunk("assets/entry.js", [], { isEntry: true }),
+      chunk("_protected/secret.js", [], { isEntry: true }),
+    ];
+    expect(() => assertNoProtectedLeaks(output)).toThrow(
+      /Protected chunk\(s\) marked as entries/,
+    );
+  });
 });
 
 describe("moveProtectedChunks", () => {

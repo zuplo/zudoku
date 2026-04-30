@@ -62,6 +62,22 @@ export const findProtectedLeaks = (output: BundleOutput): string[] => {
 };
 
 export const assertNoProtectedLeaks = (output: BundleOutput) => {
+  // A protected chunk that's also an entry would be loaded by the runtime
+  // independently of the static-import graph and bypass the gate.
+  const protectedEntries = output
+    .filter((o): o is Rolldown.OutputChunk => o.type === "chunk")
+    .filter(
+      (c) => c.isEntry && c.fileName.startsWith(`${PROTECTED_CHUNK_DIR}/`),
+    )
+    .map((c) => c.fileName);
+  if (protectedEntries.length > 0) {
+    throw new Error(
+      `Protected chunk(s) marked as entries:\n  ${protectedEntries.join("\n  ")}\n` +
+        `Entry chunks are loaded outside the gated import path. ` +
+        `Move the entry to a public chunk that dynamically imports the protected one.`,
+    );
+  }
+
   const leaks = findProtectedLeaks(output);
   if (leaks.length === 0) return;
   throw new Error(
@@ -90,5 +106,14 @@ export const moveProtectedChunks = async (
       rename(path.join(srcDir, file), path.join(destDir, file)),
     ),
   );
+  // Verify nothing was left behind. A partial rename would otherwise
+  // ship gated chunks publicly without erroring.
+  const leftover = await readdir(srcDir).catch(() => []);
+  if (leftover.length > 0) {
+    throw new Error(
+      `moveProtectedChunks left ${leftover.length} file(s) in ${srcDir}: ${leftover.join(", ")}.\n` +
+        `These would be served publicly. Aborting build.`,
+    );
+  }
   await rm(srcDir, { recursive: true, force: true });
 };

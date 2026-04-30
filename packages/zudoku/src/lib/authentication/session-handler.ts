@@ -28,6 +28,7 @@ const cookieMaxAge = (
 };
 
 const MAX_COOKIE_SIZE = 3900; // Leave margin under 4096 browser limit
+const MAX_BODY_SIZE = 64 * 1024;
 
 const sameOriginCheck = (c: {
   req: { header: (name: string) => string | undefined };
@@ -76,9 +77,20 @@ export const createSessionHandler = (
         );
       }
 
-      const body = await c.req
-        .json<{ accessToken?: unknown; refreshToken?: unknown } | undefined>()
-        .catch(() => undefined);
+      const contentLength = Number(c.req.header("Content-Length") ?? 0);
+      if (contentLength > MAX_BODY_SIZE) {
+        return c.json({ error: "Request body too large" }, 413);
+      }
+      const raw = await c.req.text().catch(() => "");
+      if (raw.length > MAX_BODY_SIZE) {
+        return c.json({ error: "Request body too large" }, 413);
+      }
+      let body: { accessToken?: unknown; refreshToken?: unknown } | undefined;
+      try {
+        body = raw ? JSON.parse(raw) : undefined;
+      } catch {
+        body = undefined;
+      }
 
       const accessToken =
         typeof body?.accessToken === "string" ? body.accessToken : undefined;
@@ -121,12 +133,17 @@ export const createSessionHandler = (
         maxAge: cookieMaxAge(verified.refreshExpiresAt, REFRESH_TOKEN_MAX_AGE),
       };
 
-      setCookie(
-        c,
-        AUTH_PROFILE_COOKIE,
-        JSON.stringify(verified.profile),
-        sessionOptions,
-      );
+      let profileJson: string;
+      try {
+        profileJson = JSON.stringify(verified.profile);
+      } catch {
+        return c.json({ error: "Profile is not serializable" }, 500);
+      }
+      if (profileJson.length > MAX_COOKIE_SIZE) {
+        return c.json({ error: "Profile exceeds cookie size limit" }, 413);
+      }
+
+      setCookie(c, AUTH_PROFILE_COOKIE, profileJson, sessionOptions);
       setCookie(c, ACCESS_TOKEN_COOKIE, accessToken, sessionOptions);
       if (refreshToken) {
         setCookie(c, REFRESH_TOKEN_COOKIE, refreshToken, refreshOptions);
@@ -135,6 +152,10 @@ export const createSessionHandler = (
       return c.json({ ok: true });
     })
     .delete("/", (c) => {
+      if (!sameOriginCheck(c)) {
+        return c.json({ error: "CSRF check failed" }, 403);
+      }
+
       deleteCookie(c, ACCESS_TOKEN_COOKIE, baseCookieOptions);
       deleteCookie(c, REFRESH_TOKEN_COOKIE, baseCookieOptions);
       deleteCookie(c, AUTH_PROFILE_COOKIE, baseCookieOptions);
