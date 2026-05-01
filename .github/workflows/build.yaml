@@ -46,7 +46,7 @@ jobs:
         if: github.event_name == 'pull_request'
         id: monetization-changes
         # Pinned to commit SHA for security. Tag: v3
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
         with:
           filters: |
             monetization:
