@@ -93,6 +93,7 @@ type Site = Partial<{
 
 type HeaderConfig = {
   navigation?: HeaderNavigation;
+  showThemeSwitch?: boolean;
   placements?: {
     navigation?: "start" | "center" | "end";
     search?: "start" | "center" | "end";
@@ -164,7 +165,13 @@ export class ZudokuContext {
   ) {
     this.queryClient = queryClient;
     this.env = env;
-    this.options = options;
+    this.options = {
+      ...options,
+      header: {
+        ...options.header,
+        showThemeSwitch: options.header?.showThemeSwitch ?? true,
+      },
+    };
     this.notFoundPage = options.site?.notFoundPage;
     this.plugins = options.plugins ?? [];
     this.authentication = this.plugins.find(isAuthenticationPlugin);

@@ -63,6 +63,7 @@ export const convertZudokuConfigToOptions = (
     header: {
       navigation: configuredHeaderNavigation,
       placements: config.header?.placements,
+      showThemeSwitch: config.header?.showThemeSwitch ?? true,
     },
     navigation: configuredNavigation,
     navigationRules: configuredNavigationRules,
