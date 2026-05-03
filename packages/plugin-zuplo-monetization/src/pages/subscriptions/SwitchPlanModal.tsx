@@ -181,7 +181,11 @@ const comparePlans = (
 
     if (current && target) {
       let change: FeatureChange["change"] = "same";
-      if (current.value && target.value && current.value !== target.value) {
+      if (
+        current.value !== undefined &&
+        target.value !== undefined &&
+        current.value !== target.value
+      ) {
         change = isUpgrade ? "upgraded" : "downgraded";
       }
       featureChanges.push({
