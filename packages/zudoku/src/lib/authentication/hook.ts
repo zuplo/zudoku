@@ -13,14 +13,17 @@ export type UseAuthReturn = ReturnType<typeof useAuth>;
  */
 export const useRefreshUserProfile = ({
   refetchOnWindowFocus,
+  refetchOnMount,
 }: {
   refetchOnWindowFocus?: boolean | "always";
+  refetchOnMount?: boolean | "always";
 } = {}) => {
   const { authentication } = useZudoku();
   const isAuthEnabled = typeof authentication !== "undefined";
 
   return useQuery({
     refetchOnWindowFocus,
+    refetchOnMount,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
     queryKey: ["refresh-user-profile"],
@@ -45,8 +48,11 @@ export const useVerifiedEmail = () => {
   const navigate = useNavigate();
   const isAuthEnabled = typeof authentication !== "undefined";
 
+  const isUnverified = authState.profile?.emailVerified === false;
+
   const { refetch: refreshUserProfile } = useRefreshUserProfile({
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: isUnverified ? "always" : true,
+    refetchOnMount: isUnverified ? "always" : undefined,
   });
 
   return {
