@@ -27,6 +27,7 @@ import { remarkLastModified } from "./mdx/remark-last-modified.js";
 import { remarkLinkRewrite } from "./mdx/remark-link-rewrite.js";
 import { remarkNormalizeImageUrl } from "./mdx/remark-normalize-image-url.js";
 import { remarkStaticGeneration } from "./mdx/remark-static-generation.js";
+import { remarkValidateLinks } from "./mdx/remark-validate-links.js";
 import { exportMdxjsConst } from "./mdx/utils.js";
 
 // Convert mdxJsxFlowElement img elements to regular element nodes
@@ -86,6 +87,11 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
   const buildConfig = await getBuildConfig();
   const highlighter = await highlighterPromise;
 
+  const checkRelativeLinksPlugin: PluggableList =
+    buildConfig?.checkRelativeLinks
+      ? [[remarkValidateLinks, buildConfig.checkRelativeLinks]]
+      : [];
+
   const defaultRemarkPlugins = [
     remarkStaticGeneration,
     [remarkInjectFilepath, config.__meta.rootDir],
@@ -100,6 +106,7 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
     remarkDirective,
     remarkDirectiveRehype,
     remarkCodeTabs,
+    ...checkRelativeLinksPlugin,
     [remarkLinkRewrite, config.basePath],
     [remarkNormalizeImageUrl, config.basePath],
     ...(config.build?.remarkPlugins ?? []),
