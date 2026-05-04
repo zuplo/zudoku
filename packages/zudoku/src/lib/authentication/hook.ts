@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import type { AuthActionOptions } from "./authentication.js";
-import { useAuthState } from "./state.js";
+import { readPersistedAuthState, useAuthState } from "./state.js";
 
 export type UseAuthReturn = ReturnType<typeof useAuth>;
 
@@ -17,8 +17,6 @@ export const useRefreshUserProfile = ({
   refetchOnWindowFocus?: boolean | "always";
 } = {}) => {
   const { authentication } = useZudoku();
-  const profile = useAuthState((s) => s.profile);
-  const profileFetchedAt = useAuthState((s) => s.profileFetchedAt);
   const isAuthEnabled = typeof authentication !== "undefined";
 
   return useQuery({
@@ -33,8 +31,11 @@ export const useRefreshUserProfile = ({
       useAuthState.setState({ profileFetchedAt: Date.now() });
       return result;
     },
-    initialData: profile ? true : undefined,
-    initialDataUpdatedAt: profileFetchedAt ?? undefined,
+    initialData: () => (readPersistedAuthState()?.profile ? true : undefined),
+    initialDataUpdatedAt: () => {
+      const ts = readPersistedAuthState()?.profileFetchedAt;
+      return typeof ts === "number" ? ts : undefined;
+    },
   });
 };
 
