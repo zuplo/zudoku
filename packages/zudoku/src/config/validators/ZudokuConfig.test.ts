@@ -256,6 +256,23 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it.each([true, false])(
+    "should accept header.themeSwitcher.enabled with %s",
+    (enabled) => {
+      const config = {
+        header: {
+          themeSwitcher: {
+            enabled,
+          },
+        },
+      };
+
+      validateConfig(config);
+
+      expect(mockConsoleLog).not.toHaveBeenCalled();
+    },
+  );
+
   it('should accept metadata robots values like "noindex, nofollow"', () => {
     const config = {
       metadata: {

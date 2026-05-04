@@ -195,9 +195,15 @@ Configures the header navigation and placement of header elements (navigation, s
       search: "end",          // "start" | "center" | "end"
       auth: "end",            // "start" | "center" | "end" | "navigation"
     },
+    themeSwitcher: {
+      enabled: false, // optional, defaults to true
+    },
   }
 }
 ```
+
+Use `themeSwitcher.enabled: false` to hide the light/dark theme switch from the desktop header and
+mobile navigation drawer.
 
 ### `defaults`
 
