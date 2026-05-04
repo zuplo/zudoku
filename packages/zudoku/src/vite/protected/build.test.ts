@@ -4,6 +4,7 @@ import path from "node:path";
 import type { Rolldown } from "vite";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  assertCloudflareWranglerGatesProtected,
   assertNoProtectedLeaks,
   findProtectedLeaks,
   moveProtectedChunks,
@@ -182,5 +183,54 @@ describe("warnUnmatchedProtectedPatterns", () => {
   it("is silent when no patterns are configured", () => {
     warnUnmatchedProtectedPatterns(configWith([]));
     expect(warn).not.toHaveBeenCalled();
+  });
+});
+
+describe("assertCloudflareWranglerGatesProtected", () => {
+  let root: string;
+
+  beforeEach(async () => {
+    root = await mkdtemp(path.join(tmpdir(), "wrangler-check-"));
+    clearProtectedRegistry();
+    registerProtectedScope("/abs/foo.mdx", { type: "route", path: "/foo" });
+  });
+
+  afterEach(async () => {
+    await rm(root, { recursive: true, force: true });
+  });
+
+  const configWith = (patterns: string[]) =>
+    ({
+      protectedRoutes: patterns,
+      __meta: { rootDir: "/tmp" },
+    }) as never;
+
+  it("is a no-op when no protected routes are configured", async () => {
+    await expect(
+      assertCloudflareWranglerGatesProtected(root, configWith([])),
+    ).resolves.toBeUndefined();
+  });
+
+  it("passes when wrangler.jsonc opts /_protected/* into run_worker_first", async () => {
+    await writeFile(
+      path.join(root, "wrangler.jsonc"),
+      `{ "assets": { "run_worker_first": ["/_protected/*"] } }`,
+    );
+    await expect(
+      assertCloudflareWranglerGatesProtected(root, configWith(["/foo"])),
+    ).resolves.toBeUndefined();
+  });
+
+  it("fails when wrangler exists but doesn't gate /_protected/*", async () => {
+    await writeFile(path.join(root, "wrangler.toml"), `name = "x"\n`);
+    await expect(
+      assertCloudflareWranglerGatesProtected(root, configWith(["/foo"])),
+    ).rejects.toThrow(/run_worker_first/);
+  });
+
+  it("fails when no wrangler config is present", async () => {
+    await expect(
+      assertCloudflareWranglerGatesProtected(root, configWith(["/foo"])),
+    ).rejects.toThrow(/No wrangler config/);
   });
 });

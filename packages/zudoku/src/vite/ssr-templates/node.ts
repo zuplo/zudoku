@@ -3,8 +3,7 @@ import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
-// @ts-expect-error - entry.server.js will be bundled
-import { createServer, protectedAssets } from "./entry.server.js";
+import { createServer, protectChunks } from "#zudoku-ssr-entry";
 
 const template = "__TEMPLATE__";
 const basePath = "__BASE_PATH__";
@@ -15,7 +14,7 @@ const staticDir = join(__dirname, "..");
 const app = new Hono();
 
 app.all("/server/*", (c) => c.notFound());
-app.use(protectedAssets({ serverDir: __dirname, serveStatic, basePath }));
+app.use(protectChunks({ basePath, serverDir: __dirname, serveStatic }));
 app.use("*", serveStatic({ root: staticDir }));
 app.route("/", createServer({ template, basePath }));
 

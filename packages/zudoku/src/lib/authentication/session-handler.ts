@@ -1,12 +1,16 @@
 import { Hono } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import type { CookieOptions } from "hono/utils/cookie";
-import type { AuthenticationPlugin } from "./authentication.js";
+import type { VerifyAccessTokenResult } from "./authentication.js";
 import {
   ACCESS_TOKEN_COOKIE,
   AUTH_PROFILE_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from "./cookies.js";
+
+export type VerifyAccessToken = (
+  token: string,
+) => Promise<VerifyAccessTokenResult>;
 
 const baseCookieOptions: Omit<CookieOptions, "maxAge"> = {
   httpOnly: true,
@@ -38,7 +42,7 @@ const sameOriginCheck = (c: {
   // rewrites the Host header (CloudFront, etc.).
   const fetchSite = c.req.header("Sec-Fetch-Site");
   if (fetchSite) {
-    return fetchSite === "same-origin" || fetchSite === "same-site";
+    return fetchSite === "same-origin";
   }
 
   const origin = c.req.header("Origin");
@@ -57,20 +61,18 @@ const sameOriginCheck = (c: {
 /**
  * Build the Hono sub-app that manages SSR auth cookies.
  *
- * The endpoint only trusts the provider's `verifyAccessToken` to determine
- * the profile. A client-submitted profile is ignored. Callers must send
- * only `{ accessToken, refreshToken? }`.
+ * Profile is derived solely from `verify(token)`; a client-submitted profile
+ * is ignored. Callers must send only `{ accessToken, refreshToken? }`.
+ * `verify` is omitted when no provider supports SSR auth (→ 501).
  */
-export const createSessionHandler = (
-  provider: AuthenticationPlugin | undefined,
-) =>
+export const createSessionHandler = (verify: VerifyAccessToken | undefined) =>
   new Hono()
     .post("/", async (c) => {
       if (!sameOriginCheck(c)) {
         return c.json({ error: "CSRF check failed" }, 403);
       }
 
-      if (!provider?.verifyAccessToken) {
+      if (!verify) {
         return c.json(
           { error: "SSR authentication is not supported for this provider" },
           501,
@@ -110,11 +112,9 @@ export const createSessionHandler = (
         );
       }
 
-      let verified: Awaited<
-        ReturnType<NonNullable<AuthenticationPlugin["verifyAccessToken"]>>
-      >;
+      let verified: VerifyAccessTokenResult;
       try {
-        verified = await provider.verifyAccessToken(accessToken);
+        verified = await verify(accessToken);
       } catch (e) {
         // biome-ignore lint/suspicious/noConsole: Surface verifier failures
         console.error("SSR auth verifier error:", e);

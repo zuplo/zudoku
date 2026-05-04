@@ -166,6 +166,7 @@
     "picocolors": "1.1.1",
     "piscina": "5.1.4",
     "posthog-node": "5.26.0",
+    "quick-lru": "7.3.0",
     "react-error-boundary": "6.1.1",
     "react-hook-form": "7.71.2",
     "react-is": "catalog:",

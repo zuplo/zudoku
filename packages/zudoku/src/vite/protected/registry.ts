@@ -1,13 +1,13 @@
 import { matchPath } from "react-router";
 import type { ConfigWithMeta } from "../../config/loader.js";
 import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
+import { joinUrl } from "../../lib/util/joinUrl.js";
 
-// Output directory for auth-gated chunks. Mirrored in entry.server.tsx's
-// protectedAssets middleware.
+// Output directory for auth-gated chunks. Mirrored in entry.server.tsx's protectChunks middleware.
 export const PROTECTED_CHUNK_DIR = "_protected";
 
-// Routes a module contributes to. Populated by the annotator (auto-
-// detected shapes) or direct registerProtectedScope calls from plugins.
+// Routes a module contributes to. Populated by the annotator (auto-detected shapes)
+// or direct registerProtectedScope calls from plugins.
 export type ModuleScope =
   | { type: "route"; path: string }
   | { type: "subtree"; root: string };
@@ -43,15 +43,16 @@ export const scopeMatchesPattern = (
   pattern: string,
 ): boolean => {
   if (scope.type === "route") {
-    return matchPath({ path: pattern, end: true }, scope.path) != null;
+    return matchPath({ path: pattern, end: true }, joinUrl(scope.path)) != null;
   }
   // Subtree scopes require an explicit glob pattern so the user opts in
   // to descendant gating, mirroring how react-router needs `/*` to match
   // nested paths.
+  const root = joinUrl(scope.root);
   if (!pattern.includes("*")) {
-    return matchPath({ path: pattern, end: true }, scope.root) != null;
+    return matchPath({ path: pattern, end: true }, root) != null;
   }
-  return matchPath({ path: pattern, end: false }, scope.root) != null;
+  return matchPath({ path: pattern, end: false }, root) != null;
 };
 
 // Predicate: is this module id gated by any configured protected pattern?

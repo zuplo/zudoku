@@ -1,4 +1,4 @@
-import { mkdir, readdir, rename, rm } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import type { Rolldown } from "vite";
 import type { ConfigWithMeta } from "../../config/loader.js";
@@ -8,11 +8,9 @@ import {
   PROTECTED_CHUNK_DIR,
 } from "./registry.js";
 
-// Build-time helpers that enforce the protected-chunk invariant:
-// gated content never lands in the publicly-served output.
+// Build-time helpers that enforce the protected-chunk invariant: gated content never lands in the publicly-served output.
 
-// Unmatched patterns usually mean a typo or a route served by an inline
-// element / dynamic path (not chunk-isolated).
+// Unmatched patterns usually mean a typo or a route served by an inline element / dynamic path (not chunk-isolated).
 export const warnUnmatchedProtectedPatterns = (config: ConfigWithMeta) => {
   const { patterns } = getProtectedSourceMatcher(config);
   const unmatched = findUnmatchedProtectedPatterns(patterns);
@@ -87,8 +85,7 @@ export const assertNoProtectedLeaks = (output: BundleOutput) => {
   );
 };
 
-// Moves the protected chunk directory from the client output into the
-// server bundle so static file serving can't reach it.
+// Moves the protected chunk directory from the client output into the server bundle so static file serving can't reach it.
 export const moveProtectedChunks = async (
   clientOutDir: string,
   serverOutDir: string,
@@ -116,4 +113,37 @@ export const moveProtectedChunks = async (
     );
   }
   await rm(srcDir, { recursive: true, force: true });
+};
+
+// Ensure protected chunks aren't publicly served under Cloudflare.
+// If `run_worker_first` is missing in wrangler config, protected assets are exposed.
+// Uses plain string matching; false positives may occur if `run_worker_first` is present but commented out.
+export const assertCloudflareWranglerGatesProtected = async (
+  dir: string,
+  config: ConfigWithMeta,
+) => {
+  const { enabled } = getProtectedSourceMatcher(config);
+  if (!enabled) return;
+
+  const candidates = ["wrangler.toml", "wrangler.jsonc", "wrangler.json"];
+  for (const name of candidates) {
+    const file = await readFile(path.join(dir, name), "utf-8").catch(
+      () => undefined,
+    );
+    if (file === undefined) continue;
+    if (file.includes("run_worker_first") && file.includes("/_protected/")) {
+      return;
+    }
+    throw new Error(
+      `[zudoku] ${name} must configure \`run_worker_first\` to include \`/_protected/*\` ` +
+        `so the auth gate runs before the assets binding serves protected chunks. ` +
+        `Without it, /_protected/* is publicly readable. ` +
+        `See https://developers.cloudflare.com/workers/static-assets/binding/#run_worker_first.`,
+    );
+  }
+
+  throw new Error(
+    `[zudoku] No wrangler config found in ${dir} (looked for ${candidates.join(", ")}). ` +
+      `Cloudflare adapter requires wrangler config with \`run_worker_first\` covering \`/_protected/*\`.`,
+  );
 };

@@ -1,35 +1,21 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { describe, expect, it, vi } from "vitest";
-import { protectedAssets } from "./protectedAssets.js";
+import { protectChunks } from "./protectChunks.js";
 
 const SERVED = "module served";
 
-// A fake serveStatic compatible with protectedAssets' signature. Returns
-// the chunk body if the rewritten path resolves to something we know about.
-const fakeServeStatic: Parameters<typeof protectedAssets>[0]["serveStatic"] = (
-  opts,
-) => {
-  const handler: MiddlewareHandler = async (c) => {
-    const rewritten = opts?.rewriteRequestPath?.(c.req.path, c) ?? c.req.path;
-    return c.text(`${SERVED}: ${opts?.root}${rewritten}`, 200);
-  };
-  return handler;
-};
+// A fake serve handler that mirrors how a real adapter would respond.
+const fakeServe: MiddlewareHandler = async (c) =>
+  c.text(`${SERVED}: ${c.req.path}`, 200);
 
 const buildApp = (basePath?: string) => {
   const app = new Hono();
-  app.use(
-    protectedAssets({
-      serverDir: "/srv",
-      serveStatic: fakeServeStatic,
-      basePath,
-    }),
-  );
+  app.use(protectChunks({ basePath, serve: fakeServe }));
   app.all("*", (c) => c.text("fall-through", 200));
   return app;
 };
 
-describe("protectedAssets", () => {
+describe("protectChunks", () => {
   it("returns 401 for /_protected/* without an auth cookie", async () => {
     const res = await buildApp().request("/_protected/chunk.js");
     expect(res.status).toBe(401);
@@ -40,7 +26,7 @@ describe("protectedAssets", () => {
       headers: { cookie: "zudoku-access-token=anything" },
     });
     expect(res.status).toBe(200);
-    expect(await res.text()).toBe(`${SERVED}: /srv/_protected/chunk.js`);
+    expect(await res.text()).toBe(`${SERVED}: /_protected/chunk.js`);
   });
 
   it("passes through non-protected paths to the next handler", async () => {
@@ -58,7 +44,7 @@ describe("protectedAssets", () => {
     const authed = await app.request("/docs/_protected/chunk.js", {
       headers: { cookie: "zudoku-access-token=anything" },
     });
-    expect(await authed.text()).toBe(`${SERVED}: /srv/_protected/chunk.js`);
+    expect(await authed.text()).toBe(`${SERVED}: /docs/_protected/chunk.js`);
 
     // Without basePath the request wouldn't match
     const noMatch = await app.request("/_protected/chunk.js");
@@ -119,9 +105,8 @@ describe("protectedAssets", () => {
     const buildWithVerifier = (verify: (t: string) => Promise<unknown>) => {
       const app = new Hono();
       app.use(
-        protectedAssets({
-          serverDir: "/srv",
-          serveStatic: fakeServeStatic,
+        protectChunks({
+          serve: fakeServe,
           verifyAccessToken: verify,
         }),
       );

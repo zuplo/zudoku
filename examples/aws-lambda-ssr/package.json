@@ -18,6 +18,11 @@
         "dependsOn": [
           "zudoku:build"
         ]
+      },
+      "predeploy": {
+        "dependsOn": [
+          "zudoku:build"
+        ]
       }
     }
   },

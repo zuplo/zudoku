@@ -3,11 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { createSessionHandler } from "./session-handler.js";
 
 const verifyAccessToken = vi.fn();
-const provider = { verifyAccessToken } as unknown as Parameters<
-  typeof createSessionHandler
->[0];
-
-const handler = createSessionHandler(provider);
+const handler = createSessionHandler(verifyAccessToken);
 const noProviderHandler = createSessionHandler(undefined);
 
 const sameOriginHeaders = () => ({

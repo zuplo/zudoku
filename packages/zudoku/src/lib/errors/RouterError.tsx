@@ -11,7 +11,7 @@ import { SignInRequiredPage } from "../core/RouteGuard.js";
 import { cn } from "../util/cn.js";
 import { ErrorAlert } from "./ErrorAlert.js";
 
-// Chunk-load failure shape (what lazy() rejects with when protectedAssets
+// Chunk-load failure shape (what lazy() rejects with when protectChunks
 // serves a 401). Matches the three browser messages plus the webpack-style
 // ChunkLoadError name.
 const isChunkLoadError = (error: unknown): boolean =>

@@ -13,6 +13,7 @@ import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
 import {
+  assertCloudflareWranglerGatesProtected,
   assertNoProtectedLeaks,
   moveProtectedChunks,
   warnUnmatchedProtectedPatterns,
@@ -75,6 +76,7 @@ export async function runBuild(options: BuildOptions) {
   const jsEntry = clientResult.output.find(
     (o) => "isEntry" in o && o.isEntry,
   )?.fileName;
+
   const cssEntries = clientResult.output
     .filter((o) => o.fileName.endsWith(".css"))
     .map((o) => o.fileName);
@@ -90,22 +92,6 @@ export async function runBuild(options: BuildOptions) {
   });
 
   if (ssr) {
-    // Cloudflare Workers and Vercel Edge runtimes don't have a filesystem
-    // static server we can plug into protectedAssets, so /_protected/*
-    // chunks would 404 instead of being auth-gated. Fail closed until we
-    // ship adapter-specific implementations.
-    const ADAPTERS_WITH_PROTECTED_GATE: SSRAdapter[] = ["node", "lambda"];
-    if (
-      config.protectedRoutes &&
-      !ADAPTERS_WITH_PROTECTED_GATE.includes(adapter)
-    ) {
-      throw new Error(
-        `protectedRoutes is configured but the "${adapter}" SSR adapter does ` +
-          `not yet support gating /_protected chunks. Supported adapters: ` +
-          `${ADAPTERS_WITH_PROTECTED_GATE.join(", ")}. Either remove ` +
-          `protectedRoutes or switch adapters.`,
-      );
-    }
     // SSR: bundle entry.js and remove index.html
     await bundleSSREntry({
       dir,
@@ -116,7 +102,14 @@ export async function runBuild(options: BuildOptions) {
     });
     assertNoProtectedLeaks(clientResult.output);
     warnUnmatchedProtectedPatterns(config);
-    await moveProtectedChunks(clientOutDir, serverOutDir);
+    // On Cloudflare, protected chunks stay public (gate uses env.ASSETS.fetch).
+    // wrangler.toml must set run_worker_first for /_protected/*.
+    if (adapter !== "cloudflare") {
+      await moveProtectedChunks(clientOutDir, serverOutDir);
+    } else {
+      await assertCloudflareWranglerGatesProtected(dir, config);
+    }
+
     // Mark the output as ESM so runtimes without a surrounding package.json
     // (e.g. unzipped Lambda at /var/task) don't fall back to CommonJS.
     await writeFile(
@@ -258,9 +251,20 @@ const bundleSSREntry = async (options: SSREntryOptions) => {
       target: "es2022",
       format: "esm",
       outfile: path.join(serverOutDir, "entry.js"),
-      external: ["./entry.server.js", "./zudoku.config.js"],
+      external: ["./zudoku.config.js"],
       nodePaths: [path.join(packageRoot, "node_modules")],
       banner: { js: "// Bundled SSR entry" },
+      plugins: [
+        {
+          name: "zudoku-ssr-entry",
+          setup(build) {
+            build.onResolve({ filter: /^#zudoku-ssr-entry$/ }, () => ({
+              path: "./entry.server.js",
+              external: true,
+            }));
+          },
+        },
+      ],
     });
   } finally {
     await rm(tempEntryPath, { force: true });

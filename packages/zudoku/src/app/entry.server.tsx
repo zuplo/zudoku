@@ -15,25 +15,32 @@ import { configuredAuthProvider } from "virtual:zudoku-auth";
 import config from "virtual:zudoku-config";
 import { parseCookies } from "../lib/authentication/cookies.js";
 import { createSessionHandler } from "../lib/authentication/session-handler.js";
+import { cachedVerifyAccessToken } from "../lib/authentication/verify-cache.js";
 import { BootstrapStatic } from "../lib/components/Bootstrap.js";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
 import type { SSRAuthState } from "../lib/components/context/RenderContext.js";
 import { ServerError } from "../lib/errors/ServerError.js";
 import { highlighterPromise } from "../lib/shiki.js";
 import { getRoutesByConfig } from "./main.js";
-import { protectedAssets as rawProtectedAssets } from "./protectedAssets.js";
+import { protectChunks as rawProtectChunks } from "./protectChunks.js";
 import { wrapProtectedRoutes } from "./wrapProtectedRoutes.js";
 export { getRoutesByConfig };
 
-// Pre-wires the configured provider's verifier so templates don't need to
-// know about auth. An explicit `verifyAccessToken: undefined` from a caller
-// would otherwise silently disable the gate, so the precedence is explicit.
-export const protectedAssets: typeof rawProtectedAssets = (opts) =>
-  rawProtectedAssets({
+// Shared cached verifier for all consumers (session handler, SSR render, protected-chunk gate). Callers just use the function; cache logic is hidden here.
+const verifier = configuredAuthProvider?.verifyAccessToken
+  ? (token: string) =>
+      cachedVerifyAccessToken(
+        // biome-ignore lint/style/noNonNullAssertion: verifyAccessToken is guaranteed to be defined
+        configuredAuthProvider!.verifyAccessToken!.bind(configuredAuthProvider),
+        token,
+      )
+  : undefined;
+
+// Wire verifier here so adapters remain auth-agnostic.
+export const protectChunks: typeof rawProtectChunks = (opts) =>
+  rawProtectChunks({
     ...opts,
-    verifyAccessToken:
-      opts.verifyAccessToken ??
-      configuredAuthProvider?.verifyAccessToken?.bind(configuredAuthProvider),
+    verifyAccessToken: opts.verifyAccessToken ?? verifier,
   });
 
 const safeSerialize = (data: unknown) =>
@@ -68,10 +75,9 @@ export const handleRequest = async ({
   // Always derive profile from the verifier, never trust the client cookie.
   // An unverified profile would let a stale/forged cookie render protected HTML.
   let verifiedProfile: SSRAuthState["profile"] = null;
-  if (accessToken && configuredAuthProvider?.verifyAccessToken) {
+  if (accessToken && verifier) {
     try {
-      const verified =
-        await configuredAuthProvider.verifyAccessToken(accessToken);
+      const verified = await verifier(accessToken);
       if (verified) verifiedProfile = verified.profile;
     } catch (error) {
       logger.error(
@@ -243,7 +249,7 @@ export const createServer = (options: {
   const app = new Hono();
 
   app.use(compress());
-  app.route("/__z/auth/session", createSessionHandler(configuredAuthProvider));
+  app.route("/__z/auth/session", createSessionHandler(verifier));
   app.all("*", (c) =>
     handleRequest({
       template: options.template,

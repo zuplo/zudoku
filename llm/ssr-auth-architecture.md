@@ -107,10 +107,12 @@ to rehydrate from. The SDK's subsequent `setLoggedIn` drives the POST instead.
 ### Server-side CSRF check
 
 `session-handler.ts` rejects POST/DELETE that don't look same-origin. The check prefers the
-browser's `Sec-Fetch-Site` header (a forbidden header that JS can't forge) and falls back to an
-`Origin`/`Host` host comparison if missing. The fallback breaks under any proxy/CDN that rewrites
-`Host` (CloudFront's `AllViewerExceptHostHeader` policy, for example), so the Sec-Fetch-Site path is
-what makes the endpoint work behind a CDN.
+browser's `Sec-Fetch-Site` header (a forbidden header that JS can't forge) and only accepts
+`same-origin`. `same-site` is rejected so a sibling subdomain with XSS can't force-logout or
+re-establish sessions cross-subdomain. Falls back to an `Origin`/`Host` host comparison when
+`Sec-Fetch-Site` is missing. The fallback breaks under any proxy/CDN that rewrites `Host`
+(CloudFront's `AllViewerExceptHostHeader` policy, for example), so the Sec-Fetch-Site path is what
+makes the endpoint work behind a CDN.
 
 ## Protected routes: chunk-level gating
 
@@ -161,11 +163,18 @@ After the client build, `vite/build.ts` runs three guards in `vite/protected/bui
 
 ### Adapter coverage
 
-`/_protected/*` gating only works on the `lambda` and `node` SSR adapters today. The build fails
-fast if `protectedRoutes` is configured with `cloudflare` or `vercel` as the adapter. The Cloudflare
-Workers and Vercel Edge runtimes don't have a filesystem-style static server compatible with the
-current `protectedAssets` middleware, and putting the chunks in their public asset bindings would
-defeat the gate. Adapter-specific gating is follow-up work.
+All four SSR adapters gate `/_protected/*`, with adapter-specific implementations:
+
+- **`lambda`, `node`, `vercel`**: filesystem-backed `protectedAssets` from `app/protectedAssets.ts`,
+  served via `@hono/node-server`'s `serveStatic`. `moveProtectedChunks` relocates the chunks into
+  `dist/server/_protected/` so they're outside any public static directory. Vercel uses the Node
+  serverless runtime (not Edge) since edge can't read disk.
+- **`cloudflare`**: `protectedAssetsCloudflare` proxies through the Workers `env.ASSETS.fetch`
+  binding. The chunks stay in `dist/client/_protected/` (the assets binding directory) because
+  Workers can't read filesystem at runtime. **Wrangler config requirement**: the assets binding must
+  set `run_worker_first` (or equivalent) for `/_protected/*`, otherwise the binding serves the
+  chunks directly without the auth check. The build does not enforce this — it's the deployer's
+  responsibility to wire `wrangler.toml` correctly.
 
 ### Client-side: `wrapProtectedRoutes` (runtime)
 
