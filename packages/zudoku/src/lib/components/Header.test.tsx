@@ -16,10 +16,10 @@ import { Header } from "./Header.js";
 vi.mock("react-router", async (importOriginal) => {
   const mod = await importOriginal<typeof import("react-router")>();
   const OriginalLink = mod.Link;
-  const LinkSpy = vi.fn((props: ComponentProps<typeof OriginalLink>) => (
+  const LinkMock = vi.fn((props: ComponentProps<typeof OriginalLink>) => (
     <OriginalLink {...props} />
   ));
-  return { ...mod, Link: LinkSpy };
+  return { ...mod, Link: LinkMock };
 });
 
 const { Link } = await import("react-router");
@@ -60,6 +60,8 @@ const getLogoLinkProps = () => {
   return call?.[0];
 };
 
+const themeSwitchName = /^(Toggle theme|Switch to (dark|light) mode)$/;
+
 describe("Header", () => {
   beforeEach(() => {
     LinkMock.mockClear();
@@ -78,17 +80,19 @@ describe("Header", () => {
     it("renders by default in the desktop header", async () => {
       await render({ site: { title: "Test Site" } });
 
-      expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: themeSwitchName }),
+      ).toBeInTheDocument();
     });
 
     it("does not render in the desktop header when disabled", async () => {
       await render({
         site: { title: "Test Site" },
-        header: { showThemeSwitch: false },
+        header: { themeSwitcher: { enabled: false } },
       });
 
       expect(
-        screen.queryByLabelText("Switch to dark mode"),
+        screen.queryByRole("button", { name: themeSwitchName }),
       ).not.toBeInTheDocument();
     });
   });

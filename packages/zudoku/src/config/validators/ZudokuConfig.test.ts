@@ -257,11 +257,13 @@ describe("validateConfig", () => {
   });
 
   it.each([true, false])(
-    "should accept header.showThemeSwitch with %s",
-    (showThemeSwitch) => {
+    "should accept header.themeSwitcher.enabled with %s",
+    (enabled) => {
       const config = {
         header: {
-          showThemeSwitch,
+          themeSwitcher: {
+            enabled,
+          },
         },
       };
 
@@ -270,6 +272,18 @@ describe("validateConfig", () => {
       expect(mockConsoleLog).not.toHaveBeenCalled();
     },
   );
+
+  it("should accept header.themeSwitcher when undefined", () => {
+    const config = {
+      header: {
+        themeSwitcher: undefined,
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
 
   it('should accept metadata robots values like "noindex, nofollow"', () => {
     const config = {

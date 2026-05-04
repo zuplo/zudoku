@@ -3,12 +3,8 @@
  */
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  act,
-  fireEvent,
-  render as testRender,
-  screen,
-} from "@testing-library/react";
+import { act, render as testRender, screen } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { describe, expect, it } from "vitest";
 import { ZudokuContext } from "../core/ZudokuContext.js";
@@ -42,25 +38,31 @@ const render = async (options: Partial<ZudokuContextOptions> = {}) => {
   });
 };
 
+const themeSwitchName = /^(Toggle theme|Switch to (dark|light) mode)$/;
+
 describe("MobileTopNavigation", () => {
   it("renders the theme switch by default in the mobile navigation drawer", async () => {
+    const user = userEvent.setup();
     await render({ site: { title: "Test Site" } });
 
-    fireEvent.click(screen.getByLabelText("Open navigation menu"));
+    await user.click(screen.getByLabelText("Open navigation menu"));
 
-    expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: themeSwitchName }),
+    ).toBeInTheDocument();
   });
 
   it("does not render the theme switch in the mobile navigation drawer when disabled", async () => {
+    const user = userEvent.setup();
     await render({
       site: { title: "Test Site" },
-      header: { showThemeSwitch: false },
+      header: { themeSwitcher: { enabled: false } },
     });
 
-    fireEvent.click(screen.getByLabelText("Open navigation menu"));
+    await user.click(screen.getByLabelText("Open navigation menu"));
 
     expect(
-      screen.queryByLabelText("Switch to dark mode"),
+      screen.queryByRole("button", { name: themeSwitchName }),
     ).not.toBeInTheDocument();
   });
 });
