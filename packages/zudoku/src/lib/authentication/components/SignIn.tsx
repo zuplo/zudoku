@@ -14,7 +14,8 @@ import { useAuth } from "../hook.js";
 export const SignIn = () => {
   const auth = useAuth();
   const [search] = useSearchParams();
-  const redirectTo = search.get("redirect") ?? undefined;
+  const redirectTo =
+    search.get("redirectTo") ?? search.get("redirect") ?? undefined;
 
   const login = useLatest(auth.login);
 

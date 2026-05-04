@@ -1,5 +1,5 @@
 import { Helmet } from "@zudoku/react-helmet-async";
-import { use, useCallback, useEffect, useMemo } from "react";
+import { use, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   matchPath,
   Outlet,
@@ -101,6 +101,20 @@ export const RouteGuard = () => {
     [auth, zudoku],
   );
   const { protectedRoutes } = zudoku;
+  const blockedHistoryActionRef = useRef<"POP" | "PUSH" | "REPLACE" | null>(
+    null,
+  );
+
+  const isAuthRoute = useMemo(() => {
+    const pathname = location.pathname;
+    return (
+      pathname === "/signin" ||
+      pathname.startsWith("/signin/") ||
+      pathname === "/signup" ||
+      pathname === "/signout" ||
+      pathname === "/verify-email"
+    );
+  }, [location.pathname]);
 
   const getAuthCheck = useCallback(
     (pathname: string) => {
@@ -123,15 +137,48 @@ export const RouteGuard = () => {
   const isForbidden = authResult === REASON_CODES.FORBIDDEN;
   const needsToSignIn = authResult === REASON_CODES.UNAUTHORIZED;
 
-  const blocker = useBlocker(({ nextLocation }) => {
-    if (shouldBypass) return false;
+  const blocker = useBlocker(({ nextLocation, historyAction }) => {
+    if (shouldBypass) {
+      blockedHistoryActionRef.current = null;
+      return false;
+    }
     const check = getAuthCheck(nextLocation.pathname);
-    if (!check) return false;
+    if (!check) {
+      blockedHistoryActionRef.current = null;
+      return false;
+    }
     const result = check(authCheckContext);
     // Only block for unauthorized (needs login), not for reason codes like "forbidden"
-    return result === false || result === REASON_CODES.UNAUTHORIZED;
+    const shouldBlock =
+      result === false || result === REASON_CODES.UNAUTHORIZED;
+    blockedHistoryActionRef.current = shouldBlock ? historyAction : null;
+    return shouldBlock;
   });
   const isBlocked = blocker.state === "blocked";
+  const fullCurrentPath = location.pathname + location.search + location.hash;
+  const fullBlockedPath = isBlocked
+    ? blocker.location.pathname +
+      blocker.location.search +
+      blocker.location.hash
+    : undefined;
+  const redirectTo = fullBlockedPath ?? fullCurrentPath;
+  const shouldRedirectToSignInImmediately =
+    needsToSignIn &&
+    !auth.isPending &&
+    !shouldBypass &&
+    !isBlocked &&
+    !isAuthRoute &&
+    typeof window !== "undefined";
+  const shouldRedirectBlockedReplaceToSignIn =
+    needsToSignIn &&
+    !auth.isPending &&
+    !shouldBypass &&
+    isBlocked &&
+    blockedHistoryActionRef.current === "REPLACE" &&
+    !isAuthRoute &&
+    typeof window !== "undefined";
+  const shouldRedirectToSignIn =
+    shouldRedirectToSignInImmediately || shouldRedirectBlockedReplaceToSignIn;
 
   // Proceed after successful login
   useEffect(() => {
@@ -154,6 +201,13 @@ export const RouteGuard = () => {
     getAuthCheck,
   ]);
 
+  useEffect(() => {
+    if (!shouldRedirectToSignIn) return;
+    void navigate(`/signin?redirectTo=${encodeURIComponent(redirectTo)}`, {
+      replace: true,
+    });
+  }, [navigate, redirectTo, shouldRedirectToSignIn]);
+
   if (isForbidden) {
     return <ForbiddenPage />;
   }
@@ -174,10 +228,11 @@ export const RouteGuard = () => {
     return null;
   }
 
+  if (shouldRedirectToSignIn) {
+    return null;
+  }
+
   const showDialog = needsToSignIn || isBlocked;
-  const redirectTo = isBlocked
-    ? blocker.location.pathname + blocker.location.search
-    : location.pathname + location.search;
 
   return (
     <>

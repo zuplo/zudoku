@@ -10,7 +10,6 @@ import {
   screen,
   render as testRender,
   waitFor,
-  within,
 } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { HelmetProvider } from "@zudoku/react-helmet-async";
@@ -19,6 +18,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import {
   createMemoryRouter,
   Link,
+  Navigate,
   Outlet,
   Route,
   type RouteObject,
@@ -278,9 +278,12 @@ describe("RouteGuard", () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it("shows login dialog when user needs to sign in", async () => {
-      await render(
-        { path: "/protected", element: <div>Protected</div> },
+    it("redirects direct unauthorized entry to signin page", async () => {
+      const { router } = await render(
+        [
+          { path: "/protected", element: <div>Protected</div> },
+          { path: "/signin", element: <div>Sign in page</div> },
+        ],
         {
           initialPath: "/protected",
           auth: {
@@ -292,68 +295,12 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      expect(within(dialog).getByText("Login to continue")).toBeInTheDocument();
-      expect(
-        within(dialog).getByText("Please login to access this page."),
-      ).toBeInTheDocument();
-      expect(
-        within(dialog).getByRole("button", { name: "Login" }),
-      ).toBeInTheDocument();
-      expect(
-        within(dialog).getByRole("button", { name: "Register" }),
-      ).toBeInTheDocument();
-      expect(
-        within(dialog).getByRole("button", { name: "Cancel" }),
-      ).toBeInTheDocument();
-    });
-
-    it("calls login when login button clicked", async () => {
-      const { mockAuth } = await render(
-        { path: "/protected", element: <div>Protected</div> },
-        {
-          initialPath: "/protected",
-          auth: {
-            isAuthEnabled: true,
-            isPending: false,
-            isAuthenticated: false,
-          },
-          protectedRoutes: { "/protected": () => false },
-        },
-      );
-
-      const dialog = screen.getByRole("dialog");
-      const loginButton = within(dialog).getByRole("button", { name: "Login" });
-      await userEvent.click(loginButton);
-
-      expect(mockAuth.login).toHaveBeenCalledWith(
-        expect.objectContaining({ redirectTo: "/protected" }),
-      );
-    });
-
-    it("calls signup when register button clicked", async () => {
-      const { mockAuth } = await render(
-        { path: "/protected", element: <div>Protected</div> },
-        {
-          initialPath: "/protected",
-          auth: {
-            isAuthEnabled: true,
-            isPending: false,
-            isAuthenticated: false,
-          },
-          protectedRoutes: { "/protected": () => false },
-        },
-      );
-
-      const dialog = screen.getByRole("dialog");
-      const registerButton = within(dialog).getByRole("button", {
-        name: "Register",
+      await waitFor(() => {
+        expect(screen.getByText("Sign in page")).toBeInTheDocument();
       });
-      await userEvent.click(registerButton);
-
-      expect(mockAuth.signup).toHaveBeenCalledWith(
-        expect.objectContaining({ redirectTo: "/protected" }),
-      );
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(router.state.location.pathname).toBe("/signin");
+      expect(router.state.location.search).toBe("?redirectTo=%2Fprotected");
     });
 
     it("renders protected when auth check passes", async () => {
@@ -432,8 +379,11 @@ describe("RouteGuard", () => {
 
   describe("path matching", () => {
     it("matches exact paths with end: true", async () => {
-      await render(
-        { path: "/protected/nested", element: <div>Protected</div> },
+      const { router } = await render(
+        [
+          { path: "/protected/nested", element: <div>Protected</div> },
+          { path: "/signin", element: <div>Sign in page</div> },
+        ],
         {
           initialPath: "/protected/nested",
           auth: {
@@ -445,8 +395,14 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      expect(within(dialog).getByText("Login to continue")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("Sign in page")).toBeInTheDocument();
+      });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(router.state.location.pathname).toBe("/signin");
+      expect(router.state.location.search).toBe(
+        "?redirectTo=%2Fprotected%2Fnested",
+      );
     });
 
     it("does not match partial paths", async () => {
@@ -585,6 +541,24 @@ describe("RouteGuard", () => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
       expect(screen.getByText("Public")).toBeInTheDocument();
+    });
+
+    it("redirects blocked REPLACE navigation to signin without dialog", async () => {
+      const { router } = await render(
+        [
+          { path: "/", element: <Navigate to="/protected" replace /> },
+          { path: "/protected", element: <div>Protected</div> },
+          { path: "/signin", element: <div>Sign in page</div> },
+        ],
+        navBlockingOptions,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Sign in page")).toBeInTheDocument();
+      });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(router.state.location.pathname).toBe("/signin");
+      expect(router.state.location.search).toBe("?redirectTo=%2Fprotected");
     });
   });
 });
