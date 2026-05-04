@@ -241,6 +241,7 @@ export class OpenIDAuthenticationProvider
       isAuthenticated: true,
       isPending: false,
       profile,
+      profileFetchedAt: Date.now(),
     });
 
     return true;
@@ -440,6 +441,7 @@ export class OpenIDAuthenticationProvider
           isAuthenticated: false,
           isPending: false,
           profile: null,
+          profileFetchedAt: null,
           providerData: null,
         });
         return;
@@ -546,6 +548,7 @@ export class OpenIDAuthenticationProvider
       isAuthenticated: true,
       isPending: false,
       profile,
+      profileFetchedAt: Date.now(),
     });
     await this.refreshUserProfile();
 

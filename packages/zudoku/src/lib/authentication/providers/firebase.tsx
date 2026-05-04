@@ -365,6 +365,7 @@ class FirebaseAuthenticationProvider
       isAuthenticated: false,
       isPending: false,
       profile: undefined,
+      profileFetchedAt: null,
       providerData: undefined,
     });
 

@@ -17,6 +17,8 @@ export const useRefreshUserProfile = ({
   refetchOnWindowFocus?: boolean | "always";
 } = {}) => {
   const { authentication } = useZudoku();
+  const profile = useAuthState((s) => s.profile);
+  const profileFetchedAt = useAuthState((s) => s.profileFetchedAt);
   const isAuthEnabled = typeof authentication !== "undefined";
 
   return useQuery({
@@ -26,7 +28,13 @@ export const useRefreshUserProfile = ({
     queryKey: ["refresh-user-profile"],
     enabled:
       isAuthEnabled && typeof authentication?.refreshUserProfile === "function",
-    queryFn: () => authentication?.refreshUserProfile?.(),
+    queryFn: async () => {
+      const result = await authentication?.refreshUserProfile?.();
+      useAuthState.setState({ profileFetchedAt: Date.now() });
+      return result;
+    },
+    initialData: profile ? true : undefined,
+    initialDataUpdatedAt: profileFetchedAt ?? undefined,
   });
 };
 
