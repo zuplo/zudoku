@@ -20,6 +20,8 @@ import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
+const PROCESSED_STORE_SUBPATH = "node_modules/.zudoku/processed";
+
 const viteApiPlugin = async (): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = `\0${virtualModuleId}`;
@@ -38,7 +40,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
   const tmpStoreDir = path.posix.join(
     initialConfig.__meta.rootDir,
-    "node_modules/.zudoku/processed",
+    PROCESSED_STORE_SUBPATH,
   );
 
   const processors = [...buildProcessors, ...zuploProcessors];

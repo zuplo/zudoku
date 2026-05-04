@@ -3,11 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { createSessionHandler } from "./session-handler.js";
 
 const verifyAccessToken = vi.fn();
-const provider = { verifyAccessToken } as unknown as Parameters<
-  typeof createSessionHandler
->[0];
-
-const handler = createSessionHandler(provider);
+const handler = createSessionHandler(verifyAccessToken);
 const noProviderHandler = createSessionHandler(undefined);
 
 const sameOriginHeaders = () => ({
@@ -221,17 +217,44 @@ describe("sessionHandler POST", () => {
     const res = await handler.fetch(post({ accessToken: "x".repeat(4001) }));
     expect(res.status).toBe(400);
   });
+
+  test("body exceeding the size limit is rejected with 413", async () => {
+    const huge = "x".repeat(64 * 1024 + 1);
+    const req = new Request("http://localhost/", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "Sec-Fetch-Site": "same-origin",
+      },
+      body: JSON.stringify({ accessToken: huge }),
+    });
+    const res = await handler.fetch(req);
+    expect(res.status).toBe(413);
+  });
 });
 
 describe("sessionHandler DELETE", () => {
-  test("clears all auth cookies", async () => {
+  test("clears all auth cookies when same-origin", async () => {
     const res = await handler.fetch(
-      new Request("http://localhost/", { method: "DELETE" }),
+      new Request("http://localhost/", {
+        method: "DELETE",
+        headers: { "Sec-Fetch-Site": "same-origin" },
+      }),
     );
     expect(res.status).toBe(200);
     const cookies = res.headers.getSetCookie().join(";");
     expect(cookies).toContain("zudoku-access-token=;");
     expect(cookies).toContain("zudoku-refresh-token=;");
     expect(cookies).toContain("zudoku-auth-profile=;");
+  });
+
+  test("rejects cross-site DELETE", async () => {
+    const res = await handler.fetch(
+      new Request("http://localhost/", {
+        method: "DELETE",
+        headers: { "Sec-Fetch-Site": "cross-site" },
+      }),
+    );
+    expect(res.status).toBe(403);
   });
 });

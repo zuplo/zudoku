@@ -10,7 +10,10 @@ const toPackageName = (specifier: string) =>
     : specifier.split("/")[0];
 
 const isBareDep = (s: string) =>
-  !s.startsWith(".") && !s.startsWith("node:") && !s.startsWith("virtual:");
+  !s.startsWith(".") &&
+  !s.startsWith("node:") &&
+  !s.startsWith("virtual:") &&
+  !s.startsWith("#");
 
 export const getImportedPackages = (source: string, filename: string) => {
   const {

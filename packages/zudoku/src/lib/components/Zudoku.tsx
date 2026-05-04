@@ -70,7 +70,7 @@ const ZudokuInner = memo(
         props,
         queryClient,
         env,
-        renderContext.ssrAuth?.accessToken,
+        renderContext.ssrAuth,
       );
     } else {
       zudokuContext ??= new ZudokuContext(props, queryClient, env);

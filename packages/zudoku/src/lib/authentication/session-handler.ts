@@ -1,12 +1,16 @@
 import { Hono } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import type { CookieOptions } from "hono/utils/cookie";
-import type { AuthenticationPlugin } from "./authentication.js";
+import type { VerifyAccessTokenResult } from "./authentication.js";
 import {
   ACCESS_TOKEN_COOKIE,
   AUTH_PROFILE_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from "./cookies.js";
+
+export type VerifyAccessToken = (
+  token: string,
+) => Promise<VerifyAccessTokenResult>;
 
 const baseCookieOptions: Omit<CookieOptions, "maxAge"> = {
   httpOnly: true,
@@ -28,13 +32,21 @@ const cookieMaxAge = (
 };
 
 const MAX_COOKIE_SIZE = 3900; // Leave margin under 4096 browser limit
+const MAX_BODY_SIZE = 64 * 1024;
 
 const sameOriginCheck = (c: {
   req: { header: (name: string) => string | undefined };
 }): boolean => {
+  // Sec-Fetch-Site is set by the browser and cannot be forged from JS, so
+  // prefer it. The Origin/Host comparison breaks behind any proxy/CDN that
+  // rewrites the Host header (CloudFront, etc.).
+  const fetchSite = c.req.header("Sec-Fetch-Site");
+  if (fetchSite) {
+    return fetchSite === "same-origin";
+  }
+
   const origin = c.req.header("Origin");
   const host = c.req.header("Host");
-
   if (origin && host) {
     try {
       return new URL(origin).host === host;
@@ -43,40 +55,44 @@ const sameOriginCheck = (c: {
     }
   }
 
-  const fetchSite = c.req.header("Sec-Fetch-Site");
-  if (fetchSite) {
-    return fetchSite === "same-origin" || fetchSite === "same-site";
-  }
-
   return false;
 };
 
 /**
  * Build the Hono sub-app that manages SSR auth cookies.
  *
- * The endpoint only trusts the provider's `verifyAccessToken` to determine
- * the profile. A client-submitted profile is ignored. Callers must send
- * only `{ accessToken, refreshToken? }`.
+ * Profile is derived solely from `verify(token)`; a client-submitted profile
+ * is ignored. Callers must send only `{ accessToken, refreshToken? }`.
+ * `verify` is omitted when no provider supports SSR auth (→ 501).
  */
-export const createSessionHandler = (
-  provider: AuthenticationPlugin | undefined,
-) =>
+export const createSessionHandler = (verify: VerifyAccessToken | undefined) =>
   new Hono()
     .post("/", async (c) => {
       if (!sameOriginCheck(c)) {
         return c.json({ error: "CSRF check failed" }, 403);
       }
 
-      if (!provider?.verifyAccessToken) {
+      if (!verify) {
         return c.json(
           { error: "SSR authentication is not supported for this provider" },
           501,
         );
       }
 
-      const body = await c.req
-        .json<{ accessToken?: unknown; refreshToken?: unknown } | undefined>()
-        .catch(() => undefined);
+      const contentLength = Number(c.req.header("Content-Length") ?? 0);
+      if (contentLength > MAX_BODY_SIZE) {
+        return c.json({ error: "Request body too large" }, 413);
+      }
+      const raw = await c.req.text().catch(() => "");
+      if (raw.length > MAX_BODY_SIZE) {
+        return c.json({ error: "Request body too large" }, 413);
+      }
+      let body: { accessToken?: unknown; refreshToken?: unknown } | undefined;
+      try {
+        body = raw ? JSON.parse(raw) : undefined;
+      } catch {
+        body = undefined;
+      }
 
       const accessToken =
         typeof body?.accessToken === "string" ? body.accessToken : undefined;
@@ -96,11 +112,9 @@ export const createSessionHandler = (
         );
       }
 
-      let verified: Awaited<
-        ReturnType<NonNullable<AuthenticationPlugin["verifyAccessToken"]>>
-      >;
+      let verified: VerifyAccessTokenResult;
       try {
-        verified = await provider.verifyAccessToken(accessToken);
+        verified = await verify(accessToken);
       } catch (e) {
         // biome-ignore lint/suspicious/noConsole: Surface verifier failures
         console.error("SSR auth verifier error:", e);
@@ -119,12 +133,17 @@ export const createSessionHandler = (
         maxAge: cookieMaxAge(verified.refreshExpiresAt, REFRESH_TOKEN_MAX_AGE),
       };
 
-      setCookie(
-        c,
-        AUTH_PROFILE_COOKIE,
-        JSON.stringify(verified.profile),
-        sessionOptions,
-      );
+      let profileJson: string;
+      try {
+        profileJson = JSON.stringify(verified.profile);
+      } catch {
+        return c.json({ error: "Profile is not serializable" }, 500);
+      }
+      if (profileJson.length > MAX_COOKIE_SIZE) {
+        return c.json({ error: "Profile exceeds cookie size limit" }, 413);
+      }
+
+      setCookie(c, AUTH_PROFILE_COOKIE, profileJson, sessionOptions);
       setCookie(c, ACCESS_TOKEN_COOKIE, accessToken, sessionOptions);
       if (refreshToken) {
         setCookie(c, REFRESH_TOKEN_COOKIE, refreshToken, refreshOptions);
@@ -133,6 +152,10 @@ export const createSessionHandler = (
       return c.json({ ok: true });
     })
     .delete("/", (c) => {
+      if (!sameOriginCheck(c)) {
+        return c.json({ error: "CSRF check failed" }, 403);
+      }
+
       deleteCookie(c, ACCESS_TOKEN_COOKIE, baseCookieOptions);
       deleteCookie(c, REFRESH_TOKEN_COOKIE, baseCookieOptions);
       deleteCookie(c, AUTH_PROFILE_COOKIE, baseCookieOptions);

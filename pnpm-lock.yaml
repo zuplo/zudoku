@@ -210,6 +210,38 @@ importers:
         specifier: workspace:*
         version: link:../../packages/zudoku
 
+  examples/aws-lambda-ssr:
+    devDependencies:
+      react:
+        specifier: 'catalog:'
+        version: 19.2.5
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.5(react@19.2.5)
+      zudoku:
+        specifier: workspace:*
+        version: link:../../packages/zudoku
+
+  examples/aws-lambda-ssr-large:
+    dependencies:
+      react-google-recaptcha-v3:
+        specifier: ^1.11.0
+        version: 1.11.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+    devDependencies:
+      react:
+        specifier: 'catalog:'
+        version: 19.2.5
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.5(react@19.2.5)
+      zudoku:
+        specifier: workspace:*
+        version: link:../../packages/zudoku
+
+  examples/aws-lambda-ssr-large/dist: {}
+
+  examples/aws-lambda-ssr/dist: {}
+
   examples/cloudflare-ssr:
     devDependencies:
       react:
@@ -370,6 +402,8 @@ importers:
       zudoku:
         specifier: workspace:*
         version: link:../../packages/zudoku
+
+  examples/with-vite-config/dist: {}
 
   examples/with-zuplo/docs:
     dependencies:
@@ -833,6 +867,9 @@ importers:
       posthog-node:
         specifier: 5.26.0
         version: 5.26.0
+      quick-lru:
+        specifier: 7.3.0
+        version: 7.3.0
       react-error-boundary:
         specifier: 6.1.1
         version: 6.1.1(react@19.2.5)
@@ -9278,6 +9315,10 @@ packages:
   queue@6.0.2:
     resolution: {integrity: sha512-iHZWu+q3IdFZFX36ro/lKBkSvfkztY5Y7HMiPlOUjhupPcG2JMfst2KKEpu5XndviX/3UhFbRngUPNKtgvtZiA==}
 
+  quick-lru@7.3.0:
+    resolution: {integrity: sha512-k9lSsjl36EJdK7I06v7APZCbyGT2vMTsYSRX1Q2nbYmnkBqgUhRkAuzH08Ciotteu/PLJmIF2+tti7o3C/ts2g==}
+    engines: {node: '>=18'}
+
   range-parser@1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
@@ -9306,6 +9347,12 @@ packages:
 
   react-fast-compare@3.2.2:
     resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
+
+  react-google-recaptcha-v3@1.11.0:
+    resolution: {integrity: sha512-kLQqpz/77m8+trpBwzqcxNtvWZYoZ/YO6Vm2cVTHW8hs80BWUfDpC7RDwuAvpswwtSYApWfaSpIDFWAIBNIYxQ==}
+    peerDependencies:
+      react: ^16.3 || ^17.0 || ^18.0 || ^19.0
+      react-dom: ^17.0 || ^18.0 || ^19.0
 
   react-hook-form@7.71.2:
     resolution: {integrity: sha512-1CHvcDYzuRUNOflt4MOq3ZM46AronNJtQ1S7tnX6YN4y72qhgiUItpacZUAQ0TyWYci3yz1X+rXaSxiuEm86PA==}
@@ -10301,6 +10348,7 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   validate-npm-package-name@7.0.2:
@@ -20666,6 +20714,8 @@ snapshots:
     dependencies:
       inherits: 2.0.4
 
+  quick-lru@7.3.0: {}
+
   range-parser@1.2.1: {}
 
   rc@1.2.8:
@@ -20705,6 +20755,12 @@ snapshots:
       react: 19.2.5
 
   react-fast-compare@3.2.2: {}
+
+  react-google-recaptcha-v3@1.11.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
+    dependencies:
+      hoist-non-react-statics: 3.3.2
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
 
   react-hook-form@7.71.2(react@19.2.5):
     dependencies:

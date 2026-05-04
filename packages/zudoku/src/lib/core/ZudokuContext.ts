@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createNanoEvents } from "nanoevents";
 import type { ReactNode } from "react";
-import type { Location } from "react-router";
+import { type Location, matchPath } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod/mini";
 import type { HeaderNavigation } from "../../config/validators/HeaderNavigationSchema.js";
@@ -20,6 +20,7 @@ import type {
 } from "../../config/validators/ZudokuConfig.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
+import type { SSRAuthState } from "../components/context/RenderContext.js";
 import type { SlotType } from "../components/context/SlotProvider.js";
 import { joinUrl } from "../util/joinUrl.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
@@ -155,16 +156,18 @@ export class ZudokuContext {
   public readonly protectedRoutes: ReturnType<typeof normalizeProtectedRoutes>;
   private readonly plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   private readonly emitter = createNanoEvents<ZudokuEvents>();
-  readonly ssrAccessToken?: string;
+  // Per-request server auth. Zustand store is module-global so we can't
+  // mutate it per request.
+  readonly ssrAuth?: SSRAuthState;
   readonly initialize: Promise<void> | undefined;
 
   constructor(
     options: ZudokuContextOptions,
     queryClient: QueryClient,
     env: Record<string, string | undefined>,
-    ssrAccessToken?: string,
+    ssrAuth?: SSRAuthState,
   ) {
-    this.ssrAccessToken = ssrAccessToken;
+    this.ssrAuth = ssrAuth;
     this.queryClient = queryClient;
     this.env = env;
     this.options = options;
@@ -207,12 +210,15 @@ export class ZudokuContext {
       });
     });
 
-    useAuthState.subscribe((state, prevState) => {
-      this.emitEvent("auth", {
-        prev: prevState,
-        next: state,
+    // Client-only: Avoid subscribing in SSR to prevent memory leaks from persistent subscribers.
+    if (typeof window !== "undefined") {
+      useAuthState.subscribe((state, prevState) => {
+        this.emitEvent("auth", {
+          prev: prevState,
+          next: state,
+        });
       });
-    });
+    }
   }
 
   getApiIdentities = async () => {
@@ -239,7 +245,10 @@ export class ZudokuContext {
     return this.emitter.emit(event, ...data);
   };
 
-  getPluginNavigation = async (path: string) => {
+  // Skip plugins for unauthed users on protected paths. Plugins often load
+  // protected resources inside getNavigation; that work would leak.
+  getPluginNavigation = async (path: string): Promise<Navigation> => {
+    if (this.shouldSkipNavigationForProtected(path)) return [];
     const navigations = await Promise.all(
       this.plugins
         .filter(isNavigationPlugin)
@@ -248,6 +257,21 @@ export class ZudokuContext {
 
     return navigations.flatMap((nav) => nav ?? []);
   };
+
+  private shouldSkipNavigationForProtected(path: string): boolean {
+    const patterns = Object.keys(this.protectedRoutes ?? {});
+    if (patterns.length === 0) return false;
+    const isProtected = patterns.some(
+      (pattern) => matchPath({ path: pattern, end: false }, path) != null,
+    );
+    if (!isProtected) return false;
+    // Server: per-request ssrAuth. Client: live zustand state.
+    const isAuthed =
+      typeof window === "undefined"
+        ? !!this.ssrAuth?.profile
+        : this.getAuthState().isAuthenticated;
+    return !isAuthed;
+  }
 
   getProfileMenuItems = () => {
     const accountItems = this.plugins
@@ -260,8 +284,11 @@ export class ZudokuContext {
   };
 
   signRequest = async (request: Request) => {
-    if (this.ssrAccessToken) {
-      request.headers.set("Authorization", `Bearer ${this.ssrAccessToken}`);
+    if (this.ssrAuth?.accessToken) {
+      request.headers.set(
+        "Authorization",
+        `Bearer ${this.ssrAuth.accessToken}`,
+      );
       return request;
     }
 

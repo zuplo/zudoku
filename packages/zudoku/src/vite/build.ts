@@ -12,13 +12,21 @@ import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
+import {
+  assertCloudflareWranglerGatesProtected,
+  assertNoProtectedLeaks,
+  moveProtectedChunks,
+  warnUnmatchedProtectedPatterns,
+} from "./protected/build.js";
 
 const DIST_DIR = "dist";
+
+export type SSRAdapter = "node" | "cloudflare" | "vercel" | "lambda";
 
 export type BuildOptions = {
   dir: string;
   ssr?: boolean;
-  adapter?: "node" | "cloudflare" | "vercel";
+  adapter?: SSRAdapter;
 };
 
 export async function runBuild(options: BuildOptions) {
@@ -68,6 +76,7 @@ export async function runBuild(options: BuildOptions) {
   const jsEntry = clientResult.output.find(
     (o) => "isEntry" in o && o.isEntry,
   )?.fileName;
+
   const cssEntries = clientResult.output
     .filter((o) => o.fileName.endsWith(".css"))
     .map((o) => o.fileName);
@@ -91,6 +100,23 @@ export async function runBuild(options: BuildOptions) {
       html,
       basePath: config.basePath,
     });
+    assertNoProtectedLeaks(clientResult.output);
+    warnUnmatchedProtectedPatterns(config);
+    // On Cloudflare, protected chunks stay public (gate uses env.ASSETS.fetch).
+    // wrangler.toml must set run_worker_first for /_protected/*.
+    if (adapter !== "cloudflare") {
+      await moveProtectedChunks(clientOutDir, serverOutDir);
+    } else {
+      await assertCloudflareWranglerGatesProtected(dir, config);
+    }
+
+    // Mark the output as ESM so runtimes without a surrounding package.json
+    // (e.g. unzipped Lambda at /var/task) don't fall back to CommonJS.
+    await writeFile(
+      path.join(distDir, "package.json"),
+      `${JSON.stringify({ type: "module" }, null, 2)}\n`,
+      "utf-8",
+    );
     await rm(path.join(clientOutDir, "index.html"), { force: true });
   } else {
     // SSG: prerender and clean up server
@@ -191,7 +217,7 @@ const runPrerender = async (options: PrerenderOptions) => {
 
 type SSREntryOptions = {
   dir: string;
-  adapter: "node" | "cloudflare" | "vercel";
+  adapter: SSRAdapter;
   serverOutDir: string;
   html: string;
   basePath?: string;
@@ -221,13 +247,24 @@ const bundleSSREntry = async (options: SSREntryOptions) => {
     await esbuild({
       entryPoints: [tempEntryPath],
       bundle: true,
-      platform: adapter === "node" ? "node" : "neutral",
+      platform: adapter === "node" || adapter === "lambda" ? "node" : "neutral",
       target: "es2022",
       format: "esm",
       outfile: path.join(serverOutDir, "entry.js"),
-      external: ["./entry.server.js", "./zudoku.config.js"],
+      external: ["./zudoku.config.js"],
       nodePaths: [path.join(packageRoot, "node_modules")],
       banner: { js: "// Bundled SSR entry" },
+      plugins: [
+        {
+          name: "zudoku-ssr-entry",
+          setup(build) {
+            build.onResolve({ filter: /^#zudoku-ssr-entry$/ }, () => ({
+              path: "./entry.server.js",
+              external: true,
+            }));
+          },
+        },
+      ],
     });
   } finally {
     await rm(tempEntryPath, { force: true });

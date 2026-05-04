@@ -1,8 +1,8 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
+import { handle } from "hono/aws-lambda";
 import { createServer, protectChunks } from "#zudoku-ssr-entry";
 
 const template = "__TEMPLATE__";
@@ -18,7 +18,4 @@ app.use(protectChunks({ basePath, serverDir: __dirname, serveStatic }));
 app.use("*", serveStatic({ root: staticDir }));
 app.route("/", createServer({ template, basePath }));
 
-serve({ fetch: app.fetch, port: Number(process.env.PORT || 3000) }, (info) => {
-  // biome-ignore lint/suspicious/noConsole: Log server info
-  console.info(`Server is running on ${info.address}:${info.port}`);
-});
+export const handler = handle(app);

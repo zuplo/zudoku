@@ -1,5 +1,5 @@
 import path from "node:path";
-import { runBuild } from "../../vite/build.js";
+import { runBuild, type SSRAdapter } from "../../vite/build.js";
 import type { Arguments } from "../cmds/build.js";
 import { logger } from "../common/logger.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
@@ -17,7 +17,7 @@ export async function build(argv: Arguments) {
     await runBuild({
       dir,
       ssr: argv.experimentalSsr,
-      adapter: argv.adapter as "node" | "cloudflare" | "vercel" | undefined,
+      adapter: argv.adapter as SSRAdapter | undefined,
     });
   } catch (error) {
     logger.error("❌ Build failed");

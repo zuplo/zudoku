@@ -6,7 +6,8 @@ export type JSONSchema = JSONSchema4 | JSONSchema6;
 
 type CustomResolver = (ref: string) => Promise<JSONSchema | undefined>;
 
-const cache = new Map<JSONSchema, JSONSchema>();
+// WeakMap so cached schemas get GC'd once nothing else references them.
+const cache = new WeakMap<JSONSchema & object, JSONSchema>();
 
 // biome-ignore lint/suspicious/noExplicitAny: Allow any type
 const isIndexableObject = (obj: any): obj is Record<string, any> =>

@@ -15,8 +15,14 @@ import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/ZudokuConfig.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import type { SSRAdapter } from "./build.js";
 import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
+import { protectedAnnotatorPlugin } from "./protected/annotator.js";
+import {
+  getProtectedSourceMatcher,
+  PROTECTED_CHUNK_DIR,
+} from "./protected/registry.js";
 import { getZuploSystemConfigurations } from "./zuplo.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
@@ -45,13 +51,17 @@ const defineEnvVars = (vars: string[]) =>
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
-  options: { adapter?: "node" | "cloudflare" | "vercel" } = {},
+  options: { adapter?: SSRAdapter } = {},
 ): Promise<InlineConfig> {
   const { config, publicEnv, envPrefix } = await loadZudokuConfig(
     configEnv,
     dir,
   );
   const isWorker = options.adapter === "cloudflare";
+
+  const { match: isProtectedSource, enabled: hasProtectedSources } =
+    getProtectedSourceMatcher(config);
+  const PROTECTED_GROUP_PREFIX = "protected-";
 
   const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
 
@@ -152,20 +162,52 @@ export async function getViteConfig(
     environments: {
       client: {
         build: {
+          manifest: true,
           rolldownOptions: {
             input: "zudoku/app/entry.client.tsx",
+            output: hasProtectedSources
+              ? {
+                  // Name every MDX/schema entry. With only the protected
+                  // chunk named, Rolldown would bundle shared MDX/React
+                  // runtime into it and public chunks would statically import
+                  // from `_protected/`. Naming sibling entries forces shared
+                  // deps into a separate public chunk.
+                  manualChunks: (id: string) => {
+                    const chunkBase = path.posix
+                      .basename(id.split("?")[0] ?? id)
+                      .replace(/\.[^.]+$/, "")
+                      .replace(/[^a-zA-Z0-9_-]/g, "_");
+                    if (isProtectedSource(id)) {
+                      return `${PROTECTED_GROUP_PREFIX}${chunkBase}`;
+                    }
+                    if (/\.mdx(\?|$)/.test(id)) {
+                      return `doc-${chunkBase}`;
+                    }
+                    return undefined;
+                  },
+                  chunkFileNames: (info: { name: string }) =>
+                    info.name.startsWith(PROTECTED_GROUP_PREFIX)
+                      ? `${PROTECTED_CHUNK_DIR}/${info.name.slice(PROTECTED_GROUP_PREFIX.length)}-[hash].js`
+                      : "assets/[name]-[hash].js",
+                }
+              : undefined,
           },
         },
       },
       ssr: {
-        resolve: {
-          noExternal: [/zudoku/, "@mdx-js/react"],
-          external: ["@shikijs/themes", "@shikijs/langs"],
-        },
+        // Build: bundle all for self-contained SSR output; dev uses minimal externals for speed.
+        resolve:
+          configEnv.command === "build"
+            ? { noExternal: true }
+            : {
+                noExternal: [/zudoku/, "@mdx-js/react"],
+                external: ["@shikijs/themes", "@shikijs/langs"],
+              },
         build: {
           outDir: path.resolve(
             path.join(dir, "dist", config.basePath ?? "", "server"),
           ),
+          copyPublicDir: false,
           rolldownOptions: {
             logLevel: "warn",
             input: ["zudoku/app/entry.server.tsx", config.__meta.configPath],
@@ -175,6 +217,12 @@ export async function getViteConfig(
     },
     experimental: {
       renderBuiltUrl(filename) {
+        // Protected chunks must resolve through the SSR origin so the auth
+        // gate runs; never prefix with a CDN.
+        if (filename.startsWith(`${PROTECTED_CHUNK_DIR}/`)) {
+          return joinUrl(config.basePath, `/${filename}`);
+        }
+
         if (cdnUrl?.base && [".js", ".css"].includes(path.extname(filename))) {
           return joinUrl(cdnUrl.base, filename);
         }
@@ -201,7 +249,7 @@ export async function getViteConfig(
       "/__z/entry.client.tsx",
       "**/pagefind.js",
     ],
-    plugins: [vitePlugin()],
+    plugins: [protectedAnnotatorPlugin(), vitePlugin()],
     future: {
       removeServerModuleGraph: "warn",
       removeSsrLoadModule: "warn",

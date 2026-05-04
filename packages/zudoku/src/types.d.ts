@@ -51,3 +51,10 @@ declare module "virtual:zudoku-shiki-register" {
   import type { HighlighterCore } from "shiki/core";
   export const registerShiki: (highlighter: HighlighterCore) => Promise<void>;
 }
+
+// Type alias for the SSR entry, resolved by esbuild.
+declare module "#zudoku-ssr-entry" {
+  export const createServer: typeof import("./app/entry.server.tsx").createServer;
+  export const protectChunks: typeof import("./app/entry.server.tsx").protectChunks;
+  export const getRoutesByConfig: typeof import("./app/entry.server.tsx").getRoutesByConfig;
+}

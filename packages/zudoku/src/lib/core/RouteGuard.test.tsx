@@ -10,7 +10,6 @@ import {
   screen,
   render as testRender,
   waitFor,
-  within,
 } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { HelmetProvider } from "@zudoku/react-helmet-async";
@@ -278,7 +277,29 @@ describe("RouteGuard", () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it("shows login dialog when user needs to sign in", async () => {
+    it("treats an undefined check result as UNAUTHORIZED (fail-closed)", async () => {
+      await render(
+        { path: "/protected", element: <div>Protected</div> },
+        {
+          initialPath: "/protected",
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: true,
+          },
+          protectedRoutes: {
+            "/protected": (() => undefined) as unknown as (
+              c: CallbackContext,
+            ) => ProtectedRouteResult,
+          },
+        },
+      );
+
+      expect(screen.getByText("Sign in to continue")).toBeInTheDocument();
+      expect(screen.queryByText("Protected")).not.toBeInTheDocument();
+    });
+
+    it("shows sign-in prompt when user needs to sign in", async () => {
       await render(
         { path: "/protected", element: <div>Protected</div> },
         {
@@ -292,23 +313,19 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      expect(within(dialog).getByText("Login to continue")).toBeInTheDocument();
+      expect(screen.getByText("Sign in to continue")).toBeInTheDocument();
       expect(
-        within(dialog).getByText("Please login to access this page."),
+        screen.getByText("Please sign in to access this page."),
       ).toBeInTheDocument();
       expect(
-        within(dialog).getByRole("button", { name: "Login" }),
+        screen.getByRole("button", { name: "Sign in" }),
       ).toBeInTheDocument();
       expect(
-        within(dialog).getByRole("button", { name: "Register" }),
-      ).toBeInTheDocument();
-      expect(
-        within(dialog).getByRole("button", { name: "Cancel" }),
+        screen.getByRole("button", { name: "Register" }),
       ).toBeInTheDocument();
     });
 
-    it("calls login when login button clicked", async () => {
+    it("calls login when sign-in button clicked", async () => {
       const { mockAuth } = await render(
         { path: "/protected", element: <div>Protected</div> },
         {
@@ -322,9 +339,7 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      const loginButton = within(dialog).getByRole("button", { name: "Login" });
-      await userEvent.click(loginButton);
+      await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       expect(mockAuth.login).toHaveBeenCalledWith(
         expect.objectContaining({ redirectTo: "/protected" }),
@@ -345,11 +360,7 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      const registerButton = within(dialog).getByRole("button", {
-        name: "Register",
-      });
-      await userEvent.click(registerButton);
+      await userEvent.click(screen.getByRole("button", { name: "Register" }));
 
       expect(mockAuth.signup).toHaveBeenCalledWith(
         expect.objectContaining({ redirectTo: "/protected" }),
@@ -445,8 +456,7 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      expect(within(dialog).getByText("Login to continue")).toBeInTheDocument();
+      expect(screen.getByText("Sign in to continue")).toBeInTheDocument();
     });
 
     it("does not match partial paths", async () => {
