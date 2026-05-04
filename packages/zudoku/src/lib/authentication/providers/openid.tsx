@@ -16,6 +16,7 @@ import { LogoutCallbackHandler } from "../components/LogoutCallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
+import { redirectToSignUpUrl } from "./util.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
@@ -60,6 +61,8 @@ export class OpenIDAuthenticationProvider
   protected readonly redirectToAfterSignOut: string;
   private readonly audience?: string;
   private readonly scopes: string[];
+  private readonly signUpConfig?: OpenIDAuthenticationConfig["signUp"];
+  public readonly disableSignUp: boolean;
   protected readonly authorizationParams?: Record<string, string>;
   protected readonly forwardAuthorizationParams: string[];
   protected static readonly DEFAULT_FORWARD_AUTHORIZATION_PARAMS = [
@@ -78,6 +81,8 @@ export class OpenIDAuthenticationProvider
     redirectToAfterSignOut = "/",
     basePath,
     scopes,
+    signUp,
+    disableSignUp,
     authorizationParams,
     forwardAuthorizationParams,
   }: OpenIDAuthenticationConfig) {
@@ -95,6 +100,8 @@ export class OpenIDAuthenticationProvider
     this.redirectToAfterSignUp = redirectToAfterSignUp;
     this.redirectToAfterSignIn = redirectToAfterSignIn;
     this.redirectToAfterSignOut = redirectToAfterSignOut;
+    this.signUpConfig = signUp;
+    this.disableSignUp = disableSignUp ?? false;
     this.authorizationParams = authorizationParams;
     this.forwardAuthorizationParams = Array.from(
       new Set([
@@ -174,7 +181,7 @@ export class OpenIDAuthenticationProvider
   }
 
   async signUp(
-    _: { navigate: NavigateFunction },
+    { navigate }: { navigate: NavigateFunction },
     {
       redirectTo,
       replace = false,
@@ -183,6 +190,10 @@ export class OpenIDAuthenticationProvider
       replace?: boolean;
     } = {},
   ) {
+    if (this.signUpConfig && "url" in this.signUpConfig) {
+      redirectToSignUpUrl(this.signUpConfig.url, navigate, replace);
+      return;
+    }
     return this.authorize({
       redirectTo: this.redirectToAfterSignUp ?? redirectTo ?? "/",
       replace,
@@ -285,6 +296,18 @@ export class OpenIDAuthenticationProvider
     // Apply user-supplied params first so core OIDC params below cannot be overridden (client_id, etc.)
     if (this.authorizationParams) {
       for (const [key, value] of Object.entries(this.authorizationParams)) {
+        authorizationUrl.searchParams.set(key, value);
+      }
+    }
+
+    if (
+      isSignUp &&
+      this.signUpConfig &&
+      "authorizationParams" in this.signUpConfig
+    ) {
+      for (const [key, value] of Object.entries(
+        this.signUpConfig.authorizationParams,
+      )) {
         authorizationUrl.searchParams.set(key, value);
       }
     }

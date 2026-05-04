@@ -14,6 +14,7 @@ import { CallbackHandler } from "../components/CallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
+import { redirectToSignUpUrl } from "./util.js";
 
 export type AzureB2CProviderData = {
   type: "azureb2c";
@@ -40,6 +41,8 @@ export class AzureB2CAuthPlugin
   private readonly redirectToAfterSignUp?: string;
   private readonly redirectToAfterSignIn?: string;
   private readonly redirectToAfterSignOut: string;
+  private readonly signUpConfig?: AzureB2CAuthenticationConfig["signUp"];
+  public readonly disableSignUp: boolean;
 
   constructor({
     clientId,
@@ -50,12 +53,16 @@ export class AzureB2CAuthPlugin
     redirectToAfterSignIn,
     redirectToAfterSignOut = "/",
     basePath = "",
+    signUp,
+    disableSignUp,
   }: AzureB2CAuthenticationConfig) {
     super();
     this.scopes = scopes ?? ["openid", "profile", "email"];
     this.redirectToAfterSignUp = redirectToAfterSignUp;
     this.redirectToAfterSignIn = redirectToAfterSignIn;
     this.redirectToAfterSignOut = redirectToAfterSignOut;
+    this.signUpConfig = signUp;
+    this.disableSignUp = disableSignUp ?? false;
 
     const authority = `https://${tenantName}.b2clogin.com/${tenantName}.onmicrosoft.com/${policyName}`;
     const redirectUri = joinUrl(basePath, AZUREB2C_CALLBACK_PATH);
@@ -122,9 +129,17 @@ export class AzureB2CAuthPlugin
   }
 
   async signUp(
-    _: AuthActionContext,
-    { redirectTo }: { redirectTo?: string } = {},
+    { navigate }: AuthActionContext,
+    {
+      redirectTo,
+      replace = false,
+    }: { redirectTo?: string; replace?: boolean } = {},
   ) {
+    if (this.signUpConfig) {
+      redirectToSignUpUrl(this.signUpConfig.url, navigate, replace);
+      return;
+    }
+
     const redirectUri = this.redirectToAfterSignUp ?? redirectTo ?? "/";
     sessionStorage.setItem("redirect-to", redirectUri);
 
