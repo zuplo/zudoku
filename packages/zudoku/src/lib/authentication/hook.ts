@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import type { AuthActionOptions } from "./authentication.js";
-import { useAuthState } from "./state.js";
+import { readPersistedAuthState, useAuthState } from "./state.js";
 
 export type UseAuthReturn = ReturnType<typeof useAuth>;
 
@@ -13,18 +13,32 @@ export type UseAuthReturn = ReturnType<typeof useAuth>;
  */
 export const useRefreshUserProfile = ({
   refetchOnWindowFocus,
+  refetchOnMount,
 }: {
   refetchOnWindowFocus?: boolean | "always";
+  refetchOnMount?: boolean | "always";
 } = {}) => {
   const { authentication } = useZudoku();
   const isAuthEnabled = typeof authentication !== "undefined";
 
   return useQuery({
     refetchOnWindowFocus,
+    refetchOnMount,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
     queryKey: ["refresh-user-profile"],
     enabled:
       isAuthEnabled && typeof authentication?.refreshUserProfile === "function",
-    queryFn: () => authentication?.refreshUserProfile?.(),
+    queryFn: async () => {
+      const result = await authentication?.refreshUserProfile?.();
+      useAuthState.setState({ profileFetchedAt: Date.now() });
+      return result;
+    },
+    initialData: () => (readPersistedAuthState()?.profile ? true : undefined),
+    initialDataUpdatedAt: () => {
+      const ts = readPersistedAuthState()?.profileFetchedAt;
+      return typeof ts === "number" ? ts : undefined;
+    },
   });
 };
 
@@ -34,8 +48,11 @@ export const useVerifiedEmail = () => {
   const navigate = useNavigate();
   const isAuthEnabled = typeof authentication !== "undefined";
 
+  const isUnverified = authState.profile?.emailVerified === false;
+
   const { refetch: refreshUserProfile } = useRefreshUserProfile({
-    refetchOnWindowFocus: "always",
+    refetchOnWindowFocus: isUnverified ? "always" : true,
+    refetchOnMount: isUnverified ? "always" : undefined,
   });
 
   return {

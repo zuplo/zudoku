@@ -70,6 +70,7 @@ const createWrapper = ({
     isPending: false,
     isAuthEnabled: false,
     profile: null,
+    profileFetchedAt: null,
     providerData: null,
     setAuthenticationPending: vi.fn(),
     setLoggedOut: vi.fn(),

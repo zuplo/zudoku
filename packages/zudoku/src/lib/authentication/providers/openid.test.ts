@@ -471,6 +471,67 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
     });
   });
 
+  describe("discovery caching", () => {
+    const setupAuthenticated = () => {
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: {
+          sub: "user-1",
+          email: "user@example.com",
+          emailVerified: false,
+          name: "Test",
+          pictureUrl: undefined,
+        },
+        providerData: {
+          type: "openid",
+          accessToken: FAKE_ACCESS_TOKEN,
+          expiresOn: new Date(Date.now() + 3600_000),
+          tokenType: "bearer",
+          claims: undefined,
+        } satisfies OpenIdProviderData,
+      });
+
+      vi.mocked(oauth.userInfoRequest).mockImplementation(() =>
+        Promise.resolve(
+          Response.json({ sub: "user-1", email: "user@example.com" }),
+        ),
+      );
+    };
+
+    test("retries discovery after a failed request", async () => {
+      vi.mocked(oauth.discoveryRequest)
+        .mockReset()
+        .mockRejectedValueOnce(new Error("network down"))
+        .mockImplementation(() => Promise.resolve(new Response()));
+
+      const provider = createProvider();
+      setupAuthenticated();
+
+      await expect(provider.refreshUserProfile()).rejects.toThrow(
+        "network down",
+      );
+      await expect(provider.refreshUserProfile()).resolves.toBe(true);
+
+      expect(oauth.discoveryRequest).toHaveBeenCalledTimes(2);
+    });
+
+    test("deduplicates concurrent discovery requests", async () => {
+      vi.mocked(oauth.discoveryRequest).mockClear();
+
+      const provider = createProvider();
+      setupAuthenticated();
+
+      await Promise.all([
+        provider.refreshUserProfile(),
+        provider.refreshUserProfile(),
+        provider.refreshUserProfile(),
+      ]);
+
+      expect(oauth.discoveryRequest).toHaveBeenCalledTimes(1);
+    });
+  });
+
   test("self heals providerData when providerData.type is undefined", async () => {
     const provider = createProvider();
 

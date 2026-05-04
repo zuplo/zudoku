@@ -127,6 +127,7 @@ const clerkAuth: AuthenticationProviderInitializer<
       isAuthenticated: true,
       isPending: false,
       profile,
+      profileFetchedAt: Date.now(),
       providerData: {
         type: "clerk",
         user: clerk.session?.user,
