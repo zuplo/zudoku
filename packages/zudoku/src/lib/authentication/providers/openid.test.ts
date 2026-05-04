@@ -3,6 +3,7 @@ import * as oauth from "oauth4webapi";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { OAuthAuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
+import auth0Auth from "./auth0.js";
 import {
   OpenIDAuthenticationProvider,
   type OpenIdProviderData,
@@ -380,6 +381,185 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       await provider.signIn({ navigate: vi.fn() }, {});
       const signinUrl = new URL(signinLoc.href);
       expect(signinUrl.searchParams.get("kc_action")).toBeNull();
+    });
+  });
+
+  describe("authorize URL params", () => {
+    let originalHref: string;
+
+    const setLocation = (url: string) => {
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: Object.assign(new URL(url), {
+          assign: vi.fn(),
+          replace: vi.fn(),
+        }),
+        writable: true,
+      });
+    };
+
+    beforeEach(() => {
+      originalHref = window.location.href;
+    });
+
+    afterEach(() => {
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: new URL(originalHref),
+        writable: true,
+      });
+    });
+
+    const setAuthEndpoint = () => {
+      vi.mocked(oauth.processDiscoveryResponse).mockResolvedValue({
+        ...AUTH_SERVER,
+        authorization_endpoint: "https://issuer.example.com/authorize",
+      });
+    };
+
+    const captureAuthorizeUrl = async (
+      provider: OpenIDAuthenticationProvider,
+    ) => {
+      let captured: URL | undefined;
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: {
+          ...window.location,
+          origin: window.location.origin,
+          search: window.location.search,
+          set href(value: string) {
+            captured = new URL(value);
+          },
+          replace: (value: string) => {
+            captured = new URL(value);
+          },
+        },
+      });
+      await provider.signIn({ navigate: vi.fn() as never }, {});
+      if (!captured) throw new Error("authorize URL not captured");
+      return captured;
+    };
+
+    test("static authorizationParams reach the authorize URL", async () => {
+      setLocation("http://localhost/");
+      setAuthEndpoint();
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        authorizationParams: { organization: "org_static" },
+      });
+
+      const url = await captureAuthorizeUrl(provider);
+      expect(url.searchParams.get("organization")).toBe("org_static");
+    });
+
+    test("forwards allow-listed params from current URL", async () => {
+      setLocation("http://localhost/?login_hint=alice@example.com&foo=bar");
+      setAuthEndpoint();
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+      });
+
+      const url = await captureAuthorizeUrl(provider);
+      expect(url.searchParams.get("login_hint")).toBe("alice@example.com");
+      expect(url.searchParams.get("foo")).toBeNull();
+    });
+
+    test("URL params override static authorizationParams", async () => {
+      setLocation("http://localhost/?login_hint=runtime@example.com");
+      setAuthEndpoint();
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        authorizationParams: { login_hint: "static@example.com" },
+      });
+
+      const url = await captureAuthorizeUrl(provider);
+      expect(url.searchParams.get("login_hint")).toBe("runtime@example.com");
+    });
+
+    test("custom forwardAuthorizationParams extend the allow-list", async () => {
+      setLocation("http://localhost/?tenant=acme");
+      setAuthEndpoint();
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        forwardAuthorizationParams: ["tenant"],
+      });
+
+      const url = await captureAuthorizeUrl(provider);
+      expect(url.searchParams.get("tenant")).toBe("acme");
+    });
+
+    test("protected core params cannot be overridden via authorizationParams", async () => {
+      setLocation("http://localhost/");
+      setAuthEndpoint();
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        authorizationParams: {
+          client_id: "evil",
+          redirect_uri: "https://evil.example.com/cb",
+          response_type: "token",
+          scope: "evil",
+        },
+      });
+
+      const url = await captureAuthorizeUrl(provider);
+      expect(url.searchParams.get("client_id")).toBe("test-client");
+      expect(url.searchParams.get("redirect_uri")).toBe(
+        "http://localhost/oauth/callback",
+      );
+      expect(url.searchParams.get("response_type")).toBe("code");
+      expect(url.searchParams.get("scope")).toBe("openid profile email");
+    });
+
+    test("protected core params cannot be overridden via forwarded URL params", async () => {
+      setLocation("http://localhost/?redirect_uri=https://evil.example.com/cb");
+      setAuthEndpoint();
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        forwardAuthorizationParams: ["redirect_uri"],
+      });
+
+      const url = await captureAuthorizeUrl(provider);
+      expect(url.searchParams.get("redirect_uri")).toBe(
+        "http://localhost/oauth/callback",
+      );
+    });
+
+    test("Auth0 provider forwards organization, invitation, connection by default", async () => {
+      setLocation(
+        "http://localhost/?organization=org_x&invitation=inv_y&connection=google-oauth2",
+      );
+      setAuthEndpoint();
+
+      const provider = auth0Auth({
+        type: "auth0",
+        domain: "issuer.example.com",
+        clientId: "test-client",
+      });
+
+      const url = await captureAuthorizeUrl(
+        provider as OpenIDAuthenticationProvider,
+      );
+      expect(url.searchParams.get("organization")).toBe("org_x");
+      expect(url.searchParams.get("invitation")).toBe("inv_y");
+      expect(url.searchParams.get("connection")).toBe("google-oauth2");
     });
   });
 

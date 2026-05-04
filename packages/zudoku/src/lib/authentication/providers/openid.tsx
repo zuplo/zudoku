@@ -63,6 +63,14 @@ export class OpenIDAuthenticationProvider
   private readonly scopes: string[];
   private readonly signUpConfig?: OpenIDAuthenticationConfig["signUp"];
   public readonly disableSignUp: boolean;
+  protected readonly authorizationParams?: Record<string, string>;
+  protected readonly forwardAuthorizationParams: string[];
+  protected static readonly DEFAULT_FORWARD_AUTHORIZATION_PARAMS = [
+    "login_hint",
+    "domain_hint",
+    "ui_locales",
+    "acr_values",
+  ];
 
   constructor({
     issuer,
@@ -75,6 +83,8 @@ export class OpenIDAuthenticationProvider
     scopes,
     signUp,
     disableSignUp,
+    authorizationParams,
+    forwardAuthorizationParams,
   }: OpenIDAuthenticationConfig) {
     super();
     this.client = {
@@ -92,6 +102,13 @@ export class OpenIDAuthenticationProvider
     this.redirectToAfterSignOut = redirectToAfterSignOut;
     this.signUpConfig = signUp;
     this.disableSignUp = disableSignUp ?? false;
+    this.authorizationParams = authorizationParams;
+    this.forwardAuthorizationParams = Array.from(
+      new Set([
+        ...OpenIDAuthenticationProvider.DEFAULT_FORWARD_AUTHORIZATION_PARAMS,
+        ...(forwardAuthorizationParams ?? []),
+      ]),
+    );
   }
 
   protected async getAuthServer() {
@@ -276,6 +293,13 @@ export class OpenIDAuthenticationProvider
     redirectUrl.search = "";
     redirectUrl.hash = "";
 
+    // Apply user-supplied params first so core OIDC params below cannot be overridden (client_id, etc.)
+    if (this.authorizationParams) {
+      for (const [key, value] of Object.entries(this.authorizationParams)) {
+        authorizationUrl.searchParams.set(key, value);
+      }
+    }
+
     if (
       isSignUp &&
       this.signUpConfig &&
@@ -285,6 +309,16 @@ export class OpenIDAuthenticationProvider
         this.signUpConfig.authorizationParams,
       )) {
         authorizationUrl.searchParams.set(key, value);
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      const incoming = new URLSearchParams(window.location.search);
+      for (const name of this.forwardAuthorizationParams) {
+        const value = incoming.get(name);
+        if (value !== null) {
+          authorizationUrl.searchParams.set(name, value);
+        }
       }
     }
 

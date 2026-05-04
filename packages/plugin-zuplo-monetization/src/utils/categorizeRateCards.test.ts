@@ -206,6 +206,24 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].overagePrice).toBeUndefined();
   });
 
+  it("omits the redundant included up-to tier in tierPrices when it matches the quota limit", () => {
+    const { quotas } = categorizeRateCards([
+      makeMeteredRateCard({
+        issueAfterReset: 5000,
+        tiers: [
+          {
+            flatPrice: { amount: "0" },
+            unitPrice: { amount: "0" },
+            upToAmount: "5000",
+          },
+          { flatPrice: { amount: "0" }, unitPrice: { amount: "0.05" } },
+        ],
+      }),
+    ]);
+
+    expect(quotas[0].tierPrices).toEqual(["Over 5,000: $0.05/unit"]);
+  });
+
   it("categorizes boolean rate card as feature", () => {
     const { features } = categorizeRateCards([
       {

@@ -42,7 +42,22 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v5
 
+      - name: Detect monetization plugin changes
+        if: github.event_name == 'pull_request'
+        id: monetization-changes
+        # Pinned to commit SHA for security. Tag: v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        with:
+          filters: |
+            monetization:
+              - 'packages/plugin-zuplo-monetization/**'
+
       - run: pnpm check
+
+      - name: Typecheck monetization plugin
+        if: github.event_name == 'pull_request' && steps.monetization-changes.outputs.monetization == 'true'
+        run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
+
       - run: nx run-many -t build:ci
       - run: pnpm test:coverage
 

@@ -72,6 +72,11 @@ const makeSubscription = (
             tiers: [
               {
                 flatPrice: { amount: "0", type: "money" },
+                unitPrice: { amount: "0", type: "money" },
+                upToAmount: "3000",
+              },
+              {
+                flatPrice: { amount: "0", type: "money" },
                 unitPrice: { amount: "0.1", type: "money" },
               },
             ],
@@ -199,11 +204,16 @@ describe("SubscriptionPlanDetails", () => {
       screen.getByText(/Apr\s+1,\s+2026\s+–\s+May\s+1,\s+2026/),
     ).toBeInTheDocument();
 
+    // Phase headers
+    expect(screen.getByText("Trial")).toBeInTheDocument();
+    expect(screen.getByText("Paid")).toBeInTheDocument();
+
     // Metered row
     const api = screen.getByText("API").closest("li");
     expect(api).not.toBeNull();
     if (!api) throw new Error("Expected API row");
     expect(within(api).getByText("1,000 / month")).toBeInTheDocument();
+    expect(within(api).getByText(/Over 3,000:/)).toBeInTheDocument();
     expect(within(api).getByText("Overage: $0.10/call")).toBeInTheDocument();
 
     // Boolean row
@@ -214,24 +224,25 @@ describe("SubscriptionPlanDetails", () => {
 
     // Static row shows value
     expect(screen.getByText(/Static feature/i)).toBeInTheDocument();
-    expect(screen.getAllByText("v2").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Static feature.*v2/i)).toBeInTheDocument();
   });
 
   it('renders "Starts <date>" when activeTo is missing', () => {
     render(<SubscriptionPlanDetails subscription={makeSubscription()} />);
 
-    // Date ranges are displayed per row.
-    const api = screen.getByText("API").closest("li");
-    if (!api) throw new Error("Expected API row");
+    // Date ranges are displayed in the phase headers.
+    const trialHeader = screen.getByText("Trial").closest("div");
+    expect(trialHeader).not.toBeNull();
+    if (!trialHeader) throw new Error("Expected Trial phase header");
     expect(
-      within(api).getByText(/Starts\s+Apr\s+1,\s+2026/),
+      within(trialHeader).getByText(/Starts\s+Apr\s+1,\s+2026/),
     ).toBeInTheDocument();
 
-    // Paid phase starts later -> should show Starts <date>.
-    const boolRow = screen.getByText("Boolean feature").closest("li");
-    if (!boolRow) throw new Error("Expected boolean row");
+    const paidHeader = screen.getByText("Paid").closest("div");
+    expect(paidHeader).not.toBeNull();
+    if (!paidHeader) throw new Error("Expected Paid phase header");
     expect(
-      within(boolRow).getByText(/Starts\s+May\s+1,\s+2026/),
+      within(paidHeader).getByText(/Starts\s+May\s+1,\s+2026/),
     ).toBeInTheDocument();
   });
 
@@ -266,5 +277,43 @@ describe("SubscriptionPlanDetails", () => {
     const api = screen.getByText("API").closest("li");
     if (!api) throw new Error("Expected API row");
     expect(within(api).queryByText(/Overage:/)).not.toBeInTheDocument();
+  });
+
+  it("shows a subscription tax legend under Price when plan.defaultTaxConfig.behavior is set", () => {
+    const subscription = makeSubscription({
+      plan: {
+        ...makeSubscription().plan,
+        defaultTaxConfig: { behavior: "exclusive" },
+      },
+    });
+
+    render(<SubscriptionPlanDetails subscription={subscription} />);
+
+    expect(
+      screen.getByText(
+        "Price excludes tax; taxes may be added on invoice if applicable.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("does not render a tax legend for unsupported behavior values", () => {
+    const subscription = makeSubscription({
+      plan: {
+        ...makeSubscription().plan,
+        defaultTaxConfig: { behavior: "NONE" },
+      },
+    });
+
+    render(<SubscriptionPlanDetails subscription={subscription} />);
+
+    expect(screen.queryByText(/Price excludes tax;/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Price includes tax/i)).not.toBeInTheDocument();
+  });
+
+  it("does not render a tax legend when behavior is missing", () => {
+    render(<SubscriptionPlanDetails subscription={makeSubscription()} />);
+    expect(
+      screen.queryByText(/Taxes may be added to your invoice/i),
+    ).not.toBeInTheDocument();
   });
 });

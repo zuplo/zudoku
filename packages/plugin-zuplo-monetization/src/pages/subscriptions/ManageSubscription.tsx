@@ -4,7 +4,11 @@ import { CreditCardIcon, RefreshCcw, Settings } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
-import type { Subscription } from "../../hooks/useSubscriptions.js";
+import type { Subscription } from "../../types/SubscriptionType.js";
+import {
+  activePhaseHasBillables,
+  hasFutureBillables,
+} from "../../utils/billables.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
 import { RestoreSubscriptionDialog } from "./RestoreSubscriptionDialog.js";
 import { SwitchPlanModal } from "./SwitchPlanModal.js";
@@ -33,6 +37,8 @@ export const ManageSubscription = ({
         planName={planName}
         subscriptionId={subscription.id}
         billingPeriodEnd={billingPeriodEnd}
+        hasCurrentBillables={activePhaseHasBillables(subscription)}
+        hasFutureBillables={hasFutureBillables(subscription)}
       />
       <RestoreSubscriptionDialog
         open={restoreDialogOpen}

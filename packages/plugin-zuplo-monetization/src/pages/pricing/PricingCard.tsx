@@ -1,57 +1,12 @@
 import { cn } from "zudoku";
 import { Button } from "zudoku/components";
 import { Link } from "zudoku/router";
-import { FeatureItem } from "../../components/FeatureItem";
-import { QuotaItem } from "../../components/QuotaItem";
+import { PlanEntitlements } from "../../components/PlanEntitlements.js";
 import { useMonetizationConfig } from "../../MonetizationContext";
-import type { Plan, PlanPhase } from "../../types/PlanType";
-import { categorizeRateCards } from "../../utils/categorizeRateCards";
+import type { Plan } from "../../types/PlanType";
 import { formatDuration } from "../../utils/formatDuration";
 import { formatPrice } from "../../utils/formatPrice";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan";
-
-const PhaseSection = ({
-  phase,
-  currency,
-  showName,
-  billingCadence,
-}: {
-  phase: PlanPhase;
-  currency?: string;
-  showName: boolean;
-  billingCadence?: string;
-}) => {
-  const { pricing } = useMonetizationConfig();
-  const { quotas, features } = categorizeRateCards(phase.rateCards, {
-    currency,
-    units: pricing?.units,
-    planBillingCadence: billingCadence,
-  });
-
-  if (quotas.length === 0 && features.length === 0) return null;
-
-  return (
-    <div className="space-y-2">
-      {showName && (
-        <div className="text-sm font-medium text-card-foreground">
-          {phase.name}
-          {phase.duration && (
-            <span className="text-muted-foreground font-normal">
-              {" "}
-              &mdash; {formatDuration(phase.duration)}
-            </span>
-          )}
-        </div>
-      )}
-      {quotas.map((quota) => (
-        <QuotaItem key={quota.key} quota={quota} />
-      ))}
-      {features.map((feature) => (
-        <FeatureItem key={feature.key} feature={feature} />
-      ))}
-    </div>
-  );
-};
 
 export const PricingCard = ({
   plan,
@@ -70,7 +25,6 @@ export const PricingCard = ({
   const isFree = price.monthly === 0;
 
   const isCustom = plan.metadata?.isCustom === true;
-  const hasMultiplePhases = plan.phases.length > 1;
   const billingInterval = formatDuration(plan.billingCadence);
 
   return (
@@ -130,23 +84,20 @@ export const PricingCard = ({
       </div>
 
       <div className="space-y-4 mb-6 grow">
-        {plan.phases.map((phase) => (
-          <PhaseSection
-            key={phase.key}
-            phase={phase}
-            currency={plan.currency}
-            showName={hasMultiplePhases}
-            billingCadence={plan.billingCadence}
-          />
-        ))}
+        <PlanEntitlements
+          phases={plan.phases}
+          currency={plan.currency}
+          billingCadence={plan.billingCadence}
+          units={pricing?.units}
+        />
       </div>
 
       {isSubscribed ? (
-        <Button variant={isPopular ? "default" : "secondary"} asChild>
+        <Button variant={isPopular ? "default" : "outline"} asChild>
           <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
         </Button>
       ) : (
-        <Button variant={isPopular ? "default" : "secondary"} asChild>
+        <Button variant={isPopular ? "default" : "outline"} asChild>
           <Link to={`/checkout?planId=${encodeURIComponent(plan.id)}`}>
             Subscribe
           </Link>

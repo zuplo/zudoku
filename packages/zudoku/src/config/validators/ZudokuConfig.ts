@@ -448,6 +448,8 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignOut: z.string().optional(),
     signUp: SignUpOpenIdSchema.optional(),
     disableSignUp: z.boolean().optional(),
+    authorizationParams: z.record(z.string(), z.string()).optional(),
+    forwardAuthorizationParams: z.array(z.string()).optional(),
   }),
   z.object({
     type: z.literal("azureb2c"),
@@ -487,6 +489,8 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    authorizationParams: z.record(z.string(), z.string()).optional(),
+    forwardAuthorizationParams: z.array(z.string()).optional(),
     options: z
       .object({
         alwaysPromptLogin: z.boolean().optional(),

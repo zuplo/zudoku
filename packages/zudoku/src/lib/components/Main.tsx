@@ -40,7 +40,7 @@ export const Main = ({ children }: PropsWithChildren) => {
       <main
         data-pagefind-body
         className={cn(
-          "px-4 lg:pe-8 lg:px-8",
+          "min-w-0 px-4 lg:pe-8 lg:px-8",
           !hasNavigation && "col-span-full",
           isNavigating && "animate-pulse",
         )}
