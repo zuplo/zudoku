@@ -167,6 +167,9 @@ const ObjectSchemaView = ({
   const additionalObjectProperties = typeof schema.additionalProperties ===
     "object" && <SchemaView schema={schema.additionalProperties} embedded />;
 
+  const hasUnion = Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf);
+  const unionSection = hasUnion && <UnionView schema={schema} embedded />;
+
   const itemsList = nonDeprecatedGroups.map(({ group, properties }, index) => (
     <Fragment key={group}>
       {index > 0 && <ItemSeparator />}
@@ -194,6 +197,11 @@ const ObjectSchemaView = ({
       <>
         {itemsList}
         {deprecatedList}
+        {unionSection &&
+          (nonDeprecatedGroups.length > 0 || deprecatedProperties) && (
+            <ItemSeparator />
+          )}
+        {unionSection}
       </>
     );
   }
@@ -201,7 +209,8 @@ const ObjectSchemaView = ({
   const hasPanelContent =
     nonDeprecatedGroups.length > 0 ||
     deprecatedProperties ||
-    additionalObjectProperties;
+    additionalObjectProperties ||
+    unionSection;
 
   return (
     <Frame>
@@ -221,6 +230,10 @@ const ObjectSchemaView = ({
             </div>
           )}
           {additionalObjectProperties}
+          {unionSection &&
+            (nonDeprecatedGroups.length > 0 ||
+              (showDeprecated && deprecatedProperties)) && <ItemSeparator />}
+          {unionSection}
         </FramePanel>
       )}
       {(schema.additionalProperties === true || deprecatedProperties) && (
@@ -282,8 +295,12 @@ export const SchemaView = ({
     return <ConstValue schema={schema} />;
   }
 
-  if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
-    return <UnionView schema={schema} cardHeader={cardHeader} />;
+  const hasUnion = Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf);
+
+  if (hasUnion && !schema.properties) {
+    return (
+      <UnionView schema={schema} cardHeader={cardHeader} embedded={embedded} />
+    );
   }
 
   if (isBasicType(schema.type)) {
@@ -301,7 +318,7 @@ export const SchemaView = ({
     );
   }
 
-  if (schema.type === "object") {
+  if (schema.type === "object" || schema.properties || hasUnion) {
     const rootRefName =
       !embedded && !hideRootRef ? getSchemaRefName(schema) : undefined;
     return (

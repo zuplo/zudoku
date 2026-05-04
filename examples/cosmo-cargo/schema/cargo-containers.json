@@ -569,6 +569,33 @@
         ]
       },
       "PaymentMethod": {
+        "allOf": [
+          {
+            "type": "object",
+            "description": "Shared transaction metadata for any payment method.",
+            "required": ["amount", "currencyCode"],
+            "properties": {
+              "amount": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Total amount to charge, in the given currency."
+              },
+              "currencyCode": {
+                "type": "string",
+                "description": "ISO-style currency code, e.g. GCR for Galactic Credits.",
+                "examples": ["GCR", "MCR"]
+              },
+              "transactionRef": {
+                "type": "string",
+                "description": "Optional client-side transaction reference for reconciliation."
+              },
+              "memo": {
+                "type": "string",
+                "description": "Free-form memo attached to the payment."
+              }
+            }
+          }
+        ],
         "oneOf": [
           {
             "type": "object",
