@@ -191,6 +191,46 @@ const makeSubscription = (
   ...overrides,
 });
 
+const makeSubscriptionWithStaticConfig = (config: string): Subscription => {
+  const base = makeSubscription();
+  const phase = base.phases[1];
+  const staticItem = phase.items[1];
+  const entitlement = staticItem.included.entitlement;
+  if (!entitlement) {
+    throw new Error("Expected static entitlement");
+  }
+
+  return {
+    ...base,
+    phases: [
+      {
+        ...phase,
+        items: [
+          {
+            ...staticItem,
+            included: {
+              ...staticItem.included,
+              entitlement: {
+                ...entitlement,
+                config,
+              },
+            },
+          },
+        ],
+      },
+    ],
+  };
+};
+
+const getStaticFeatureRow = () => {
+  const row = screen
+    .getAllByRole("listitem")
+    .find((item) => item.textContent?.startsWith("Static feature") === true);
+  expect(row).toBeDefined();
+  if (!row) throw new Error("Expected static row");
+  return row;
+};
+
 describe("SubscriptionPlanDetails", () => {
   it("renders metered + boolean + static features with correct values and overage", () => {
     render(<SubscriptionPlanDetails subscription={makeSubscription()} />);
@@ -225,6 +265,47 @@ describe("SubscriptionPlanDetails", () => {
     // Static row shows value
     expect(screen.getByText(/Static feature/i)).toBeInTheDocument();
     expect(screen.getByText(/Static feature.*v2/i)).toBeInTheDocument();
+  });
+
+  it.each([
+    ["empty string config", JSON.stringify(""), ""],
+    [
+      "object config without value",
+      JSON.stringify({ mode: "strict", limit: 3 }),
+      JSON.stringify({ mode: "strict", limit: 3 }),
+    ],
+    ["primitive config", JSON.stringify(42), "42"],
+    [
+      "array config",
+      JSON.stringify(["jobs", "exports"]),
+      JSON.stringify(["jobs", "exports"]),
+    ],
+  ])("renders static entitlement %s", (_label, config, expected) => {
+    render(
+      <SubscriptionPlanDetails
+        subscription={makeSubscriptionWithStaticConfig(config)}
+      />,
+    );
+
+    const row = getStaticFeatureRow();
+    if (expected) {
+      expect(row).toHaveTextContent(expected);
+    } else {
+      expect(row).toHaveTextContent(/^Static feature:$/);
+    }
+    expect(within(row).queryByText(/undefined/i)).not.toBeInTheDocument();
+  });
+
+  it("renders invalid static entitlement config as included", () => {
+    render(
+      <SubscriptionPlanDetails
+        subscription={makeSubscriptionWithStaticConfig("{invalid-json")}
+      />,
+    );
+
+    const row = getStaticFeatureRow();
+    expect(within(row).getByText("Included")).toBeInTheDocument();
+    expect(within(row).queryByText(/undefined/i)).not.toBeInTheDocument();
   });
 
   it('renders "Starts <date>" when activeTo is missing', () => {

@@ -21,6 +21,17 @@ describe("FeatureItem", () => {
     expect(screen.getByText("100 req/s")).toBeInTheDocument();
   });
 
+  it("renders feature label even when the value is an empty string", () => {
+    const feature: Feature = {
+      key: "region",
+      name: "Region",
+      value: "",
+    };
+    render(<FeatureItem feature={feature} />);
+    expect(screen.getByText("Region:")).toBeInTheDocument();
+    expect(screen.queryByText(/^undefined$/i)).not.toBeInTheDocument();
+  });
+
   it("renders check icon", () => {
     const feature: Feature = { key: "support", name: "Email Support" };
     const { container } = render(<FeatureItem feature={feature} />);

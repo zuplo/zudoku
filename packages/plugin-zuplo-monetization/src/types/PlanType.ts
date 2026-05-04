@@ -14,7 +14,7 @@ export interface MeteredEntitlementTemplate {
 
 export interface StaticEntitlementTemplate {
   type: "static";
-  config: string; // JSON parsable config object
+  config: string; // JSON parsable config
 }
 
 export interface BooleanEntitlementTemplate {

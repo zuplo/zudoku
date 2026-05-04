@@ -242,7 +242,21 @@ describe("categorizeRateCards", () => {
     });
   });
 
-  it("categorizes static rate card as feature with value", () => {
+  it.each([
+    ["empty string config", JSON.stringify(""), ""],
+    ["object value field", JSON.stringify({ value: 5 }), "5"],
+    [
+      "object config without value",
+      JSON.stringify({ mode: "strict", limit: 3 }),
+      JSON.stringify({ mode: "strict", limit: 3 }),
+    ],
+    ["primitive config", JSON.stringify(42), "42"],
+    [
+      "array config",
+      JSON.stringify(["jobs", "exports"]),
+      JSON.stringify(["jobs", "exports"]),
+    ],
+  ])("categorizes static rate card with %s", (_label, config, value) => {
     const { features } = categorizeRateCards([
       {
         type: "flat_fee",
@@ -252,15 +266,37 @@ describe("categorizeRateCards", () => {
         price: null,
         entitlementTemplate: {
           type: "static",
-          config: JSON.stringify({ value: 5 }),
+          config,
         },
       },
     ]);
     expect(features[0]).toMatchObject({
       key: "seats",
       name: "Seats",
-      value: "5",
+      value,
     });
+  });
+
+  it("categorizes invalid static config without a value", () => {
+    const { features } = categorizeRateCards([
+      {
+        type: "flat_fee",
+        key: "seats",
+        name: "Seats",
+        billingCadence: null,
+        price: null,
+        entitlementTemplate: {
+          type: "static",
+          config: "{invalid-json}",
+        },
+      },
+    ]);
+
+    expect(features[0]).toMatchObject({
+      key: "seats",
+      name: "Seats",
+    });
+    expect(features[0].value).toBeUndefined();
   });
 
   it("skips rate cards without entitlement template", () => {

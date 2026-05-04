@@ -2,6 +2,7 @@ import type { Feature, Quota, RateCard } from "../types/PlanType.js";
 import { formatDuration } from "./formatDuration.js";
 import { formatPrice } from "./formatPrice.js";
 import { formatTieredPriceBreakdown } from "./formatTieredPriceBreakdown.js";
+import { formatStaticEntitlementConfig } from "./formatStaticEntitlementConfig.js";
 
 export const categorizeRateCards = (
   rateCards: RateCard[],
@@ -62,16 +63,11 @@ export const categorizeRateCards = (
     } else if (et.type === "boolean") {
       features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
     } else if (et.type === "static" && et.config) {
-      try {
-        const config = JSON.parse(et.config);
-        features.push({
-          key: rc.featureKey ?? rc.key,
-          name: rc.name,
-          value: String(config.value),
-        });
-      } catch {
-        features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
-      }
+      features.push({
+        key: rc.featureKey ?? rc.key,
+        name: rc.name,
+        value: formatStaticEntitlementConfig(et.config),
+      });
     }
   }
 
