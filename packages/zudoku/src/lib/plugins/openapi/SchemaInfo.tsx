@@ -257,6 +257,103 @@ const securitySchemeDescription = (scheme: {
   }
 };
 
+type SecurityScheme = NonNullable<
+  NonNullable<SchemaInfoQueryType["schema"]["components"]>["securitySchemes"]
+>[number];
+
+const formatScopes = (
+  scopes: ReadonlyArray<{ name: string; description: string }>,
+) =>
+  scopes.length === 0
+    ? ""
+    : `\n\n  Available scopes:\n${scopes
+        .map(
+          (s) =>
+            `  - \`${s.name}\`${s.description ? ` — ${s.description}` : ""}`,
+        )
+        .join("\n")}`;
+
+const generateAuthInstructions = (
+  scheme: SecurityScheme,
+  baseUrl: string,
+): string => {
+  const endpoint = `${baseUrl.replace(/\/+$/, "")}/endpoint`;
+
+  switch (scheme.type) {
+    case "apiKey": {
+      const param = scheme.paramName ?? "X-API-Key";
+      const where = scheme.in ?? "header";
+      const intro =
+        where === "query"
+          ? `Pass your API key as the \`${param}\` query parameter on every request.`
+          : where === "cookie"
+            ? `Pass your API key in the \`${param}\` cookie on every request.`
+            : `Pass your API key in the \`${param}\` request header on every request.`;
+      const example =
+        where === "query"
+          ? `curl "${endpoint}?${param}=YOUR_API_KEY"`
+          : where === "cookie"
+            ? `curl --cookie "${param}=YOUR_API_KEY" ${endpoint}`
+            : `curl -H "${param}: YOUR_API_KEY" ${endpoint}`;
+      return `${intro}\n\n\`\`\`bash\n${example}\n\`\`\``;
+    }
+    case "http": {
+      if (scheme.scheme === "bearer") {
+        const fmt = scheme.bearerFormat ? ` (${scheme.bearerFormat})` : "";
+        return `Obtain a bearer token${fmt} and send it in the \`Authorization\` header on every request.\n\n\`\`\`bash\ncurl -H "Authorization: Bearer YOUR_TOKEN" ${endpoint}\n\`\`\``;
+      }
+      if (scheme.scheme === "basic") {
+        return `Use HTTP Basic authentication. Clients Base64-encode \`username:password\` and send it in the \`Authorization\` header on every request.\n\n\`\`\`bash\ncurl -u "USERNAME:PASSWORD" ${endpoint}\n\`\`\``;
+      }
+      const s = scheme.scheme ?? "custom";
+      return `Authenticate using the HTTP \`${s}\` scheme by sending the appropriate \`Authorization\` header on every request.\n\n\`\`\`bash\ncurl -H "Authorization: ${s} YOUR_CREDENTIALS" ${endpoint}\n\`\`\``;
+    }
+    case "oauth2": {
+      const flows = scheme.flows;
+      const parts: string[] = [
+        "Authenticate using OAuth 2.0. Obtain an access token via one of the flows below, then send it in the `Authorization` header on every request.",
+      ];
+      if (flows?.authorizationCode) {
+        const f = flows.authorizationCode;
+        parts.push(
+          `- **Authorization Code** — redirect users to \`${f.authorizationUrl}\` and exchange the returned code for a token at \`${f.tokenUrl}\`.${formatScopes(f.scopes)}`,
+        );
+      }
+      if (flows?.implicit) {
+        const f = flows.implicit;
+        parts.push(
+          `- **Implicit** — redirect users to \`${f.authorizationUrl}\` to receive an access token directly in the redirect URL.${formatScopes(f.scopes)}`,
+        );
+      }
+      if (flows?.clientCredentials) {
+        const f = flows.clientCredentials;
+        parts.push(
+          `- **Client Credentials** — request an access token from \`${f.tokenUrl}\` using your client ID and secret. Use for server-to-server calls.${formatScopes(f.scopes)}`,
+        );
+      }
+      if (flows?.password) {
+        const f = flows.password;
+        parts.push(
+          `- **Password** — exchange a username and password at \`${f.tokenUrl}\` for an access token.${formatScopes(f.scopes)}`,
+        );
+      }
+      parts.push(
+        `\`\`\`bash\ncurl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" ${endpoint}\n\`\`\``,
+      );
+      return parts.join("\n\n");
+    }
+    case "openIdConnect": {
+      const url = scheme.openIdConnectUrl;
+      const discovery = url
+        ? ` Load the discovery document at [\`${url}\`](${url}) to find the authorization, token, and userinfo endpoints.`
+        : "";
+      return `Authenticate using OpenID Connect.${discovery} Send the issued ID or access token in the \`Authorization\` header on every request.\n\n\`\`\`bash\ncurl -H "Authorization: Bearer YOUR_ID_TOKEN" ${endpoint}\n\`\`\``;
+    }
+    case "mutualTLS":
+      return `Authenticate using mutual TLS by presenting a client certificate during the TLS handshake. No additional \`Authorization\` header is required.\n\n\`\`\`bash\ncurl --cert client.pem --key client.key ${endpoint}\n\`\`\``;
+  }
+};
+
 export const SchemaInfo = () => {
   const { input, type, options } = useOasConfig();
   const query = useCreateQuery(SchemaInfoQuery, { input, type });
@@ -328,6 +425,41 @@ export const SchemaInfo = () => {
                 content={schema.description}
               />
             )}
+            {!options?.disableSecurity &&
+              (schema.components?.securitySchemes?.length ?? 0) > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
+                    <ShieldCheckIcon size={14} />
+                    Authentication
+                  </div>
+                  <div className="flex flex-col gap-6 max-w-full lg:max-w-2xl">
+                    <p className="text-sm text-muted-foreground">
+                      {(schema.components?.securitySchemes?.length ?? 0) > 1
+                        ? "This API supports the following authentication methods. Use whichever matches your use case."
+                        : "This API requires authentication on every request. Follow the instructions below to authenticate."}
+                    </p>
+                    {schema.components?.securitySchemes?.map((scheme) => (
+                      <div
+                        key={scheme.name}
+                        id={slugify(`auth-${scheme.name}`)}
+                        className="flex flex-col gap-2"
+                      >
+                        <h3 className="text-base font-semibold flex items-center gap-2 m-0">
+                          {securitySchemeIcon(scheme.type)}
+                          {scheme.name}
+                        </h3>
+                        <Markdown
+                          className="prose-sm max-w-full"
+                          content={generateAuthInstructions(
+                            scheme,
+                            schema.servers[0]?.url ?? "https://api.example.com",
+                          )}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             {tags.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
