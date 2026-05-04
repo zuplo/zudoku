@@ -54,7 +54,7 @@ describe("MobileTopNavigation", () => {
   it("does not render the theme switch in the mobile navigation drawer when disabled", async () => {
     await render({
       site: { title: "Test Site" },
-      header: { showThemeSwitch: false },
+      header: { themeSwitcher: { enabled: false } },
     });
 
     fireEvent.click(screen.getByLabelText("Open navigation menu"));

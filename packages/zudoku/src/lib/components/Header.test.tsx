@@ -84,7 +84,7 @@ describe("Header", () => {
     it("does not render in the desktop header when disabled", async () => {
       await render({
         site: { title: "Test Site" },
-        header: { showThemeSwitch: false },
+        header: { themeSwitcher: { enabled: false } },
       });
 
       expect(

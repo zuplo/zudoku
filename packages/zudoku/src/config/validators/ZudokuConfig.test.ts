@@ -257,11 +257,13 @@ describe("validateConfig", () => {
   });
 
   it.each([true, false])(
-    "should accept header.showThemeSwitch with %s",
-    (showThemeSwitch) => {
+    "should accept header.themeSwitcher.enabled with %s",
+    (enabled) => {
       const config = {
         header: {
-          showThemeSwitch,
+          themeSwitcher: {
+            enabled,
+          },
         },
       };
 

@@ -134,7 +134,7 @@ export const Header = memo(function HeaderInner() {
   const searchPosition = header?.placements?.search ?? "center";
   const navPosition = header?.placements?.navigation ?? "end";
   const authPlacement = header?.placements?.auth ?? "navigation";
-  const showThemeSwitch = header?.showThemeSwitch;
+  const themeSwitcherEnabled = header?.themeSwitcher?.enabled;
   const authPosition =
     authPlacement === "navigation" ? navPosition : authPlacement;
 
@@ -236,7 +236,7 @@ export const Header = memo(function HeaderInner() {
               {authPosition === "end" && <ProfileMenu />}
               {searchPosition === "end" && <Search />}
               <Slot.Target name="head-navigation-end" />
-              {showThemeSwitch && <ThemeSwitch />}
+              {themeSwitcherEnabled && <ThemeSwitch />}
             </div>
           </div>
         </div>

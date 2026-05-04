@@ -580,7 +580,11 @@ const PlacementPosition = z.enum(["start", "center", "end"]);
 const HeaderConfigSchema = z
   .object({
     navigation: HeaderNavigationSchema,
-    showThemeSwitch: z.boolean(),
+    themeSwitcher: z
+      .object({
+        enabled: z.boolean(),
+      })
+      .partial(),
     placements: z
       .object({
         navigation: PlacementPosition,
@@ -709,7 +713,9 @@ export type ZudokuConfig = Omit<
 > & {
   header?: {
     navigation?: z.infer<typeof HeaderNavigationSchema>;
-    showThemeSwitch?: boolean;
+    themeSwitcher?: {
+      enabled?: boolean;
+    };
     placements?: {
       navigation?: "start" | "center" | "end";
       search?: "start" | "center" | "end";

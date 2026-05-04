@@ -129,7 +129,7 @@ export const MobileTopNavigation = () => {
     getProfileMenuItems,
   } = context;
   const headerNavigation = header?.navigation ?? [];
-  const showThemeSwitch = header?.showThemeSwitch;
+  const themeSwitcherEnabled = header?.themeSwitcher?.enabled;
   const { isAuthenticated, profile, isAuthEnabled } = authState;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -260,7 +260,7 @@ export const MobileTopNavigation = () => {
                   )}
                 </ClientOnly>
               )}
-              {showThemeSwitch && <ThemeSwitch />}
+              {themeSwitcherEnabled && <ThemeSwitch />}
             </div>
             {site?.showPoweredBy !== false && (
               <PoweredByZudoku className="grow-0 justify-center gap-1" />
