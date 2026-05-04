@@ -93,11 +93,11 @@ export const PricingCard = ({
       </div>
 
       {isSubscribed ? (
-        <Button variant={isPopular ? "default" : "secondary"} asChild>
+        <Button variant={isPopular ? "default" : "outline"} asChild>
           <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
         </Button>
       ) : (
-        <Button variant={isPopular ? "default" : "secondary"} asChild>
+        <Button variant={isPopular ? "default" : "outline"} asChild>
           <Link to={`/checkout?planId=${encodeURIComponent(plan.id)}`}>
             Subscribe
           </Link>
