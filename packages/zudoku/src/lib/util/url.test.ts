@@ -1,5 +1,32 @@
 import { describe, expect, it } from "vitest";
-import { normalizeRedirectUrl } from "./url.js";
+import { normalizeRedirectUrl, stripBasePath } from "./url.js";
+
+describe("stripBasename", () => {
+  it("returns pathname unchanged when basePath is empty or '/'", () => {
+    expect(stripBasePath("/foo", "")).toBe("/foo");
+    expect(stripBasePath("/foo", "/")).toBe("/foo");
+  });
+
+  it("strips a matching basePath prefix", () => {
+    expect(stripBasePath("/docs/checkout", "/docs")).toBe("/checkout");
+  });
+
+  it("returns '/' when pathname equals basePath exactly", () => {
+    expect(stripBasePath("/docs", "/docs")).toBe("/");
+  });
+
+  it("returns pathname unchanged when prefix matches but boundary doesn't", () => {
+    expect(stripBasePath("/docsearch", "/docs")).toBe("/docsearch");
+  });
+
+  it("handles basePath with trailing slash", () => {
+    expect(stripBasePath("/docs/checkout", "/docs/")).toBe("/checkout");
+  });
+
+  it("matches case-insensitively", () => {
+    expect(stripBasePath("/Docs/checkout", "/docs")).toBe("/checkout");
+  });
+});
 
 describe("normalizeRedirectUrl", () => {
   const mockOrigin = "https://example.com";

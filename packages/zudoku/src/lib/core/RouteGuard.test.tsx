@@ -55,11 +55,13 @@ type CreateWrapperOptions = {
   shouldBypass?: boolean;
   initialPath?: string;
   wrapRouteGuard?: boolean;
+  basePath?: string;
 };
 
 const createWrapper = ({
   auth = {},
   protectedRoutes,
+  basePath,
 }: CreateWrapperOptions = {}) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -92,7 +94,7 @@ const createWrapper = ({
   };
 
   const context = new ZudokuContext(
-    { protectedRoutes, plugins: [] },
+    { protectedRoutes, plugins: [], basePath },
     queryClient,
     {},
   );
@@ -111,6 +113,7 @@ const render = async (
     wrapRouteGuard = true,
     shouldBypass = false,
     initialPath = "/",
+    basePath,
   } = options;
   const { context, queryClient, mockAuth, mockAuthentication } =
     createWrapper(options);
@@ -139,7 +142,10 @@ const render = async (
           : routes,
       },
     ],
-    { initialEntries: [initialPath] },
+    {
+      initialEntries: [(basePath ?? "") + initialPath],
+      basename: basePath,
+    },
   );
 
   let renderResult: unknown;
@@ -598,6 +604,51 @@ describe("RouteGuard", () => {
 
       await userEvent.click(screen.getByRole("button", { name: "Login" }));
       expect(mockAuth.login).toHaveBeenCalledWith({ redirectTo: "/protected" });
+    });
+
+    it("strips basePath from redirectTo when blocked target equals basePath", async () => {
+      const { mockAuth } = await render(
+        [
+          {
+            path: "/other",
+            element: (
+              <div>
+                Other <Link to="/">Go</Link>
+              </div>
+            ),
+          },
+          { path: "/", element: <div>Protected</div> },
+        ],
+        {
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: false,
+          },
+          protectedRoutes: { "/": () => false },
+          initialPath: "/other",
+          basePath: "/docs",
+        },
+      );
+
+      await userEvent.click(screen.getByText("Go"));
+      await userEvent.click(screen.getByRole("button", { name: "Login" }));
+
+      expect(mockAuth.login).toHaveBeenCalledWith({ redirectTo: "/" });
+    });
+
+    it("strips basePath from redirectTo when blocked", async () => {
+      const { mockAuth } = await render(navRoutes, {
+        ...navBlockingOptions,
+        basePath: "/docs",
+      });
+
+      await userEvent.click(screen.getByText("Go"));
+      await userEvent.click(screen.getByRole("button", { name: "Login" }));
+
+      expect(mockAuth.login).toHaveBeenCalledWith({
+        redirectTo: "/protected",
+      });
     });
 
     it("resets blocker when cancel clicked", async () => {
