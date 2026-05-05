@@ -21,8 +21,6 @@ export type ProviderData = [keyof ProviderDataRegistry] extends [never]
   ? unknown
   : ProviderDataRegistry[keyof ProviderDataRegistry];
 
-export const AUTH_STATE_STORAGE_KEY = "auth-state";
-
 export interface AuthState {
   isAuthenticated: boolean;
   isPending: boolean;
@@ -78,7 +76,7 @@ export const authState = create<AuthState>()(
           ...(typeof persistedState === "object" ? persistedState : {}),
         };
       },
-      name: AUTH_STATE_STORAGE_KEY,
+      name: "auth-state",
       storage: createJSONStorage(() => localStorage),
     },
   ),
@@ -87,18 +85,6 @@ export const authState = create<AuthState>()(
 syncZustandState(authState);
 
 export const useAuthState = authState;
-
-export const readPersistedAuthState = () => {
-  if (typeof window === "undefined") return undefined;
-  try {
-    const raw = window.localStorage.getItem(AUTH_STATE_STORAGE_KEY);
-    if (!raw) return undefined;
-    const parsed = JSON.parse(raw) as { state?: Partial<AuthState> };
-    return parsed.state;
-  } catch {
-    return undefined;
-  }
-};
 
 export type CustomClaim =
   | string
