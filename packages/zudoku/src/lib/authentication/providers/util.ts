@@ -1,3 +1,17 @@
+import type { NavigateFunction } from "react-router";
+
+export const redirectToSignUpUrl = (
+  url: string,
+  navigate: NavigateFunction,
+  replace = false,
+) => {
+  if (URL.canParse(url)) {
+    window.location[replace ? "replace" : "assign"](url);
+  } else {
+    navigate(url, { replace });
+  }
+};
+
 export const getClerkFrontendApi = (publishableKey: string) => {
   // Split by underscore and get the base64 encoded part (3rd segment)
   const parts = publishableKey.split("_");

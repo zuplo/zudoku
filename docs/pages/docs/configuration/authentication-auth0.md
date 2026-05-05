@@ -154,6 +154,28 @@ When the prompt parameter is omitted (empty string), Auth0 will:
 - Silently authenticate the user if they have a valid session
 - Redirect to the login page if no valid session exists
 
+### Customizing Sign-up
+
+By default Auth0 already adds `screen_hint=signup` when a user clicks Register. To send users to a
+different page (or hide Register entirely):
+
+```typescript
+authentication: {
+  type: "auth0",
+  domain: "your-domain.us.auth0.com",
+  clientId: "<your-auth0-client-id>",
+
+  // Send Register to a separate URL (absolute → external, relative → in-app)
+  signUp: { url: "/register" },
+
+  // Or pass extra params to the Auth0 authorize URL on sign-up
+  signUp: { authorizationParams: { connection: "your-signup-connection" } },
+
+  // Hide Register UI entirely. Visual only — configure Auth0 to actually block sign-ups.
+  disableSignUp: true,
+}
+```
+
 ## Troubleshooting
 
 ### Common Issues

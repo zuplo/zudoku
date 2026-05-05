@@ -254,6 +254,10 @@ authentication: {
   // Defaults to false.
   disableSignUp: true,
 
+  // Optional: send Register to a separate URL instead of /signup
+  // (absolute URL → external redirect, relative path → in-app navigate)
+  signUp: { url: "/register" },
+
   // Optional: Redirect URLs after authentication events
   redirectToAfterSignUp: "/welcome",
   redirectToAfterSignIn: "/dashboard",
@@ -326,6 +330,7 @@ To launch an invite-only portal where new users can only be created by an admin,
 up**). When `disableSignUp` is `true`:
 
 - The "Don't have an account? Sign up." link is hidden on the sign-in page.
+- The Register button is hidden on the protected-route login dialog.
 - Navigating to `/signup` shows an "Invitation required" message instead of a form.
 
 ```ts title="zudoku.config.ts"

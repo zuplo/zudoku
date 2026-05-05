@@ -5,6 +5,9 @@ export type AuthActionContext = { navigate: NavigateFunction };
 export type AuthActionOptions = { redirectTo?: string; replace?: boolean };
 
 export interface AuthenticationPlugin {
+  // Hides Register UI; real enforcement still belongs at the IdP.
+  disableSignUp?: boolean;
+
   initialize?(context: ZudokuContext): Promise<void>;
   onPageLoad?(): void;
 

@@ -10,6 +10,7 @@ import {
 } from "zudoku/ui/Card.js";
 import { useLatest } from "../../util/useLatest.js";
 import { useAuth } from "../hook.js";
+import { ZudokuSignUpDisabledUi } from "../ui/ZudokuAuthUi.js";
 
 export const SignUp = () => {
   const auth = useAuth();
@@ -17,10 +18,16 @@ export const SignUp = () => {
   const redirectTo = search.get("redirect") ?? "/";
 
   const signup = useLatest(auth.signup);
+  const disabled = auth.disableSignUp;
 
   useEffect(() => {
+    if (disabled) return;
     void signup.current({ redirectTo });
-  }, [signup, redirectTo]);
+  }, [signup, redirectTo, disabled]);
+
+  if (disabled) {
+    return <ZudokuSignUpDisabledUi />;
+  }
 
   return (
     <div className="flex items-center justify-center mt-8">

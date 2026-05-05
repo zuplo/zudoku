@@ -84,6 +84,23 @@ that provides 10,000 monthly active users.
 
    You should also ensure your site's domain is added as an allowed origin in the Clerk dashboard.
 
+5. **Customizing Sign-up (Optional)**
+
+   To send Register to a different page, or hide it entirely:
+
+   ```typescript
+   authentication: {
+     type: "clerk",
+     clerkPubKey: "<your-clerk-publishable-key>",
+
+     // Absolute URL → external redirect, relative path → in-app navigate
+     signUp: { url: "/register" },
+
+     // Hide Register UI. Visual only — configure Clerk to actually block sign-ups.
+     disableSignUp: true,
+   },
+   ```
+
 </Stepper>
 
 ## Troubleshooting

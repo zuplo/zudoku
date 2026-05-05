@@ -54,8 +54,12 @@ export default {
     // If not specified, all enabled providers in Firebase will be available
     providers: ["google", "github", "password"],
     // Optional: disable the sign-up UI for invite-only setups. Defaults to false.
-    // When true, the "Sign up" link is hidden and /signup shows a message.
+    // When true, the Register button and "Sign up" link are hidden, and /signup shows a message.
+    // Visual only — also disable sign-ups in your Firebase project for real enforcement.
     disableSignUp: true,
+    // Optional: send Register to a separate URL instead of /signup
+    // (absolute URL → external redirect, relative path → in-app navigate)
+    signUp: { url: "/register" },
     // Optional: configure redirect URLs after authentication
     redirectToAfterSignIn: "/docs",
     redirectToAfterSignUp: "/getting-started",

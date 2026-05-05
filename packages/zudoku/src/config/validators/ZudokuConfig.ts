@@ -383,6 +383,22 @@ const SearchSchema = z
   ])
   .optional();
 
+const SignUpUrlValueSchema = z
+  .string()
+  .min(1)
+  .refine((v) => v.startsWith("/") || URL.canParse(v), {
+    message: "signUp.url must be an absolute URL or a path starting with '/'",
+  });
+const SignUpUrlSchema = z.object({ url: SignUpUrlValueSchema }).strict();
+const SignUpOpenIdSchema = z.union([
+  SignUpUrlSchema,
+  z
+    .object({
+      authorizationParams: z.record(z.string(), z.string()),
+    })
+    .strict(),
+]);
+
 const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
@@ -395,6 +411,8 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpUrlSchema.optional(),
+    disableSignUp: z.boolean().optional(),
   }),
   z.object({
     type: z.literal("firebase"),
@@ -424,6 +442,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpUrlSchema.optional(),
   }),
   z.object({
     type: z.literal("openid"),
@@ -435,6 +454,8 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpOpenIdSchema.optional(),
+    disableSignUp: z.boolean().optional(),
     authorizationParams: z.record(z.string(), z.string()).optional(),
     forwardAuthorizationParams: z.array(z.string()).optional(),
   }),
@@ -449,6 +470,8 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpUrlSchema.optional(),
+    disableSignUp: z.boolean().optional(),
   }),
 
   z.object({
@@ -482,6 +505,8 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
         prompt: z.string().optional(),
       })
       .optional(),
+    signUp: SignUpOpenIdSchema.optional(),
+    disableSignUp: z.boolean().optional(),
   }),
   z.object({
     type: z.literal("supabase"),
@@ -495,6 +520,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpUrlSchema.optional(),
   }),
 ]);
 

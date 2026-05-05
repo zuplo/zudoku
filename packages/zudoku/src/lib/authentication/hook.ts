@@ -76,6 +76,7 @@ export const useAuth = () => {
 
   return {
     isAuthEnabled,
+    disableSignUp: authentication?.disableSignUp ?? false,
     ...authState,
 
     login: async (options?: AuthActionOptions) => {

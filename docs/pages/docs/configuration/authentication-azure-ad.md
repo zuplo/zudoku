@@ -178,6 +178,24 @@ To allow external partners access:
 3. Invite guest users to your directory
 4. Grant appropriate permissions to your application
 
+### Customizing Sign-up
+
+Azure AD B2C usually handles sign-up via a separate user flow. To send users there, point Register
+at the URL of that flow (or any other page):
+
+```typescript
+authentication: {
+  type: "azureb2c",
+  // ...
+
+  // Absolute URL → external redirect, relative path → in-app navigate
+  signUp: { url: "https://your-tenant.b2clogin.com/your-tenant.onmicrosoft.com/B2C_1_SignUp/oauth2/v2.0/authorize?..." },
+
+  // Hide Register entirely. Visual only — sign-ups are still controlled by your B2C policy.
+  disableSignUp: true,
+}
+```
+
 ## User Data
 
 Azure AD provides rich user profile data through OpenID Connect:

@@ -10,7 +10,7 @@ import { SignIn } from "../components/SignIn.js";
 import { SignOut } from "../components/SignOut.js";
 import { SignUp } from "../components/SignUp.js";
 import { type UserProfile, useAuthState } from "../state.js";
-import { getClerkFrontendApi } from "./util.js";
+import { getClerkFrontendApi, redirectToSignUpUrl } from "./util.js";
 
 export type ClerkProviderData = {
   type: "clerk";
@@ -62,6 +62,8 @@ const clerkAuth: AuthenticationProviderInitializer<
   redirectToAfterSignOut = "/",
   redirectToAfterSignUp,
   redirectToAfterSignIn,
+  signUp: signUpConfig,
+  disableSignUp,
 }): AuthenticationPlugin & ZudokuPlugin => {
   const getClerk = (): Promise<Clerk> => {
     if (typeof window === "undefined") {
@@ -143,6 +145,7 @@ const clerkAuth: AuthenticationProviderInitializer<
   }
 
   return {
+    disableSignUp: disableSignUp ?? false,
     getRoutes: () => [
       { path: "/signout", element: <SignOut /> },
       { path: "/signin", element: <SignIn /> },
@@ -205,9 +208,16 @@ const clerkAuth: AuthenticationProviderInitializer<
       });
     },
     signUp: async (
-      _: AuthActionContext,
-      { redirectTo }: { redirectTo?: string } = {},
+      { navigate }: AuthActionContext,
+      {
+        redirectTo,
+        replace = false,
+      }: { redirectTo?: string; replace?: boolean } = {},
     ) => {
+      if (signUpConfig) {
+        redirectToSignUpUrl(signUpConfig.url, navigate, replace);
+        return;
+      }
       const clerk = await getClerk();
       await clerk.redirectToSignUp({
         signInForceRedirectUrl: redirectToAfterSignIn

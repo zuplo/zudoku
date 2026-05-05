@@ -37,6 +37,7 @@ import {
   ZudokuSignUpDisabledUi,
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
+import { redirectToSignUpUrl } from "./util.js";
 
 export type FirebaseProviderData = {
   type: "firebase";
@@ -60,13 +61,15 @@ class FirebaseAuthenticationProvider
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
   private readonly enableEmailLink: boolean;
-  private readonly disableSignUp: boolean;
+  public readonly disableSignUp: boolean;
   private readonly redirectToAfterSignOut: string;
+  private readonly signUpConfig?: FirebaseAuthenticationConfig["signUp"];
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
     this.redirectToAfterSignOut = config.redirectToAfterSignOut ?? "/";
     this.disableSignUp = config.disableSignUp ?? false;
+    this.signUpConfig = config.signUp;
 
     this.app = initializeApp({
       apiKey: config.apiKey,
@@ -101,8 +104,12 @@ class FirebaseAuthenticationProvider
 
   signUp = async (
     { navigate }: AuthActionContext,
-    { redirectTo }: AuthActionOptions,
+    { redirectTo, replace = false }: AuthActionOptions = {},
   ) => {
+    if (this.signUpConfig) {
+      redirectToSignUpUrl(this.signUpConfig.url, navigate, replace);
+      return;
+    }
     void navigate(
       redirectTo
         ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`
