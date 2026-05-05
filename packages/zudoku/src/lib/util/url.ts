@@ -1,14 +1,14 @@
-// Removes the basepath from a pathname if present
-// Returns the pathname unchanged if it's not under the basepath
-export const stripBasepath = (pathname: string, basepath = ""): string => {
-  if (!basepath || basepath === "/") return pathname;
-  if (!pathname.toLowerCase().startsWith(basepath.toLowerCase())) {
+// Removes the basePath from a pathname if present
+// Returns the pathname unchanged if it's not under the basePath
+export const stripBasePath = (pathname: string, basePath = ""): string => {
+  if (!basePath || basePath === "/") return pathname;
+  if (!pathname.toLowerCase().startsWith(basePath.toLowerCase())) {
     return pathname;
   }
 
-  const startIndex = basepath.endsWith("/")
-    ? basepath.length - 1
-    : basepath.length;
+  const startIndex = basePath.endsWith("/")
+    ? basePath.length - 1
+    : basePath.length;
   const nextChar = pathname.charAt(startIndex);
   if (nextChar && nextChar !== "/") return pathname;
 

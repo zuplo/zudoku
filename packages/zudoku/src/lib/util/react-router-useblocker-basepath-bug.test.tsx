@@ -8,7 +8,7 @@
  * it exposes on the returned `Blocker`. This is inconsistent with
  * `useLocation`, which strips.
  *
- * `RouteGuard.tsx` works around this with `stripBasename`. When/if RR fixes
+ * `RouteGuard.tsx` works around this with `stripBasePath`. When/if RR fixes
  * the inconsistency upstream, this test will fail and we can drop the
  * workaround.
  */
@@ -73,7 +73,7 @@ describe("React Router useBlocker basename inconsistency (canary)", () => {
       "/protected",
     );
     // If this assertion ever fails (i.e. RR strips basename here too), drop
-    // the `stripBasename` workaround in RouteGuard.tsx.
+    // the `stripBasePath` workaround in RouteGuard.tsx.
     expect(screen.getByTestId("blocker-pathname")).toHaveTextContent(
       "/docs/protected",
     );

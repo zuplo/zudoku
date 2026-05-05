@@ -22,7 +22,7 @@ import { RenderContext } from "../components/context/RenderContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { Layout } from "../components/Layout.js";
 import { ZudokuError } from "../util/invariant.js";
-import { stripBasepath } from "../util/url.js";
+import { stripBasePath } from "../util/url.js";
 
 export const SEARCH_PROTECTED_SECTION = "protected";
 
@@ -179,9 +179,10 @@ export const RouteGuard = () => {
   const showDialog = needsToSignIn || isBlocked;
 
   // Workaround: `blocker.location.pathname` includes basename, but `useLocation` does not.
-  // Remove this `react-router-blocker-basename.test.tsx` when React Router fixes the issue.
+  // Remove this when React Router fixes the issue. The canary test
+  // `react-router-useblocker-basepath-bug.test.tsx` will fail when that happens.
   const redirectTo = isBlocked
-    ? stripBasepath(blocker.location.pathname, basePath) +
+    ? stripBasePath(blocker.location.pathname, basePath) +
       blocker.location.search
     : location.pathname + location.search;
 

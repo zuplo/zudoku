@@ -1,30 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { normalizeRedirectUrl, stripBasepath } from "./url.js";
+import { normalizeRedirectUrl, stripBasePath } from "./url.js";
 
 describe("stripBasename", () => {
-  it("returns pathname unchanged when basename is empty or '/'", () => {
-    expect(stripBasepath("/foo", "")).toBe("/foo");
-    expect(stripBasepath("/foo", "/")).toBe("/foo");
+  it("returns pathname unchanged when basePath is empty or '/'", () => {
+    expect(stripBasePath("/foo", "")).toBe("/foo");
+    expect(stripBasePath("/foo", "/")).toBe("/foo");
   });
 
-  it("strips a matching basename prefix", () => {
-    expect(stripBasepath("/docs/checkout", "/docs")).toBe("/checkout");
+  it("strips a matching basePath prefix", () => {
+    expect(stripBasePath("/docs/checkout", "/docs")).toBe("/checkout");
   });
 
-  it("returns '/' when pathname equals basename exactly", () => {
-    expect(stripBasepath("/docs", "/docs")).toBe("/");
+  it("returns '/' when pathname equals basePath exactly", () => {
+    expect(stripBasePath("/docs", "/docs")).toBe("/");
   });
 
   it("returns pathname unchanged when prefix matches but boundary doesn't", () => {
-    expect(stripBasepath("/docsearch", "/docs")).toBe("/docsearch");
+    expect(stripBasePath("/docsearch", "/docs")).toBe("/docsearch");
   });
 
-  it("handles basename with trailing slash", () => {
-    expect(stripBasepath("/docs/checkout", "/docs/")).toBe("/checkout");
+  it("handles basePath with trailing slash", () => {
+    expect(stripBasePath("/docs/checkout", "/docs/")).toBe("/checkout");
   });
 
   it("matches case-insensitively", () => {
-    expect(stripBasepath("/Docs/checkout", "/docs")).toBe("/checkout");
+    expect(stripBasePath("/Docs/checkout", "/docs")).toBe("/checkout");
   });
 });
 
