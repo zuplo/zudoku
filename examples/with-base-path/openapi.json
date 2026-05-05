@@ -963,7 +963,9 @@
                       "type": "string",
                       "default": "",
                       "title": "The url Schema",
-                      "examples": ["https://api.rickandmorty.zuplo.io/v1/locations/3"]
+                      "examples": [
+                        "https://api.rickandmorty.zuplo.io/v1/locations/3"
+                      ]
                     },
                     "created": {
                       "type": "string",
