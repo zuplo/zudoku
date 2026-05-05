@@ -383,12 +383,20 @@ const SearchSchema = z
   ])
   .optional();
 
-const SignUpUrlSchema = z.object({ url: z.string().min(1) });
+const SignUpUrlValueSchema = z
+  .string()
+  .min(1)
+  .refine((v) => v.startsWith("/") || URL.canParse(v), {
+    message: "signUp.url must be an absolute URL or a path starting with '/'",
+  });
+const SignUpUrlSchema = z.object({ url: SignUpUrlValueSchema }).strict();
 const SignUpOpenIdSchema = z.union([
   SignUpUrlSchema,
-  z.object({
-    authorizationParams: z.record(z.string(), z.string()),
-  }),
+  z
+    .object({
+      authorizationParams: z.record(z.string(), z.string()),
+    })
+    .strict(),
 ]);
 
 const AuthenticationSchema = z.discriminatedUnion("type", [

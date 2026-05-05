@@ -332,6 +332,30 @@ describe("RouteGuard", () => {
       );
     });
 
+    it("hides Register button when disableSignUp is true", async () => {
+      await render(
+        { path: "/protected", element: <div>Protected</div> },
+        {
+          initialPath: "/protected",
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: false,
+            disableSignUp: true,
+          },
+          protectedRoutes: { "/protected": () => false },
+        },
+      );
+
+      const dialog = screen.getByRole("dialog");
+      expect(
+        within(dialog).queryByRole("button", { name: "Register" }),
+      ).not.toBeInTheDocument();
+      expect(
+        within(dialog).getByRole("button", { name: "Login" }),
+      ).toBeInTheDocument();
+    });
+
     it("calls signup when register button clicked", async () => {
       const { mockAuth } = await render(
         { path: "/protected", element: <div>Protected</div> },
