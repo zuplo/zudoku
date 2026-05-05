@@ -22,6 +22,7 @@ import { RenderContext } from "../components/context/RenderContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { Layout } from "../components/Layout.js";
 import { ZudokuError } from "../util/invariant.js";
+import { stripBasepath } from "../util/url.js";
 
 export const SEARCH_PROTECTED_SECTION = "protected";
 
@@ -101,6 +102,7 @@ export const RouteGuard = () => {
     [auth, zudoku],
   );
   const { protectedRoutes } = zudoku;
+  const { basePath } = zudoku.options;
 
   const getAuthCheck = useCallback(
     (pathname: string) => {
@@ -175,8 +177,12 @@ export const RouteGuard = () => {
   }
 
   const showDialog = needsToSignIn || isBlocked;
+
+  // Workaround: `blocker.location.pathname` includes basename, but `useLocation` does not.
+  // Remove this `react-router-blocker-basename.test.tsx` when React Router fixes the issue.
   const redirectTo = isBlocked
-    ? blocker.location.pathname + blocker.location.search
+    ? stripBasepath(blocker.location.pathname, basePath) +
+      blocker.location.search
     : location.pathname + location.search;
 
   return (
