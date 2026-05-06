@@ -77,6 +77,36 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it("should accept allowInsecureRequests as a boolean in openid config", () => {
+    const config = {
+      authentication: {
+        type: "openid" as const,
+        clientId: "client123",
+        issuer: "https://example.auth0.com",
+        allowInsecureRequests: true,
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should reject non-boolean allowInsecureRequests in openid config", () => {
+    process.env.NODE_ENV = "production";
+
+    const config = {
+      authentication: {
+        type: "openid" as const,
+        clientId: "client123",
+        issuer: "https://example.auth0.com",
+        allowInsecureRequests: "yes" as unknown as boolean,
+      },
+    };
+
+    expect(() => validateConfig(config)).toThrow();
+  });
+
   it("should validate openid issuer format correctly", () => {
     const configWithValidAuth0 = {
       authentication: {
