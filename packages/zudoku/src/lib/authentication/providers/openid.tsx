@@ -71,6 +71,7 @@ export class OpenIDAuthenticationProvider
     "ui_locales",
     "acr_values",
   ];
+  private readonly allowInsecureRequests: boolean;
 
   constructor({
     issuer,
@@ -85,6 +86,7 @@ export class OpenIDAuthenticationProvider
     disableSignUp,
     authorizationParams,
     forwardAuthorizationParams,
+    allowInsecureRequests,
   }: OpenIDAuthenticationConfig) {
     super();
     this.client = {
@@ -96,6 +98,7 @@ export class OpenIDAuthenticationProvider
     // This is the callback URL for the OAuth provider. So it needs the base path.
     this.callbackUrlPath = joinUrl(basePath, OPENID_CALLBACK_PATH);
     this.scopes = scopes ?? ["openid", "profile", "email"];
+    this.allowInsecureRequests = allowInsecureRequests ?? false;
 
     this.redirectToAfterSignUp = redirectToAfterSignUp;
     this.redirectToAfterSignIn = redirectToAfterSignIn;
@@ -111,10 +114,19 @@ export class OpenIDAuthenticationProvider
     );
   }
 
+  protected get oauthOptions() {
+    return this.allowInsecureRequests
+      ? { [oauth.allowInsecureRequests]: true }
+      : {};
+  }
+
   protected async getAuthServer() {
     if (!this.authorizationServer) {
       const issuerUrl = new URL(this.issuer);
-      const response = await oauth.discoveryRequest(issuerUrl);
+      const response = await oauth.discoveryRequest(
+        issuerUrl,
+        this.oauthOptions,
+      );
       this.authorizationServer = await oauth.processDiscoveryResponse(
         issuerUrl,
         response,
@@ -235,6 +247,7 @@ export class OpenIDAuthenticationProvider
       authServer,
       this.client,
       accessToken,
+      this.oauthOptions,
     );
     const userInfo = await userInfoResponse.json();
 
@@ -380,7 +393,9 @@ export class OpenIDAuthenticationProvider
         this.client,
         oauth.None(),
         tokenState.refreshToken,
+        this.oauthOptions,
       );
+
       const result = await oauth.processRefreshTokenResponse(
         as,
         this.client,
@@ -473,6 +488,7 @@ export class OpenIDAuthenticationProvider
           this.client,
           oauth.None(),
           tokenState.refreshToken,
+          this.oauthOptions,
         );
         const result = await oauth.processRefreshTokenResponse(
           as,
@@ -538,6 +554,7 @@ export class OpenIDAuthenticationProvider
       params,
       redirectUrl.toString(),
       codeVerifier,
+      this.oauthOptions,
     );
 
     const oauthResult = await oauth.processAuthorizationCodeResponse(
@@ -558,6 +575,7 @@ export class OpenIDAuthenticationProvider
       authServer,
       this.client,
       accessToken,
+      this.oauthOptions,
     );
     const userInfo = await userInfoResponse.json();
 
