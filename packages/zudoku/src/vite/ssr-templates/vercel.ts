@@ -1,17 +1,8 @@
-import { handle } from "hono/vercel";
-// @ts-expect-error - Loading entry.server.js will be bundled
-import { createServer } from "./entry.server.js";
+import { createServer } from "zudoku/server";
+import { vercel } from "zudoku/server/adapters/vercel";
 
-// Vercel Edge Functions
-// Static files served automatically from dist/client via vercel.json rewrites
+const handler = createServer({ adapter: vercel() });
 
-const template = "__TEMPLATE__";
-const basePath = "__BASE_PATH__";
-
-const app = createServer({ template, basePath });
-
-export const GET = handle(app);
-export const POST = handle(app);
-export const DELETE = handle(app);
-
-export const config = { runtime: "edge" };
+export const GET = handler;
+export const POST = handler;
+export const DELETE = handler;

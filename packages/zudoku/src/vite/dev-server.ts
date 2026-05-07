@@ -279,10 +279,7 @@ export class DevServer {
             },
           );
 
-          const app = entryServer.createServer({
-            template,
-            basePath: currentConfig.basePath,
-          });
+          const app = entryServer.createServer({ template });
           const response = await app.fetch(request);
 
           response.headers.forEach((value, key) => {

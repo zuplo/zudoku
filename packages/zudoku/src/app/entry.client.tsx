@@ -116,10 +116,13 @@ async function hydrate(routes: RouteObject[]) {
   hydrateRoot(root, <BootstrapClient hydrate router={router} />);
 }
 
-// This is a workaround to avoid version skewing
-// See https://vite.dev/guide/build.html#load-error-handling
-// TODO: Implement a more advanced solution if there are CDN urls or e.g. Vercel Skew Protection
+// Reload on chunk preload failures to recover from version skew.
+// Throttled so a non-recoverable error (e.g. auth-gated chunk 401) doesn't loop infinitely.
+// https://vite.dev/guide/build.html#load-error-handling
 window.addEventListener("vite:preloadError", (e) => {
   e.preventDefault();
+  const last = Number(sessionStorage.getItem("zudoku:preload-reload-ts") ?? 0);
+  if (Date.now() - last < 30_000) return;
+  sessionStorage.setItem("zudoku:preload-reload-ts", String(Date.now()));
   window.location.reload();
 });

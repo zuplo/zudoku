@@ -2,7 +2,9 @@ import { useLogger } from "@envelop/core";
 import { createGraphQLServer } from "../../../oas/graphql/index.js";
 import type { OpenApiPluginOptions } from "../index.js";
 
-const map = new Map<string, number>();
+// Bounded so a query that never reaches -end doesn't accumulate (dev-only).
+const MAX_PENDING = 200;
+const pending = new Map<string, number>();
 
 export const createServer = (config: OpenApiPluginOptions) =>
   createGraphQLServer({
@@ -15,16 +17,23 @@ export const createServer = (config: OpenApiPluginOptions) =>
           if (import.meta.env.PROD) return;
 
           if (eventName.endsWith("-start")) {
-            map.set(`${eventName}-${args.operationName}`, performance.now());
+            if (pending.size >= MAX_PENDING) {
+              // Map iterates in insertion order, so the first key is oldest.
+              const oldest = pending.keys().next().value;
+              if (oldest) pending.delete(oldest);
+            }
+            const key = `${eventName}-${args.operationName}`;
+            pending.set(key, performance.now());
           } else if (eventName.endsWith("-end")) {
             const startEvent = eventName.replace("-end", "-start");
-            const start = map.get(`${startEvent}-${args.operationName}`);
+            const key = `${startEvent}-${args.operationName}`;
+            const start = pending.get(key);
             if (start) {
               // biome-ignore lint/suspicious/noConsole: Logging allowed here
               console.log(
                 `[zudoku:debug] ${args.operationName} query took ${performance.now() - start}ms`,
               );
-              map.delete(`${startEvent}-${args.operationName}`);
+              pending.delete(key);
             }
           }
         },
