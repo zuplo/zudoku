@@ -11,8 +11,7 @@ vi.mock("../utils/pricingTaxLegend.js", async (importOriginal) => {
   const original = (await importOriginal()) as Record<string, unknown>;
   return {
     ...original,
-    collectDefaultTaxBehaviors: (plan?: Plan) => {
-      if (!plan) return "unspecified";
+    collectDefaultTaxBehaviors: (plan: Plan) => {
       const behavior = plan.defaultTaxConfig?.behavior;
       if (typeof behavior !== "string" || behavior.trim().length === 0) {
         return "unspecified";

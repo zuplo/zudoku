@@ -19,8 +19,10 @@ const PricingPage = () => {
   const auth = useAuth();
 
   const { data: pricingTable } = usePlans();
-  const taxLegendBehaviors = collectDefaultTaxBehaviors(pricingTable.items[0]);
-  const taxLegendSentence = taxBehaviorLegendSentence(taxLegendBehaviors);
+  const firstPlan = pricingTable.items[0];
+  const taxLegendSentence = firstPlan
+    ? taxBehaviorLegendSentence(collectDefaultTaxBehaviors(firstPlan))
+    : undefined;
 
   const { data: subscriptions = { items: [] } } =
     useQuery<SubscriptionsResponse>({
