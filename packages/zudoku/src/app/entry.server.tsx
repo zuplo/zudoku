@@ -20,13 +20,17 @@ import { BootstrapStatic } from "../lib/components/Bootstrap.js";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
 import type { SSRAuthState } from "../lib/components/context/RenderContext.js";
 import { ServerError } from "../lib/errors/ServerError.js";
+import { buildManifest } from "../lib/manifest.js";
 import { highlighterPromise } from "../lib/shiki.js";
+import type { Adapter } from "./adapter.js";
 import { getRoutesByConfig } from "./main.js";
 import { protectChunks as rawProtectChunks } from "./protectChunks.js";
 import { wrapProtectedRoutes } from "./wrapProtectedRoutes.js";
-export { getRoutesByConfig };
 
-// Shared cached verifier for all consumers (session handler, SSR render, protected-chunk gate). Callers just use the function; cache logic is hidden here.
+export { getRoutesByConfig };
+export type { Adapter, AdapterContext } from "./adapter.js";
+
+// Shared cached verifier for session handler, SSR render, and protected-chunk gate.
 const verifier = configuredAuthProvider?.verifyAccessToken
   ? (token: string) =>
       cachedVerifyAccessToken(
@@ -241,23 +245,37 @@ export const handleRequest = async ({
   }
 };
 
-export const createServer = (options: {
-  template: string;
-  basePath?: string;
-}) => {
+export const manifest = buildManifest({
+  basePath: config.basePath,
+  protectedRoutes: config.protectedRoutes,
+});
+
+export const createApp = () => new Hono();
+
+export type MountOptions<T = Hono> = {
+  adapter?: Adapter<T>;
+  template?: string;
+};
+
+declare const __ZUDOKU_TEMPLATE__: string;
+
+export const mount = <T = Hono>(
+  app: Hono,
+  options: MountOptions<T> = {},
+): T => {
+  const template = options.template ?? __ZUDOKU_TEMPLATE__;
+  const basePath = config.basePath;
   const routes = getRoutesByConfig(config);
-  const app = new Hono();
 
   app.use(compress());
-  app.route("/__z/auth/session", createSessionHandler(verifier));
+  app.route(manifest.auth.sessionEndpoint, createSessionHandler(verifier));
+  options.adapter?.setup?.(app, { basePath, manifest, protectChunks });
   app.all("*", (c) =>
-    handleRequest({
-      template: options.template,
-      request: c.req.raw,
-      routes,
-      basePath: options.basePath,
-    }),
+    handleRequest({ template, request: c.req.raw, routes, basePath }),
   );
 
-  return app;
+  return (options.adapter?.finalize?.(app) ?? app) as T;
 };
+
+export const createServer = <T = Hono>(options: MountOptions<T> = {}): T =>
+  mount(createApp(), options);

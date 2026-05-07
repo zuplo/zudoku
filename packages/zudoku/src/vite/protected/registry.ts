@@ -3,11 +3,7 @@ import type { ConfigWithMeta } from "../../config/loader.js";
 import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 
-// Output directory for auth-gated chunks. Mirrored in entry.server.tsx's protectChunks middleware.
-export const PROTECTED_CHUNK_DIR = "_protected";
-
-// Routes a module contributes to. Populated by the annotator (auto-detected shapes)
-// or direct registerProtectedScope calls from plugins.
+// Module routes contributed by auto-detection or registerProtectedScope.
 export type ModuleScope =
   | { type: "route"; path: string }
   | { type: "subtree"; root: string };
@@ -34,10 +30,8 @@ export const protectedRegistryEntries = (): ReadonlyMap<
 
 export type ProtectedSourceMatcher = (moduleId: string) => boolean;
 
-// True when `pattern` covers `scope`, using react-router matchPath
-// semantics so build-time gating mirrors runtime behavior. A bare pattern
-// like "/admin" only matches the exact path; "/admin/*" matches /admin
-// and all descendants.
+// Returns true if `pattern` matches `scope`, using react-router's matchPath:
+// "/admin" matches only the exact path; "/admin/*" matches /admin and all nested paths.
 export const scopeMatchesPattern = (
   scope: ModuleScope,
   pattern: string,
@@ -45,9 +39,7 @@ export const scopeMatchesPattern = (
   if (scope.type === "route") {
     return matchPath({ path: pattern, end: true }, joinUrl(scope.path)) != null;
   }
-  // Subtree scopes require an explicit glob pattern so the user opts in
-  // to descendant gating, mirroring how react-router needs `/*` to match
-  // nested paths.
+  // Subtree scopes only match patterns with '*' (e.g. '/*') to require explicit descendant gating, like react-router.
   const root = joinUrl(scope.root);
   if (!pattern.includes("*")) {
     return matchPath({ path: pattern, end: true }, root) != null;
@@ -55,9 +47,8 @@ export const scopeMatchesPattern = (
   return matchPath({ path: pattern, end: false }, root) != null;
 };
 
-// Predicate: is this module id gated by any configured protected pattern?
-// Data-driven via the registry; add a new gateable source by populating
-// the registry (auto-detected shape or direct registerProtectedScope).
+// Returns true if a module ID is gated by any configured protected pattern.
+// Populates registry automatically or via registerProtectedScope.
 export const getProtectedSourceMatcher = (
   config: ConfigWithMeta,
 ): { match: ProtectedSourceMatcher; enabled: boolean; patterns: string[] } => {
@@ -80,9 +71,7 @@ export const getProtectedSourceMatcher = (
   };
 };
 
-// Patterns with no registered module scope: either a typo, or dynamically
-// generated protected content missing a registerProtectedScope call (which
-// would ship unprotected). Surfaced at build end so it shows up in CI.
+// Finds patterns not matched by any registered module scope. Indicates typos or missing registerProtectedScope calls.
 export const findUnmatchedProtectedPatterns = (patterns: string[]): string[] =>
   patterns.filter(
     (p) =>

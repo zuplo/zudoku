@@ -14,15 +14,13 @@ import { logger } from "../cli/common/logger.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/ZudokuConfig.js";
+import { PROTECTED_CHUNK_DIR } from "../lib/manifest.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import type { SSRAdapter } from "./build.js";
 import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
 import { protectedAnnotatorPlugin } from "./protected/annotator.js";
-import {
-  getProtectedSourceMatcher,
-  PROTECTED_CHUNK_DIR,
-} from "./protected/registry.js";
+import { getProtectedSourceMatcher } from "./protected/registry.js";
 import { getZuploSystemConfigurations } from "./zuplo.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {

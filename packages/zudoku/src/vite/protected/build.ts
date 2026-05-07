@@ -2,10 +2,10 @@ import { mkdir, readdir, readFile, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import type { Rolldown } from "vite";
 import type { ConfigWithMeta } from "../../config/loader.js";
+import { PROTECTED_CHUNK_DIR } from "../../lib/manifest.js";
 import {
   findUnmatchedProtectedPatterns,
   getProtectedSourceMatcher,
-  PROTECTED_CHUNK_DIR,
 } from "./registry.js";
 
 // Build-time helpers that enforce the protected-chunk invariant: gated content never lands in the publicly-served output.

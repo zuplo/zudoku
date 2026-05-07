@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as esbuild } from "esbuild";
@@ -10,6 +11,7 @@ import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
+import { writeManifest } from "./manifest.js";
 import { writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
 import {
@@ -98,7 +100,6 @@ export async function runBuild(options: BuildOptions) {
       adapter,
       serverOutDir,
       html,
-      basePath: config.basePath,
     });
     assertNoProtectedLeaks(clientResult.output);
     warnUnmatchedProtectedPatterns(config);
@@ -117,6 +118,7 @@ export async function runBuild(options: BuildOptions) {
       `${JSON.stringify({ type: "module" }, null, 2)}\n`,
       "utf-8",
     );
+    await writeManifest(distDir, config);
     await rm(path.join(clientOutDir, "index.html"), { force: true });
   } else {
     // SSG: prerender and clean up server
@@ -220,53 +222,73 @@ type SSREntryOptions = {
   adapter: SSRAdapter;
   serverOutDir: string;
   html: string;
-  basePath?: string;
+};
+
+const findUserEntry = (dir: string) => {
+  for (const ext of ["ts", "tsx", "js", "mjs"]) {
+    const candidate = path.join(dir, `zudoku.server.${ext}`);
+    if (existsSync(candidate)) return candidate;
+  }
 };
 
 const bundleSSREntry = async (options: SSREntryOptions) => {
-  const { dir, adapter, serverOutDir, html, basePath } = options;
-  const tempEntryPath = path.join(dir, "__ssr-entry.ts");
+  const { dir, adapter, serverOutDir, html } = options;
 
   const packageRoot = getZudokuRootDir();
+  const userEntry = findUserEntry(dir);
 
-  const templateContent = await readFile(
-    path.join(packageRoot, "src/vite/ssr-templates", `${adapter}.ts`),
-    "utf-8",
-  );
+  let entryPoint = userEntry;
+  let tempEntryPath: string | undefined;
 
-  const entryContent = templateContent
-    .replace('"__TEMPLATE__"', JSON.stringify(html))
-    .replace(
-      '"__BASE_PATH__"',
-      basePath ? JSON.stringify(basePath) : "undefined",
+  if (!entryPoint) {
+    tempEntryPath = path.join(dir, "__ssr-entry.ts");
+    const templateContent = await readFile(
+      path.join(packageRoot, "src/vite/ssr-templates", `${adapter}.ts`),
+      "utf-8",
     );
+    await writeFile(tempEntryPath, templateContent, "utf-8");
+    entryPoint = tempEntryPath;
+  }
 
-  await writeFile(tempEntryPath, entryContent, "utf-8");
+  const frameworkPath = path.join(serverOutDir, "entry.server.js");
 
   try {
     await esbuild({
-      entryPoints: [tempEntryPath],
+      entryPoints: [entryPoint],
       bundle: true,
-      platform: adapter === "node" || adapter === "lambda" ? "node" : "neutral",
+      platform: ["node", "lambda"].includes(adapter) ? "node" : "neutral",
       target: "es2022",
       format: "esm",
       outfile: path.join(serverOutDir, "entry.js"),
       external: ["./zudoku.config.js"],
       nodePaths: [path.join(packageRoot, "node_modules")],
       banner: { js: "// Bundled SSR entry" },
+      define: {
+        __ZUDOKU_TEMPLATE__: JSON.stringify(html),
+      },
       plugins: [
         {
           name: "zudoku-ssr-entry",
           setup(build) {
-            build.onResolve({ filter: /^#zudoku-ssr-entry$/ }, () => ({
-              path: "./entry.server.js",
-              external: true,
+            // Point at the Vite-pre-built framework (virtual modules
+            // already resolved) so esbuild's `define` can reach into it.
+            build.onResolve({ filter: /^zudoku\/server$/ }, () => ({
+              path: frameworkPath,
             }));
           },
         },
       ],
     });
+    // Framework is inlined into entry.js; drop the standalone Vite SSR output.
+    await Promise.all([
+      rm(frameworkPath, { force: true }),
+      rm(`${frameworkPath}.map`, { force: true }),
+      rm(path.join(serverOutDir, "assets"), {
+        recursive: true,
+        force: true,
+      }),
+    ]);
   } finally {
-    await rm(tempEntryPath, { force: true });
+    if (tempEntryPath) await rm(tempEntryPath, { force: true });
   }
 };
