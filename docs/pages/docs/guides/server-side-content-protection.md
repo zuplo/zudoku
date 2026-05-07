@@ -161,18 +161,18 @@ options:
    `registerProtectedScope(moduleId, {type: "subtree", root: "/your-path"})` from their Vite `load`
    hook.
 
-## The build-end warning
+## The build-time check
 
-If a `protectedRoutes` pattern has no registered content, the build logs:
+If a `protectedRoutes` pattern has no registered content, the build fails:
 
 ```
 [zudoku] protectedRoutes patterns with no matching content: "/admin/*".
-  Either the pattern is a typo, or the content is generated dynamically without a
-  registerProtectedScope call. Dynamic routes ship unprotected; chunks would be
-  fetchable without auth.
+  Either the pattern is a typo, or the route uses an inline element / dynamic path
+  that isn't code-split. Load the route via dynamic import so it gets its own chunk,
+  otherwise its JS ships in the public bundle.
 ```
 
-This does not fail the build. Three things to check:
+Three things to check:
 
 1. **Typo.** Does the pattern match any real route?
 2. **Dynamic content.** Computed paths? Apply the nested-subtree fix above.
@@ -193,7 +193,7 @@ server-side, use an SSR adapter.
 
 ## Pre-ship checklist
 
-- [ ] No build warnings about unmatched `protectedRoutes` patterns.
+- [ ] Build passes (any unmatched `protectedRoutes` pattern fails the build).
 - [ ] Any custom pages meant to be protected use `lazy: () => import(...)`, not `element`.
 - [ ] Any dynamically-generated protected routes are nested under a static-path ancestor.
 - [ ] URL-based and raw inline OpenAPI specs have their own access control at their origin.
