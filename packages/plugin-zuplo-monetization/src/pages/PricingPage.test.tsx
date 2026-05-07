@@ -122,6 +122,14 @@ describe("PricingPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("Renders without crashing and omits the tax legend when no plans are published", () => {
+    mockPricingData.items = [];
+    mockSubscriptionData.items = [];
+
+    expect(() => renderWithConfig()).not.toThrow();
+    expect(screen.queryByText("Tax & Pricing")).not.toBeInTheDocument();
+  });
+
   it("Shows 'Manage Subscriptions' if the user has any active subscriptions", () => {
     mockPricingData.items = [
       makePlan("1", "starter", "Starter"),
