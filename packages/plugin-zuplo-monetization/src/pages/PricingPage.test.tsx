@@ -11,8 +11,7 @@ vi.mock("../utils/pricingTaxLegend.js", async (importOriginal) => {
   const original = (await importOriginal()) as Record<string, unknown>;
   return {
     ...original,
-    collectDefaultTaxBehaviors: (plan?: Plan) => {
-      if (!plan) return "unspecified";
+    collectDefaultTaxBehaviors: (plan: Plan) => {
       const behavior = plan.defaultTaxConfig?.behavior;
       if (typeof behavior !== "string" || behavior.trim().length === 0) {
         return "unspecified";
@@ -121,6 +120,14 @@ describe("PricingPage", () => {
     expect(
       screen.getByText("Make sure your plans are set up and published."),
     ).toBeInTheDocument();
+  });
+
+  it("Renders without crashing and omits the tax legend when no plans are published", () => {
+    mockPricingData.items = [];
+    mockSubscriptionData.items = [];
+
+    expect(() => renderWithConfig()).not.toThrow();
+    expect(screen.queryByText("Tax & Pricing")).not.toBeInTheDocument();
   });
 
   it("Shows 'Manage Subscriptions' if the user has any active subscriptions", () => {
