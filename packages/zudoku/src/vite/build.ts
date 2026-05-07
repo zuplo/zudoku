@@ -37,7 +37,7 @@ export async function runBuild(options: BuildOptions) {
   const viteConfig = await getViteConfig(
     dir,
     { mode: "production", command: "build" },
-    { adapter },
+    { adapter, ssr },
   );
 
   const builder = await createBuilder(viteConfig);

@@ -50,16 +50,15 @@ const defineEnvVars = (vars: string[]) =>
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
-  options: { adapter?: SSRAdapter } = {},
+  options: { adapter?: SSRAdapter; ssr?: boolean } = {},
 ): Promise<InlineConfig> {
   const { config, publicEnv, envPrefix } = await loadZudokuConfig(
     configEnv,
     dir,
   );
-  const isWorker = options.adapter === "cloudflare";
-
   const { match: isProtectedSource, enabled: hasProtectedSources } =
     getProtectedSourceMatcher(config);
+  const shouldProtectChunks = hasProtectedSources && options.ssr === true;
 
   // Check facadeModuleId too: codeSplitting may move the body into a captured
   // group, leaving a stub whose moduleIds no longer reference the protected source.
@@ -67,6 +66,7 @@ export async function getViteConfig(
     (chunk.facadeModuleId && isProtectedSource(chunk.facadeModuleId)) ||
     chunk.moduleIds.some(isProtectedSource);
 
+  const isWorker = options.adapter === "cloudflare";
   const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
 
   const base = cdnUrl?.base
@@ -169,7 +169,7 @@ export async function getViteConfig(
           manifest: true,
           rolldownOptions: {
             input: "zudoku/app/entry.client.tsx",
-            output: hasProtectedSources
+            output: shouldProtectChunks
               ? {
                   entryFileNames: (chunk) =>
                     isProtectedChunk(chunk)
