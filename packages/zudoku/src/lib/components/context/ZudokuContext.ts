@@ -69,9 +69,10 @@ export const useCurrentNavigation = () => {
     }
   });
 
+  const { isAuthenticated } = useAuthState();
   const { data } = useSuspenseQuery({
     queryFn: () => getPluginNavigation(pathname),
-    queryKey: ["plugin-navigation", pathname],
+    queryKey: ["plugin-navigation", pathname, isAuthenticated],
   });
 
   let topNavItem = navItem;

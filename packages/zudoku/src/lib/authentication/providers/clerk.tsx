@@ -105,8 +105,11 @@ const clerkAuth: AuthenticationProviderInitializer<
     return loadClerk(clerkPubKey);
   };
 
-  const frontendApi = getClerkFrontendApi(clerkPubKey);
-  const issuer = `https://${frontendApi}`;
+  let cachedIssuer: string | undefined;
+  const getIssuer = () => {
+    cachedIssuer ??= `https://${getClerkFrontendApi(clerkPubKey)}`;
+    return cachedIssuer;
+  };
   let jwks: ReturnType<typeof import("jose").createRemoteJWKSet> | undefined;
 
   async function getAccessToken() {
@@ -188,6 +191,7 @@ const clerkAuth: AuthenticationProviderInitializer<
     token: string,
   ): Promise<VerifyAccessTokenResult> {
     const jose = await import("jose");
+    const issuer = getIssuer();
     if (!jwks) {
       jwks = jose.createRemoteJWKSet(
         new URL(`${issuer}/.well-known/jwks.json`),

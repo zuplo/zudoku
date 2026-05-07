@@ -10,6 +10,14 @@ export type AuthCookies = {
   profile: UserProfile | undefined;
 };
 
+const safeDecode = (value: string): string | undefined => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return undefined;
+  }
+};
+
 export const parseCookies = (request: Request): AuthCookies => {
   const header = request.headers.get("Cookie") ?? "";
 
@@ -21,12 +29,13 @@ export const parseCookies = (request: Request): AuthCookies => {
     };
   }
 
-  const cookies = Object.fromEntries(
-    header.split(";").map((c) => {
-      const [key, ...rest] = c.trim().split("=");
-      return [key, decodeURIComponent(rest.join("="))];
-    }),
-  );
+  const cookies: Record<string, string> = {};
+  for (const part of header.split(";")) {
+    const [key, ...rest] = part.trim().split("=");
+    if (!key) continue;
+    const decoded = safeDecode(rest.join("="));
+    if (decoded !== undefined) cookies[key] = decoded;
+  }
 
   let profile: UserProfile | undefined;
   try {
