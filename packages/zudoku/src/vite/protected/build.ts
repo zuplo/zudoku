@@ -10,18 +10,18 @@ import {
 
 // Build-time helpers that enforce the protected-chunk invariant: gated content never lands in the publicly-served output.
 
-// Unmatched patterns usually mean a typo or a route served by an inline element / dynamic path (not chunk-isolated).
-export const warnUnmatchedProtectedPatterns = (config: ConfigWithMeta) => {
+// Unmatched patterns mean a typo or a route served by an inline element / dynamic path (not chunk-isolated).
+// Without a registered scope the JS for that route ships in the public bundle even though RouteGuard blocks rendering.
+export const assertProtectedPatternsCovered = (config: ConfigWithMeta) => {
   const { patterns } = getProtectedSourceMatcher(config);
   const unmatched = findUnmatchedProtectedPatterns(patterns);
   if (unmatched.length === 0) return;
-  // biome-ignore lint/suspicious/noConsole: build-time advisory
-  console.warn(
+  throw new Error(
     `[zudoku] protectedRoutes patterns with no matching content: ${unmatched
       .map((p) => `"${p}"`)
       .join(", ")}.\n` +
       `  Either the pattern is a typo, or the route uses an inline element / dynamic path that isn't code-split. ` +
-      `RouteGuard still blocks rendering, but the JS is not gated at the bundle level.`,
+      `Load the route via dynamic import so it gets its own chunk, otherwise its JS ships in the public bundle.`,
   );
 };
 

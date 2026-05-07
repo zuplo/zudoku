@@ -18,7 +18,7 @@ import {
   assertCloudflareWranglerGatesProtected,
   assertNoProtectedLeaks,
   moveProtectedChunks,
-  warnUnmatchedProtectedPatterns,
+  assertProtectedPatternsCovered,
 } from "./protected/build.js";
 
 const DIST_DIR = "dist";
@@ -101,8 +101,8 @@ export async function runBuild(options: BuildOptions) {
       serverOutDir,
       html,
     });
+    assertProtectedPatternsCovered(config);
     assertNoProtectedLeaks(clientResult.output);
-    warnUnmatchedProtectedPatterns(config);
     // On Cloudflare, protected chunks stay public (gate uses env.ASSETS.fetch).
     // wrangler.toml must set run_worker_first for /_protected/*.
     if (adapter !== "cloudflare") {

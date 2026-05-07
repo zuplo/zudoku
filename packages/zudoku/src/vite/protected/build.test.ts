@@ -2,13 +2,13 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { Rolldown } from "vite";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   assertCloudflareWranglerGatesProtected,
   assertNoProtectedLeaks,
+  assertProtectedPatternsCovered,
   findProtectedLeaks,
   moveProtectedChunks,
-  warnUnmatchedProtectedPatterns,
 } from "./build.js";
 import { clearProtectedRegistry, registerProtectedScope } from "./registry.js";
 
@@ -151,11 +151,8 @@ describe("moveProtectedChunks", () => {
   });
 });
 
-describe("warnUnmatchedProtectedPatterns", () => {
-  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-
+describe("assertProtectedPatternsCovered", () => {
   beforeEach(() => {
-    warn.mockClear();
     clearProtectedRegistry();
   });
 
@@ -165,24 +162,33 @@ describe("warnUnmatchedProtectedPatterns", () => {
       __meta: { rootDir: "/tmp" },
     }) as never;
 
-  it("warns listing every unmatched pattern", () => {
+  it("throws listing every unmatched pattern", () => {
     registerProtectedScope("/abs/foo.mdx", { type: "route", path: "/foo" });
-    warnUnmatchedProtectedPatterns(configWith(["/foo", "/missing/*"]));
-    expect(warn).toHaveBeenCalledOnce();
-    const message = warn.mock.calls[0]?.[0] ?? "";
-    expect(message).toContain(`"/missing/*"`);
-    expect(message).not.toContain(`"/foo"`);
+    expect(() =>
+      assertProtectedPatternsCovered(configWith(["/foo", "/missing/*"])),
+    ).toThrow(/"\/missing\/\*"/);
+  });
+
+  it("does not list patterns that do match", () => {
+    registerProtectedScope("/abs/foo.mdx", { type: "route", path: "/foo" });
+    try {
+      assertProtectedPatternsCovered(configWith(["/foo", "/missing/*"]));
+    } catch (err) {
+      expect((err as Error).message).not.toContain(`"/foo"`);
+      return;
+    }
+    throw new Error("expected throw");
   });
 
   it("is silent when every pattern matches some scope", () => {
     registerProtectedScope("/abs/foo.mdx", { type: "route", path: "/foo" });
-    warnUnmatchedProtectedPatterns(configWith(["/foo"]));
-    expect(warn).not.toHaveBeenCalled();
+    expect(() =>
+      assertProtectedPatternsCovered(configWith(["/foo"])),
+    ).not.toThrow();
   });
 
   it("is silent when no patterns are configured", () => {
-    warnUnmatchedProtectedPatterns(configWith([]));
-    expect(warn).not.toHaveBeenCalled();
+    expect(() => assertProtectedPatternsCovered(configWith([]))).not.toThrow();
   });
 });
 

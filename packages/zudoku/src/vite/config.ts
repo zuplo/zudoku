@@ -5,6 +5,7 @@ import {
   type ConfigEnv,
   type InlineConfig,
   type LogLevel,
+  type Rolldown,
   loadConfigFromFile,
   mergeConfig,
 } from "vite";
@@ -59,7 +60,12 @@ export async function getViteConfig(
 
   const { match: isProtectedSource, enabled: hasProtectedSources } =
     getProtectedSourceMatcher(config);
-  const PROTECTED_GROUP_PREFIX = "protected-";
+
+  // Check facadeModuleId too: codeSplitting may move the body into a captured
+  // group, leaving a stub whose moduleIds no longer reference the protected source.
+  const isProtectedChunk = (chunk: Rolldown.PreRenderedChunk) =>
+    (chunk.facadeModuleId && isProtectedSource(chunk.facadeModuleId)) ||
+    chunk.moduleIds.some(isProtectedSource);
 
   const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
 
@@ -165,27 +171,13 @@ export async function getViteConfig(
             input: "zudoku/app/entry.client.tsx",
             output: hasProtectedSources
               ? {
-                  // Name every MDX/schema entry. With only the protected
-                  // chunk named, Rolldown would bundle shared MDX/React
-                  // runtime into it and public chunks would statically import
-                  // from `_protected/`. Naming sibling entries forces shared
-                  // deps into a separate public chunk.
-                  manualChunks: (id: string) => {
-                    const chunkBase = path.posix
-                      .basename(id.split("?")[0] ?? id)
-                      .replace(/\.[^.]+$/, "")
-                      .replace(/[^a-zA-Z0-9_-]/g, "_");
-                    if (isProtectedSource(id)) {
-                      return `${PROTECTED_GROUP_PREFIX}${chunkBase}`;
-                    }
-                    if (/\.mdx(\?|$)/.test(id)) {
-                      return `doc-${chunkBase}`;
-                    }
-                    return undefined;
-                  },
-                  chunkFileNames: (info: { name: string }) =>
-                    info.name.startsWith(PROTECTED_GROUP_PREFIX)
-                      ? `${PROTECTED_CHUNK_DIR}/${info.name.slice(PROTECTED_GROUP_PREFIX.length)}-[hash].js`
+                  entryFileNames: (chunk) =>
+                    isProtectedChunk(chunk)
+                      ? `${PROTECTED_CHUNK_DIR}/[name]-[hash].js`
+                      : "assets/[name]-[hash].js",
+                  chunkFileNames: (chunk) =>
+                    isProtectedChunk(chunk)
+                      ? `${PROTECTED_CHUNK_DIR}/[name]-[hash].js`
                       : "assets/[name]-[hash].js",
                 }
               : undefined,
