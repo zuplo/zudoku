@@ -1,8 +1,11 @@
 const stringifyValue = (v: unknown): string =>
   typeof v === "string" ? v : JSON.stringify(v);
 
+const normalizeMediaType = (mediaType?: string) =>
+  mediaType?.split(";")[0]?.trim().toLowerCase();
+
 export const isUrlEncodedMediaType = (mediaType?: string) =>
-  mediaType === "application/x-www-form-urlencoded";
+  normalizeMediaType(mediaType) === "application/x-www-form-urlencoded";
 
 export const toUrlEncoded = (value: unknown): string => {
   if (typeof value === "string") return value;
@@ -31,10 +34,11 @@ export const formatRequestBodyForDisplay = (
 };
 
 export const getLanguageForMediaType = (mediaType?: string): string => {
-  if (!mediaType) return "text";
-  if (mediaType.endsWith("+json")) return "json";
-  if (mediaType.endsWith("+xml")) return "xml";
-  if (mediaType.endsWith("+yaml")) return "yaml";
+  const normalized = normalizeMediaType(mediaType);
+  if (!normalized) return "text";
+  if (normalized.endsWith("+json")) return "json";
+  if (normalized.endsWith("+xml")) return "xml";
+  if (normalized.endsWith("+yaml")) return "yaml";
 
   const languages: Record<string, string> = {
     "text/html": "html",
@@ -47,5 +51,5 @@ export const getLanguageForMediaType = (mediaType?: string): string => {
     "application/graphql": "graphql",
     "application/x-www-form-urlencoded": "text",
   };
-  return languages[mediaType] ?? "text";
+  return languages[normalized] ?? "text";
 };
