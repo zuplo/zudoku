@@ -7,6 +7,12 @@ export { ClientOnly } from "./ClientOnly.js";
 export { Heading } from "./Heading.js";
 export { Markdown } from "./Markdown.js";
 export { Search } from "./Search.js";
+export {
+  meshStyleFromPrimary,
+  ScreenshotFrame,
+  type ScreenshotFramePosition,
+  type ScreenshotFrameTheme,
+} from "./ScreenshotFrame.js";
 export { type CustomSlotNames, Slot } from "./Slot.js";
 export { Spinner } from "./Spinner.js";
 export { Typography } from "./Typography.js";

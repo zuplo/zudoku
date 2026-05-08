@@ -1,0 +1,342 @@
+---
+title: ScreenshotFrame
+sidebar_icon: image
+description:
+  Present screenshots and UI captures inside a gradient mesh frame with configurable themes,
+  placement, and a primary-color-derived palette.
+---
+
+import { ScreenshotFrame } from "zudoku/components";
+
+Use **ScreenshotFrame** for marketing-style product shots and documentation hero images: a mesh
+gradient backdrop, asymmetric padding for corner placement, and a floating inner surface with
+shadow.
+
+## Import
+
+```tsx
+import { ScreenshotFrame } from "zudoku/components";
+```
+
+You can also use the component directly in MDX without importing it; it is included in Zudoku’s
+default MDX components as `ScreenshotFrame`.
+
+## Props
+
+```ts
+type ScreenshotFramePosition =
+  | "center"
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right"
+  | "bottom"
+  | "left"
+  | "right";
+
+type ScreenshotFrameTheme =
+  | "primary" // uses primaryColor to build the mesh
+  | "ocean"
+  | "sunset"
+  | "neon"
+  | "aurora"
+  | "forest"
+  | "twilight"
+  | "rose";
+
+type ScreenshotFrameProps = {
+  children: React.ReactNode;
+  /** Default `"bottom-right"`. */
+  position?: ScreenshotFramePosition;
+  /** Default `"ocean"`. Use `"primary"` with `primaryColor` for brand-aligned gradients. */
+  theme?: ScreenshotFrameTheme;
+  /** Hex color when `theme` is `"primary"`. Default `#3b82f6`. */
+  primaryColor?: string;
+  /** Outer frame: `"4/3"` (default) or `"auto"` with a minimum height. */
+  aspect?: "4/3" | "auto";
+  caption?: string;
+  className?: string;
+};
+```
+
+### Position
+
+**Horizontal gutter is always symmetric** (same inset on start and end). The inset scales with frame
+width using a container query (`clamp` + `cqi`), so small frames keep a modest band and large frames
+get a thicker one (capped at `4rem`).
+
+On corner and edge modes, the screenshot can still **flush to the block edge** (top or bottom) so it
+sits against that side of the outer radius; left and right always keep the same gutter.
+
+| Value          | Alignment        | Flush (no gutter) |
+| -------------- | ---------------- | ----------------- |
+| `bottom-right` | End + bottom     | Bottom only       |
+| `bottom-left`  | Start + bottom   | Bottom only       |
+| `top-right`    | End + top        | Top only          |
+| `top-left`     | Start + top      | Top only          |
+| `bottom`       | Centered, bottom | Bottom only       |
+| `left`         | Centered, start  | None              |
+| `right`        | Centered, end    | None              |
+| `center`       | Middle           | None              |
+
+### Themes
+
+| Theme      | Description                                      |
+| ---------- | ------------------------------------------------ |
+| `ocean`    | Cyan, deep blue, magenta, and soft light accents |
+| `sunset`   | Warm oranges, pink, and purple                   |
+| `neon`     | High-contrast magenta, cyan, and violet          |
+| `aurora`   | Greens and teals over a cool base                |
+| `forest`   | Deep greens with natural highlights              |
+| `twilight` | Indigo and violet with soft mist                 |
+| `rose`     | Rose, blush, and cream tones                     |
+| `primary`  | Mesh derived from `primaryColor` (HSL-based)     |
+
+See **[Theme previews](#theme-previews)** below for a visual of each preset.
+
+### Advanced
+
+For custom layouts you can reuse the same gradient math:
+
+```tsx
+import { meshStyleFromPrimary } from "zudoku/components";
+
+const style = meshStyleFromPrimary("#7c3aed");
+// { backgroundColor, backgroundImage } — spread onto any element
+```
+
+## Theme previews
+
+Each tile uses `position="bottom-right"`; only `theme` changes. Screenshots alternate between two
+real Zudoku documentation captures (see [Examples](#examples)). For `primary`, this site’s brand
+purple is used (`primaryColor="#7362ef"`).
+
+<div className="not-prose grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
+  <ScreenshotFrame
+    theme="ocean"
+    position="bottom-right"
+    aspect="4/3"
+    caption="ocean"
+    className="w-full"
+  >
+    <img
+      src="/components/screenshot-frame-track-shipment.png"
+      alt="Zudoku API reference, Track a shipment — ocean theme preview"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+  <ScreenshotFrame
+    theme="sunset"
+    position="bottom-right"
+    aspect="4/3"
+    caption="sunset"
+    className="w-full"
+  >
+    <img
+      src="/components/screenshot-frame-shipment-api.png"
+      alt="Zudoku Shipment API overview — sunset theme preview"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+  <ScreenshotFrame
+    theme="neon"
+    position="bottom-right"
+    aspect="4/3"
+    caption="neon"
+    className="w-full"
+  >
+    <img
+      src="/components/screenshot-frame-track-shipment.png"
+      alt="Zudoku API reference, Track a shipment — neon theme preview"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+  <ScreenshotFrame
+    theme="aurora"
+    position="bottom-right"
+    aspect="4/3"
+    caption="aurora"
+    className="w-full"
+  >
+    <img
+      src="/components/screenshot-frame-shipment-api.png"
+      alt="Zudoku Shipment API overview — aurora theme preview"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+  <ScreenshotFrame
+    theme="forest"
+    position="bottom-right"
+    aspect="4/3"
+    caption="forest"
+    className="w-full"
+  >
+    <img
+      src="/components/screenshot-frame-track-shipment.png"
+      alt="Zudoku API reference, Track a shipment — forest theme preview"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+  <ScreenshotFrame
+    theme="twilight"
+    position="bottom-right"
+    aspect="4/3"
+    caption="twilight"
+    className="w-full"
+  >
+    <img
+      src="/components/screenshot-frame-shipment-api.png"
+      alt="Zudoku Shipment API overview — twilight theme preview"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+  <ScreenshotFrame
+    theme="rose"
+    position="bottom-right"
+    aspect="4/3"
+    caption="rose"
+    className="w-full"
+  >
+    <img
+      src="/components/screenshot-frame-track-shipment.png"
+      alt="Zudoku API reference, Track a shipment — rose theme preview"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+  <ScreenshotFrame
+    theme="primary"
+    primaryColor="#7362ef"
+    position="bottom-right"
+    aspect="4/3"
+    caption="primary (#7362ef)"
+    className="w-full"
+  >
+    <img
+      src="/components/screenshot-frame-shipment-api.png"
+      alt="Zudoku Shipment API overview — primary theme preview"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+</div>
+
+## Examples
+
+These examples use real Zudoku documentation screenshots (Cosmo Cargo demo), stored under
+`docs/public/components/` in this repo.
+
+### API reference page (ocean, bottom-right)
+
+<ScreenshotFrame className="max-w-3xl" caption="Track a shipment — OpenAPI operation page">
+  <img
+    src="/components/screenshot-frame-track-shipment.png"
+    alt="Zudoku documentation showing the Track a shipment API reference with sidebar, parameters, and example response panel"
+    width={1024}
+    height={665}
+    loading="lazy"
+  />
+</ScreenshotFrame>
+
+```tsx
+<ScreenshotFrame caption="Track a shipment — OpenAPI operation page">
+  <img
+    src="/components/screenshot-frame-track-shipment.png"
+    alt="Zudoku API reference screenshot"
+    width={1024}
+    height={665}
+  />
+</ScreenshotFrame>
+```
+
+### Brand color (`primary`)
+
+<ScreenshotFrame
+  className="max-w-3xl"
+  theme="primary"
+  primaryColor="#7362ef"
+  position="center"
+  caption="Shipment API overview with brand-colored frame"
+>
+  <img
+    src="/components/screenshot-frame-shipment-api.png"
+    alt="Zudoku documentation showing the Shipment API introduction with curl example and rate limits"
+    width={1024}
+    height={665}
+    loading="lazy"
+  />
+</ScreenshotFrame>
+
+```tsx
+<ScreenshotFrame theme="primary" primaryColor="#7362ef" position="center">
+  <img
+    src="/components/screenshot-frame-shipment-api.png"
+    alt="Shipment API documentation screenshot"
+    width={1024}
+    height={665}
+  />
+</ScreenshotFrame>
+```
+
+### Corner placement and caption
+
+<div className="not-prose grid gap-10 md:grid-cols-2">
+  <ScreenshotFrame theme="sunset" position="top-left" aspect="auto" caption="Top-left alignment">
+    <img
+      src="/components/screenshot-frame-track-shipment.png"
+      alt="Zudoku Track a shipment page in a sunset frame, top-left placement"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+  <ScreenshotFrame theme="neon" position="bottom-left" aspect="auto" caption="Bottom-left">
+    <img
+      src="/components/screenshot-frame-shipment-api.png"
+      alt="Zudoku Shipment API overview in a neon frame, bottom-left placement"
+      width={1024}
+      height={665}
+      loading="lazy"
+    />
+  </ScreenshotFrame>
+</div>
+
+```tsx
+<ScreenshotFrame theme="sunset" position="top-left" aspect="auto" caption="Top-left alignment">
+  <img
+    src="/components/screenshot-frame-track-shipment.png"
+    alt="API reference screenshot"
+    width={1024}
+    height={665}
+  />
+</ScreenshotFrame>
+```
+
+## MDX (no import)
+
+```mdx
+<ScreenshotFrame theme="twilight" position="top-right">
+  ![API console](/images/api-console.png)
+</ScreenshotFrame>
+```
+
+:::info
+
+Children are usually an `<img />` or any React node. Images scale down with `max-width` /
+`object-contain` so they stay inside the inner rounded frame.
+
+:::
