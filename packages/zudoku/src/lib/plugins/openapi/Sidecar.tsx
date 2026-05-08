@@ -30,6 +30,10 @@ import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
+import {
+  formatRequestBodyForDisplay,
+  getLanguageForMediaType,
+} from "./util/formatRequestBody.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
 import { useResolvedAuth } from "./util/useResolvedAuth.js";
@@ -247,7 +251,11 @@ export const Sidecar = ({
       exampleBody: currentExampleCode
         ? {
             mimeType: selectedContent?.mediaType ?? "application/json",
-            text: JSON.stringify(currentExampleCode, null, 2),
+            text:
+              formatRequestBodyForDisplay(
+                selectedContent?.mediaType,
+                currentExampleCode,
+              ) ?? "",
           }
         : { mimeType: selectedContent?.mediaType ?? "application/json" },
       resolvedAuth,
@@ -430,7 +438,13 @@ export const Sidecar = ({
         <GeneratedExampleSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
-          code={JSON.stringify(currentExampleCode, null, 2)}
+          language={getLanguageForMediaType(selectedContent?.mediaType)}
+          code={
+            formatRequestBodyForDisplay(
+              selectedContent?.mediaType,
+              currentExampleCode,
+            ) ?? ""
+          }
         />
       ) : null}
 

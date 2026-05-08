@@ -11,10 +11,12 @@ import * as SidecarBox from "./SidecarBox.js";
 
 export const GeneratedExampleSidecarBox = ({
   code,
+  language = "json",
   isOnScreen,
   shouldLazyHighlight,
 }: {
   code: string;
+  language?: string;
   isOnScreen: boolean;
   shouldLazyHighlight?: boolean;
 }) => {
@@ -41,7 +43,7 @@ export const GeneratedExampleSidecarBox = ({
         ) : (
           <SyntaxHighlight
             embedded
-            language="json"
+            language={language}
             code={code}
             className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
           />

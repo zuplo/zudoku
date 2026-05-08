@@ -55,6 +55,10 @@
       "description": "Endpoints for system health checks and retrieving API version information."
     },
     {
+      "name": "Authentication",
+      "description": "Endpoints for obtaining warp-grade OAuth tokens used to authorize cargo operations."
+    },
+    {
       "name": "Schemas",
       "description": "Endpoints for retrieving and validating data schemas used across the Cosmo Cargo platform.",
       "x-zudoku-collapsed": false
@@ -3650,6 +3654,116 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/token": {
+      "post": {
+        "summary": "Issue OAuth access token",
+        "description": "Exchange client credentials for a short-lived warp-grade access token. The request body must be sent as `application/x-www-form-urlencoded` per RFC 6749.",
+        "operationId": "issueOAuthToken",
+        "tags": ["Authentication"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["grant_type", "client_id", "client_secret"],
+                "properties": {
+                  "grant_type": {
+                    "type": "string",
+                    "enum": ["client_credentials"],
+                    "description": "OAuth 2.0 grant type. Only `client_credentials` is supported for fleet integrations."
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "Identifier issued when registering your fleet integration."
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "Secret issued alongside the client_id. Treat as sensitive."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "description": "Space-separated list of requested scopes (e.g. `shipments:read shipments:write`)."
+                  }
+                }
+              },
+              "example": {
+                "grant_type": "client_credentials",
+                "client_id": "cosmo-fleet-7421",
+                "client_secret": "warp-secret-xyz",
+                "scope": "shipments:read shipments:write"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access token issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["access_token", "token_type", "expires_in"],
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "description": "Bearer token to send in the `Authorization` header."
+                    },
+                    "token_type": {
+                      "type": "string",
+                      "enum": ["Bearer"]
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "description": "Token lifetime in seconds."
+                    },
+                    "scope": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "access_token": "warp.eyJhbGciOiJIUzI1NiJ9.cargo",
+                  "token_type": "Bearer",
+                  "expires_in": 3600,
+                  "scope": "shipments:read shipments:write"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request",
+                        "invalid_client",
+                        "invalid_grant",
+                        "unsupported_grant_type"
+                      ]
+                    },
+                    "error_description": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "invalid_client",
+                  "error_description": "Unknown client_id or bad credentials."
                 }
               }
             }
