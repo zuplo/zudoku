@@ -227,7 +227,9 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                     setValue("bodyMode", "text");
                   }
                   setValue("headers", [
-                    ...headers.filter((h) => h.name !== "Content-Type"),
+                    ...headers.filter(
+                      (h) => h.name.toLowerCase() !== "content-type",
+                    ),
                     {
                       name: "Content-Type",
                       value: mediaType,

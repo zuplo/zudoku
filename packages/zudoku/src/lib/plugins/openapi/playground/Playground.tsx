@@ -428,7 +428,7 @@ export const Playground = ({
               .join("\n");
             break;
           case "urlencoded":
-            requestBody = typeof body === "string" ? body : "";
+            requestBody = typeof built.body === "string" ? built.body : "";
             break;
           default:
             requestBody = data.body;
