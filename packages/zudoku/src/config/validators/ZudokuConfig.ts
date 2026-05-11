@@ -451,6 +451,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     issuer: z.string(),
     audience: z.string().optional(),
     scopes: z.array(z.string()).optional(),
+    allowInsecureRequests: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),

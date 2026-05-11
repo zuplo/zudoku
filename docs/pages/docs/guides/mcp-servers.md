@@ -186,4 +186,4 @@ since they use a different interaction model.
 
 If you are using [Zuplo](https://zuplo.com) to host your API, the `x-mcp-server` extension is
 automatically added to POST operations that use the `mcpServerHandler`. No manual schema changes are
-needed. See the [Zuplo MCP documentation](https://zuplo.com/docs/handlers/mcp-handler) for details.
+needed. See the [Zuplo MCP documentation](https://zuplo.com/docs/handlers/mcp-server) for details.

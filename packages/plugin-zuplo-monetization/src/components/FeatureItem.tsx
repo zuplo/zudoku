@@ -13,7 +13,7 @@ export const FeatureItem = ({
     <div className={cn("flex items-start gap-2", className)}>
       <CheckIcon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
       <div className="text-sm">
-        {feature.value ? (
+        {feature.value !== undefined ? (
           <>
             <span className="font-medium">{feature.name}:</span> {feature.value}
           </>

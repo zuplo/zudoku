@@ -1,5 +1,4 @@
 export type UrlEncodedRow = { name: string; value: string };
-
 const stringifyValue = (v: unknown): string =>
   typeof v === "string" ? v : JSON.stringify(v);
 
@@ -55,7 +54,6 @@ export const getLanguageForMediaType = (mediaType?: string): string => {
   };
   return languages[normalized] ?? "text";
 };
-
 export const rowsToUrlEncoded = (rows: UrlEncodedRow[]): string => {
   const params = new URLSearchParams();
   for (const { name, value } of rows) params.append(name, value);
