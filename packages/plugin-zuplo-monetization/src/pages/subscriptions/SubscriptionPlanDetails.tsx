@@ -11,6 +11,7 @@ import { useMonetizationConfig } from "../../MonetizationContext.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPrice } from "../../utils/formatPrice.js";
+import { formatStaticEntitlementConfig } from "../../utils/formatStaticEntitlementConfig.js";
 import { formatTieredPriceBreakdown } from "../../utils/formatTieredPriceBreakdown.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 import {
@@ -154,16 +155,11 @@ const getEntitlementsFromItems = (
         continue;
       }
 
-      try {
-        const parsed = JSON.parse(entitlement.config) as { value?: unknown };
-        features.push({
-          entitlementType: "static",
-          ...base,
-          value: parsed?.value != null ? String(parsed.value) : undefined,
-        });
-      } catch {
-        features.push({ entitlementType: "static", ...base });
-      }
+      features.push({
+        entitlementType: "static",
+        ...base,
+        value: formatStaticEntitlementConfig(entitlement.config),
+      });
     }
   }
 
@@ -370,7 +366,8 @@ export const SubscriptionPlanDetails = ({
                             <div className="flex flex-col gap-1">
                               <div className="text-foreground font-medium">
                                 {row.name}
-                                {row.entitlementType === "static" && row.value
+                                {row.entitlementType === "static" &&
+                                row.value !== undefined
                                   ? `: ${row.value}`
                                   : ""}
                               </div>
@@ -396,7 +393,7 @@ export const SubscriptionPlanDetails = ({
                                     ) : null}
                                   </>
                                 ) : row.entitlementType === "static" &&
-                                  row.value ? null : (
+                                  row.value !== undefined ? null : (
                                   "Included"
                                 )}
                               </div>
