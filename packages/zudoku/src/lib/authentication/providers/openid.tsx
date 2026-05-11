@@ -47,7 +47,7 @@ export class OpenIDAuthenticationProvider
 {
   protected client: oauth.Client;
   protected issuer: string;
-  protected authorizationServer: oauth.AuthorizationServer | undefined;
+  protected authorizationServer: Promise<oauth.AuthorizationServer> | undefined;
 
   protected callbackUrlPath: string;
 
@@ -112,14 +112,16 @@ export class OpenIDAuthenticationProvider
   }
 
   protected async getAuthServer() {
-    if (!this.authorizationServer) {
-      const issuerUrl = new URL(this.issuer);
-      const response = await oauth.discoveryRequest(issuerUrl);
-      this.authorizationServer = await oauth.processDiscoveryResponse(
-        issuerUrl,
-        response,
-      );
-    }
+    this.authorizationServer ??= (async () => {
+      try {
+        const issuerUrl = new URL(this.issuer);
+        const response = await oauth.discoveryRequest(issuerUrl);
+        return await oauth.processDiscoveryResponse(issuerUrl, response);
+      } catch (err) {
+        this.authorizationServer = undefined;
+        throw err;
+      }
+    })();
     return this.authorizationServer;
   }
 
@@ -250,6 +252,7 @@ export class OpenIDAuthenticationProvider
       isAuthenticated: true,
       isPending: false,
       profile,
+      profileFetchedAt: Date.now(),
     });
 
     return true;
@@ -461,6 +464,7 @@ export class OpenIDAuthenticationProvider
           isAuthenticated: false,
           isPending: false,
           profile: null,
+          profileFetchedAt: null,
           providerData: null,
         });
         return;
@@ -567,6 +571,7 @@ export class OpenIDAuthenticationProvider
       isAuthenticated: true,
       isPending: false,
       profile,
+      profileFetchedAt: Date.now(),
     });
     await this.refreshUserProfile();
 
