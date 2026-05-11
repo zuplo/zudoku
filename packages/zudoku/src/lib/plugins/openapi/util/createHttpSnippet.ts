@@ -2,7 +2,7 @@ import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { joinUrl } from "../../../util/joinUrl.js";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 
-const toFormDataParams = (text?: string) => {
+const toMultipartParams = (text?: string) => {
   const stringify = (v: unknown) =>
     typeof v === "string" ? v : JSON.stringify(v);
 
@@ -17,6 +17,13 @@ const toFormDataParams = (text?: string) => {
   } catch {
     return [];
   }
+};
+
+const toUrlEncodedParams = (text?: string) => {
+  if (!text) return [];
+  return Array.from(new URLSearchParams(text).entries()).map(
+    ([name, value]) => ({ name, value }),
+  );
 };
 
 export type ResolvedAuth = {
@@ -43,16 +50,18 @@ export const createHttpSnippet = ({
   };
   resolvedAuth?: ResolvedAuth;
 }) => {
-  const isMultipart =
-    exampleBody.mimeType === "multipart/form-data" ||
-    exampleBody.mimeType === "application/x-www-form-urlencoded";
-
-  const postData = isMultipart
-    ? {
-        mimeType: exampleBody.mimeType,
-        params: toFormDataParams(exampleBody.text),
-      }
-    : exampleBody;
+  const postData =
+    exampleBody.mimeType === "multipart/form-data"
+      ? {
+          mimeType: exampleBody.mimeType,
+          params: toMultipartParams(exampleBody.text),
+        }
+      : exampleBody.mimeType === "application/x-www-form-urlencoded"
+        ? {
+            mimeType: exampleBody.mimeType,
+            params: toUrlEncodedParams(exampleBody.text),
+          }
+        : exampleBody;
 
   const baseHeaders = [
     ...(exampleBody.text

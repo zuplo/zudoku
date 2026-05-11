@@ -81,3 +81,63 @@ describe("createHttpSnippet auth merge", () => {
     expect(out).not.toContain("example.com//things");
   });
 });
+
+const postOp = {
+  ...makeOp(),
+  method: "POST",
+} as OperationsFragmentFragment;
+
+const shellWithBody = (
+  exampleBody: { mimeType: string; text?: string },
+  op: OperationsFragmentFragment = postOp,
+) =>
+  getConverted(
+    createHttpSnippet({
+      operation: op,
+      selectedServer: "https://api.example.com",
+      exampleBody,
+    }),
+    "shell",
+  ) as string;
+
+describe("createHttpSnippet body encoding", () => {
+  it("emits urlencoded curl with form fields and matching Content-Type", () => {
+    const out = shellWithBody({
+      mimeType: "application/x-www-form-urlencoded",
+      text: "grant_type=client_credentials&client_id=abc&client_secret=xyz",
+    });
+    expect(out).toContain("Content-Type: application/x-www-form-urlencoded");
+    expect(out).toContain("grant_type=client_credentials");
+    expect(out).toContain("client_id=abc");
+    expect(out).toContain("client_secret=xyz");
+    expect(out).not.toContain("application/json");
+  });
+
+  it("preserves repeated keys in urlencoded bodies", () => {
+    const out = shellWithBody({
+      mimeType: "application/x-www-form-urlencoded",
+      text: "scope=read&scope=write",
+    });
+    expect(out).toContain("scope=read");
+    expect(out).toContain("scope=write");
+  });
+
+  it("emits multipart curl from JSON-stringified object body", () => {
+    const out = shellWithBody({
+      mimeType: "multipart/form-data",
+      text: JSON.stringify({ file: "report.pdf", note: "Q1" }),
+    });
+    expect(out).toContain("file=report.pdf");
+    expect(out).toContain("note=Q1");
+  });
+
+  it("sends JSON bodies with the correct Content-Type", () => {
+    const out = shellWithBody({
+      mimeType: "application/json",
+      text: JSON.stringify({ hello: "world" }),
+    });
+    expect(out).toContain("Content-Type: application/json");
+    expect(out).toContain("hello");
+    expect(out).toContain("world");
+  });
+});
