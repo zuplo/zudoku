@@ -47,17 +47,17 @@ jobs:
       IS_RELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType != 'prerelease' }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
         with:
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version-file: ".tool-versions"
           registry-url: "https://registry.npmjs.org"
@@ -70,7 +70,7 @@ jobs:
 
       - run: pnpm install nx --global
 
-      - uses: nrwl/nx-set-shas@v5
+      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
 
       # This must be a real github account otherwise vercel thows ugly errors
       - run: git config --global user.email "integrations@zuplo.com"
@@ -108,7 +108,7 @@ jobs:
       - name: Generate zudoku release token
         if: env.IS_RELEASE == 'true'
         id: zudoku-release-token
-        uses: actions/create-github-app-token@v3
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3
         with:
           app-id: ${{ vars.ZUDOKU_RELEASE_APP_ID }}
           private-key: ${{ secrets.ZUDOKU_RELEASE_APP_PRIVATE_KEY }}
@@ -124,7 +124,7 @@ jobs:
           echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
           git push "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git" main --follow-tags
 
-      - uses: actions/github-script@v9
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         name: ${{ env.IS_RELEASE == 'true' && 'Create Release' || 'Create Pre-release' }}
         id: create-release
         if: github.ref == 'refs/heads/main'
@@ -137,7 +137,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         if: github.ref == 'refs/heads/main'
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
           token_format: access_token
           workload_identity_provider: ${{ vars.GCP_ACTIONS_IDENTITY_PROVIDER }}
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload CSS
         if: github.ref == 'refs/heads/main'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -158,7 +158,7 @@ jobs:
 
       - name: Upload Javascript
         if: github.ref == 'refs/heads/main'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -171,7 +171,7 @@ jobs:
 
       - name: Upload HTML (Latest)
         if: env.IS_RELEASE == 'true'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone/index.html
@@ -182,7 +182,7 @@ jobs:
 
       - name: Upload CSS (Latest)
         if: env.IS_RELEASE == 'true'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -194,7 +194,7 @@ jobs:
 
       - name: Upload Javascript (Latest)
         if: env.IS_RELEASE == 'true'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -217,7 +217,7 @@ jobs:
       - name: Generate a token
         if: env.IS_RELEASE == 'true'
         id: app-token
-        uses: actions/create-github-app-token@v3
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3
         with:
           app-id: ${{ vars.ZUDOKU_GH_APP_ID }}
           private-key: ${{ secrets.ZUDOKU_GH_APP_PRIVATE_KEY }}
