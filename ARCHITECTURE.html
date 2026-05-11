@@ -1,0 +1,1277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zudoku · Architecture</title>
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --bg-soft: #11141c;
+        --panel: #161a24;
+        --panel-2: #1c2130;
+        --line: #262b3a;
+        --text: #e6e8ee;
+        --muted: #98a0b3;
+        --accent: #ff00bd;
+        --accent-2: #7b5cff;
+        --accent-3: #00d4ff;
+        --ok: #3ddc97;
+        --warn: #ffb454;
+        --code-bg: #0d1018;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background:
+          radial-gradient(1200px 600px at 80% -10%, rgba(255, 0, 189, 0.12), transparent 60%),
+          radial-gradient(900px 500px at -10% 10%, rgba(123, 92, 255, 0.12), transparent 60%),
+          var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+        line-height: 1.55;
+        font-size: 15px;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 1200px; margin: 0 auto; padding: 48px 28px 96px; }
+      code, pre, .mono {
+        font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85em;
+      }
+
+      /* HERO */
+      .hero {
+        position: relative;
+        padding: 56px 44px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background:
+          linear-gradient(135deg, rgba(255, 0, 189, 0.08), rgba(0, 212, 255, 0.06) 70%),
+          var(--panel);
+        overflow: hidden;
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(135deg, rgba(255, 0, 189, 0.5), rgba(123, 92, 255, 0.5), rgba(0, 212, 255, 0.4));
+        z-index: -1;
+        border-radius: 21px;
+        filter: blur(20px);
+        opacity: 0.35;
+      }
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+      .hero h1 {
+        font-size: 56px;
+        line-height: 1.05;
+        margin: 0 0 14px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(120deg, #fff 30%, #ff00bd 60%, #7b5cff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero p.lead {
+        font-size: 18px;
+        color: var(--muted);
+        max-width: 720px;
+        margin: 0;
+      }
+      .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+      .badge {
+        font-size: 12px;
+        padding: 6px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--muted);
+      }
+      .badge strong { color: var(--text); margin-right: 6px; }
+
+      /* Section */
+      section { margin-top: 56px; }
+      h2 {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 0 0 6px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      h2 .num {
+        display: inline-grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: white;
+        font-weight: 700;
+      }
+      h3 { font-size: 16px; margin: 0 0 8px; font-weight: 600; }
+      .subhead { color: var(--muted); margin: 0 0 24px; max-width: 760px; }
+
+      /* Cards */
+      .grid { display: grid; gap: 16px; }
+      .grid.two { grid-template-columns: repeat(2, 1fr); }
+      .grid.three { grid-template-columns: repeat(3, 1fr); }
+      .grid.four { grid-template-columns: repeat(4, 1fr); }
+      @media (max-width: 900px) {
+        .grid.two, .grid.three, .grid.four { grid-template-columns: 1fr; }
+        .hero { padding: 36px 24px; }
+        .hero h1 { font-size: 38px; }
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+      .card .tag {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .card .path {
+        font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 11px;
+        color: var(--accent-3);
+        margin-top: 10px;
+        display: block;
+        word-break: break-all;
+      }
+      .card.accent { border-left: 3px solid var(--accent); }
+      .card.accent2 { border-left: 3px solid var(--accent-2); }
+      .card.accent3 { border-left: 3px solid var(--accent-3); }
+
+      /* Lists */
+      ul.clean { list-style: none; padding: 0; margin: 8px 0 0; }
+      ul.clean li {
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--line);
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      ul.clean li:last-child { border-bottom: none; }
+      ul.clean .k {
+        flex: 0 0 auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--accent-2);
+        font-weight: 600;
+        background: rgba(123, 92, 255, 0.1);
+        padding: 2px 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+      ul.clean .v { color: var(--muted); font-size: 13px; }
+
+      /* Pipeline diagram */
+      .pipe {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+        align-items: stretch;
+        margin: 16px 0;
+      }
+      .pipe-step {
+        flex: 1 1 0;
+        min-width: 160px;
+        padding: 16px;
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        position: relative;
+        margin-right: 24px;
+        margin-bottom: 12px;
+      }
+      .pipe-step:last-child { margin-right: 0; }
+      .pipe-step::after {
+        content: "→";
+        position: absolute;
+        right: -20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--accent);
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .pipe-step:last-child::after { display: none; }
+      .pipe-step .step-num {
+        font-size: 10px;
+        color: var(--accent);
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      .pipe-step .step-name {
+        font-weight: 600;
+        margin: 4px 0 6px;
+        font-size: 14px;
+      }
+      .pipe-step .step-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+      /* Layer diagram */
+      .layers { display: flex; flex-direction: column; gap: 8px; }
+      .layer {
+        padding: 16px 20px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        border: 1px solid var(--line);
+      }
+      .layer .l-title { font-weight: 600; font-size: 14px; }
+      .layer .l-sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+      .layer .l-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+      .l-tag {
+        font-size: 11px;
+        padding: 3px 9px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 999px;
+        color: var(--text);
+        border: 1px solid var(--line);
+      }
+      .layer.l1 { background: linear-gradient(90deg, rgba(255, 0, 189, 0.18), rgba(255, 0, 189, 0.04)); }
+      .layer.l2 { background: linear-gradient(90deg, rgba(123, 92, 255, 0.16), rgba(123, 92, 255, 0.04)); }
+      .layer.l3 { background: linear-gradient(90deg, rgba(0, 212, 255, 0.14), rgba(0, 212, 255, 0.04)); }
+      .layer.l4 { background: linear-gradient(90deg, rgba(61, 220, 151, 0.14), rgba(61, 220, 151, 0.04)); }
+      .layer.l5 { background: linear-gradient(90deg, rgba(255, 180, 84, 0.14), rgba(255, 180, 84, 0.04)); }
+
+      pre.code {
+        background: var(--code-bg);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+        overflow-x: auto;
+        font-size: 12px;
+        line-height: 1.6;
+        margin: 12px 0 0;
+      }
+      .code .kw { color: #c792ea; }
+      .code .str { color: #a5e075; }
+      .code .com { color: #6c7693; font-style: italic; }
+      .code .fn { color: #82aaff; }
+      .code .ty { color: #ffcb6b; }
+
+      /* Two-column flow */
+      .pipeline-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      @media (max-width: 900px) { .pipeline-pair { grid-template-columns: 1fr; } }
+
+      .footer {
+        margin-top: 80px;
+        padding-top: 28px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      /* SVG arch diagram */
+      .arch-diagram {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 12px;
+      }
+      .arch-diagram svg { width: 100%; height: auto; display: block; }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .pill.runtime { background: rgba(0, 212, 255, 0.15); color: var(--accent-3); }
+      .pill.build { background: rgba(255, 180, 84, 0.15); color: var(--warn); }
+      .pill.both { background: rgba(123, 92, 255, 0.18); color: var(--accent-2); }
+
+      .toc {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 28px 0 0;
+      }
+      .toc a {
+        text-decoration: none;
+        font-size: 12px;
+        padding: 6px 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.02);
+        transition: all 0.15s;
+      }
+      .toc a:hover {
+        color: var(--text);
+        border-color: var(--accent);
+        background: rgba(255, 0, 189, 0.08);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <!-- HERO -->
+      <header class="hero">
+        <div class="eyebrow">Architecture map · v0.77</div>
+        <h1>Zudoku</h1>
+        <p class="lead">
+          An open-source framework for building beautiful, interactive API documentation. Vite at
+          the core, React 19 on top, OpenAPI shaped through a GraphQL layer, and a plugin
+          architecture that bends to every shape of docs site.
+        </p>
+        <div class="badges">
+          <span class="badge"><strong>React</strong> 19</span>
+          <span class="badge"><strong>Vite</strong> 7</span>
+          <span class="badge"><strong>TypeScript</strong> strict</span>
+          <span class="badge"><strong>Router</strong> React Router 7</span>
+          <span class="badge"><strong>Style</strong> Tailwind v4</span>
+          <span class="badge"><strong>UI</strong> shadcn + Radix</span>
+          <span class="badge"><strong>State</strong> Zustand + TanStack Query</span>
+          <span class="badge"><strong>OAS</strong> Pothos + GraphQL Yoga</span>
+          <span class="badge"><strong>Monorepo</strong> pnpm + Nx</span>
+        </div>
+        <div class="toc">
+          <a href="#overview">01 · Overview</a>
+          <a href="#monorepo">02 · Monorepo</a>
+          <a href="#runtime">03 · Runtime</a>
+          <a href="#build">04 · Build (Vite)</a>
+          <a href="#plugins">05 · Plugin contract</a>
+          <a href="#catalog">06 · Plugin catalog</a>
+          <a href="#openapi">07 · OpenAPI pipelines</a>
+          <a href="#auth">08 · Auth</a>
+          <a href="#ui">09 · UI & theming</a>
+          <a href="#examples">10 · Examples</a>
+        </div>
+      </header>
+
+      <!-- OVERVIEW -->
+      <section id="overview">
+        <h2><span class="num">01</span>System overview</h2>
+        <p class="subhead">
+          Zudoku is a Vite-orchestrated React app. A user writes a
+          <code>zudoku.config.tsx</code>, drops in MDX and OpenAPI schemas, and the framework
+          assembles a routable, themed, plugin-extensible documentation site that can be served
+          live or prerendered to static HTML.
+        </p>
+
+        <div class="arch-diagram">
+          <svg viewBox="0 0 1100 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#ff00bd" stop-opacity="0.25" />
+                <stop offset="1" stop-color="#7b5cff" stop-opacity="0.15" />
+              </linearGradient>
+              <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#7b5cff" stop-opacity="0.25" />
+                <stop offset="1" stop-color="#00d4ff" stop-opacity="0.15" />
+              </linearGradient>
+              <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#00d4ff" stop-opacity="0.22" />
+                <stop offset="1" stop-color="#3ddc97" stop-opacity="0.15" />
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="#98a0b3" />
+              </marker>
+              <style>
+                .lbl { fill: #e6e8ee; font: 600 13px -apple-system, "Segoe UI", sans-serif; }
+                .sub { fill: #98a0b3; font: 11px -apple-system, "Segoe UI", sans-serif; }
+                .ttl { fill: #98a0b3; font: 600 10px -apple-system, "Segoe UI", sans-serif; letter-spacing: 0.14em; text-transform: uppercase; }
+                .ln { stroke: #98a0b3; stroke-width: 1.2; fill: none; }
+                .ln-d { stroke-dasharray: 4 4; }
+                .box { stroke: #262b3a; fill: #161a24; rx: 10; }
+              </style>
+            </defs>
+
+            <!-- USER INPUT TIER -->
+            <text x="40" y="36" class="ttl">User inputs</text>
+            <rect x="40" y="48" width="220" height="80" rx="10" class="box" fill="url(#g1)" />
+            <text x="60" y="74" class="lbl">zudoku.config.tsx</text>
+            <text x="60" y="92" class="sub">Site, navigation, plugins,</text>
+            <text x="60" y="106" class="sub">theme, auth, schemas</text>
+
+            <rect x="280" y="48" width="180" height="80" rx="10" class="box" fill="url(#g1)" />
+            <text x="298" y="74" class="lbl">MDX pages</text>
+            <text x="298" y="92" class="sub">/pages/**/*.{md,mdx}</text>
+            <text x="298" y="106" class="sub">Custom React in markdown</text>
+
+            <rect x="480" y="48" width="200" height="80" rx="10" class="box" fill="url(#g1)" />
+            <text x="498" y="74" class="lbl">OpenAPI schemas</text>
+            <text x="498" y="92" class="sub">YAML / JSON / URL</text>
+            <text x="498" y="106" class="sub">v3.0 or v3.1, multi-version</text>
+
+            <rect x="700" y="48" width="180" height="80" rx="10" class="box" fill="url(#g1)" />
+            <text x="718" y="74" class="lbl">Custom React</text>
+            <text x="718" y="92" class="sub">Landing pages,</text>
+            <text x="718" y="106" class="sub">interactive components</text>
+
+            <rect x="900" y="48" width="160" height="80" rx="10" class="box" fill="url(#g1)" />
+            <text x="918" y="74" class="lbl">Plugins</text>
+            <text x="918" y="92" class="sub">Built-in + custom</text>
+            <text x="918" y="106" class="sub">+ external packages</text>
+
+            <!-- VITE TIER -->
+            <text x="40" y="166" class="ttl">Build orchestration (Vite)</text>
+            <rect x="40" y="178" width="1020" height="100" rx="12" class="box" fill="url(#g2)" />
+            <text x="60" y="206" class="lbl">vitePlugin() · packages/zudoku/src/vite/plugin.ts</text>
+            <text x="60" y="224" class="sub">17 Vite sub-plugins wire the entire framework into Vite's build graph</text>
+
+            <g font-family="-apple-system, sans-serif" font-size="10">
+              <rect x="60" y="236" width="110" height="28" rx="6" fill="#1c2130" stroke="#262b3a" />
+              <text x="115" y="254" text-anchor="middle" fill="#e6e8ee">config</text>
+              <rect x="178" y="236" width="110" height="28" rx="6" fill="#1c2130" stroke="#262b3a" />
+              <text x="233" y="254" text-anchor="middle" fill="#e6e8ee">mdx</text>
+              <rect x="296" y="236" width="110" height="28" rx="6" fill="#1c2130" stroke="#262b3a" />
+              <text x="351" y="254" text-anchor="middle" fill="#e6e8ee">api (OpenAPI)</text>
+              <rect x="414" y="236" width="110" height="28" rx="6" fill="#1c2130" stroke="#262b3a" />
+              <text x="469" y="254" text-anchor="middle" fill="#e6e8ee">docs</text>
+              <rect x="532" y="236" width="110" height="28" rx="6" fill="#1c2130" stroke="#262b3a" />
+              <text x="587" y="254" text-anchor="middle" fill="#e6e8ee">navigation</text>
+              <rect x="650" y="236" width="110" height="28" rx="6" fill="#1c2130" stroke="#262b3a" />
+              <text x="705" y="254" text-anchor="middle" fill="#e6e8ee">search</text>
+              <rect x="768" y="236" width="110" height="28" rx="6" fill="#1c2130" stroke="#262b3a" />
+              <text x="823" y="254" text-anchor="middle" fill="#e6e8ee">auth · api-keys</text>
+              <rect x="886" y="236" width="110" height="28" rx="6" fill="#1c2130" stroke="#262b3a" />
+              <text x="941" y="254" text-anchor="middle" fill="#e6e8ee">theme · shiki</text>
+            </g>
+
+            <!-- RUNTIME TIER -->
+            <text x="40" y="316" class="ttl">Runtime (browser)</text>
+            <rect x="40" y="328" width="320" height="110" rx="12" class="box" fill="url(#g3)" />
+            <text x="60" y="354" class="lbl">React 19 application</text>
+            <text x="60" y="372" class="sub">entry.client.tsx → &lt;Zudoku /&gt; provider</text>
+            <text x="60" y="390" class="sub">React Router 7 routing</text>
+            <text x="60" y="408" class="sub">TanStack Query + Zustand stores</text>
+            <text x="60" y="426" class="sub">MDX Provider, Theme, Auth context</text>
+
+            <rect x="380" y="328" width="320" height="110" rx="12" class="box" fill="url(#g3)" />
+            <text x="400" y="354" class="lbl">Plugin pipeline</text>
+            <text x="400" y="372" class="sub">Iterates ZudokuPlugin[]</text>
+            <text x="400" y="390" class="sub">→ getRoutes() · getHead()</text>
+            <text x="400" y="408" class="sub">→ getMdxComponents()</text>
+            <text x="400" y="426" class="sub">→ getIdentities() · renderSearch()</text>
+
+            <rect x="720" y="328" width="340" height="110" rx="12" class="box" fill="url(#g3)" />
+            <text x="740" y="354" class="lbl">OpenAPI sub-app</text>
+            <text x="740" y="372" class="sub">In-browser GraphQL Yoga (Pothos schema)</text>
+            <text x="740" y="390" class="sub">Operation list · Endpoint · Playground</text>
+            <text x="740" y="408" class="sub">MCP endpoint · Schema viewer</text>
+            <text x="740" y="426" class="sub">Sidecar examples · Code samples</text>
+
+            <!-- OUTPUT TIER -->
+            <text x="40" y="466" class="ttl">Output</text>
+            <rect x="40" y="478" width="240" height="30" rx="8" fill="#1c2130" stroke="#262b3a" />
+            <text x="60" y="498" class="sub">Dev server · HMR</text>
+            <rect x="296" y="478" width="240" height="30" rx="8" fill="#1c2130" stroke="#262b3a" />
+            <text x="316" y="498" class="sub">Prerendered HTML (SSG)</text>
+            <rect x="552" y="478" width="240" height="30" rx="8" fill="#1c2130" stroke="#262b3a" />
+            <text x="572" y="498" class="sub">SSR · Cloudflare · Vercel · Node</text>
+            <rect x="808" y="478" width="252" height="30" rx="8" fill="#1c2130" stroke="#262b3a" />
+            <text x="828" y="498" class="sub">Standalone CDN bundle</text>
+
+            <!-- arrows -->
+            <line x1="150" y1="128" x2="150" y2="178" class="ln" marker-end="url(#arrow)" />
+            <line x1="370" y1="128" x2="370" y2="178" class="ln" marker-end="url(#arrow)" />
+            <line x1="580" y1="128" x2="580" y2="178" class="ln" marker-end="url(#arrow)" />
+            <line x1="790" y1="128" x2="790" y2="178" class="ln" marker-end="url(#arrow)" />
+            <line x1="980" y1="128" x2="980" y2="178" class="ln" marker-end="url(#arrow)" />
+
+            <line x1="550" y1="278" x2="550" y2="328" class="ln" marker-end="url(#arrow)" />
+            <line x1="550" y1="438" x2="550" y2="478" class="ln" marker-end="url(#arrow)" />
+          </svg>
+        </div>
+      </section>
+
+      <!-- MONOREPO -->
+      <section id="monorepo">
+        <h2><span class="num">02</span>Monorepo layout</h2>
+        <p class="subhead">
+          A pnpm + Nx monorepo. The framework itself lives in
+          <code>packages/zudoku</code>; two first-party plugin packages live alongside it, and a
+          CLI scaffolder rounds it out. Examples and docs are workspace members too.
+        </p>
+
+        <div class="grid four">
+          <div class="card accent">
+            <div class="tag">Framework</div>
+            <h3>packages/zudoku</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              The whole framework. CLI, Vite plugin, React runtime, plugin registry, UI kit,
+              OpenAPI pipeline, GraphQL schema, MDX integration, theme system.
+            </p>
+            <span class="path">packages/zudoku/src/</span>
+          </div>
+          <div class="card accent2">
+            <div class="tag">Scaffolder</div>
+            <h3>packages/create-zudoku</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              The <code>npm create zudoku@latest</code> CLI. Copies a template (default or zuplo)
+              into a new folder.
+            </p>
+            <span class="path">packages/create-zudoku/templates/</span>
+          </div>
+          <div class="card accent3">
+            <div class="tag">Plugin</div>
+            <h3>plugin-search-algolia</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              Algolia DocSearch integration as a SearchProviderPlugin. Lazy-loads
+              <code>@docsearch/modal</code>.
+            </p>
+            <span class="path">packages/plugin-search-algolia/</span>
+          </div>
+          <div class="card accent">
+            <div class="tag">Plugin</div>
+            <h3>plugin-zuplo-monetization</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              Plans, subscriptions, payment status — for sites built on top of Zuplo's gateway.
+            </p>
+            <span class="path">packages/plugin-zuplo-monetization/</span>
+          </div>
+        </div>
+
+        <div class="grid two" style="margin-top: 16px">
+          <div class="card">
+            <div class="tag">Tooling</div>
+            <ul class="clean">
+              <li><span class="k">pnpm</span><span class="v">Workspace dependency manager, &gt;=10</span></li>
+              <li><span class="k">Nx 22</span><span class="v">Task orchestration across packages</span></li>
+              <li><span class="k">Biome 2.4</span><span class="v">Lint + import sorting (replaces ESLint)</span></li>
+              <li><span class="k">oxfmt</span><span class="v">Fast formatter (replaces Prettier)</span></li>
+              <li><span class="k">Vitest 4</span><span class="v">Test runner with typecheck mode</span></li>
+              <li><span class="k">Playwright</span><span class="v">E2E suite under <code>/e2e</code></span></li>
+              <li><span class="k">size-limit</span><span class="v">Tracks <code>entry.client</code> below 215 KB</span></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="tag">Workspace members</div>
+            <ul class="clean">
+              <li><span class="k">/packages</span><span class="v">Published npm packages</span></li>
+              <li><span class="k">/examples</span><span class="v">16 example projects (see §10)</span></li>
+              <li><span class="k">/docs</span><span class="v">Zudoku's own docs site — built with Zudoku</span></li>
+              <li><span class="k">/website</span><span class="v">The marketing site at zudoku.dev</span></li>
+              <li><span class="k">/e2e</span><span class="v">Playwright tests</span></li>
+              <li><span class="k">/scripts</span><span class="v">Repo maintenance scripts</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- RUNTIME -->
+      <section id="runtime">
+        <h2><span class="num">03</span>Runtime stack</h2>
+        <p class="subhead">
+          The browser boots <code>entry.client.tsx</code>, which mounts a <code>&lt;Zudoku&gt;</code>
+          provider that supplies context to React Router. Every layer below is composable.
+        </p>
+
+        <div class="layers">
+          <div class="layer l1">
+            <div>
+              <div class="l-title">User configuration</div>
+              <div class="l-sub">zudoku.config.tsx · MDX · OpenAPI · plugins · slots</div>
+            </div>
+            <div class="l-tags">
+              <span class="l-tag">declarative</span>
+              <span class="l-tag">type-safe</span>
+            </div>
+          </div>
+          <div class="layer l2">
+            <div>
+              <div class="l-title">App shell</div>
+              <div class="l-sub">&lt;Zudoku&gt; provider · Layout · Header · Sidebar · Footer · Banner</div>
+            </div>
+            <div class="l-tags">
+              <span class="l-tag">React 19</span>
+              <span class="l-tag">Slots API</span>
+            </div>
+          </div>
+          <div class="layer l3">
+            <div>
+              <div class="l-title">Routing &amp; data</div>
+              <div class="l-sub">React Router 7 · RouteGuard · TanStack Query · per-plugin Zustand stores</div>
+            </div>
+            <div class="l-tags">
+              <span class="l-tag">react-router</span>
+              <span class="l-tag">tanstack-query</span>
+              <span class="l-tag">zustand</span>
+            </div>
+          </div>
+          <div class="layer l4">
+            <div>
+              <div class="l-title">Plugins (NavigationPlugin · CommonPlugin · …)</div>
+              <div class="l-sub">getRoutes · getHead · getMdxComponents · getIdentities · renderSearch · events</div>
+            </div>
+            <div class="l-tags">
+              <span class="l-tag">duck-typed</span>
+              <span class="l-tag">composable</span>
+            </div>
+          </div>
+          <div class="layer l5">
+            <div>
+              <div class="l-title">UI kit + icons + theme</div>
+              <div class="l-sub">shadcn/ui (Radix-based) · Lucide icons · Tailwind v4 CSS vars · next-themes</div>
+            </div>
+            <div class="l-tags">
+              <span class="l-tag">tailwind v4</span>
+              <span class="l-tag">radix</span>
+              <span class="l-tag">shadcn</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid three" style="margin-top: 18px">
+          <div class="card">
+            <div class="tag">Entry</div>
+            <h3>src/app/main.tsx</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 6px 0 0">
+              Resolves <code>virtual:zudoku-*</code> modules emitted by the Vite plugins, glues all
+              configured plugins together, and exposes routes for React Router.
+            </p>
+          </div>
+          <div class="card">
+            <div class="tag">Context</div>
+            <h3>lib/core/ZudokuContext.ts</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 6px 0 0">
+              The runtime context: auth state, plugins list, events dispatcher, slot rendering.
+              <code>useZudoku()</code> hook surfaces it.
+            </p>
+          </div>
+          <div class="card">
+            <div class="tag">Guards</div>
+            <h3>lib/core/RouteGuard.tsx</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 6px 0 0">
+              Wraps the React Router <code>&lt;Outlet&gt;</code>. Reads
+              <code>ProtectedRoutesInput</code> from plugins and redirects unauthenticated users.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUILD -->
+      <section id="build">
+        <h2><span class="num">04</span>Build pipeline · the Vite plugin</h2>
+        <p class="subhead">
+          One <code>vitePlugin()</code> returns an array of <strong>17 sub-plugins</strong>. Each
+          adds capability via virtual modules that the runtime imports. This is where most of the
+          magic happens at build time.
+        </p>
+
+        <pre class="code"><span class="com">// packages/zudoku/src/vite/plugin.ts</span>
+<span class="kw">export default function</span> <span class="fn">vitePlugin</span>(): <span class="ty">PluginOption</span> {
+  <span class="kw">return</span> [
+    <span class="fn">viteShikiPlugin</span>(),           <span class="com">// syntax highlighting bundle</span>
+    <span class="fn">viteConfigReloadPlugin</span>(),    <span class="com">// HMR on zudoku.config.tsx</span>
+    <span class="fn">viteMdxPlugin</span>(),             <span class="com">// MDX → React + custom remark/rehype</span>
+    <span class="fn">react</span>({ include: /\.(mdx?|jsx?|tsx?)$/ }),
+    <span class="fn">viteConfigPlugin</span>(),          <span class="com">// virtual:zudoku-config</span>
+    <span class="fn">viteApiKeysPlugin</span>(),         <span class="com">// virtual:zudoku-api-keys-plugin</span>
+    <span class="fn">viteCustomPagesPlugin</span>(),     <span class="com">// virtual:zudoku-custom-pages-plugin</span>
+    <span class="fn">viteAuthPlugin</span>(),            <span class="com">// virtual:zudoku-auth</span>
+    <span class="fn">viteDocsPlugin</span>(),            <span class="com">// MDX docs route registration</span>
+    <span class="fn">viteDocMetadataPlugin</span>(),     <span class="com">// frontmatter, last-modified</span>
+    <span class="fn">viteNavigationPlugin</span>(),      <span class="com">// virtual:zudoku-navigation</span>
+    <span class="fn">viteApiPlugin</span>(),             <span class="com">// SchemaManager: OpenAPI codegen</span>
+    <span class="fn">viteSearchPlugin</span>(),          <span class="com">// pagefind / inkeep / algolia wiring</span>
+    <span class="fn">viteMarkdownExportPlugin</span>(),  <span class="com">// /llms.txt + raw .md exports</span>
+    <span class="fn">vitePluginSsrCss</span>({ entries: [<span class="str">"zudoku/app/entry.server.tsx"</span>] }),
+    <span class="fn">viteThemePlugin</span>(),           <span class="com">// shadcn theme registry, CSS vars</span>
+    <span class="fn">tailwindcss</span>(),               <span class="com">// Tailwind v4 (CSS-first)</span>
+  ];
+}</pre>
+
+        <div class="grid two" style="margin-top: 16px">
+          <div class="card">
+            <div class="tag">Build modes</div>
+            <ul class="clean">
+              <li><span class="k">dev</span><span class="v">Vite dev server with HMR (<code>cli/dev</code>)</span></li>
+              <li><span class="k">build</span><span class="v">SSG by default — renders every route to static HTML in a worker thread (<code>vite/prerender</code>)</span></li>
+              <li><span class="k">preview</span><span class="v">Local serve of the built output</span></li>
+              <li><span class="k">standalone</span><span class="v">CDN bundle for <code>&lt;script src="cdn.zudoku.dev/latest/main.js"&gt;</code> drop-in</span></li>
+              <li><span class="k">ssr</span><span class="v">Adapter templates for Node, Vercel, Cloudflare Workers</span></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="tag">Virtual modules</div>
+            <ul class="clean">
+              <li><span class="k">zudoku-config</span><span class="v">User's <code>zudoku.config.tsx</code></span></li>
+              <li><span class="k">zudoku-navigation</span><span class="v">Resolved nav tree + rules</span></li>
+              <li><span class="k">zudoku-api-plugins</span><span class="v">Processed OpenAPI plugin instances</span></li>
+              <li><span class="k">zudoku-auth</span><span class="v">Configured auth provider</span></li>
+              <li><span class="k">zudoku-search-plugin</span><span class="v">Active search backend</span></li>
+              <li><span class="k">zudoku-theme.css</span><span class="v">Generated theme CSS variables</span></li>
+              <li><span class="k">zudoku-shiki-register</span><span class="v">Languages used by user's code blocks</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLUGIN CONTRACT -->
+      <section id="plugins">
+        <h2><span class="num">05</span>The plugin contract</h2>
+        <p class="subhead">
+          A <code>ZudokuPlugin</code> is a discriminated union — any object satisfying any of the
+          shapes below qualifies. Plugins are duck-typed at runtime via
+          <code>isXxxPlugin()</code> guards.
+        </p>
+
+        <pre class="code"><span class="com">// packages/zudoku/src/lib/core/plugins.ts</span>
+<span class="kw">export type</span> <span class="ty">ZudokuPlugin</span> =
+  | <span class="ty">CommonPlugin</span>           <span class="com">// initialize · getHead · getMdxComponents</span>
+  | <span class="ty">NavigationPlugin</span>       <span class="com">// getRoutes · getNavigation · getProtectedRoutes</span>
+  | <span class="ty">ApiIdentityPlugin</span>      <span class="com">// getIdentities (for playground auth)</span>
+  | <span class="ty">SearchProviderPlugin</span>   <span class="com">// renderSearch</span>
+  | <span class="ty">ProfileMenuPlugin</span>      <span class="com">// getProfileMenuItems</span>
+  | <span class="ty">EventConsumerPlugin</span>    <span class="com">// events: { onNavigate, onAuthChange, ... }</span>
+  | <span class="ty">AuthenticationPlugin</span>   <span class="com">// signIn, signUp, signOut, getAccessToken</span>
+  | <span class="ty">TransformConfigPlugin</span>; <span class="com">// transformConfig (build-time mutation)</span></pre>
+
+        <div class="grid three" style="margin-top: 16px">
+          <div class="card accent">
+            <div class="tag">Build-time hook</div>
+            <h3>TransformConfigPlugin</h3>
+            <p style="color: var(--muted); font-size: 13px">
+              Mutates the resolved <code>ZudokuConfig</code> before runtime. Used for the
+              with-zuplo integration, processor injection, etc.
+            </p>
+          </div>
+          <div class="card accent2">
+            <div class="tag">Runtime hook</div>
+            <h3>NavigationPlugin</h3>
+            <p style="color: var(--muted); font-size: 13px">
+              The most powerful kind. Owns routes, can expose a custom navigation tree, and can
+              gate routes behind auth.
+            </p>
+          </div>
+          <div class="card accent3">
+            <div class="tag">Runtime hook</div>
+            <h3>CommonPlugin</h3>
+            <p style="color: var(--muted); font-size: 13px">
+              The lightest contract. <code>getHead()</code> injects into <code>&lt;head&gt;</code>
+              per location, <code>getMdxComponents()</code> adds custom MDX tags.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLUGIN CATALOG -->
+      <section id="catalog">
+        <h2><span class="num">06</span>Plugin catalog</h2>
+        <p class="subhead">
+          Seven built-in plugins ship in <code>packages/zudoku/src/lib/plugins/</code>. Two more
+          live as standalone npm packages. Users layer on their own.
+        </p>
+
+        <div class="grid two">
+          <div class="card accent">
+            <div class="tag">Marquee · NavigationPlugin</div>
+            <h3>openapi</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              The reason zudoku exists. Renders an OpenAPI schema as docs: tag categories,
+              endpoint pages, interactive playground, MCP-aware endpoint metadata, code samples
+              across many languages, schema viewer, and per-version routes.
+            </p>
+            <span class="path">lib/plugins/openapi/index.tsx</span>
+          </div>
+          <div class="card accent2">
+            <div class="tag">NavigationPlugin</div>
+            <h3>markdown</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              Registers MDX routes for files under user-defined directories. Frontmatter,
+              last-modified, table-of-contents extraction baked in.
+            </p>
+            <span class="path">lib/plugins/markdown/</span>
+          </div>
+          <div class="card accent3">
+            <div class="tag">NavigationPlugin</div>
+            <h3>api-catalog</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              A landing/index page listing every API in a multi-API portal — categories, filters,
+              icons. Powered by tag extraction from OpenAPI.
+            </p>
+            <span class="path">lib/plugins/api-catalog/</span>
+          </div>
+          <div class="card accent">
+            <div class="tag">NavigationPlugin</div>
+            <h3>api-keys</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              Self-serve API key management pages. Wires up to a user-provided service that
+              issues, lists, and rotates keys. Integrates with the playground for one-click auth.
+            </p>
+            <span class="path">lib/plugins/api-keys/</span>
+          </div>
+          <div class="card accent2">
+            <div class="tag">NavigationPlugin</div>
+            <h3>custom-pages</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              Lets users supply arbitrary React components for arbitrary paths. The escape hatch
+              when MDX isn't enough.
+            </p>
+            <span class="path">lib/plugins/custom-pages/</span>
+          </div>
+          <div class="card accent3">
+            <div class="tag">SearchProviderPlugin</div>
+            <h3>search-pagefind</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              Indexes the built site with <a href="https://pagefind.app" style="color: var(--accent-3)">Pagefind</a>
+              — zero-server search. Default offering.
+            </p>
+            <span class="path">lib/plugins/search-pagefind/</span>
+          </div>
+          <div class="card accent">
+            <div class="tag">SearchProviderPlugin</div>
+            <h3>search-inkeep</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              AI-powered Q&amp;A search via <a href="https://inkeep.com" style="color: var(--accent-3)">Inkeep</a>.
+              Renders a chat-style modal.
+            </p>
+            <span class="path">lib/plugins/search-inkeep/</span>
+          </div>
+          <div class="card accent2">
+            <div class="tag">External · SearchProviderPlugin</div>
+            <h3>plugin-search-algolia</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              <code>@docsearch/core</code> + <code>@docsearch/modal</code>, lazy-loaded behind
+              <code>renderSearch()</code>. Ship-it Algolia DocSearch.
+            </p>
+            <span class="path">packages/plugin-search-algolia/</span>
+          </div>
+          <div class="card accent3">
+            <div class="tag">External · Multi-shape</div>
+            <h3>plugin-zuplo-monetization</h3>
+            <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0">
+              Plans page, subscription selection, payment status. Integrates with Zuplo's API
+              gateway for production monetization flows.
+            </p>
+            <span class="path">packages/plugin-zuplo-monetization/</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- OPENAPI -->
+      <section id="openapi">
+        <h2><span class="num">07</span>OpenAPI · the two-pipeline story</h2>
+        <p class="subhead">
+          The OpenAPI plugin runs <strong>two</strong> distinct processing pipelines depending on
+          where the schema comes from. Both end at the same place: a GraphQL Pothos schema
+          queried in the browser by React components.
+        </p>
+
+        <div class="pipeline-pair">
+          <!-- FILE PIPELINE -->
+          <div class="card">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 6px">
+              <span class="pill build">Build-time</span>
+              <strong>File schemas · SchemaManager</strong>
+            </div>
+            <p style="color: var(--muted); font-size: 12px; margin: 0 0 14px">
+              Runs once in the Vite build via <code>vite/api/SchemaManager.ts</code>. The result
+              is dumped to <code>node_modules/.zudoku/processed</code> and codegenned into a
+              static import.
+            </p>
+            <div class="pipe" style="flex-direction: column; gap: 8px">
+              <div class="pipe-step" style="margin: 0">
+                <div class="step-num">Step 1</div>
+                <div class="step-name">$RefParser.bundle()</div>
+                <div class="step-desc">
+                  Bundles external <code>$ref</code>s, keeps internal refs.
+                  <code>preservedProperties: ["description", "summary"]</code>.
+                </div>
+              </div>
+              <div class="pipe-step" style="margin: 0">
+                <div class="step-num">Step 2</div>
+                <div class="step-name">@scalar/openapi-parser upgrade()</div>
+                <div class="step-desc">
+                  3.0 → 3.1. <code>example</code> → <code>examples</code>. Skipped if already
+                  3.1+.
+                </div>
+              </div>
+              <div class="pipe-step" style="margin: 0">
+                <div class="step-num">Step 3</div>
+                <div class="step-name">flattenAllOfProcessor</div>
+                <div class="step-desc">
+                  Resolves <code>$ref</code>s inside <code>allOf</code> arrays then merges via
+                  <code>@x0k/json-schema-merge</code>.
+                </div>
+              </div>
+              <div class="pipe-step" style="margin: 0">
+                <div class="step-num">Step 4</div>
+                <div class="step-name">Custom processors</div>
+                <div class="step-desc">
+                  User-defined functions: removeExtensions · removePaths · removeParameters ·
+                  traverse.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- URL PIPELINE -->
+          <div class="card">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 6px">
+              <span class="pill runtime">Runtime</span>
+              <strong>URL schemas · validate()</strong>
+            </div>
+            <p style="color: var(--muted); font-size: 12px; margin: 0 0 14px">
+              Runs in the browser (or standalone) via
+              <code>lib/oas/parser/index.ts</code>. Fetched on demand and reprocessed on every
+              cold load.
+            </p>
+            <div class="pipe" style="flex-direction: column; gap: 8px">
+              <div class="pipe-step" style="margin: 0">
+                <div class="step-num">Step 1</div>
+                <div class="step-name">dereference()</div>
+                <div class="step-desc">
+                  Custom resolver. Replaces every <code>$ref</code> inline (sibling properties
+                  are lost — fast and total).
+                </div>
+              </div>
+              <div class="pipe-step" style="margin: 0">
+                <div class="step-num">Step 2</div>
+                <div class="step-name">upgradeSchema()</div>
+                <div class="step-desc">
+                  Custom 3.0 → 3.1. Always converts <code>example</code> → <code>examples</code>
+                  regardless of version.
+                </div>
+              </div>
+              <div class="pipe-step" style="margin: 0">
+                <div class="step-num">Step 3</div>
+                <div class="step-name">flattenAllOf()</div>
+                <div class="step-desc">
+                  Same merge semantics as the build pipeline, but a runtime-friendly
+                  implementation.
+                </div>
+              </div>
+              <div class="pipe-step" style="margin: 0">
+                <div class="step-num">Step 4</div>
+                <div class="step-name">Feed GraphQL</div>
+                <div class="step-desc">
+                  The normalized doc flows into the same Pothos schema as file pipeline output.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GraphQL layer -->
+        <div class="card" style="margin-top: 16px">
+          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px">
+            <span class="pill both">Shared</span>
+            <strong>GraphQL layer · lib/oas/graphql/index.ts</strong>
+          </div>
+          <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px">
+            Both pipelines feed a Pothos schema served in-browser by GraphQL Yoga. The React
+            components query it via a tiny <code>GraphQLClient</code>. This is what turns
+            a normalized OpenAPI doc into the components you see on screen.
+          </p>
+          <div class="grid three">
+            <div>
+              <div class="tag">Custom scalar</div>
+              <h3 style="margin-top: 6px">JSONSchemaScalar</h3>
+              <p style="color: var(--muted); font-size: 12px">
+                Serializes raw schemas through <code>handleCircularRefs()</code> so deeply nested
+                or recursive types survive serialization.
+              </p>
+            </div>
+            <div>
+              <div class="tag">Resolver</div>
+              <h3 style="margin-top: 6px">ExampleItem</h3>
+              <p style="color: var(--muted); font-size: 12px">
+                Resolves media-type level <code>example</code>/<code>examples</code> into a
+                consistent array shape before reaching the client.
+              </p>
+            </div>
+            <div>
+              <div class="tag">Top-level query</div>
+              <h3 style="margin-top: 6px">schema(input, type)</h3>
+              <p style="color: var(--muted); font-size: 12px">
+                Returns tags · operations · components · extensions. Drives the entire
+                <code>openapi</code> plugin UI.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Consumed by -->
+        <div class="card" style="margin-top: 16px">
+          <div class="tag">Components that consume the GraphQL schema</div>
+          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 12px">
+            <code>packages/zudoku/src/lib/plugins/openapi/</code>
+          </p>
+          <div class="grid four">
+            <div>
+              <strong style="font-size: 13px">OperationList</strong>
+              <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+                Tag landing page with all operations
+              </p>
+            </div>
+            <div>
+              <strong style="font-size: 13px">Endpoint</strong>
+              <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+                Single operation page (params, body, responses, examples)
+              </p>
+            </div>
+            <div>
+              <strong style="font-size: 13px">Playground</strong>
+              <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+                Lazy-loaded "Try it" panel with auth + code generation
+              </p>
+            </div>
+            <div>
+              <strong style="font-size: 13px">MCPEndpoint</strong>
+              <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+                Model Context Protocol surface for AI agents
+              </p>
+            </div>
+            <div>
+              <strong style="font-size: 13px">SchemaList / SchemaInfo</strong>
+              <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+                Recursive component/schema viewer
+              </p>
+            </div>
+            <div>
+              <strong style="font-size: 13px">ParameterList</strong>
+              <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+                Path · query · header · cookie tables
+              </p>
+            </div>
+            <div>
+              <strong style="font-size: 13px">SidecarBox</strong>
+              <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+                Right-rail examples + request/response panes
+              </p>
+            </div>
+            <div>
+              <strong style="font-size: 13px">SecurityRequirements</strong>
+              <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+                Auth schemes per operation
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AUTH -->
+      <section id="auth">
+        <h2><span class="num">08</span>Authentication providers</h2>
+        <p class="subhead">
+          Auth ships as a set of pluggable providers, each implementing
+          <code>AuthenticationPlugin</code>. State is kept in a Zustand store
+          (<code>lib/authentication/state.ts</code>) and surfaced via <code>useAuth()</code>.
+        </p>
+
+        <div class="grid four">
+          <div class="card">
+            <h3>openid</h3>
+            <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+              Generic OAuth2 / OIDC — works with any compliant IdP.
+            </p>
+            <span class="path">auth/openid</span>
+          </div>
+          <div class="card">
+            <h3>auth0</h3>
+            <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">Auth0 SDK wrapper.</p>
+            <span class="path">auth/auth0</span>
+          </div>
+          <div class="card">
+            <h3>clerk</h3>
+            <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">Clerk integration.</p>
+            <span class="path">auth/clerk</span>
+          </div>
+          <div class="card">
+            <h3>supabase</h3>
+            <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+              Supabase email + OAuth.
+            </p>
+            <span class="path">auth/supabase</span>
+          </div>
+          <div class="card">
+            <h3>firebase</h3>
+            <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+              Firebase Authentication.
+            </p>
+            <span class="path">auth/firebase</span>
+          </div>
+          <div class="card">
+            <h3>azureb2c</h3>
+            <p style="color: var(--muted); font-size: 12px; margin: 4px 0 0">
+              Azure AD B2C.
+            </p>
+            <span class="path">auth/azureb2c</span>
+          </div>
+        </div>
+
+        <p style="color: var(--muted); font-size: 13px; margin-top: 14px">
+          <strong style="color: var(--text)">ApiIdentityPlugin</strong> is the bridge between auth
+          and the playground: it surfaces a list of identities the user can pick from, each one
+          carries an <code>authorizeRequest()</code> function that signs outgoing playground
+          requests.
+        </p>
+      </section>
+
+      <!-- UI -->
+      <section id="ui">
+        <h2><span class="num">09</span>UI · icons · theming</h2>
+        <p class="subhead">
+          A shadcn-style component kit in <code>packages/zudoku/src/lib/ui/</code>, Lucide icons
+          re-exported through <code>zudoku/icons</code>, and a Tailwind v4 theme driven by CSS
+          variables. Themes can be authored as <a href="https://ui.shadcn.com/themes" style="color: var(--accent-3)">shadcn registry items</a>.
+        </p>
+
+        <div class="grid three">
+          <div class="card">
+            <div class="tag">UI module</div>
+            <h3>zudoku/ui/*</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 6px">
+              50+ Radix-based primitives: Accordion · Button · Callout · Card · CodeBlock ·
+              CodeTabs · Dialog · Drawer · DropdownMenu · NavigationMenu · Popover · Select ·
+              Sheet · Stepper · SyntaxHighlight · Tabs · Tooltip — and many more.
+            </p>
+          </div>
+          <div class="card">
+            <div class="tag">Icons</div>
+            <h3>zudoku/icons</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 6px">
+              Wraps Lucide so users get tree-shakable, typed icons that match the rest of the
+              system. A custom <code>MissingIcon</code> fills gaps.
+            </p>
+          </div>
+          <div class="card">
+            <div class="tag">Theme</div>
+            <h3>vite/plugin-theme.ts</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 6px">
+              Generates <code>virtual:zudoku-theme.css</code> from the user's theme config. Reads
+              shadcn registry items, emits CSS vars for light + dark, wired through
+              <code>next-themes</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 16px">
+          <div class="tag">Bundle-size guardrails</div>
+          <p style="color: var(--muted); font-size: 13px; margin: 6px 0 10px">
+            Heavy modules must <strong>never</strong> be statically imported from entry-path code,
+            or they'll land in <code>entry.client</code> and blow the 215 KB size budget.
+            <code>React.lazy</code> or dynamic <code>import()</code> required:
+          </p>
+          <div class="grid three">
+            <div><span class="l-tag">SyntaxHighlight / HighlightedCode</span><br /><span style="font-size: 11px; color: var(--muted)">pulls in Shiki</span></div>
+            <div><span class="l-tag">CodeTabs</span><br /><span style="font-size: 11px; color: var(--muted)">imports SyntaxHighlight</span></div>
+            <div><span class="l-tag">Mermaid</span><br /><span style="font-size: 11px; color: var(--muted)">Mermaid.js is huge</span></div>
+            <div><span class="l-tag">Markdown</span><br /><span style="font-size: 11px; color: var(--muted)">MDX runtime</span></div>
+            <div><span class="l-tag">PlaygroundDialog</span><br /><span style="font-size: 11px; color: var(--muted)">openapi plugin only</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXAMPLES -->
+      <section id="examples">
+        <h2><span class="num">10</span>Examples · the spec suite</h2>
+        <p class="subhead">
+          16 example projects under <code>/examples</code> double as the manual integration test
+          suite. <code>cosmo-cargo</code> is the canonical "kitchen-sink" demo.
+        </p>
+
+        <div class="grid two">
+          <div class="card accent">
+            <h3>cosmo-cargo</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              Feature-rich demo — a futuristic space shipping company. Custom landing, members
+              area, VIP lounge, API identity, monetization. The flagship test bed.
+            </p>
+          </div>
+          <div class="card">
+            <h3>many-apis</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              Multi-API portal showcasing the api-catalog plugin.
+            </p>
+          </div>
+          <div class="card">
+            <h3>with-openapi-json · with-openapi-yaml</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              Minimal schema-only setups in JSON and YAML respectively.
+            </p>
+          </div>
+          <div class="card">
+            <h3>with-auth0</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              Reference for OAuth integration via Auth0.
+            </p>
+          </div>
+          <div class="card">
+            <h3>auth-firebase · auth-supabase</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              End-to-end auth integration examples.
+            </p>
+          </div>
+          <div class="card">
+            <h3>api-keys-service · api-identity-plugin</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              Playground auth + key management reference implementations.
+            </p>
+          </div>
+          <div class="card">
+            <h3>search-algolia</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              Algolia DocSearch wiring with the external plugin.
+            </p>
+          </div>
+          <div class="card">
+            <h3>mermaid</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              Diagrams in MDX via the lazy-loaded Mermaid component.
+            </p>
+          </div>
+          <div class="card">
+            <h3>with-base-path · with-vite-config · with-config</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              Deployment variants — non-root base paths, custom Vite config, advanced config
+              shapes.
+            </p>
+          </div>
+          <div class="card">
+            <h3>with-zuplo · zuplo-monetization</h3>
+            <p style="color: var(--muted); font-size: 12px; margin-top: 4px">
+              Tight integration with the Zuplo API gateway, including paid plans.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div>
+          Generated for the
+          <code>claude/zudoku-architecture-chart-XvOL7</code> branch · 2026
+        </div>
+        <div style="margin-top: 6px">
+          Maps version <strong>zudoku@0.77.0</strong> · open
+          <code>ARCHITECTURE.html</code> in any browser to view.
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
