@@ -1,6 +1,21 @@
-// Pure presentational components. No dependency on zudoku runtime — safe to
-// consume from any React app that has Tailwind, lucide-react, clsx, and
-// tailwind-merge available.
+// Pure presentational components. No dependency on the zudoku runtime — safe
+// to consume from any React app.
+//
+// Consumer requirements:
+//   - React 19+ and react-dom (peer dep)
+//   - lucide-react (peer dep) — used for the check icon
+//   - Tailwind CSS configured with shadcn/ui design tokens. The components
+//     use the following classes, which assume the matching CSS variables
+//     are defined (e.g. `--primary`, `--primary-foreground`, `--border`,
+//     `--muted-foreground`, `--card-foreground`):
+//       text-primary, bg-primary, border-primary, text-primary-foreground,
+//       text-muted-foreground, text-card-foreground, border-border
+//     The easiest way to satisfy this is the standard shadcn/ui Tailwind
+//     setup (https://ui.shadcn.com/docs/installation). The CTA `Button`
+//     passed via `renderAction` is also typically the shadcn/ui `Button`.
+//   - The CTA element rendered for each card is supplied by the consumer
+//     via `renderAction(plan, isPopular)` on `<PricingTable>` — pricing-ui
+//     does not bundle any button or router/link component.
 export { FeatureItem } from "./FeatureItem.js";
 export { PlanEntitlements } from "./PlanEntitlements.js";
 export { PricingCard, type PricingCardProps } from "./PricingCard.js";
