@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import type { Plan } from "../types/PlanType.js";
 import { formatDuration } from "../utils/formatDuration.js";
+import { formatPlanPrice } from "../utils/formatPlanPrice.js";
 import { formatPrice } from "../utils/formatPrice.js";
-import { getPriceFromPlan } from "../utils/getPriceFromPlan.js";
 import { cn } from "./cn.js";
 import { PlanEntitlements } from "./PlanEntitlements.js";
 
@@ -26,8 +26,7 @@ export const PricingCard = ({
 }: PricingCardProps) => {
   if (plan.phases.length === 0) return null;
 
-  const price = getPriceFromPlan(plan);
-  const isFree = price.monthly === 0;
+  const priceLabel = formatPlanPrice(plan);
 
   const isCustom = plan.metadata?.isCustom === true;
   const billingInterval = formatDuration(plan.billingCadence);
@@ -62,22 +61,36 @@ export const PricingCard = ({
                 Contact Sales
               </div>
             </div>
+          ) : priceLabel.type === "payg" ? (
+            <div>
+              <div className="text-3xl font-bold text-card-foreground">
+                {priceLabel.main}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">
+                {priceLabel.sub}
+              </div>
+            </div>
+          ) : priceLabel.type === "free" ? (
+            <span className="text-3xl font-bold text-card-foreground">
+              Free
+            </span>
           ) : (
             <>
               <span className="text-3xl font-bold text-card-foreground">
-                {isFree ? "Free" : formatPrice(price.monthly, plan.currency)}
+                {formatPrice(priceLabel.monthly, plan.currency)}
               </span>
-              {!isFree && (
-                <>
-                  <span className="text-muted-foreground text-sm">
-                    /{billingInterval}
-                  </span>
-                  {showYearlyPrice && price.yearly > 0 && (
-                    <div className="w-full text-sm text-muted-foreground mt-1">
-                      {formatPrice(price.yearly, plan.currency)}/year
-                    </div>
-                  )}
-                </>
+              <span className="text-muted-foreground text-sm">
+                /{billingInterval}
+              </span>
+              {showYearlyPrice && priceLabel.yearly > 0 && (
+                <div className="w-full text-sm text-muted-foreground mt-1">
+                  {formatPrice(priceLabel.yearly, plan.currency)}/year
+                </div>
+              )}
+              {priceLabel.hasUsage && (
+                <div className="w-full text-sm text-muted-foreground">
+                  + usage
+                </div>
               )}
             </>
           )}

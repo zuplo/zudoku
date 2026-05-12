@@ -299,6 +299,103 @@ describe("categorizeRateCards", () => {
     expect(features[0].value).toBeUndefined();
   });
 
+  describe("pay-as-you-go (no issueAfterReset)", () => {
+    it("adds unit-priced PAYG card as quota with isPayg and unitPrice", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: { type: "unit", amount: "0.10" },
+        entitlementTemplate: { type: "metered", isSoftLimit: true },
+      };
+      const { quotas, features } = categorizeRateCards([rc]);
+      expect(features).toEqual([]);
+      expect(quotas).toEqual([
+        {
+          key: "api",
+          name: "API Calls",
+          limit: 0,
+          period: "month",
+          isPayg: true,
+          unitPrice: "$0.10/unit",
+        },
+      ]);
+    });
+
+    it("uses the configured unit label for PAYG unit pricing", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: { type: "unit", amount: "0.10" },
+        entitlementTemplate: { type: "metered", isSoftLimit: true },
+      };
+      const { quotas } = categorizeRateCards([rc], {
+        units: { api: "request" },
+      });
+      expect(quotas[0].unitPrice).toBe("$0.10/request");
+    });
+
+    it("adds tiered PAYG card as quota with tier breakdown", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [
+            { upToAmount: "10000", unitPrice: { amount: "0.10" } },
+            { unitPrice: { amount: "0.01" } },
+          ],
+        },
+        entitlementTemplate: { type: "metered", isSoftLimit: true },
+      };
+      const { quotas } = categorizeRateCards([rc]);
+      expect(quotas).toHaveLength(1);
+      expect(quotas[0]).toMatchObject({
+        key: "api",
+        name: "API Calls",
+        limit: 0,
+        period: "month",
+        isPayg: true,
+      });
+      expect(quotas[0].tierPrices).toBeDefined();
+      expect(quotas[0].tierPrices?.length).toBeGreaterThan(0);
+    });
+
+    it("falls back to features bucket when isSoftLimit is false", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: { type: "unit", amount: "0.10" },
+        entitlementTemplate: { type: "metered", isSoftLimit: false },
+      };
+      const { quotas, features } = categorizeRateCards([rc]);
+      expect(quotas).toEqual([]);
+      expect(features).toEqual([]);
+    });
+
+    it("falls back to features bucket when unit price is zero", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: { type: "unit", amount: "0" },
+        entitlementTemplate: { type: "metered", isSoftLimit: true },
+      };
+      const { quotas, features } = categorizeRateCards([rc]);
+      expect(quotas).toEqual([]);
+      expect(features).toEqual([{ key: "api", name: "API Calls" }]);
+    });
+  });
+
   it("skips rate cards without entitlement template", () => {
     const { quotas, features } = categorizeRateCards([
       {

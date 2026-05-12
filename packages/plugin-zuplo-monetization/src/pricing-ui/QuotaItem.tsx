@@ -9,6 +9,27 @@ export const QuotaItem = ({
   quota: Quota;
   className?: string;
 }) => {
+  if (quota.isPayg) {
+    return (
+      <div className={cn("flex items-start gap-2", className)}>
+        <CheckIcon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <span className="font-medium">{quota.name}</span>
+          {quota.unitPrice && (
+            <span className="text-muted-foreground"> — {quota.unitPrice}</span>
+          )}
+          {quota.tierPrices && quota.tierPrices.length > 0 && (
+            <ul className="text-xs text-muted-foreground mt-1 space-y-0.5">
+              {quota.tierPrices.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex items-start gap-2", className)}>
       <CheckIcon className="w-4 h-4 text-primary shrink-0 mt-0.5" />

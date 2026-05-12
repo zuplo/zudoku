@@ -20,12 +20,20 @@ export const categorizeRateCards = (
     const et = rc.entitlementTemplate;
     if (!et) continue;
 
+    const unitLabelFor = (rcArg: typeof rc) =>
+      units?.[rcArg.key] ?? units?.[rcArg.featureKey ?? ""] ?? "unit";
+    const periodFor = (rcArg: typeof rc) =>
+      rcArg.billingCadence
+        ? formatDuration(rcArg.billingCadence)
+        : planBillingCadence
+          ? formatDuration(planBillingCadence)
+          : "month";
+
     if (et.type === "metered" && et.issueAfterReset != null) {
       let overagePrice: string | undefined;
       let tierPrices: string[] | undefined;
       if (rc.price?.type === "tiered" && rc.price.tiers) {
-        const unitLabel =
-          units?.[rc.key] ?? units?.[rc.featureKey ?? ""] ?? "unit";
+        const unitLabel = unitLabelFor(rc);
 
         // Build a readable tier breakdown (useful for graduated/volume).
         tierPrices = formatTieredPriceBreakdown({
@@ -52,14 +60,52 @@ export const categorizeRateCards = (
         key: rc.featureKey ?? rc.key,
         name: rc.name,
         limit: et.issueAfterReset,
-        period: rc.billingCadence
-          ? formatDuration(rc.billingCadence)
-          : planBillingCadence
-            ? formatDuration(planBillingCadence)
-            : "month",
+        period: periodFor(rc),
         overagePrice,
         tierPrices,
       });
+    } else if (
+      et.type === "metered" &&
+      rc.type === "usage_based" &&
+      et.isSoftLimit !== false &&
+      rc.price
+    ) {
+      // Pay-as-you-go: usage-based card with no `issueAfterReset` quota.
+      // Previously skipped, so PAYG plans rendered with an empty body and a
+      // misleading "Free" headline.
+      const unitLabel = unitLabelFor(rc);
+      if (rc.price.type === "tiered" && rc.price.tiers.length > 0) {
+        const tierPrices = formatTieredPriceBreakdown({
+          tiers: rc.price.tiers.map((t) => ({
+            upToAmount: t.upToAmount,
+            unitPriceAmount: t.unitPrice?.amount,
+            flatPriceAmount: t.flatPrice?.amount,
+          })),
+          currency,
+          unitLabel,
+          includedLabel: "Included",
+        });
+        quotas.push({
+          key: rc.featureKey ?? rc.key,
+          name: rc.name,
+          limit: 0,
+          period: periodFor(rc),
+          tierPrices,
+          isPayg: true,
+        });
+      } else if (rc.price.type === "unit" && parseFloat(rc.price.amount) > 0) {
+        const amount = parseFloat(rc.price.amount);
+        quotas.push({
+          key: rc.featureKey ?? rc.key,
+          name: rc.name,
+          limit: 0,
+          period: periodFor(rc),
+          unitPrice: `${formatPrice(amount, currency)}/${unitLabel}`,
+          isPayg: true,
+        });
+      } else {
+        features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
+      }
     } else if (et.type === "boolean") {
       features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
     } else if (et.type === "static" && et.config) {
