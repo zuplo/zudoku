@@ -1,6 +1,6 @@
-import { cn } from "zudoku";
-import { CheckIcon } from "zudoku/icons";
-import type { Quota } from "../types/PlanType";
+import type { Quota } from "../types/PlanType.js";
+import { CheckIcon } from "./CheckIcon.js";
+import { cn } from "./cn.js";
 
 export const QuotaItem = ({
   quota,

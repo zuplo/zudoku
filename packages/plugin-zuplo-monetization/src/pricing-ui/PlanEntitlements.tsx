@@ -1,8 +1,8 @@
 import type { PlanPhase } from "../types/PlanType.js";
 import { categorizeRateCards } from "../utils/categorizeRateCards.js";
 import { formatDuration } from "../utils/formatDuration.js";
-import { FeatureItem } from "./FeatureItem";
-import { QuotaItem } from "./QuotaItem";
+import { FeatureItem } from "./FeatureItem.js";
+import { QuotaItem } from "./QuotaItem.js";
 
 const PhaseSection = ({
   phase,
