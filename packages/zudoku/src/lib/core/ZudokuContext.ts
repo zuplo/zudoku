@@ -93,6 +93,9 @@ type Site = Partial<{
 
 type HeaderConfig = {
   navigation?: HeaderNavigation;
+  themeSwitcher?: {
+    enabled?: boolean;
+  };
   placements?: {
     navigation?: "start" | "center" | "end";
     search?: "start" | "center" | "end";
