@@ -16,6 +16,7 @@ import { findAvailablePort } from "../cli/common/utils/ports.js";
 import type { LoadedConfig } from "../config/config.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { createGraphQLServer } from "../lib/oas/graphql/index.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import {
   getAppClientEntryPath,
   getAppServerEntryPath,
@@ -132,7 +133,14 @@ export class DevServer {
     vite.middlewares.use(graphql.graphqlEndpoint, graphql);
 
     // Auth session endpoint for cookie sync
-    vite.middlewares.use("/__z/auth/session", async (req, res) => {
+    const sessionEndpoint = joinUrl(config.basePath, "/__z/auth/session");
+    vite.middlewares.use(sessionEndpoint, async (req, res) => {
+      if (req.method !== "POST" && req.method !== "DELETE") {
+        res.writeHead(405, { Allow: "POST, DELETE" });
+        res.end();
+        return;
+      }
+
       const ssrEnvironment = vite.environments.ssr;
       if (!isRunnableDevEnvironment(ssrEnvironment)) {
         res.writeHead(500);
@@ -163,7 +171,10 @@ export class DevServer {
       const app = entryServer.createServer({ template: "" });
       const response = await app.fetch(request);
 
-      res.setHeader("Content-Type", "application/json");
+      for (const [name, value] of response.headers) {
+        if (name.toLowerCase() === "set-cookie") continue;
+        res.setHeader(name, value);
+      }
       for (const cookie of response.headers.getSetCookie()) {
         res.appendHeader("Set-Cookie", cookie);
       }

@@ -31,77 +31,61 @@ const invokeLazy = async (route: RouteObject | null | undefined) => {
 describe("wrapProtectedRoutes", () => {
   it("returns routes untouched when no protected patterns configured", () => {
     const routes = buildRoutes();
-    expect(wrapProtectedRoutes(routes, undefined, "/protected", false)).toBe(
-      routes,
-    );
-    expect(wrapProtectedRoutes(routes, [], "/protected", false)).toBe(routes);
-  });
-
-  it("returns routes untouched when current path is not protected", () => {
-    const routes = buildRoutes();
-    expect(wrapProtectedRoutes(routes, ["/protected"], "/public", false)).toBe(
-      routes,
-    );
+    expect(wrapProtectedRoutes(routes, undefined, false)).toBe(routes);
+    expect(wrapProtectedRoutes(routes, [], false)).toBe(routes);
   });
 
   it("returns routes untouched when user is authenticated", () => {
     const routes = buildRoutes();
-    expect(
-      wrapProtectedRoutes(routes, ["/protected"], "/protected", true),
-    ).toBe(routes);
+    expect(wrapProtectedRoutes(routes, ["/protected"], true)).toBe(routes);
   });
 
-  it("replaces lazy with no-op when unauthed on a protected path", async () => {
+  it("only stubs matching routes, leaving public routes intact", async () => {
     const routes = buildRoutes();
-    const wrapped = wrapProtectedRoutes(
-      routes,
-      ["/protected"],
-      "/protected",
-      false,
-    );
+    const wrapped = wrapProtectedRoutes(routes, ["/protected"], false);
 
-    expect(wrapped).not.toBe(routes);
     expect(await invokeLazy(wrapped[0])).toEqual({ element: null });
+    // public route keeps its real lazy
+    expect(await invokeLazy(wrapped[2])).toEqual({ element: <div>real</div> });
   });
 
-  it("never calls the original lazy for unauthed users on a protected path", async () => {
+  it("never calls the original lazy for the stubbed route", async () => {
     const originalLazy = vi.fn(lazy);
     const routes: RouteObject[] = [{ path: "/protected", lazy: originalLazy }];
-    const wrapped = wrapProtectedRoutes(
-      routes,
-      ["/protected"],
-      "/protected",
-      false,
-    );
+    const wrapped = wrapProtectedRoutes(routes, ["/protected"], false);
     await invokeLazy(wrapped[0]);
     expect(originalLazy).not.toHaveBeenCalled();
   });
 
-  it("walks nested children", async () => {
+  it("walks nested children using splat patterns", async () => {
     const routes = buildRoutes();
-    const wrapped = wrapProtectedRoutes(
-      routes,
-      ["/admin/*"],
-      "/admin/users",
-      false,
-    );
+    const wrapped = wrapProtectedRoutes(routes, ["/admin/*"], false);
 
     expect(await invokeLazy(wrapped[1]?.children?.[0])).toEqual({
       element: null,
     });
   });
 
-  it("applies basePath when matching pathname against patterns", async () => {
-    const routes = buildRoutes();
-    const wrapped = wrapProtectedRoutes(
-      routes,
-      ["/protected"],
-      "/docs/protected",
-      false,
-      "/docs",
-    );
+  it("exact pattern does not match descendants (end: true semantics)", async () => {
+    const routes: RouteObject[] = [
+      {
+        path: "/admin",
+        lazy,
+        children: [{ path: "users", lazy }],
+      },
+    ];
+    const wrapped = wrapProtectedRoutes(routes, ["/admin"], false);
 
-    expect(wrapped).not.toBe(routes);
+    expect(await invokeLazy(wrapped[0])).toEqual({ element: null });
+    expect(await invokeLazy(wrapped[0]?.children?.[0])).toEqual({
+      element: <div>real</div>,
+    });
+  });
+
+  it("applies basePath when matching routes against patterns", async () => {
+    const routes: RouteObject[] = [{ path: "/docs/protected", lazy }];
+    const wrapped = wrapProtectedRoutes(routes, ["/protected"], false, "/docs");
+
     expect(await invokeLazy(wrapped[0])).toEqual({ element: null });
   });
 
@@ -110,7 +94,6 @@ describe("wrapProtectedRoutes", () => {
     const wrapped = wrapProtectedRoutes(
       routes,
       { "/protected": () => false },
-      "/protected",
       false,
     );
 

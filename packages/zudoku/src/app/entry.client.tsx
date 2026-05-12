@@ -7,9 +7,13 @@ import {
 } from "react-router";
 import "vite/modulepreload-polyfill";
 import config from "virtual:zudoku-config";
-import type { UserProfile } from "../lib/authentication/state.js";
+import { setupCookieSync } from "../lib/authentication/cookie-sync.js";
+import { authState, type UserProfile } from "../lib/authentication/state.js";
 import { BootstrapClient } from "../lib/components/Bootstrap.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import { getRoutesByConfig, shikiReady } from "./main.js";
+
+setupCookieSync(authState, joinUrl(config.basePath, "/__z/auth/session"));
 
 const routes = getRoutesByConfig(config);
 // biome-ignore lint/style/noNonNullAssertion: We know the root element exists

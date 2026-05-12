@@ -57,6 +57,8 @@ export const protectChunks = (
       }
     }
 
+    c.header("Cache-Control", "private, no-store");
+    c.header("Vary", "Cookie");
     return serve(c, next);
   };
 };

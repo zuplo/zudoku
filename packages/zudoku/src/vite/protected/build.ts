@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Rolldown } from "vite";
 import type { ConfigWithMeta } from "../../config/loader.js";
 import { PROTECTED_CHUNK_DIR } from "../../lib/manifest.js";
+import { joinUrl } from "../../lib/util/joinUrl.js";
 import {
   findUnmatchedProtectedPatterns,
   getProtectedSourceMatcher,
@@ -125,25 +126,26 @@ export const assertCloudflareWranglerGatesProtected = async (
   const { enabled } = getProtectedSourceMatcher(config);
   if (!enabled) return;
 
+  const protectedPrefix = `${joinUrl(config.basePath, PROTECTED_CHUNK_DIR)}/`;
   const candidates = ["wrangler.toml", "wrangler.jsonc", "wrangler.json"];
   for (const name of candidates) {
     const file = await readFile(path.join(dir, name), "utf-8").catch(
       () => undefined,
     );
     if (file === undefined) continue;
-    if (file.includes("run_worker_first") && file.includes("/_protected/")) {
+    if (file.includes("run_worker_first") && file.includes(protectedPrefix)) {
       return;
     }
     throw new Error(
-      `[zudoku] ${name} must configure \`run_worker_first\` to include \`/_protected/*\` ` +
+      `[zudoku] ${name} must configure \`run_worker_first\` to include \`${protectedPrefix}*\` ` +
         `so the auth gate runs before the assets binding serves protected chunks. ` +
-        `Without it, /_protected/* is publicly readable. ` +
+        `Without it, ${protectedPrefix}* is publicly readable. ` +
         `See https://developers.cloudflare.com/workers/static-assets/binding/#run_worker_first.`,
     );
   }
 
   throw new Error(
     `[zudoku] No wrangler config found in ${dir} (looked for ${candidates.join(", ")}). ` +
-      `Cloudflare adapter requires wrangler config with \`run_worker_first\` covering \`/_protected/*\`.`,
+      `Cloudflare adapter requires wrangler config with \`run_worker_first\` covering \`${protectedPrefix}*\`.`,
   );
 };
