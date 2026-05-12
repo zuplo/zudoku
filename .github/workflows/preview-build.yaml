@@ -22,7 +22,7 @@ jobs:
           node-version-file: ".tool-versions"
 
       - name: Install global dependencies
-        run: npm install -g verdaccio nx npm-auth-to-token
+        run: npm install -g --ignore-scripts verdaccio nx npm-auth-to-token
 
       - name: Start local NPM registry
         run: |
