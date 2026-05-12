@@ -1,24 +1,29 @@
-import { cn } from "zudoku";
-import { Button } from "zudoku/components";
-import { Link } from "zudoku/router";
-import { PlanEntitlements } from "../../components/PlanEntitlements.js";
-import { useMonetizationConfig } from "../../MonetizationContext";
-import type { Plan } from "../../types/PlanType";
-import { formatDuration } from "../../utils/formatDuration";
-import { formatPrice } from "../../utils/formatPrice";
-import { getPriceFromPlan } from "../../utils/getPriceFromPlan";
+import type { ReactNode } from "react";
+import type { Plan } from "../types/PlanType.js";
+import { formatDuration } from "../utils/formatDuration.js";
+import { formatPrice } from "../utils/formatPrice.js";
+import { getPriceFromPlan } from "../utils/getPriceFromPlan.js";
+import { cn } from "./cn.js";
+import { PlanEntitlements } from "./PlanEntitlements.js";
+
+export type PricingCardProps = {
+  plan: Plan;
+  isPopular?: boolean;
+  showYearlyPrice?: boolean;
+  units?: Record<string, string>;
+  /** CTA element rendered at the bottom of the card (e.g. a Subscribe button). */
+  action?: ReactNode;
+  className?: string;
+};
 
 export const PricingCard = ({
   plan,
   isPopular = false,
-  isSubscribed = false,
-}: {
-  plan: Plan;
-  isPopular?: boolean;
-  isSubscribed?: boolean;
-}) => {
-  const { pricing } = useMonetizationConfig();
-
+  showYearlyPrice = true,
+  units,
+  action,
+  className,
+}: PricingCardProps) => {
   if (plan.phases.length === 0) return null;
 
   const price = getPriceFromPlan(plan);
@@ -32,6 +37,7 @@ export const PricingCard = ({
       className={cn(
         "relative rounded-lg border p-6 flex flex-col",
         isPopular && "border-primary border-2",
+        className,
       )}
     >
       {isPopular && (
@@ -66,7 +72,7 @@ export const PricingCard = ({
                   <span className="text-muted-foreground text-sm">
                     /{billingInterval}
                   </span>
-                  {pricing?.showYearlyPrice !== false && price.yearly > 0 && (
+                  {showYearlyPrice && price.yearly > 0 && (
                     <div className="w-full text-sm text-muted-foreground mt-1">
                       {formatPrice(price.yearly, plan.currency)}/year
                     </div>
@@ -88,21 +94,11 @@ export const PricingCard = ({
           phases={plan.phases}
           currency={plan.currency}
           billingCadence={plan.billingCadence}
-          units={pricing?.units}
+          units={units}
         />
       </div>
 
-      {isSubscribed ? (
-        <Button variant={isPopular ? "default" : "outline"} asChild>
-          <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
-        </Button>
-      ) : (
-        <Button variant={isPopular ? "default" : "outline"} asChild>
-          <Link to={`/checkout?planId=${encodeURIComponent(plan.id)}`}>
-            Subscribe
-          </Link>
-        </Button>
-      )}
+      {action}
     </div>
   );
 };

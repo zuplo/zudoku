@@ -499,6 +499,12 @@ importers:
 
   packages/plugin-zuplo-monetization:
     dependencies:
+      clsx:
+        specifier: 2.1.1
+        version: 2.1.1
+      tailwind-merge:
+        specifier: 3.5.0
+        version: 3.5.0
       tinyduration:
         specifier: 3.4.1
         version: 3.4.1
@@ -521,6 +527,9 @@ importers:
       happy-dom:
         specifier: 'catalog:'
         version: 20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      lucide-react:
+        specifier: 1.8.0
+        version: 1.8.0(react@19.2.5)
       react:
         specifier: 'catalog:'
         version: 19.2.5

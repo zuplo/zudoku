@@ -1,6 +1,6 @@
-import { cn } from "zudoku";
-import { CheckIcon } from "zudoku/icons";
-import type { Feature } from "../types/PlanType";
+import { CheckIcon } from "lucide-react";
+import type { Feature } from "../types/PlanType.js";
+import { cn } from "./cn.js";
 
 export const FeatureItem = ({
   feature,
