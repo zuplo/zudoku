@@ -1,4 +1,3 @@
-import type { Clerk } from "@clerk/clerk-js";
 import type { ZudokuPlugin } from "zudoku/plugins";
 import type { ClerkAuthenticationConfig } from "../../../config/config.js";
 import type {
@@ -12,9 +11,40 @@ import { SignUp } from "../components/SignUp.js";
 import { type UserProfile, useAuthState } from "../state.js";
 import { getClerkFrontendApi, redirectToSignUpUrl } from "./util.js";
 
+type ClerkEmailAddress = {
+  emailAddress: string;
+  verification: { status: string };
+};
+
+export type ClerkUser = {
+  id: string;
+  fullName: string | null;
+  imageUrl: string;
+  emailAddresses: ClerkEmailAddress[];
+  reload: () => Promise<unknown>;
+};
+
+type ClerkSession = {
+  user: ClerkUser;
+  getToken: (opts: { template?: string }) => Promise<string | null>;
+};
+
+type ClerkRedirectOptions = {
+  signInForceRedirectUrl?: string;
+  signUpForceRedirectUrl?: string;
+};
+
+type Clerk = {
+  session: ClerkSession | null | undefined;
+  load: () => Promise<void>;
+  signOut: (opts: { redirectUrl: string }) => Promise<void>;
+  redirectToSignIn: (opts: ClerkRedirectOptions) => Promise<void>;
+  redirectToSignUp: (opts: ClerkRedirectOptions) => Promise<void>;
+};
+
 export type ClerkProviderData = {
   type: "clerk";
-  user: NonNullable<Clerk["session"]>["user"] | undefined;
+  user: ClerkUser | undefined;
 };
 
 declare module "../state.js" {
