@@ -1,5 +1,5 @@
-import { CheckIcon } from "lucide-react";
 import type { Feature } from "../types/PlanType.js";
+import { CheckIcon } from "./CheckIcon.js";
 import { cn } from "./cn.js";
 
 export const FeatureItem = ({

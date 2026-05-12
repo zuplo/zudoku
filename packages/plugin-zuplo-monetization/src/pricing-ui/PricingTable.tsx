@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import type { Plan } from "../types/PlanType.js";
 import {
   collectDefaultTaxBehaviors,
@@ -16,6 +16,25 @@ export type PricingTableProps = {
    * Receives the plan and whether it is the popular plan.
    */
   renderAction?: (plan: Plan, isPopular: boolean) => ReactNode;
+  /**
+   * Override or wrap the rendering of each card. Receives the plan and a
+   * context with the `isPopular` flag and the default `<PricingCard>`
+   * element. Return `defaultCard` to keep behavior, wrap it (e.g. with a
+   * drag handle, kebab menu, or overlay), or return something entirely
+   * different to render a custom card for that plan.
+   *
+   * @example
+   *   renderCard={(plan, { defaultCard }) => (
+   *     <div className="relative">
+   *       <DragHandle planId={plan.id} />
+   *       {defaultCard}
+   *     </div>
+   *   )}
+   */
+  renderCard?: (
+    plan: Plan,
+    ctx: { isPopular: boolean; defaultCard: ReactNode },
+  ) => ReactNode;
   /**
    * Predicate that decides which plan gets the "Most Popular" badge.
    * Defaults to `plan.metadata.zuplo_most_popular === "true"`.
@@ -43,6 +62,7 @@ export const PricingTable = ({
   showYearlyPrice = true,
   units,
   renderAction,
+  renderCard,
   isPopular = (plan) => plan.metadata?.zuplo_most_popular === "true",
   emptyState,
   showTaxLegend = true,
@@ -67,9 +87,8 @@ export const PricingTable = ({
       >
         {plans.map((plan) => {
           const popular = isPopular(plan);
-          return (
+          const defaultCard = (
             <PricingCard
-              key={plan.id}
               plan={plan}
               isPopular={popular}
               showYearlyPrice={showYearlyPrice}
@@ -77,6 +96,13 @@ export const PricingTable = ({
               action={renderAction?.(plan, popular)}
               className={cardClassName}
             />
+          );
+          return (
+            <Fragment key={plan.id}>
+              {renderCard
+                ? renderCard(plan, { isPopular: popular, defaultCard })
+                : defaultCard}
+            </Fragment>
           );
         })}
       </div>

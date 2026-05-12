@@ -3,7 +3,6 @@
 //
 // Consumer requirements:
 //   - React 19+ and react-dom (peer dep)
-//   - lucide-react (peer dep) — used for the check icon
 //   - Tailwind CSS configured with shadcn/ui design tokens. The components
 //     use the following classes, which assume the matching CSS variables
 //     are defined (e.g. `--primary`, `--primary-foreground`, `--border`,
@@ -13,9 +12,16 @@
 //     The easiest way to satisfy this is the standard shadcn/ui Tailwind
 //     setup (https://ui.shadcn.com/docs/installation). The CTA `Button`
 //     passed via `renderAction` is also typically the shadcn/ui `Button`.
+//   - No icon library required — the single `CheckIcon` used by
+//     `FeatureItem` / `QuotaItem` is bundled as an inline SVG.
 //   - The CTA element rendered for each card is supplied by the consumer
 //     via `renderAction(plan, isPopular)` on `<PricingTable>` — pricing-ui
 //     does not bundle any button or router/link component.
+//   - For more advanced per-card customization (e.g. wrapping each card
+//     with drag handles, popovers, overlays), use `renderCard(plan, ctx)`
+//     where `ctx.defaultCard` is the standard card element. To opt out of
+//     the wrapper entirely, render `<PricingCard>` yourself in a custom
+//     grid.
 export { FeatureItem } from "./FeatureItem.js";
 export { PlanEntitlements } from "./PlanEntitlements.js";
 export { PricingCard, type PricingCardProps } from "./PricingCard.js";
