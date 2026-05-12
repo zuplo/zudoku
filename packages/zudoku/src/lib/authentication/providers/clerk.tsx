@@ -22,6 +22,7 @@ export type ClerkUser = {
   imageUrl: string;
   emailAddresses: ClerkEmailAddress[];
   reload: () => Promise<unknown>;
+  [key: string]: unknown;
 };
 
 type ClerkSession = {
