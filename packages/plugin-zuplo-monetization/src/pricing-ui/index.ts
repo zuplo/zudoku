@@ -70,7 +70,10 @@ export {
   formatTieredPriceBreakdown,
   type TieredPriceBreakdownTier,
 } from "../utils/formatTieredPriceBreakdown.js";
-export { getPriceFromPlan } from "../utils/getPriceFromPlan.js";
+export {
+  derivePriceFromPlan,
+  getPriceFromPlan,
+} from "../utils/getPriceFromPlan.js";
 export {
   collectDefaultTaxBehaviors,
   planHasDefaultTaxBehavior,
