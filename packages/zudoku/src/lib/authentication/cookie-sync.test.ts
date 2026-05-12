@@ -29,8 +29,13 @@ const createSlice = (initial: Partial<LooseState> = {}) =>
     ...initial,
   }));
 
+const ENDPOINT = "/docs/__z/auth/session";
+
 const setup = (store: ReturnType<typeof createSlice>) =>
-  setupCookieSync(store as unknown as Parameters<typeof setupCookieSync>[0]);
+  setupCookieSync(
+    store as unknown as Parameters<typeof setupCookieSync>[0],
+    ENDPOINT,
+  );
 
 describe("setupCookieSync", () => {
   const fetchMock = vi.fn();
@@ -74,7 +79,7 @@ describe("setupCookieSync", () => {
 
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [url, init] = fetchMock.mock.calls[0] ?? [];
-    expect(url).toBe("/__z/auth/session");
+    expect(url).toBe(ENDPOINT);
     expect(init.method).toBe("POST");
     expect(JSON.parse(init.body as string)).toEqual({
       accessToken: "atok",
@@ -122,7 +127,7 @@ describe("setupCookieSync", () => {
     });
     setup(store);
     expect(fetchMock).toHaveBeenCalledWith(
-      "/__z/auth/session",
+      ENDPOINT,
       expect.objectContaining({ method: "POST" }),
     );
   });
@@ -144,7 +149,7 @@ describe("setupCookieSync", () => {
     });
     await vi.waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
-        "/__z/auth/session",
+        ENDPOINT,
         expect.objectContaining({ method: "DELETE" }),
       ),
     );

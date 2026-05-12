@@ -1,4 +1,4 @@
-import { matchPath, matchRoutes, type RouteObject } from "react-router";
+import { matchPath, type RouteObject } from "react-router";
 import type { ProtectedRoutesInput } from "../config/validators/ProtectedRoutesSchema.js";
 import { normalizeProtectedRoutes } from "../lib/core/ZudokuContext.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -21,28 +21,27 @@ const visitRoutes = (
 
 const noop: RouteObject["lazy"] = async () => ({ element: null });
 
-// Replaces lazy() with a no-op for unauthed users on protected paths so
-// the gated chunk doesn't fetch (or run loaders during SSR). RouteGuard renders the sign-in UI.
+// Stub lazy() on routes matching a protected pattern when unauthed so the
+// gated chunk doesn't fetch. Public routes stay intact. RouteGuard renders
+// the sign-in UI.
 export const wrapProtectedRoutes = (
   routes: RouteObject[],
   protectedRoutes: ProtectedRoutesInput,
-  pathname: string,
   isAuthenticated: boolean,
   basePath?: string,
 ): RouteObject[] => {
   const patterns = Object.keys(normalizeProtectedRoutes(protectedRoutes) ?? {});
-  if (patterns.length === 0) return routes;
+  if (patterns.length === 0 || isAuthenticated) return routes;
 
-  const isProtected = matchRoutes(
-    patterns.map((path) => ({ path })),
-    pathname,
-    basePath,
-  )?.length;
-  if (!isProtected || isAuthenticated) return routes;
+  const fullPatterns = patterns.map((p) => joinUrl(basePath, p));
 
-  return visitRoutes(routes, (r) =>
-    typeof r.lazy === "function" ? { ...r, lazy: noop } : r,
-  );
+  return visitRoutes(routes, (r, fullPath) => {
+    if (typeof r.lazy !== "function") return r;
+    const matches = fullPatterns.some(
+      (p) => matchPath({ path: p, end: true }, fullPath) != null,
+    );
+    return matches ? { ...r, lazy: noop } : r;
+  });
 };
 
 // Inline elements can't be chunk-isolated; RouteGuard still blocks render,

@@ -18,7 +18,6 @@ import "virtual:zudoku-theme.css";
 import { Zudoku } from "zudoku/components";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
-import { setupCookieSync } from "../lib/authentication/cookie-sync.js";
 import { authState } from "../lib/authentication/state.js";
 import { BuildCheck } from "../lib/components/BuildCheck.js";
 import { Meta } from "../lib/components/Meta.js";
@@ -36,8 +35,6 @@ import {
   warnInlineProtectedRoutes,
   wrapProtectedRoutes,
 } from "./wrapProtectedRoutes.js";
-
-setupCookieSync(authState);
 
 export const shikiReady: Promise<HighlighterCore> =
   import("../lib/shiki.js").then(async ({ highlighterPromise }) => {
@@ -160,7 +157,6 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
               : wrapProtectedRoutes(
                   processRoutes(routes),
                   config.protectedRoutes,
-                  window.location.pathname,
                   authState.getState().isAuthenticated,
                   config.basePath,
                 ),

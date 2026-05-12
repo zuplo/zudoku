@@ -99,11 +99,9 @@ export const handleRequest = async ({
 
   // No-op lazy() on protected subtrees for unauthed requests so loaders
   // don't run for a 401 render.
-  const url = new URL(request.url);
   const effectiveRoutes = wrapProtectedRoutes(
     routes,
     config.protectedRoutes,
-    url.pathname,
     !!ssrAuth?.profile,
     basePath,
   );

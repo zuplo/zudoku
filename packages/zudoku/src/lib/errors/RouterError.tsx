@@ -39,7 +39,7 @@ const useSignInPromptIfProtectedUnauth = (error: unknown) => {
   if (!isAuthError) return null;
 
   const isProtected = Object.keys(protectedRoutes).some(
-    (p) => matchPath({ path: p, end: false }, location.pathname) != null,
+    (p) => matchPath({ path: p, end: true }, location.pathname) != null,
   );
   if (!isProtected) return null;
 

@@ -265,7 +265,7 @@ export class ZudokuContext {
     const patterns = Object.keys(this.protectedRoutes ?? {});
     if (patterns.length === 0) return false;
     const isProtected = patterns.some(
-      (pattern) => matchPath({ path: pattern, end: false }, path) != null,
+      (pattern) => matchPath({ path: pattern, end: true }, path) != null,
     );
     if (!isProtected) return false;
     // Server: per-request ssrAuth. Client: live zustand state.
