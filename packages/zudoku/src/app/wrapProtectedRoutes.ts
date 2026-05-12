@@ -1,7 +1,11 @@
-import { matchPath, type RouteObject } from "react-router";
+import type { RouteObject } from "react-router";
 import type { ProtectedRoutesInput } from "../config/validators/ProtectedRoutesSchema.js";
 import { normalizeProtectedRoutes } from "../lib/core/ZudokuContext.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import {
+  matchesAnyProtectedPattern,
+  matchesProtectedPattern,
+} from "../lib/util/url.js";
 
 type Visitor = (route: RouteObject, fullPath: string) => RouteObject;
 
@@ -37,10 +41,9 @@ export const wrapProtectedRoutes = (
 
   return visitRoutes(routes, (r, fullPath) => {
     if (typeof r.lazy !== "function") return r;
-    const matches = fullPatterns.some(
-      (p) => matchPath({ path: p, end: true }, fullPath) != null,
-    );
-    return matches ? { ...r, lazy: noop } : r;
+    return matchesAnyProtectedPattern(fullPatterns, fullPath)
+      ? { ...r, lazy: noop }
+      : r;
   });
 };
 
@@ -63,8 +66,8 @@ export const warnInlineProtectedRoutes = (
 
     if (!r.path || !isInline) return r;
 
-    const matched = fullPatterns.find(
-      (p) => matchPath({ path: p, end: true }, fullPath) != null,
+    const matched = fullPatterns.find((p) =>
+      matchesProtectedPattern(p, fullPath),
     );
 
     if (!matched) return r;

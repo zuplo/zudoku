@@ -1,5 +1,42 @@
 import { describe, expect, it } from "vitest";
-import { normalizeRedirectUrl, stripBasePath } from "./url.js";
+import {
+  matchesAnyProtectedPattern,
+  matchesProtectedPattern,
+  normalizeRedirectUrl,
+  stripBasePath,
+} from "./url.js";
+
+describe("matchesProtectedPattern", () => {
+  it("exact pattern matches only the exact path", () => {
+    expect(matchesProtectedPattern("/admin", "/admin")).toBe(true);
+    expect(matchesProtectedPattern("/admin", "/admin/secret")).toBe(false);
+  });
+
+  it("wildcard pattern matches the root and sub-paths", () => {
+    expect(matchesProtectedPattern("/admin/*", "/admin")).toBe(true);
+    expect(matchesProtectedPattern("/admin/*", "/admin/secret")).toBe(true);
+    expect(matchesProtectedPattern("/admin/*", "/admin/a/b/c")).toBe(true);
+  });
+
+  it("does not match a sibling path that shares a prefix", () => {
+    expect(matchesProtectedPattern("/api/*", "/api-public/foo")).toBe(false);
+    expect(matchesProtectedPattern("/admin", "/admin-tools")).toBe(false);
+  });
+});
+
+describe("matchesAnyProtectedPattern", () => {
+  it("returns true when any pattern matches", () => {
+    expect(matchesAnyProtectedPattern(["/foo", "/admin/*"], "/admin/x")).toBe(
+      true,
+    );
+  });
+
+  it("returns false when no pattern matches", () => {
+    expect(matchesAnyProtectedPattern(["/foo", "/admin"], "/admin/x")).toBe(
+      false,
+    );
+  });
+});
 
 describe("stripBasename", () => {
   it("returns pathname unchanged when basePath is empty or '/'", () => {

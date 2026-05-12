@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createNanoEvents } from "nanoevents";
 import type { ReactNode } from "react";
-import { type Location, matchPath } from "react-router";
+import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod/mini";
 import type { HeaderNavigation } from "../../config/validators/HeaderNavigationSchema.js";
@@ -25,6 +25,7 @@ import type { SlotType } from "../components/context/SlotProvider.js";
 import { joinUrl } from "../util/joinUrl.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
+import { matchesAnyProtectedPattern } from "../util/url.js";
 import {
   isApiIdentityPlugin,
   isAuthenticationPlugin,
@@ -264,10 +265,7 @@ export class ZudokuContext {
   private shouldSkipNavigationForProtected(path: string): boolean {
     const patterns = Object.keys(this.protectedRoutes ?? {});
     if (patterns.length === 0) return false;
-    const isProtected = patterns.some(
-      (pattern) => matchPath({ path: pattern, end: true }, path) != null,
-    );
-    if (!isProtected) return false;
+    if (!matchesAnyProtectedPattern(patterns, path)) return false;
     // Server: per-request ssrAuth. Client: live zustand state.
     const isAuthed =
       typeof window === "undefined"

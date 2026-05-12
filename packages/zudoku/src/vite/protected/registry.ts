@@ -2,6 +2,7 @@ import { matchPath } from "react-router";
 import type { ConfigWithMeta } from "../../config/loader.js";
 import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
+import { matchesProtectedPattern } from "../../lib/util/url.js";
 
 // Module routes contributed by auto-detection or registerProtectedScope.
 export type ModuleScope =
@@ -37,12 +38,12 @@ export const scopeMatchesPattern = (
   pattern: string,
 ): boolean => {
   if (scope.type === "route") {
-    return matchPath({ path: pattern, end: true }, joinUrl(scope.path)) != null;
+    return matchesProtectedPattern(pattern, joinUrl(scope.path));
   }
   // Subtree scopes only match patterns with '*' (e.g. '/*') to require explicit descendant gating, like react-router.
   const root = joinUrl(scope.root);
   if (!pattern.includes("*")) {
-    return matchPath({ path: pattern, end: true }, root) != null;
+    return matchesProtectedPattern(pattern, root);
   }
   return matchPath({ path: pattern, end: false }, root) != null;
 };

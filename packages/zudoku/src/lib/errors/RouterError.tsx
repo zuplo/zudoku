@@ -1,14 +1,10 @@
-import {
-  isRouteErrorResponse,
-  matchPath,
-  useLocation,
-  useRouteError,
-} from "react-router";
+import { isRouteErrorResponse, useLocation, useRouteError } from "react-router";
 import { useAuth } from "../authentication/hook.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { NotFoundPage } from "../components/NotFoundPage.js";
 import { SignInRequiredPage } from "../core/RouteGuard.js";
 import { cn } from "../util/cn.js";
+import { matchesAnyProtectedPattern } from "../util/url.js";
 import { ErrorAlert } from "./ErrorAlert.js";
 
 // Chunk-load failure shape (what lazy() rejects with when protectChunks
@@ -38,10 +34,8 @@ const useSignInPromptIfProtectedUnauth = (error: unknown) => {
 
   if (!isAuthError) return null;
 
-  const isProtected = Object.keys(protectedRoutes).some(
-    (p) => matchPath({ path: p, end: true }, location.pathname) != null,
-  );
-  if (!isProtected) return null;
+  const patterns = Object.keys(protectedRoutes);
+  if (!matchesAnyProtectedPattern(patterns, location.pathname)) return null;
 
   return (
     <SignInRequiredPage redirectTo={location.pathname + location.search} />
