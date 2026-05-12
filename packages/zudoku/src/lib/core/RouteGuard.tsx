@@ -1,6 +1,6 @@
 import { Helmet } from "@zudoku/react-helmet-async";
 import { use, useCallback, useEffect, useMemo } from "react";
-import { matchPath, Outlet, useBlocker, useLocation } from "react-router";
+import { Outlet, useBlocker, useLocation } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
 import {
   Dialog,
@@ -16,7 +16,7 @@ import { RenderContext } from "../components/context/RenderContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { Layout } from "../components/Layout.js";
 import { ZudokuError } from "../util/invariant.js";
-import { stripBasePath } from "../util/url.js";
+import { matchesProtectedPattern, stripBasePath } from "../util/url.js";
 
 export const SEARCH_PROTECTED_SECTION = "protected";
 
@@ -134,7 +134,7 @@ export const RouteGuard = () => {
     (pathname: string) => {
       if (!protectedRoutes) return;
       for (const [pattern, check] of Object.entries(protectedRoutes)) {
-        if (matchPath({ path: pattern, end: true }, pathname)) {
+        if (matchesProtectedPattern(pattern, pathname)) {
           return check;
         }
       }

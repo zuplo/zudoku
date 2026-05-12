@@ -1,11 +1,11 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { matchPath } from "react-router";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { readFrontmatter } from "../lib/util/readFrontmatter.js";
+import { matchesAnyProtectedPattern } from "../lib/util/url.js";
 import {
   globMarkdownFiles,
   resolveCustomNavigationPaths,
@@ -107,15 +107,9 @@ const viteMarkdownExportPlugin = (): Plugin => {
           config.protectedRoutes,
         );
         if (protectedRoutes) {
-          const isProtectedRoute = (routePath: string): boolean => {
-            return Object.keys(protectedRoutes).some((route) =>
-              matchPath({ path: route, end: true }, routePath),
-            );
-          };
-
-          // Remove protected routes from the mapping
+          const patterns = Object.keys(protectedRoutes);
           for (const routePath of Object.keys(markdownFiles)) {
-            if (isProtectedRoute(routePath)) {
+            if (matchesAnyProtectedPattern(patterns, routePath)) {
               delete markdownFiles[routePath];
             }
           }
