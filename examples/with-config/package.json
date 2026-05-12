@@ -21,7 +21,6 @@
     }
   },
   "devDependencies": {
-    "@clerk/clerk-js": "^6.10.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zudoku": "workspace:*"
