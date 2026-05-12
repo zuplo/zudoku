@@ -191,6 +191,7 @@ export type PlaygroundContentProps = {
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
+  responseSchemas?: Record<string, string>;
 };
 
 export const Playground = ({
@@ -208,6 +209,7 @@ export const Playground = ({
   requiresLogin = false,
   onLogin,
   onSignUp,
+  responseSchemas,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
@@ -705,6 +707,7 @@ export const Playground = ({
               showLongRunningWarning={showLongRunningWarning}
               isFinished={isFinished}
               progress={progress}
+              responseSchemas={responseSchemas}
               tip={
                 <div className="text-xs w-full">
                   <span className="text-muted-foreground">

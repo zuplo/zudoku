@@ -15,6 +15,7 @@ export const ResultPanel = ({
   tip,
   isFinished,
   progress,
+  responseSchemas,
 }: {
   // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   queryMutation: UseMutationResult<PlaygroundResult, Error, any>;
@@ -23,6 +24,7 @@ export const ResultPanel = ({
   isFinished: boolean;
   progress: number;
   tip?: React.ReactNode;
+  responseSchemas?: Record<string, string>;
 }) => {
   return (
     <div className="flex flex-col overflow-y-auto h-[80vh] bg-muted/50">
@@ -61,6 +63,13 @@ export const ResultPanel = ({
           isBinary={queryMutation.data.isBinary}
           fileName={queryMutation.data.fileName}
           blob={queryMutation.data.blob}
+          typeName={
+            responseSchemas?.[String(queryMutation.data.status)] ??
+            responseSchemas?.[
+              `${Math.floor(queryMutation.data.status / 100)}XX`
+            ] ??
+            responseSchemas?.default
+          }
         />
       ) : queryMutation.isPending ? (
         <div className="grid place-items-center h-full">

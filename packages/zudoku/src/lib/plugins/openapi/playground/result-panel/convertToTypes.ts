@@ -29,8 +29,26 @@ export function generateInterface(obj: JsonObject, _indentation = ""): string {
   return lines.join("\n");
 }
 
-export function convertToTypes(json: JsonValue): { lines: string[] } {
+const toValidIdentifier = (name: string): string | undefined => {
+  // PascalCase: split on non-alphanumeric, capitalize each part
+  const sanitized = name
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
+
+  if (!sanitized || /^\d/.test(sanitized)) return undefined;
+
+  return sanitized;
+};
+
+export function convertToTypes(
+  json: JsonValue,
+  typeName?: string,
+): { lines: string[] } {
+  const name =
+    (typeName ? toValidIdentifier(typeName) : undefined) ?? "GeneratedType";
   const typeDefinition = inferType(json);
-  const lines = [`type GeneratedType = ${typeDefinition};`];
+  const lines = [`type ${name} = ${typeDefinition};`];
   return { lines };
 }
