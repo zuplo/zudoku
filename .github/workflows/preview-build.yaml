@@ -145,7 +145,7 @@ jobs:
           echo "✅ Smoke test passed - build output contains expected files and content"
       - name: Deploy to Cloudflare Pages
         id: deploy
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.COSMO_CARGO_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
