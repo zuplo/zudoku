@@ -94,7 +94,15 @@ const ApiOptionsSchema = z
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
-    schemaDownload: z.object({ enabled: z.boolean() }).partial(),
+    schemaDownload: z
+      .object({
+        enabled: z.boolean(),
+        fileName: z
+          .string()
+          .regex(/^[A-Za-z0-9_-]+$/)
+          .optional(),
+      })
+      .partial(),
     transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
     ),
@@ -103,6 +111,8 @@ const ApiOptionsSchema = z
     ),
   })
   .partial();
+
+export type ApiOptionsConfig = z.infer<typeof ApiOptionsSchema>;
 
 const ApiConfigSchema = z
   .object({
