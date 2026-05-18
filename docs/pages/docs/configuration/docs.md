@@ -228,7 +228,7 @@ The copy button provides:
 
 ### `publishMarkdown`
 
-**Type:** `boolean` **Default:** `false`
+**Type:** `boolean` **Default:** `true`
 
 When enabled, generates `.md` files for each documentation page during build. Pages can then be
 accessed at their URL path with the `.md` extension appended (e.g., `/docs/quickstart.md`).
