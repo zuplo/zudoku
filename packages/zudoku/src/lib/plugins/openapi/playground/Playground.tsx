@@ -31,6 +31,7 @@ import type {
 import { useSelectedServer } from "../state.js";
 import { AuthorizeDialog } from "./AuthorizeDialog.js";
 import BodyPanel from "./BodyPanel.js";
+import { buildRequestBody } from "./buildRequestBody.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
@@ -87,11 +88,16 @@ export type PathParam = {
 
 export type PlaygroundForm = {
   body: string;
-  bodyMode?: "text" | "file" | "multipart";
+  bodyMode?: "text" | "file" | "multipart" | "urlencoded";
   file?: File | null;
   multipartFormFields: Array<{
     name: string;
     value: File | string;
+    active: boolean;
+  }>;
+  urlencodedFormFields: Array<{
+    name: string;
+    value: string;
     active: boolean;
   }>;
   queryParams: Array<{
@@ -241,6 +247,7 @@ export const Playground = ({
         bodyMode: "text",
         file: null,
         multipartFormFields: [],
+        urlencodedFormFields: [],
         queryParams:
           queryParams.length > 0
             ? queryParams.map((param) => ({
@@ -313,25 +320,14 @@ export const Playground = ({
           .map<[string, string]>((h) => [h.name, h.value]),
       );
 
-      let body: string | FormData | File | undefined;
-
-      switch (data.bodyMode) {
-        case "file":
-          body = data.file || undefined;
+      const built = buildRequestBody(data);
+      const body = built.body;
+      switch (built.contentType.kind) {
+        case "remove":
           headers.delete("Content-Type");
           break;
-        case "multipart": {
-          const formData = new FormData();
-          data.multipartFormFields
-            ?.filter((field) => field.name && field.active)
-            .forEach((field) => formData.append(field.name, field.value));
-
-          body = formData;
-          headers.delete("Content-Type");
-          break;
-        }
-        default:
-          body = data.body || undefined;
+        case "override":
+          headers.set("Content-Type", built.contentType.value);
           break;
       }
 
@@ -430,6 +426,9 @@ export const Playground = ({
                   : `${f.name}: ${f.value}`,
               )
               .join("\n");
+            break;
+          case "urlencoded":
+            requestBody = typeof built.body === "string" ? built.body : "";
             break;
           default:
             requestBody = data.body;

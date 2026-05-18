@@ -1,3 +1,4 @@
+export type UrlEncodedRow = { name: string; value: string };
 const stringifyValue = (v: unknown): string =>
   typeof v === "string" ? v : JSON.stringify(v);
 
@@ -52,4 +53,32 @@ export const getLanguageForMediaType = (mediaType?: string): string => {
     "application/x-www-form-urlencoded": "text",
   };
   return languages[normalized] ?? "text";
+};
+export const rowsToUrlEncoded = (rows: UrlEncodedRow[]): string => {
+  const params = new URLSearchParams();
+  for (const { name, value } of rows) params.append(name, value);
+  return params.toString();
+};
+
+export const fromUrlEncoded = (text: string): UrlEncodedRow[] => {
+  if (!text) return [];
+  const rows: UrlEncodedRow[] = [];
+  for (const [name, value] of new URLSearchParams(text)) {
+    rows.push({ name, value });
+  }
+  return rows;
+};
+
+const objectToRows = (obj: Record<string, unknown>): UrlEncodedRow[] =>
+  Object.entries(obj).flatMap(([name, value]) => {
+    const values = Array.isArray(value) ? value : [value];
+    return values.map((v) => ({ name, value: stringifyValue(v) }));
+  });
+
+export const exampleToUrlEncodedRows = (value: unknown): UrlEncodedRow[] => {
+  if (typeof value === "string") return fromUrlEncoded(value);
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return objectToRows(value as Record<string, unknown>);
+  }
+  return [];
 };

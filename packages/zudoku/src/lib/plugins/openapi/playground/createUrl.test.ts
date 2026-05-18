@@ -41,6 +41,7 @@ const makeFormData = (
 ): PlaygroundForm => ({
   body: "",
   multipartFormFields: [],
+  urlencodedFormFields: [],
   queryParams: [],
   pathParams: [],
   headers: [],

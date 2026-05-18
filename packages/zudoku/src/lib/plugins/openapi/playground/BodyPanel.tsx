@@ -2,6 +2,7 @@ import {
   ChevronDownIcon,
   FileInput,
   Grid2x2PlusIcon,
+  LinkIcon,
   PaperclipIcon,
   ScanTextIcon,
   XIcon,
@@ -20,6 +21,7 @@ import { Textarea } from "zudoku/ui/Textarea.js";
 import { cn } from "../../../util/cn.js";
 import { humanFileSize } from "../../../util/humanFileSize.js";
 import type { MediaTypeObject } from "../graphql/graphql.js";
+import { exampleToUrlEncodedRows } from "../util/formatRequestBody.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
@@ -28,18 +30,27 @@ import ExamplesDropdown from "./ExamplesDropdown.js";
 import ParamsGrid from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
 import { MultipartField } from "./request-panel/MultipartField.js";
+import { UrlEncodedField } from "./request-panel/UrlEncodedField.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
 
 export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
   const { register, setValue, watch, control } =
     useFormContext<PlaygroundForm>();
   const examples = (content ?? []).flatMap((e) => e.examples);
-  const [headers, file, bodyMode, body, multipartFormFields] = watch([
+  const [
+    headers,
+    file,
+    bodyMode,
+    body,
+    multipartFormFields,
+    urlencodedFormFields,
+  ] = watch([
     "headers",
     "file",
     "bodyMode",
     "body",
     "multipartFormFields",
+    "urlencodedFormFields",
   ]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -94,6 +105,15 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
     },
   });
 
+  const urlencodedManager = useKeyValueFieldManager<
+    PlaygroundForm,
+    "urlencodedFormFields"
+  >({
+    control,
+    name: "urlencodedFormFields",
+    defaultValue: { name: "", value: "", active: false },
+  });
+
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger className="items-center">
@@ -117,6 +137,11 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                     <>
                       <PaperclipIcon size={14} />
                       File
+                    </>
+                  ) : bodyMode === "urlencoded" ? (
+                    <>
+                      <LinkIcon size={14} />
+                      URL-encoded
                     </>
                   ) : (
                     <>
@@ -164,6 +189,18 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                     )}
                   </span>
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setValue("bodyMode", "urlencoded")}
+                  className="gap-2"
+                >
+                  <LinkIcon size={14} />
+                  <span className="flex-1">URL-encoded</span>
+                  <span>
+                    {urlencodedFormFields?.some((field) => field.active) && (
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                    )}
+                  </span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <input
@@ -177,9 +214,22 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
               <ExamplesDropdown
                 examples={content}
                 onSelect={(example, mediaType) => {
-                  setValue("body", JSON.stringify(example.value, null, 2));
+                  if (mediaType === "application/x-www-form-urlencoded") {
+                    const rows = exampleToUrlEncodedRows(example.value);
+                    setValue(
+                      "urlencodedFormFields",
+                      rows.map((r) => ({ ...r, active: true })),
+                    );
+                    setValue("bodyMode", "urlencoded");
+                  } else {
+                    setValue("body", JSON.stringify(example.value, null, 2));
+                    setValue("urlencodedFormFields", []);
+                    setValue("bodyMode", "text");
+                  }
                   setValue("headers", [
-                    ...headers.filter((h) => h.name !== "Content-Type"),
+                    ...headers.filter(
+                      (h) => h.name.toLowerCase() !== "content-type",
+                    ),
                     {
                       name: "Content-Type",
                       value: mediaType,
@@ -260,6 +310,17 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
           <ParamsGrid>
             {manager.fields.map((field, index) => (
               <MultipartField key={field.id} index={index} manager={manager} />
+            ))}
+          </ParamsGrid>
+        )}
+        {bodyMode === "urlencoded" && (
+          <ParamsGrid>
+            {urlencodedManager.fields.map((field, index) => (
+              <UrlEncodedField
+                key={field.id}
+                index={index}
+                manager={urlencodedManager}
+              />
             ))}
           </ParamsGrid>
         )}
