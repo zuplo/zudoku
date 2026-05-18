@@ -6,6 +6,22 @@ sidebar_icon: book-open
 If you're dealing with multiple APIs and multiple OpenAPI files, the API Catalog comes in handy. It
 creates an overview of all your APIs and lets you organize them into categories and tags.
 
+## Categories and Tags
+
+Each entry in an API's `categories` array has two fields, `label` and `tags`, which serve different
+purposes:
+
+- **`label`** is the primary grouping. The catalog page renders one filter chip per unique label, so
+  this is what users click to narrow the list. An API can belong to multiple categories by adding
+  multiple entries to the array.
+- **`tags`** are secondary descriptors attached to that category. They do _not_ get their own filter
+  chip. Instead, they are matched against the search input and rendered as additional badges on the
+  API card (alongside the label). Use them for finer-grained keywords that should help users
+  discover an API without cluttering the top-level filters.
+
+For example, `{ label: "Payments", tags: ["billing", "subscriptions"] }` puts the API under the
+"Payments" filter chip and adds "billing" and "subscriptions" as searchable badges on its card.
+
 ## Enable API Catalog
 
 The first step to enable the API Catalog, you need to add a `catalogs` object to your Zudoku
