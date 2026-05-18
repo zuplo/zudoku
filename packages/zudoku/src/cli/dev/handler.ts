@@ -15,9 +15,12 @@ export async function dev(argv: Arguments) {
   const packageJson = getZudokuPackageJson();
   process.env.NODE_ENV = "development";
   const dir = path.resolve(process.cwd(), argv.dir);
+  const port =
+    argv.port ?? (process.env.PORT ? Number(process.env.PORT) : undefined);
+
   const server = new DevServer({
     dir,
-    argPort: argv.port,
+    argPort: port,
     ssr: argv.ssr,
     open: argv.open,
   });

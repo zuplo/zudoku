@@ -287,7 +287,7 @@ URL.
 ### `port`
 
 The port on which the development server will run. Defaults to `3000`. This option can also be
-passed to the CLI as `--port' (which takes precedence).
+passed to the CLI as `--port`, or set via the `PORT` environment variable.
 
 ```ts
 {
@@ -296,6 +296,16 @@ passed to the CLI as `--port' (which takes precedence).
 ```
 
 If the port is already in use, the next available port will be used.
+
+Resolution order (highest precedence first):
+
+1. `--port` CLI flag
+2. `PORT` environment variable
+3. `port` in the config file
+4. Default (`3000` for `dev`, `4000` for `preview`)
+
+See [Named local URLs](../guides/named-local-urls.md) for how to swap the port-based URL for
+something like `feature-branch.localhost`.
 
 ### `basePath`
 
