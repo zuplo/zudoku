@@ -8642,12 +8642,8 @@ packages:
   punycode@1.4.1:
     resolution: {integrity: sha512-jmYNElW7yvO7TV33CjSmvSiE2yco3bV2czu/OzDKdMNVZQWfxCblURLhf+47syQRBntjfLdd/H0egrzIG+oaFQ==}
 
-  qs@6.14.1:
-    resolution: {integrity: sha512-4EK3+xJl8Ts67nLYNwqw/dsFVnCf+qR7RgXSK9jEEm9unao3njwMDdmsdvoKBKHzxd7tCYz5e5M+SnMjdtXGQQ==}
-    engines: {node: '>=0.6'}
-
-  qs@6.15.0:
-    resolution: {integrity: sha512-mAZTtNCeetKMH+pSjrb76NAM8V9a05I9aBZOHztWy/UqcJdQYNsf59vrRKWnojAT9Y+GbIvoTBC++CPHqpDBhQ==}
+  qs@6.15.1:
+    resolution: {integrity: sha512-6YHEFRL9mfgcAvql/XhwTvf5jKcOiiupt2FiJxHkiX1z4j7WL8J/jRHYLluORvc1XxB5rV20KoeK00gVJamspg==}
     engines: {node: '>=0.6'}
 
   quansync@0.2.11:
@@ -15180,7 +15176,7 @@ snapshots:
 
   '@zudoku/httpsnippet@10.0.9':
     dependencies:
-      qs: 6.14.1
+      qs: 6.15.1
       stringify-object: 3.3.0
       url: 0.11.3
 
@@ -18911,11 +18907,7 @@ snapshots:
 
   punycode@1.4.1: {}
 
-  qs@6.14.1:
-    dependencies:
-      side-channel: 1.1.0
-
-  qs@6.15.0:
+  qs@6.15.1:
     dependencies:
       side-channel: 1.1.0
 
@@ -19965,7 +19957,7 @@ snapshots:
 
   union@0.5.0:
     dependencies:
-      qs: 6.15.0
+      qs: 6.15.1
 
   unist-util-find-after@5.0.0:
     dependencies:
@@ -20054,7 +20046,7 @@ snapshots:
   url@0.11.3:
     dependencies:
       punycode: 1.4.1
-      qs: 6.14.1
+      qs: 6.15.1
 
   urlpattern-polyfill@10.1.0: {}
 
