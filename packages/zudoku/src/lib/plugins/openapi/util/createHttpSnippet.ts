@@ -1,4 +1,15 @@
-import { HTTPSnippet } from "@zudoku/httpsnippet";
+import type { HarRequest, Plugin } from "@scalar/snippetz";
+import { csharpHttpclient } from "@scalar/snippetz/plugins/csharp/httpclient";
+import { goNative } from "@scalar/snippetz/plugins/go/native";
+import { javaOkhttp } from "@scalar/snippetz/plugins/java/okhttp";
+import { jsFetch } from "@scalar/snippetz/plugins/js/fetch";
+import { kotlinOkhttp } from "@scalar/snippetz/plugins/kotlin/okhttp";
+import { objcNsurlsession } from "@scalar/snippetz/plugins/objc/nsurlsession";
+import { phpCurl } from "@scalar/snippetz/plugins/php/curl";
+import { pythonRequests } from "@scalar/snippetz/plugins/python/requests";
+import { rubyNative } from "@scalar/snippetz/plugins/ruby/native";
+import { shellCurl } from "@scalar/snippetz/plugins/shell/curl";
+import { swiftNsurlsession } from "@scalar/snippetz/plugins/swift/nsurlsession";
 import { joinUrl } from "../../../util/joinUrl.js";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 
@@ -49,9 +60,9 @@ export const createHttpSnippet = ({
     text?: string;
   };
   resolvedAuth?: ResolvedAuth;
-}) => {
-  const postData =
-    exampleBody.mimeType === "multipart/form-data"
+}): Partial<HarRequest> => {
+  const postData = exampleBody.text
+    ? exampleBody.mimeType === "multipart/form-data"
       ? {
           mimeType: exampleBody.mimeType,
           params: toMultipartParams(exampleBody.text),
@@ -61,7 +72,8 @@ export const createHttpSnippet = ({
             mimeType: exampleBody.mimeType,
             params: toUrlEncodedParams(exampleBody.text),
           }
-        : exampleBody;
+        : { mimeType: exampleBody.mimeType, text: exampleBody.text }
+    : undefined;
 
   const baseHeaders = [
     ...(exampleBody.text
@@ -108,7 +120,7 @@ export const createHttpSnippet = ({
     resolvedAuth?.queryString.map((q) => q.name) ?? [],
   );
 
-  return new HTTPSnippet({
+  return {
     method: operation.method.toUpperCase(),
     url: joinUrl(
       selectedServer,
@@ -123,54 +135,28 @@ export const createHttpSnippet = ({
       ...baseQueryString.filter((q) => !authQueryNames.has(q.name)),
       ...(resolvedAuth?.queryString ?? []),
     ],
-    httpVersion: "",
-    cookies: [],
-    headersSize: 0,
-    bodySize: 0,
-  });
+  } satisfies Partial<HarRequest>;
 };
 
-export const getConverted = (snippet: HTTPSnippet, option: string) => {
-  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
-  let converted: any;
-  switch (option) {
-    case "shell":
-      converted = snippet.convert("shell", "curl");
-      break;
-    case "js":
-      converted = snippet.convert("javascript", "fetch");
-      break;
-    case "python":
-      converted = snippet.convert("python", "requests");
-      break;
-    case "java":
-      converted = snippet.convert("java", "okhttp");
-      break;
-    case "go":
-      converted = snippet.convert("go", "native");
-      break;
-    case "csharp":
-      converted = snippet.convert("csharp", "httpclient");
-      break;
-    case "kotlin":
-      converted = snippet.convert("kotlin", "okhttp");
-      break;
-    case "objc":
-      converted = snippet.convert("objc", "nsurlsession");
-      break;
-    case "php":
-      converted = snippet.convert("php", "http2");
-      break;
-    case "ruby":
-      converted = snippet.convert("ruby");
-      break;
-    case "swift":
-      converted = snippet.convert("swift");
-      break;
-    default:
-      converted = snippet.convert("shell");
-      break;
-  }
+const PLUGINS: Record<string, Plugin> = {
+  shell: shellCurl,
+  js: jsFetch,
+  python: pythonRequests,
+  java: javaOkhttp,
+  go: goNative,
+  csharp: csharpHttpclient,
+  kotlin: kotlinOkhttp,
+  objc: objcNsurlsession,
+  php: phpCurl,
+  ruby: rubyNative,
+  swift: swiftNsurlsession,
+};
 
-  return converted ? converted[0] : "";
+export const getConverted = (
+  request: Partial<HarRequest>,
+  language: string,
+): string => {
+  const plugin = PLUGINS[language];
+  if (!plugin) throw new Error(`Language "${language}" not supported`);
+  return plugin.generate(request) ?? "";
 };

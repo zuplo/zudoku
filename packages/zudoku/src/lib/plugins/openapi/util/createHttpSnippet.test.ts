@@ -40,7 +40,7 @@ const shell = (
       resolvedAuth,
     }),
     "shell",
-  ) as string;
+  );
 
 describe("createHttpSnippet auth merge", () => {
   it("replaces base header with auth header of same name (case-insensitive)", () => {
@@ -98,7 +98,7 @@ const shellWithBody = (
       exampleBody,
     }),
     "shell",
-  ) as string;
+  );
 
 describe("createHttpSnippet body encoding", () => {
   it("emits urlencoded curl with form fields and matching Content-Type", () => {
@@ -139,5 +139,28 @@ describe("createHttpSnippet body encoding", () => {
     expect(out).toContain("Content-Type: application/json");
     expect(out).toContain("hello");
     expect(out).toContain("world");
+  });
+});
+
+describe("getConverted plugin selection", () => {
+  it("throws for an unknown language", () => {
+    const req = createHttpSnippet({
+      operation: makeOp(),
+      selectedServer: "https://api.example.com",
+      exampleBody: { mimeType: "application/json" },
+    });
+    expect(() => getConverted(req, "cobol")).toThrow(/not supported/);
+  });
+
+  it("emits python/requests output for the `python` key", () => {
+    const out = getConverted(
+      createHttpSnippet({
+        operation: makeOp(),
+        selectedServer: "https://api.example.com",
+        exampleBody: { mimeType: "application/json" },
+      }),
+      "python",
+    );
+    expect(out).toContain("requests.get(");
   });
 });
