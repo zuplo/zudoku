@@ -375,6 +375,7 @@ const config: ZudokuConfig = {
       examplesLanguage: "js",
       schemaDownload: {
         enabled: true,
+        fileName: "openapi",
       },
     },
   },

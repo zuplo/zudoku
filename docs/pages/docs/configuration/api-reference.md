@@ -212,6 +212,7 @@ const config = {
       showInfoPage: true, // Show API information page as the index route
       schemaDownload: {
         enabled: true, // Enable schema download button
+        fileName: "schema", // Set name of the schema file when downloaded
       },
     },
   },
@@ -238,6 +239,8 @@ Available options:
 - `schemaDownload`: Enable schema download functionality. When enabled, displays a button allowing
   users to download the OpenAPI schema, copy it to clipboard, or open in a new tab.
   - `enabled`: Enable or disable the schema download button
+  - `fileName`: Set name of the schema file when downloaded (default: `schema`). Note: Do not
+    include a file extension, as that is added automatically based on the input file type.
 - `transformExamples`: Function to transform request/response examples before rendering. See
   [Transforming Examples](../guides/transforming-examples.md) for detailed usage
 - `generateCodeSnippet`: Function to generate custom code snippets for the API playground. See
@@ -261,6 +264,7 @@ const config = {
       showInfoPage: true, // Show API information page as the index route
       schemaDownload: {
         enabled: true, // Enable schema download button
+        fileName: "schema", // Set name of the schema file when downloaded
       },
     },
   },
