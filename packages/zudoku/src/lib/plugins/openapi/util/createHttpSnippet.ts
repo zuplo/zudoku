@@ -47,6 +47,52 @@ export const EMPTY_RESOLVED_AUTH: ResolvedAuth = {
   queryString: [],
 };
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// Picks the first non-empty security requirement. OpenAPI requirements are OR'd
+// (any one satisfies); we only show one alternative as a placeholder.
+const getPlaceholderAuth = (
+  operation: OperationsFragmentFragment,
+): ResolvedAuth => {
+  const requirement = operation.security?.find((r) => r.schemes.length > 0);
+  if (!requirement) return EMPTY_RESOLVED_AUTH;
+
+  const headers: Array<{ name: string; value: string }> = [];
+  const queryString: Array<{ name: string; value: string }> = [];
+
+  for (const { scheme } of requirement.schemes) {
+    switch (scheme.type) {
+      case "apiKey": {
+        if (!scheme.paramName) break;
+        const entry = { name: scheme.paramName, value: "<api-key>" };
+        if (scheme.in === "header") headers.push(entry);
+        else if (scheme.in === "query") queryString.push(entry);
+        break;
+      }
+      case "http": {
+        const httpScheme = scheme.scheme?.toLowerCase();
+        if (httpScheme === "basic") {
+          headers.push({ name: "Authorization", value: "Basic <credentials>" });
+        } else if (httpScheme === "bearer" || !scheme.scheme) {
+          headers.push({ name: "Authorization", value: "Bearer <token>" });
+        } else {
+          headers.push({
+            name: "Authorization",
+            value: `${capitalize(scheme.scheme)} <token>`,
+          });
+        }
+        break;
+      }
+      case "oauth2":
+      case "openIdConnect":
+        headers.push({ name: "Authorization", value: "Bearer <token>" });
+        break;
+    }
+  }
+
+  return { headers, queryString };
+};
+
 export const createHttpSnippet = ({
   operation,
   selectedServer,
@@ -113,12 +159,16 @@ export const createHttpSnippet = ({
                 : "<value>"),
       })) ?? [];
 
+  const effectiveAuth =
+    resolvedAuth &&
+    (resolvedAuth.headers.length > 0 || resolvedAuth.queryString.length > 0)
+      ? resolvedAuth
+      : getPlaceholderAuth(operation);
+
   const authHeaderNames = new Set(
-    resolvedAuth?.headers.map((h) => h.name.toLowerCase()) ?? [],
+    effectiveAuth.headers.map((h) => h.name.toLowerCase()),
   );
-  const authQueryNames = new Set(
-    resolvedAuth?.queryString.map((q) => q.name) ?? [],
-  );
+  const authQueryNames = new Set(effectiveAuth.queryString.map((q) => q.name));
 
   return {
     method: operation.method.toUpperCase(),
@@ -129,11 +179,11 @@ export const createHttpSnippet = ({
     postData,
     headers: [
       ...baseHeaders.filter((h) => !authHeaderNames.has(h.name.toLowerCase())),
-      ...(resolvedAuth?.headers ?? []),
+      ...effectiveAuth.headers,
     ],
     queryString: [
       ...baseQueryString.filter((q) => !authQueryNames.has(q.name)),
-      ...(resolvedAuth?.queryString ?? []),
+      ...effectiveAuth.queryString,
     ],
   } satisfies Partial<HarRequest>;
 };

@@ -142,6 +142,97 @@ describe("createHttpSnippet body encoding", () => {
   });
 });
 
+const opWithSecurity = (
+  schemes: Array<{
+    name: string;
+    type: "apiKey" | "http" | "oauth2" | "openIdConnect";
+    in?: "header" | "query";
+    paramName?: string;
+    scheme?: string;
+  }>,
+): OperationsFragmentFragment =>
+  ({
+    method: "GET",
+    path: "/things",
+    parameters: [],
+    security: [{ schemes: schemes.map((s) => ({ scopes: [], scheme: s })) }],
+  }) as any;
+
+describe("createHttpSnippet placeholder auth", () => {
+  it("adds Bearer placeholder for http bearer when no resolved auth", () => {
+    const out = shell(
+      opWithSecurity([{ name: "B", type: "http", scheme: "bearer" }]),
+    );
+    expect(out).toContain("Authorization: Bearer <token>");
+  });
+
+  it("adds Basic placeholder for http basic", () => {
+    const out = shell(
+      opWithSecurity([{ name: "B", type: "http", scheme: "basic" }]),
+    );
+    expect(out).toContain("Authorization: Basic <credentials>");
+  });
+
+  it("adds generic capitalized scheme for non-basic/bearer http auth", () => {
+    const out = shell(
+      opWithSecurity([{ name: "D", type: "http", scheme: "digest" }]),
+    );
+    expect(out).toContain("Authorization: Digest <token>");
+  });
+
+  it("adds apiKey header placeholder", () => {
+    const out = shell(
+      opWithSecurity([
+        { name: "K", type: "apiKey", in: "header", paramName: "X-Api-Key" },
+      ]),
+    );
+    expect(out).toContain("X-Api-Key: <api-key>");
+  });
+
+  it("adds apiKey query placeholder", () => {
+    const out = shell(
+      opWithSecurity([
+        { name: "K", type: "apiKey", in: "query", paramName: "api_key" },
+      ]),
+    );
+    expect(out).toContain("api_key=<api-key>");
+  });
+
+  it.each(["oauth2", "openIdConnect"] as const)(
+    "adds Bearer placeholder for %s",
+    (type) => {
+      const out = shell(opWithSecurity([{ name: "O", type }]));
+      expect(out).toContain("Authorization: Bearer <token>");
+    },
+  );
+
+  it("emits no auth headers when operation has no security", () => {
+    const out = shell(makeOp());
+    expect(out).not.toContain("Authorization");
+    expect(out).not.toContain("<api-key>");
+  });
+
+  it("falls back to placeholder when resolvedAuth is empty but defined", () => {
+    const out = shell(
+      opWithSecurity([{ name: "B", type: "http", scheme: "bearer" }]),
+      { headers: [], queryString: [] },
+    );
+    expect(out).toContain("Authorization: Bearer <token>");
+  });
+
+  it("prefers resolved auth over placeholders", () => {
+    const out = shell(
+      opWithSecurity([{ name: "B", type: "http", scheme: "bearer" }]),
+      {
+        headers: [{ name: "authorization", value: "Bearer real-token" }],
+        queryString: [],
+      },
+    );
+    expect(out).toContain("Bearer real-token");
+    expect(out).not.toContain("<token>");
+  });
+});
+
 describe("getConverted plugin selection", () => {
   it("falls back to shell/curl for an unknown language", () => {
     const req = createHttpSnippet({
