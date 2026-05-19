@@ -21,6 +21,7 @@ const Mermaid = lazy(() => import("../components/Mermaid.js"));
 const CodeTabs = lazy(() =>
   import("../ui/CodeTabs.js").then((m) => ({ default: m.CodeTabs })),
 );
+const MCPEndpoint = lazy(() => import("../components/MCPEndpoint.js"));
 
 export type MdxComponentsType = Readonly<MDXComponents> | null | undefined;
 
@@ -112,6 +113,11 @@ export const MdxComponents = {
     </Suspense>
   ),
   CodeTabPanel,
+  MCPEndpoint: (props) => (
+    <Suspense>
+      <MCPEndpoint {...props} />
+    </Suspense>
+  ),
   pre: (props) => (
     <pre className={cn("not-prose my-4", props.className)} {...props} />
   ),

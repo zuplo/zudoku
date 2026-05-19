@@ -1,34 +1,65 @@
 import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
 import { useState } from "react";
-import { InlineCode } from "../../components/InlineCode.js";
-import { Typography } from "../../components/Typography.js";
-import { Button } from "../../ui/Button.js";
-import { Callout } from "../../ui/Callout.js";
-import { Card } from "../../ui/Card.js";
+import { Button } from "../ui/Button.js";
+import { Callout } from "../ui/Callout.js";
+import { Card } from "../ui/Card.js";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../ui/Select.js";
-import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
+} from "../ui/Select.js";
+import { SyntaxHighlight } from "../ui/SyntaxHighlight.js";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs.js";
+import { InlineCode } from "./InlineCode.js";
 import {
-  type McpApp,
-  type McpServerData,
-  getAuthHeader,
-  getAuthType,
+  type AuthHeader,
+  type AuthType,
   getClaudeCodeCommand,
   getCodexCliCommand,
   getCodexConfig,
   getCursorConfig,
   getGenericConfig,
-  getMcpServerName,
-  getMcpUrl,
   getVisibleApps,
   getVscodeConfig,
+  type McpApp,
 } from "./mcp-configs.js";
+import { Typography } from "./Typography.js";
+
+export type MCPEndpointAuthentication =
+  | { type: "none" }
+  | {
+      type: "apiKey";
+      headerName?: string;
+      placeholder?: string;
+    }
+  | { type: "oauth" };
+
+export type MCPEndpointProps = {
+  url: string;
+  name?: string;
+  authentication?: MCPEndpointAuthentication;
+};
+
+const DEFAULT_NAME = "mcp-server";
+const DEFAULT_API_KEY_HEADER = "Authorization";
+const DEFAULT_API_KEY_PLACEHOLDER = "Bearer YOUR_API_KEY";
+
+const resolveAuth = (
+  authentication: MCPEndpointAuthentication,
+): { authType: AuthType; authHeader?: AuthHeader } => {
+  if (authentication.type === "apiKey") {
+    return {
+      authType: "apiKey",
+      authHeader: {
+        headerName: authentication.headerName ?? DEFAULT_API_KEY_HEADER,
+        placeholder: authentication.placeholder ?? DEFAULT_API_KEY_PLACEHOLDER,
+      },
+    };
+  }
+  return { authType: authentication.type };
+};
 
 const SubAppSection = ({
   label,
@@ -49,35 +80,26 @@ const SubAppSection = ({
   );
 
 export const MCPEndpoint = ({
-  serverUrl,
-  operationPath,
-  summary,
-  data,
-}: {
-  serverUrl?: string;
-  operationPath?: string;
-  data?: McpServerData;
-  summary?: string;
-}) => {
+  url,
+  name = DEFAULT_NAME,
+  authentication = { type: "none" },
+}: MCPEndpointProps) => {
   const [isCopied, setIsCopied] = useState(false);
-  const mcpUrl = getMcpUrl(serverUrl, operationPath);
-  const name = getMcpServerName(data, summary);
-  const auth = getAuthHeader(data);
-  const authType = getAuthType(data);
+  const { authType, authHeader } = resolveAuth(authentication);
   const visibleApps = getVisibleApps(authType);
 
-  const claudeCodeCommand = getClaudeCodeCommand(name, mcpUrl, auth);
-  const codexCliCommand = getCodexCliCommand(name, mcpUrl, auth);
-  const cursorConfig = getCursorConfig(name, mcpUrl, auth);
-  const codexConfig = getCodexConfig(name, mcpUrl, auth);
-  const genericConfig = getGenericConfig(name, mcpUrl, auth);
-  const vscodeConfig = getVscodeConfig(name, mcpUrl, auth);
+  const claudeCodeCommand = getClaudeCodeCommand(name, url, authHeader);
+  const codexCliCommand = getCodexCliCommand(name, url, authHeader);
+  const cursorConfig = getCursorConfig(name, url, authHeader);
+  const codexConfig = getCodexConfig(name, url, authHeader);
+  const genericConfig = getGenericConfig(name, url, authHeader);
+  const vscodeConfig = getVscodeConfig(name, url, authHeader);
 
   const defaultTab = visibleApps[0]?.id ?? "generic";
   const [activeTab, setActiveTab] = useState(defaultTab);
 
   const handleCopy = () => {
-    void navigator.clipboard.writeText(mcpUrl).then(() => {
+    void navigator.clipboard.writeText(url).then(() => {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     });
@@ -150,7 +172,7 @@ export const MCPEndpoint = ({
               </li>
               <li>
                 Enter the MCP server URL:
-                <InlineCode className="ml-2">{mcpUrl}</InlineCode>
+                <InlineCode className="ml-2">{url}</InlineCode>
               </li>
               <li>Save and the app will be available in your conversations</li>
             </ol>
@@ -396,3 +418,5 @@ export const MCPEndpoint = ({
     </Card>
   );
 };
+
+export default MCPEndpoint;

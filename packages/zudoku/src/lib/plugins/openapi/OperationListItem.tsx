@@ -3,6 +3,17 @@ import { Badge } from "zudoku/ui/Badge.js";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import {
+  getAuthHeader,
+  getAuthType,
+  getMcpServerName,
+  getMcpUrl,
+  type McpServerData,
+} from "../../components/mcp-configs.js";
+import {
+  MCPEndpoint,
+  type MCPEndpointAuthentication,
+} from "../../components/MCPEndpoint.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { cn } from "../../util/cn.js";
 import { renderIf } from "../../util/renderIf.js";
@@ -10,7 +21,6 @@ import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
 import { useOasConfig } from "./context.js";
 import { type FragmentType, useFragment } from "./graphql/index.js";
-import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
 import { SchemaView } from "./schema/SchemaView.js";
@@ -20,6 +30,21 @@ import { methodForColor } from "./util/methodToColor.js";
 
 const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
 export type ParameterGroup = (typeof PARAM_GROUPS)[number];
+
+const toMcpAuthentication = (
+  data: McpServerData | undefined,
+): MCPEndpointAuthentication => {
+  const authType = getAuthType(data);
+  if (authType === "apiKey") {
+    const header = getAuthHeader(data);
+    return {
+      type: "apiKey",
+      headerName: header?.headerName,
+      placeholder: header?.placeholder,
+    };
+  }
+  return { type: authType };
+};
 
 export const OperationListItem = ({
   operationFragment,
@@ -43,7 +68,10 @@ export const OperationListItem = ({
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
-  const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
+  const mcpServerData = operation.extensions?.["x-mcp-server"] as
+    | McpServerData
+    | undefined;
+  const isMCPEndpoint = mcpServerData !== undefined;
 
   return (
     <div>
@@ -93,10 +121,12 @@ export const OperationListItem = ({
         {isMCPEndpoint ? (
           <div className="col-span-full">
             <MCPEndpoint
-              serverUrl={displayServerUrl}
-              operationPath={operation.path}
-              summary={operation.summary ?? undefined}
-              data={operation.extensions?.["x-mcp-server"]}
+              url={getMcpUrl(displayServerUrl, operation.path)}
+              name={getMcpServerName(
+                mcpServerData,
+                operation.summary ?? undefined,
+              )}
+              authentication={toMcpAuthentication(mcpServerData)}
             />
           </div>
         ) : (

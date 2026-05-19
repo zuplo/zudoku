@@ -1,0 +1,49 @@
+---
+sidebar_icon: bot
+sidebar_label: AI Cargo MCP
+---
+
+# AI Cargo <span className="text-primary">MCP</span> Server
+
+Cosmo Cargo's <strong>Model Context Protocol</strong> server lets your favorite AI assistants
+hyperlink directly into our quantum cargo grid — request route optimizations, query manifests, and
+schedule warp jumps without leaving the chat window.
+
+The configuration card below is rendered with the standalone `<MCPEndpoint />` component, so you can
+drop it into any MDX page that talks about an MCP server — no OpenAPI schema required.
+
+## Quantum Express MCP
+
+<MCPEndpoint
+  url="https://api.cosmocargo.space/ai/v1/mcp"
+  name="cosmo-cargo-ai"
+  authentication={{
+    type: "apiKey",
+    headerName: "X-API-Key",
+    placeholder: "YOUR_COSMO_API_KEY",
+  }}
+/>
+
+## Public Tracking MCP <Badge variant="secondary">No auth</Badge>
+
+Our public shipment tracker is open to the void — no key required. Use it to peek at any cargo
+manifest broadcast on the open quantum band.
+
+<MCPEndpoint url="https://api.cosmocargo.space/tracking/v1/mcp" name="cosmo-cargo-tracking" />
+
+## Enterprise OAuth MCP <Badge variant="secondary">OAuth</Badge>
+
+Fleet captains running enterprise contracts connect their AI assistants over OAuth so cargo crews
+inherit the captain's credentials when reasoning about manifests.
+
+<MCPEndpoint
+  url="https://api.cosmocargo.space/fleet/v1/mcp"
+  name="cosmo-cargo-fleet"
+  authentication={{ type: "oauth" }}
+/>
+
+<Callout type="tip">
+  Heads up, captain: the MCP endpoints respect your tier. Quantum Express subscribers can pin AI
+  assistants to dedicated entanglement channels — see the [Quantum Express](quantum-express.mdx)
+  guide for details.
+</Callout>
