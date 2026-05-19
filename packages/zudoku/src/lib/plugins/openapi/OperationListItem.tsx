@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Separator } from "zudoku/ui/Separator.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
@@ -30,6 +31,7 @@ export const OperationListItem = ({
   globalSelectedServer?: string;
   shouldLazyHighlight?: boolean;
 }) => {
+  const { t } = useTranslation();
   const operation = useFragment(OperationsFragment, operationFragment);
   const groupedParameters = Object.groupBy(
     operation.parameters ?? [],
@@ -144,9 +146,9 @@ export const OperationListItem = ({
                         {operation.summary} &rsaquo;{" "}
                       </PagefindSearchMeta>
                     )}
-                    Request Body{" "}
+                    {t("openapi.requestBody")}{" "}
                     {operation.requestBody?.required === false ? (
-                      <Badge variant="muted">optional</Badge>
+                      <Badge variant="muted">{t("openapi.optional")}</Badge>
                     ) : (
                       ""
                     )}
@@ -164,7 +166,7 @@ export const OperationListItem = ({
                       {operation.summary} &rsaquo;{" "}
                     </PagefindSearchMeta>
                   )}
-                  Responses
+                  {t("openapi.responses")}
                 </Heading>
                 <ResponseContent
                   responses={operation.responses}

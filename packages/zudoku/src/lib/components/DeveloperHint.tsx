@@ -1,6 +1,7 @@
 import { InfoIcon } from "lucide-react";
 import { type ReactNode, Suspense, lazy } from "react";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
+import { useTranslation } from "./context/useTranslation.js";
 
 // Lazy: Markdown imports shiki.ts — keeping it out of the entry chunk.
 const Markdown = lazy(() =>
@@ -14,12 +15,14 @@ export const DeveloperHint = ({
   children: ReactNode;
   className?: string;
 }) => {
+  const { t } = useTranslation();
+
   if (process.env.NODE_ENV !== "development") return null;
 
   return (
     <Alert variant="info" className={className} fit="loose">
       <InfoIcon />
-      <AlertTitle>Developer hint</AlertTitle>
+      <AlertTitle>{t("developerHint.title")}</AlertTitle>
       <AlertDescription>
         {typeof children === "string" ? (
           <Suspense>
@@ -28,7 +31,7 @@ export const DeveloperHint = ({
         ) : (
           <div>{children}</div>
         )}
-        <small className="italic">Only shown in development mode.</small>
+        <small className="italic">{t("developerHint.devOnly")}</small>
       </AlertDescription>
     </Alert>
   );

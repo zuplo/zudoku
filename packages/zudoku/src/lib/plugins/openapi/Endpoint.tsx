@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useState, useTransition } from "react";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { Button } from "../../ui/Button.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
@@ -20,6 +21,7 @@ const ServersQuery = graphql(/* GraphQL */ `
 `);
 
 const CopyButton = ({ url }: { url: string }) => {
+  const { t } = useTranslation();
   const [isCopied, setIsCopied] = useState(false);
 
   return (
@@ -32,7 +34,7 @@ const CopyButton = ({ url }: { url: string }) => {
       }}
       variant="ghost"
       size="icon-xs"
-      aria-label="Copy server URL"
+      aria-label={t("openapi.copyServerUrl")}
     >
       {isCopied ? (
         <CheckIcon className="text-green-600" size={14} aria-hidden="true" />
@@ -44,6 +46,7 @@ const CopyButton = ({ url }: { url: string }) => {
 };
 
 export const Endpoint = () => {
+  const { t } = useTranslation();
   const { input, type } = useOasConfig();
   const query = useCreateQuery(ServersQuery, { input, type });
   const result = useSuspenseQuery(query);
@@ -58,7 +61,7 @@ export const Endpoint = () => {
 
   return (
     <div className="flex items-center gap-1.5 flex-nowrap">
-      <span className="font-medium text-sm">Server</span>
+      <span className="font-medium text-sm">{t("openapi.server")}</span>
       <SimpleSelect
         className="font-mono text-xs border-input bg-transparent dark:bg-input/30 dark:hover:bg-input/50 py-1.5 max-w-[450px] truncate"
         onChange={(e) =>
@@ -66,7 +69,7 @@ export const Endpoint = () => {
         }
         value={selectedServer}
         showChevrons
-        aria-label="Select server"
+        aria-label={t("openapi.selectServer")}
         options={servers.map((server) => ({
           value: server.url,
           label: server.url,

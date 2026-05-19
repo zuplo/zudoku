@@ -6,50 +6,53 @@ import type {
 } from "../../config/validators/ZudokuConfig.js";
 import { ChatGPTLogo } from "../plugins/markdown/assets/ChatGPTLogo.js";
 import { ClaudeLogo } from "../plugins/markdown/assets/ClaudeLogo.js";
+import { useTranslation } from "./context/useTranslation.js";
 
 type AiAssistantContext = {
   pageUrl: string;
   type: "docs" | "openapi";
+  prompt: string;
+};
+
+type Preset = {
+  labelKey: string;
+  icon?: ReactNode;
+  buildUrl: (context: AiAssistantContext) => string;
+};
+
+const PRESETS: Record<string, Preset> = {
+  claude: {
+    labelKey: "ai.useInClaude",
+    icon: <ClaudeLogo className="size-4" aria-hidden="true" />,
+    buildUrl: ({ prompt }) =>
+      `https://claude.ai/new?q=${encodeURIComponent(prompt)}`,
+  },
+  chatgpt: {
+    labelKey: "ai.useInChatGPT",
+    icon: <ChatGPTLogo className="size-4" aria-hidden="true" />,
+    buildUrl: ({ prompt }) =>
+      `https://chatgpt.com/?q=${encodeURIComponent(prompt)}`,
+  },
 };
 
 type ResolvedAssistant = {
-  label: string;
+  label: ReactNode;
   icon?: ReactNode;
   getUrl: (context: AiAssistantContext) => string;
 };
 
-const PRESETS: Record<string, ResolvedAssistant> = {
-  claude: {
-    label: "Use in Claude",
-    icon: <ClaudeLogo className="size-4" aria-hidden="true" />,
-    getUrl: ({ pageUrl, type }) => {
-      const contextText =
-        type === "openapi" ? "this API" : "this documentation page";
-      const prompt = encodeURIComponent(
-        `Help me understand ${contextText}: ${pageUrl}`,
-      );
-      return `https://claude.ai/new?q=${prompt}`;
-    },
-  },
-  chatgpt: {
-    label: "Use in ChatGPT",
-    icon: <ChatGPTLogo className="size-4" aria-hidden="true" />,
-    getUrl: ({ pageUrl, type }) => {
-      const contextText =
-        type === "openapi" ? "this API" : "this documentation page";
-      const prompt = encodeURIComponent(
-        `Help me understand ${contextText}: ${pageUrl}`,
-      );
-      return `https://chatgpt.com/?q=${prompt}`;
-    },
-  },
-};
-
 const resolveAssistant = (
   entry: string | AiAssistantCustom,
+  t: (key: string, values?: Record<string, string | number>) => string,
 ): ResolvedAssistant | undefined => {
   if (typeof entry === "string") {
-    return PRESETS[entry];
+    const preset = PRESETS[entry];
+    if (!preset) return undefined;
+    return {
+      label: t(preset.labelKey),
+      icon: preset.icon,
+      getUrl: preset.buildUrl,
+    };
   }
 
   return {
@@ -75,6 +78,7 @@ export const AiAssistantMenuItems = ({
   getPageUrl: () => string;
   type: "docs" | "openapi";
 }) => {
+  const { t } = useTranslation();
   const config = aiAssistants ?? DEFAULT_ASSISTANTS;
 
   if (config === false) {
@@ -82,7 +86,7 @@ export const AiAssistantMenuItems = ({
   }
 
   return config.map((entry, index) => {
-    const assistant = resolveAssistant(entry);
+    const assistant = resolveAssistant(entry, t);
     if (!assistant) return null;
 
     return (
@@ -90,7 +94,12 @@ export const AiAssistantMenuItems = ({
         key={typeof entry === "string" ? entry : index}
         className="gap-2"
         onClick={() => {
-          const url = assistant.getUrl({ pageUrl: getPageUrl(), type });
+          const pageUrl = getPageUrl();
+          const prompt = t(
+            type === "openapi" ? "ai.prompt.api" : "ai.prompt.docs",
+            { pageUrl },
+          );
+          const url = assistant.getUrl({ pageUrl, type, prompt });
           window.open(url, "_blank", "noopener,noreferrer");
         }}
       >

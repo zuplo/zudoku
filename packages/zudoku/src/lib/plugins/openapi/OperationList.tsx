@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { Navigate, useParams } from "react-router";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { Markdown } from "../../components/Markdown.js";
 import { usePrevNext } from "../../components/navigation/utils.js";
@@ -183,6 +184,7 @@ export const OperationList = ({
   tag?: string;
   untagged?: boolean;
 }) => {
+  const { t } = useTranslation();
   const { input, type } = useOasConfig();
   const { tag: tagFromParams } = useParams<"tag">();
   const query = useCreateQuery(OperationsForTagQuery, {
@@ -217,10 +219,10 @@ export const OperationList = ({
         data-pagefind-ignore="all"
       >
         <div className="text-muted-foreground font-medium">
-          No operations found
+          {t("openapi.noOperations")}
         </div>
         <div className="mt-2 text-sm text-muted-foreground">
-          This API doesn't have any operations defined yet.
+          {t("openapi.noOperationsDescription")}
         </div>
       </div>
     );
@@ -258,7 +260,7 @@ export const OperationList = ({
           label:
             next.extensions?.["x-displayName"] ??
             next.name ??
-            "Other endpoints",
+            t("openapi.otherEndpoints"),
         }
       : navNext
         ? { to: navNext.id, label: navNext.label }
@@ -266,7 +268,7 @@ export const OperationList = ({
   };
 
   const tagTitle = untagged
-    ? "Other endpoints"
+    ? t("openapi.otherEndpoints")
     : (schema.tag.extensions?.["x-displayName"] ?? schema.tag.name);
 
   const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");

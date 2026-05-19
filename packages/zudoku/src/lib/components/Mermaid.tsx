@@ -4,6 +4,7 @@ import type { ComponentProps } from "react";
 import { useId } from "react";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { useTheme } from "../hooks/index.js";
+import { useTranslation } from "./context/useTranslation.js";
 import { Spinner } from "./Spinner.js";
 
 export type MermaidProps = {
@@ -30,6 +31,7 @@ const loadMermaid = () => {
 export const Mermaid = ({ chart, config, ...props }: MermaidProps) => {
   const id = useId();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const {
     data: svg,
@@ -54,7 +56,7 @@ export const Mermaid = ({ chart, config, ...props }: MermaidProps) => {
   if (error)
     return (
       <Alert className="flex flex-col gap-2" variant="destructive">
-        <AlertTitle>Mermaid Error</AlertTitle>
+        <AlertTitle>{t("mermaid.error")}</AlertTitle>
         <AlertDescription className="overflow-auto wrap-break-word whitespace-pre-wrap font-mono text-xs">
           {error.message}
         </AlertDescription>
