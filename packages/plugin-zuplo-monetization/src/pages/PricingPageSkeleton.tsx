@@ -7,9 +7,9 @@ export const PricingPageSkeleton = () => (
       <Skeleton className="h-9 w-48 mx-auto" />
       <Skeleton className="h-5 w-96 mx-auto" />
     </div>
-    <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
+    <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] justify-center gap-2">
       {[1, 2, 3].map((i) => (
-        <Card key={i} className="w-[300px]">
+        <Card key={i}>
           <CardHeader className="space-y-3">
             <Skeleton className="h-6 w-24" />
             <Skeleton className="h-8 w-32" />
