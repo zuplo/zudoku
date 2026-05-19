@@ -143,13 +143,13 @@ describe("createHttpSnippet body encoding", () => {
 });
 
 describe("getConverted plugin selection", () => {
-  it("throws for an unknown language", () => {
+  it("falls back to shell/curl for an unknown language", () => {
     const req = createHttpSnippet({
       operation: makeOp(),
       selectedServer: "https://api.example.com",
       exampleBody: { mimeType: "application/json" },
     });
-    expect(() => getConverted(req, "cobol")).toThrow(/not supported/);
+    expect(getConverted(req, "cobol")).toContain("curl");
   });
 
   it("emits python/requests output for the `python` key", () => {
