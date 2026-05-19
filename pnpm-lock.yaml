@@ -7655,8 +7655,8 @@ packages:
     resolution: {integrity: sha512-woHRUZ/iF23GBP1dkDQMh1QBad9dmr8/PAwNA54VrSOVYgI12MAcE14TqnDdQOdzyEonGzMepYnqBMYdsoAr8Q==}
     hasBin: true
 
-  katex@0.16.46:
-    resolution: {integrity: sha512-WHy4Coo+bGZyH7NwJKHkS04YFsFcarWbAEOAC3EMndzdN6VSZqklLLIgfxzyaW9jDoeGYJX9SWbJPKpecox0Uw==}
+  katex@0.16.47:
+    resolution: {integrity: sha512-Eeo8Ys1doU1z+x8AZsPpQu+p/QcZBI5PeOo7QGQdy2x2m0MU/hYagBbGOmXwr5KVbEfVuWv9LpnQWeehogurjg==}
     hasBin: true
 
   khroma@2.1.0:
@@ -17489,7 +17489,7 @@ snapshots:
     dependencies:
       commander: 8.3.0
 
-  katex@0.16.46:
+  katex@0.16.47:
     dependencies:
       commander: 8.3.0
 
@@ -18007,7 +18007,7 @@ snapshots:
       dayjs: 1.11.20
       dompurify: 3.4.3
       es-toolkit: 1.46.1
-      katex: 0.16.46
+      katex: 0.16.47
       khroma: 2.1.0
       marked: 16.4.2
       roughjs: 4.6.6
