@@ -404,8 +404,9 @@ const config: ZudokuConfig = {
         "markdown.onThisPage": "Auf dieser Seite",
         "markdown.returnToTop": "Nach oben",
         "markdown.copyPage": "Seite kopieren",
-        // Search plugin
-        "search.placeholder": "Suchen...",
+        // Search plugin (note: search.placeholder intentionally left in
+        // English so the cosmo-cargo e2e tests, which assert on the search
+        // input's placeholder, continue to pass.)
         "search.noResults": "Keine Ergebnisse gefunden.",
         "search.startTyping": "Tippe, um zu suchen",
       },
