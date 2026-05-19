@@ -52,6 +52,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Sync to npm latest
+        working-directory: packages/plugin-zuplo-monetization
+        run: |
+          PUBLISHED=$(npm view @zuplo/zudoku-plugin-monetization version)
+          npm version "$PUBLISHED" --allow-same-version --no-git-tag-version
+
       - name: Typecheck
         run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
 
@@ -93,7 +99,13 @@ jobs:
           ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
         run: |
           echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
-          git push "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git" main --follow-tags
+          REMOTE="https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git"
+          for i in 1 2 3; do
+            git pull --rebase "$REMOTE" main && \
+            git push "$REMOTE" main --follow-tags && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
 
       - name: Generate a token
         id: app-token
