@@ -81,7 +81,7 @@ export const PricingTable = ({
     <>
       <div
         className={cn(
-          "w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6",
+          "w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] justify-center gap-2",
           className,
         )}
       >
