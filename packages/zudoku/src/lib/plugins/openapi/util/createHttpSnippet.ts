@@ -156,6 +156,6 @@ export const getConverted = (
   request: Partial<HarRequest>,
   language: string,
 ): string => {
-  const plugin = PLUGINS[language] ?? PLUGINS.shell;
+  const plugin = PLUGINS[language] ?? shellCurl;
   return plugin.generate(request) ?? "";
 };
