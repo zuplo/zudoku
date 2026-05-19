@@ -1024,6 +1024,57 @@
             "description": "Current fuel availability percentage"
           }
         }
+      },
+      "QuantumContext": {
+        "anyOf": [
+          {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        ]
+      },
+      "QuantumManifestBase": {
+        "type": "object",
+        "required": ["manifestId", "quantumContext"],
+        "properties": {
+          "manifestId": {
+            "type": "string",
+            "description": "Unique manifest identifier"
+          },
+          "quantumContext": { "$ref": "#/components/schemas/QuantumContext" }
+        }
+      },
+      "QuantumManifest": {
+        "allOf": [
+          { "$ref": "#/components/schemas/QuantumManifestBase" },
+          {
+            "type": "object",
+            "required": ["entries"],
+            "properties": {
+              "quantumContext": {
+                "$ref": "#/components/schemas/QuantumContext"
+              },
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["entryId", "mass"],
+                  "properties": {
+                    "entryId": { "type": "string" },
+                    "mass": {
+                      "type": "number",
+                      "description": "Cargo mass in metric tons"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     }
   },
@@ -1273,6 +1324,33 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interplanetary/quantum-manifests/{manifestId}": {
+      "get": {
+        "tags": ["Interplanetary"],
+        "summary": "Get quantum manifest",
+        "description": "Returns a quantum cargo manifest.",
+        "operationId": "getQuantumManifest",
+        "parameters": [
+          {
+            "name": "manifestId",
+            "in": "path",
+            "required": true,
+            "description": "Manifest identifier",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quantum manifest",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/QuantumManifest" }
               }
             }
           }
