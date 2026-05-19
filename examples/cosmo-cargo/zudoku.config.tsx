@@ -384,9 +384,30 @@ const config: ZudokuConfig = {
     defaultLocale: "en",
     messages: {
       de: {
+        // Core shell
+        "nav.title": "Navigation",
+        "nav.login": "Anmelden",
+        "nav.logout": "Abmelden",
+        "nav.myAccount": "Mein Konto",
+        "notFound.title": "Seite nicht gefunden",
+        "notFound.goHome": "Zurück zur Startseite",
+        // OpenAPI plugin
         "openapi.downloadSchema": "Schema herunterladen",
         "openapi.openInNewTab": "In neuem Tab öffnen",
         "openapi.copyToClipboard": "In Zwischenablage kopieren",
+        "openapi.server": "Server",
+        "openapi.requestBody": "Anfrage-Body",
+        "openapi.responses": "Antworten",
+        "openapi.optional": "optional",
+        "openapi.parameter.required": "erforderlich",
+        // Markdown plugin
+        "markdown.onThisPage": "Auf dieser Seite",
+        "markdown.returnToTop": "Nach oben",
+        "markdown.copyPage": "Seite kopieren",
+        // Search plugin
+        "search.placeholder": "Suchen...",
+        "search.noResults": "Keine Ergebnisse gefunden.",
+        "search.startTyping": "Tippe, um zu suchen",
       },
     },
   },
