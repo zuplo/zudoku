@@ -156,7 +156,6 @@ export const getConverted = (
   request: Partial<HarRequest>,
   language: string,
 ): string => {
-  const plugin = PLUGINS[language];
-  if (!plugin) throw new Error(`Language "${language}" not supported`);
+  const plugin = PLUGINS[language] ?? PLUGINS.shell;
   return plugin.generate(request) ?? "";
 };
