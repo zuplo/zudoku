@@ -350,7 +350,7 @@ export const MCPEndpoint = ({
   };
 
   return (
-    <Card className="p-6 mb-6 max-w-screen-md">
+    <Card className="not-prose p-6 mb-6 max-w-screen-md">
       <div className="space-y-4">
         <div>
           <div className="flex items-center justify-between mb-2">
