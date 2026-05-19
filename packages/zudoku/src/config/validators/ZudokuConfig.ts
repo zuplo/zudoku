@@ -317,7 +317,7 @@ export const DocsConfigSchema = z.object({
     .default([DEFAULT_DOCS_FILES]),
   publishMarkdown: z
     .boolean()
-    .default(false)
+    .default(true)
     .describe(
       "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
     ),
