@@ -2,14 +2,17 @@
  * @vitest-environment happy-dom
  */
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   act,
   cleanup,
   render as testRender,
   screen,
 } from "@testing-library/react";
-import { createMemoryRouter, RouterProvider } from "react-router";
+import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ZudokuProvider } from "../../components/context/ZudokuProvider.js";
+import { ZudokuContext } from "../../core/ZudokuContext.js";
 import type { UseAuthReturn } from "../hook.js";
 import { SignUp } from "./SignUp.js";
 
@@ -38,8 +41,21 @@ const buildAuth = (overrides: Partial<UseAuthReturn> = {}): UseAuthReturn => ({
 });
 
 const renderAt = async (path: string) => {
+  const queryClient = new QueryClient();
+  const context = new ZudokuContext({}, queryClient, {});
   const router = createMemoryRouter(
-    [{ path: "/signup", element: <SignUp /> }],
+    [
+      {
+        element: (
+          <QueryClientProvider client={queryClient}>
+            <ZudokuProvider context={context}>
+              <Outlet />
+            </ZudokuProvider>
+          </QueryClientProvider>
+        ),
+        children: [{ path: "/signup", element: <SignUp /> }],
+      },
+    ],
     { initialEntries: [path] },
   );
 

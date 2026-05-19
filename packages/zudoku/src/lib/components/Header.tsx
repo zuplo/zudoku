@@ -22,6 +22,7 @@ import { cn } from "../util/cn.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
 import { ClientOnly } from "./ClientOnly.js";
+import { useTranslation } from "./context/useTranslation.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { HeaderNavigation } from "./HeaderNavigation.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
@@ -63,6 +64,7 @@ const ProfileMenu = () => {
   const context = useZudoku();
   const profileItems = context.getProfileMenuItems();
   const auth = useAuth();
+  const { t } = useTranslation();
   const { isAuthEnabled, isAuthenticated, profile } = auth;
 
   if (!isAuthEnabled) return null;
@@ -71,18 +73,18 @@ const ProfileMenu = () => {
     <ClientOnly fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}>
       {!isAuthenticated ? (
         <Button size="lg" variant="ghost" onClick={() => auth.login()}>
-          Login
+          {t("nav.login")}
         </Button>
       ) : (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button size="lg" variant="ghost">
-              {profile?.name ?? "My Account"}
+              {profile?.name ?? t("nav.myAccount")}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
             <DropdownMenuLabel>
-              {profile?.name ?? "My Account"}
+              {profile?.name ?? t("nav.myAccount")}
               {profile?.email && profile.email !== profile?.name && (
                 <div className="font-normal text-muted-foreground">
                   {profile.email}
@@ -116,7 +118,7 @@ const ProfileMenu = () => {
             <Link to="/signout">
               <DropdownMenuItem className="flex gap-2">
                 <LogOutIcon size={16} strokeWidth={1} absoluteStrokeWidth />
-                Logout
+                {t("nav.logout")}
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>

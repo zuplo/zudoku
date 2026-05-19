@@ -8,12 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { useLatest } from "../../util/useLatest.js";
 import { useAuth } from "../hook.js";
 import { ZudokuSignUpDisabledUi } from "../ui/ZudokuAuthUi.js";
 
 export const SignUp = () => {
   const auth = useAuth();
+  const { t } = useTranslation();
   const [search] = useSearchParams();
   const redirectTo = search.get("redirect") ?? "/";
 
@@ -33,19 +35,16 @@ export const SignUp = () => {
     <div className="flex items-center justify-center mt-8">
       <Card className="max-w-md w-full">
         <CardHeader>
-          <CardTitle className="text-lg">Sign up</CardTitle>
-          <CardDescription>
-            You're being redirected to our secure login provider to complete
-            your sign up process.
-          </CardDescription>
+          <CardTitle className="text-lg">{t("auth.signUp")}</CardTitle>
+          <CardDescription>{t("auth.signUpRedirect")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2 justify-center">
             <Button onClick={() => auth.signup()} variant="default">
-              Register
+              {t("auth.register")}
             </Button>
             <Button variant="link" className="text-muted-foreground" asChild>
-              <Link to="/">Go home</Link>
+              <Link to="/">{t("auth.goHome")}</Link>
             </Button>
           </div>
         </CardContent>

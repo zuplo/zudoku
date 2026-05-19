@@ -200,7 +200,7 @@ export const MobileTopNavigation = () => {
                   <Separator className="my-2" />
                   <li className="py-2">
                     <div className="text-base font-medium">
-                      {profile?.name ?? "My Account"}
+                      {profile?.name ?? t("nav.myAccount")}
                     </div>
                     {profile?.email && profile.email !== profile?.name && (
                       <div className="text-sm text-muted-foreground">

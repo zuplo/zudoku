@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "zudoku/ui/Card.js";
 import { Input } from "zudoku/ui/Input.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { EMAIL_LINK_STORAGE_KEY } from "../constants.js";
 import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
 import { AuthCard } from "./AuthCard.js";
@@ -23,6 +24,7 @@ export const EmailLinkCallbackUi = ({
   isEmailLinkUrl: (url: string) => boolean;
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
   const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
@@ -55,15 +57,14 @@ export const EmailLinkCallbackUi = ({
     return (
       <AuthCard>
         <CardHeader className="text-center">
-          <CardTitle>Invalid sign-in link</CardTitle>
+          <CardTitle>{t("auth.invalidSignInLink")}</CardTitle>
           <CardDescription>
-            This sign-in link is invalid or has expired. Please request a new
-            one.
+            {t("auth.invalidSignInLinkDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center">
           <a href="/signin/email-link" className="text-sm text-primary">
-            Request a new sign-in link
+            {t("auth.requestNewSignInLink")}
           </a>
         </CardContent>
       </AuthCard>
@@ -74,10 +75,8 @@ export const EmailLinkCallbackUi = ({
     return (
       <AuthCard>
         <CardHeader className="text-center">
-          <CardTitle>Signing you in...</CardTitle>
-          <CardDescription>
-            Please wait while we complete your sign-in.
-          </CardDescription>
+          <CardTitle>{t("auth.signingYouIn")}</CardTitle>
+          <CardDescription>{t("auth.signingYouInDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center">
           <Spinner />
@@ -89,15 +88,15 @@ export const EmailLinkCallbackUi = ({
   return (
     <AuthCard>
       <CardHeader>
-        <CardTitle>Confirm your email</CardTitle>
+        <CardTitle>{t("auth.confirmYourEmail")}</CardTitle>
         <CardDescription>
-          Please enter the email address you used to request the sign-in link.
+          {t("auth.confirmYourEmailDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {signInMutation.error && (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("auth.error")}</AlertTitle>
             <AlertDescription>{signInMutation.error.message}</AlertDescription>
           </Alert>
         )}
@@ -109,14 +108,14 @@ export const EmailLinkCallbackUi = ({
           className="flex flex-col gap-2"
         >
           <Input
-            placeholder="you@example.com"
+            placeholder={t("auth.emailExamplePlaceholder")}
             type="email"
             value={emailInput}
             onChange={(e) => setEmailInput(e.target.value)}
             required
           />
           <ActionButton type="submit" isPending={signInMutation.isPending}>
-            Complete sign-in
+            {t("auth.completeSignIn")}
           </ActionButton>
         </form>
       </CardContent>

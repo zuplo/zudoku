@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "zudoku/ui/Card.js";
 import { Input } from "zudoku/ui/Input.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import {
   Form,
   FormControl,
@@ -29,6 +30,7 @@ export const EmailLinkSignInUi = ({
   onSubmit: (email: string, redirectTo?: string) => Promise<void>;
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
@@ -51,15 +53,15 @@ export const EmailLinkSignInUi = ({
   return (
     <AuthCard>
       <CardHeader>
-        <CardTitle>Sign in with email link</CardTitle>
+        <CardTitle>{t("auth.signInWithEmailLink")}</CardTitle>
         <CardDescription>
-          Enter your email and we'll send you a link to sign in.
+          {t("auth.emailLinkSignInDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {mutation.error && (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("auth.error")}</AlertTitle>
             <AlertDescription>{mutation.error.message}</AlertDescription>
           </Alert>
         )}
@@ -71,10 +73,10 @@ export const EmailLinkSignInUi = ({
             className="flex flex-col gap-2"
           >
             <FormItem>
-              <FormLabel>E-Mail</FormLabel>
+              <FormLabel>{t("auth.email")}</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="you@example.com"
+                  placeholder={t("auth.emailExamplePlaceholder")}
                   type="email"
                   required
                   {...form.register("email", { required: true })}
@@ -83,12 +85,12 @@ export const EmailLinkSignInUi = ({
               <FormMessage />
             </FormItem>
             <ActionButton type="submit" isPending={mutation.isPending}>
-              Send sign-in link
+              {t("auth.sendSignInLink")}
             </ActionButton>
           </form>
         </Form>
         <Link to="/signin" className="text-sm text-muted-foreground">
-          Back to sign in
+          {t("auth.backToSignIn")}
         </Link>
       </CardContent>
     </AuthCard>
