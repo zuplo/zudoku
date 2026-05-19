@@ -8,3 +8,6 @@ export const MAX_WAIT_PENDING_TIME_MS = 1000;
 
 // PostHog
 export const POST_HOG_CAPTURE_KEY = undefined;
+
+// Defaults
+export const DEFAULT_PREVIEW_PORT = 4000;
