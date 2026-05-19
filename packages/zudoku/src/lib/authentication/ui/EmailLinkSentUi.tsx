@@ -39,7 +39,7 @@ export const EmailLinkSentUi = ({
         </div>
         <CardTitle>{t("auth.checkYourEmail")}</CardTitle>
         <CardDescription>
-          {t("auth.emailLinkSentTo", { email: email ?? "" })}
+          {t("auth.emailLinkSentTo", { email })}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
