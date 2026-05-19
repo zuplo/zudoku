@@ -2,6 +2,7 @@ import { BracketsIcon, FileTextIcon } from "lucide-react";
 import { useLayoutEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { CommandGroup, CommandItem, CommandList } from "zudoku/ui/Command.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import type { PagefindSearchFragment, PagefindSubResult } from "./types.js";
 
@@ -33,6 +34,7 @@ export const ResultList = ({
   maxSubResults?: number;
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const commandListRef = useRef<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
@@ -54,7 +56,10 @@ export const ResultList = ({
       {searchTerm && searchResults.length > 0 && (
         <CommandGroup
           className="text-sm text-muted-foreground"
-          heading={`${searchResults.length} results for "${searchTerm}"`}
+          heading={t("search.resultsCount", {
+            count: searchResults.length,
+            term: searchTerm,
+          })}
         />
       )}
       {searchTerm &&

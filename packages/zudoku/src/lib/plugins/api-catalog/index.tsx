@@ -1,5 +1,6 @@
 import type { AuthState } from "../../authentication/state.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
+import { apiCatalogTranslations } from "./translations.js";
 
 export type ApiCatalogItem = {
   path: string;
@@ -40,6 +41,7 @@ export const apiCatalogPlugin = ({
   filterCatalogItems,
 }: ApiCatalogPluginOptions): ZudokuPlugin => {
   return {
+    getTranslations: () => apiCatalogTranslations,
     getRoutes: () => [
       {
         path,

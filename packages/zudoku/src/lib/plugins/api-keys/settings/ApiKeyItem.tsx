@@ -28,6 +28,7 @@ import {
   FrameTitle,
 } from "zudoku/ui/Frame.js";
 import { Input } from "zudoku/ui/Input.js";
+import { useTranslation } from "../../../components/context/useTranslation.js";
 import { useZudoku } from "../../../components/context/ZudokuContext.js";
 import type { ZudokuContext } from "../../../core/ZudokuContext.js";
 import { cn } from "../../../util/cn.js";
@@ -56,6 +57,7 @@ const ApiKeyItem = ({
   const [editingLabel, setEditingLabel] = useState(consumer.label);
   const queryClient = useQueryClient();
   const context = useZudoku();
+  const { t } = useTranslation();
 
   const rollKeyMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -224,7 +226,7 @@ const ApiKeyItem = ({
                     variant="ghost"
                     onClick={handleSaveEdit}
                     disabled={!editingLabel.trim()}
-                    aria-label="Save"
+                    aria-label={t("apiKeys.save")}
                   >
                     <CheckIcon size={16} aria-hidden="true" />
                   </Button>
@@ -232,7 +234,7 @@ const ApiKeyItem = ({
                     size="icon"
                     variant="ghost"
                     onClick={() => setIsEditing(false)}
-                    aria-label="Cancel"
+                    aria-label={t("apiKeys.cancel")}
                   >
                     <XIcon size={16} aria-hidden="true" />
                   </Button>
@@ -244,12 +246,16 @@ const ApiKeyItem = ({
             <FrameDescription>
               {consumer.createdOn && (
                 <div>
-                  Created on {new Date(consumer.createdOn).toLocaleDateString()}
+                  {t("apiKeys.createdOn", {
+                    date: new Date(consumer.createdOn).toLocaleDateString(),
+                  })}
                 </div>
               )}
               {consumer.expiresOn && (
                 <div>
-                  Expires on {new Date(consumer.expiresOn).toLocaleDateString()}
+                  {t("apiKeys.expiresOn", {
+                    date: new Date(consumer.expiresOn).toLocaleDateString(),
+                  })}
                 </div>
               )}
             </FrameDescription>
@@ -267,14 +273,16 @@ const ApiKeyItem = ({
                 disabled={isEditing}
               >
                 <PencilLineIcon size={16} />
-                <span className="hidden md:block">Edit label</span>
+                <span className="hidden md:block">
+                  {t("apiKeys.editLabel")}
+                </span>
               </Button>
             )}
             {onRollKey && (
               <Dialog>
                 <DialogTrigger asChild>
                   <Button
-                    title="Roll this key"
+                    title={t("apiKeys.rollKeyTitle")}
                     variant="ghost"
                     disabled={rollKeyMutation.isPending}
                     className="flex items-center gap-2"
@@ -285,19 +293,21 @@ const ApiKeyItem = ({
                         rollKeyMutation.isPending ? "animate-spin" : undefined
                       }
                     />
-                    <span className="hidden md:block">Roll key</span>
+                    <span className="hidden md:block">
+                      {t("apiKeys.rollKey")}
+                    </span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Roll API Key</DialogTitle>
+                    <DialogTitle>{t("apiKeys.rollDialogTitle")}</DialogTitle>
                     <DialogDescription>
-                      Are you sure you want to roll this API key?
+                      {t("apiKeys.rollDialogDescription")}
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>
                     <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
+                      <Button variant="outline">{t("apiKeys.cancel")}</Button>
                     </DialogClose>
                     <DialogClose asChild>
                       <Button
@@ -305,7 +315,7 @@ const ApiKeyItem = ({
                           rollKeyMutation.mutate(consumer.id);
                         }}
                       >
-                        Roll Key
+                        {t("apiKeys.rollKeyConfirm")}
                       </Button>
                     </DialogClose>
                   </DialogFooter>

@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from "react";
 import { Link } from "zudoku/components";
 import { Card, CardContent, CardHeader } from "zudoku/ui/Card.js";
 import { useAuthState } from "../../authentication/state.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { Heading } from "../../components/Heading.js";
 import { useHotkey } from "../../hooks/useHotkey.js";
 import { Badge } from "../../ui/Badge.js";
@@ -49,9 +50,11 @@ const MAX_VISIBLE_CHIPS = 6;
 export const Catalog = ({
   items,
   filterCatalogItems = (items) => items,
-  label = "API Library",
+  label,
 }: Omit<ApiCatalogPluginOptions, "path">) => {
   const auth = useAuthState();
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t("apiCatalog.defaultLabel");
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<string>(ALL_ITEMS);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,17 +107,26 @@ export const Catalog = ({
   return (
     <section className="pt-(--padding-content-top) pb-12">
       <Helmet>
-        <title>{label}</title>
+        <title>{resolvedLabel}</title>
       </Helmet>
       <div className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">
           <Heading level={1} className="text-4xl font-bold tracking-tight">
-            {label}
+            {resolvedLabel}
           </Heading>
           <p className="text-muted-foreground text-base">
-            Browse every API across the platform. {catalogItems.data.length}{" "}
-            {catalogItems.data.length === 1 ? "API" : "APIs"}
-            {totalOps > 0 ? ` · ${totalOps} endpoints` : ""}.
+            {t(
+              catalogItems.data.length === 1
+                ? "apiCatalog.subtitleOne"
+                : "apiCatalog.subtitleMany",
+              {
+                count: catalogItems.data.length,
+                operationsSuffix:
+                  totalOps > 0
+                    ? t("apiCatalog.endpointsSuffix", { count: totalOps })
+                    : "",
+              },
+            )}
           </p>
         </header>
 
@@ -127,14 +139,14 @@ export const Catalog = ({
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search APIs…"
-              aria-label="Search APIs"
+              placeholder={t("apiCatalog.searchPlaceholder")}
+              aria-label={t("apiCatalog.searchLabel")}
             />
             <InputGroupAddon align="inline-end">
               {query ? (
                 <button
                   type="button"
-                  aria-label="Clear search"
+                  aria-label={t("apiCatalog.clearSearch")}
                   onClick={() => setQuery("")}
                   className="text-muted-foreground hover:text-foreground"
                 >
@@ -151,14 +163,16 @@ export const Catalog = ({
               <ToggleGroup
                 size="sm"
                 variant="outline"
-                aria-label="Filter by category"
+                aria-label={t("apiCatalog.filterByCategory")}
                 spacing={2}
                 value={[activeFilter]}
                 onValueChange={(value: string[]) =>
                   setActiveFilter(value.at(0) ?? ALL_ITEMS)
                 }
               >
-                <ToggleGroupItem value={ALL_ITEMS}>All</ToggleGroupItem>
+                <ToggleGroupItem value={ALL_ITEMS}>
+                  {t("apiCatalog.all")}
+                </ToggleGroupItem>
                 {filterChips.slice(0, MAX_VISIBLE_CHIPS).map((chip) => (
                   <ToggleGroupItem key={chip} value={chip}>
                     {chip}
@@ -172,10 +186,10 @@ export const Catalog = ({
                 >
                   <SelectTrigger
                     size="sm"
-                    aria-label="More category filters"
+                    aria-label={t("apiCatalog.moreCategoryFilters")}
                     className="!h-7 min-w-7 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem]"
                   >
-                    More
+                    {t("apiCatalog.more")}
                   </SelectTrigger>
                   <SelectContent>
                     {filterChips.slice(MAX_VISIBLE_CHIPS).map((chip) => (
@@ -193,7 +207,7 @@ export const Catalog = ({
         {visibleItems.length === 0 ? (
           <div className="rounded-lg border border-dashed p-12 text-center">
             <p className="text-muted-foreground text-sm">
-              No APIs match your filters.
+              {t("apiCatalog.noResults")}
             </p>
             {(query || activeFilter) && (
               <Button
@@ -205,7 +219,7 @@ export const Catalog = ({
                   setActiveFilter(ALL_ITEMS);
                 }}
               >
-                Clear filters
+                {t("apiCatalog.clearFilters")}
               </Button>
             )}
           </div>
@@ -222,6 +236,7 @@ export const Catalog = ({
 };
 
 const CatalogCard = ({ item }: { item: ApiCatalogItem }) => {
+  const { t } = useTranslation();
   const tags = useMemo(() => {
     const seen = new Set<string>();
     const out: string[] = [];
@@ -270,7 +285,7 @@ const CatalogCard = ({ item }: { item: ApiCatalogItem }) => {
                 </div>
                 {item.operationCount != null && (
                   <span className="text-muted-foreground shrink-0 text-xs font-medium">
-                    {item.operationCount} ops
+                    {t("apiCatalog.ops", { count: item.operationCount })}
                   </span>
                 )}
               </div>

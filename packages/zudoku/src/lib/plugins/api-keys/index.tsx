@@ -12,6 +12,7 @@ import invariant from "../../util/invariant.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { throwIfProblemJson } from "../../util/problemJson.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
+import { apiKeysTranslations } from "./translations.js";
 
 const DEFAULT_GATEWAY_URL = "https://api.zuploedge.com";
 
@@ -179,7 +180,10 @@ const createZuploService = ({
         createdOn: consumer.createdOn,
         updatedOn: consumer.updatedOn,
         expiresOn: consumer.expiresOn,
-        label: consumer.label || consumer.subject || "API Key",
+        label:
+          consumer.label ||
+          consumer.subject ||
+          context.t("apiKeys.fallbackLabel"),
         apiKeys: consumer.apiKeys.data,
         key: consumer.apiKeys.data.at(0),
       }));
@@ -227,9 +231,10 @@ export const apiKeyPlugin = ({
   };
 
   return {
-    getProfileMenuItems: () => [
+    getTranslations: () => apiKeysTranslations,
+    getProfileMenuItems: (context) => [
       {
-        label: "API Keys",
+        label: context.t("apiKeys.title"),
         path: "/settings/api-keys",
         category: "middle",
         icon: KeyRoundIcon,
