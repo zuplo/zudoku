@@ -66,17 +66,7 @@ const cli = yargs(hideBin(process.argv))
 
 try {
   void warnIfOutdatedVersion(packageJson?.version);
-
   await cli.argv;
-
-  if (SENTRY_DSN) {
-    const Sentry = await import("@sentry/node");
-    void Sentry.close(MAX_WAIT_PENDING_TIME_MS).then(() => {
-      process.exit(0);
-    });
-  } else {
-    process.exit(0);
-  }
 } catch (err) {
   if (SENTRY_DSN && err instanceof Error) {
     const Sentry = await import("@sentry/node");
@@ -86,3 +76,9 @@ try {
 } finally {
   await shutdownAnalytics();
 }
+
+if (SENTRY_DSN) {
+  const Sentry = await import("@sentry/node");
+  await Sentry.close(MAX_WAIT_PENDING_TIME_MS);
+}
+process.exit(0);
