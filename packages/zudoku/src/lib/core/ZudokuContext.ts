@@ -25,6 +25,13 @@ import { joinUrl } from "../util/joinUrl.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
 import {
+  type I18nOptions,
+  type ResolvedI18n,
+  resolveI18n,
+  translate,
+} from "./i18n.js";
+import {
+  hasTranslations,
   isApiIdentityPlugin,
   isAuthenticationPlugin,
   isEventConsumerPlugin,
@@ -127,6 +134,7 @@ export type ZudokuContextOptions = {
     highlighterPromise: Promise<HighlighterCore>;
     themes?: { light: BundledTheme; dark: BundledTheme };
   };
+  i18n?: I18nOptions;
 };
 
 export const normalizeProtectedRoutes = (
@@ -156,6 +164,7 @@ export class ZudokuContext {
   public readonly env: Record<string, string | undefined>;
   public readonly notFoundPage?: ReactNode;
   public readonly protectedRoutes: ReturnType<typeof normalizeProtectedRoutes>;
+  public readonly i18n: ResolvedI18n;
   private readonly plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   private readonly emitter = createNanoEvents<ZudokuEvents>();
   readonly initialize: Promise<void> | undefined;
@@ -172,6 +181,11 @@ export class ZudokuContext {
     this.plugins = options.plugins ?? [];
     this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.getAuthState = useAuthState.getState;
+
+    const pluginCatalogs = this.plugins
+      .filter(hasTranslations)
+      .map((plugin) => plugin.getTranslations());
+    this.i18n = resolveI18n(options.i18n, pluginCatalogs);
 
     const pluginsToInit = this.plugins.filter(needsInitialization);
     this.initialize =
@@ -258,6 +272,9 @@ export class ZudokuContext {
 
     return accountItems;
   };
+
+  t = (key: string, values?: Record<string, string | number>): string =>
+    translate(this.i18n, key, values);
 
   signRequest = async (request: Request) => {
     if (!this.authentication) {

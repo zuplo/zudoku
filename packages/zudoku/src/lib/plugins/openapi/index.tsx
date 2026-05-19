@@ -10,6 +10,7 @@ import type { GetNavigationOperationsQuery as GetNavigationOperationsQueryResult
 import { graphql } from "./graphql/index.js";
 import type { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
+import { openapiTranslations } from "./translations.js";
 import { buildTagCategories } from "./util/buildTagCategories.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
 import { getRoutes, getVersionMetadata } from "./util/getRoutes.js";
@@ -57,6 +58,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
   const client = new GraphQLClient(config);
 
   return {
+    getTranslations: () => openapiTranslations,
     getHead: () => {
       if (config.type === "url" && !config.skipPreload) {
         const urls = Array.isArray(config.input)

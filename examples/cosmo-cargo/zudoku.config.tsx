@@ -379,6 +379,17 @@ const config: ZudokuConfig = {
       },
     },
   },
+  i18n: {
+    locale: "de",
+    defaultLocale: "en",
+    messages: {
+      de: {
+        "openapi.downloadSchema": "Schema herunterladen",
+        "openapi.openInNewTab": "In neuem Tab öffnen",
+        "openapi.copyToClipboard": "In Zwischenablage kopieren",
+      },
+    },
+  },
   search: {
     type: "pagefind",
   },
