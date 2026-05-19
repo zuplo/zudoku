@@ -97,12 +97,18 @@ jobs:
       - name: Push Git Changes
         env:
           ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
           REMOTE="https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git"
+          TAG="monetization-v${VERSION}"
           for i in 1 2 3; do
-            git pull --rebase "$REMOTE" main && \
-            git push "$REMOTE" main --follow-tags && exit 0
+            if git pull --rebase "$REMOTE" main; then
+              git tag -f -a "$TAG" -m "Release monetization v${VERSION}"
+              git push "$REMOTE" main --follow-tags && exit 0
+            else
+              git rebase --abort || true
+            fi
             sleep $((i * 5))
           done
           exit 1
