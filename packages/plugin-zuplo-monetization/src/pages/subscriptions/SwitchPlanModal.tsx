@@ -519,7 +519,7 @@ export const SwitchPlanModal = ({
       return {
         upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
         downgrades: [],
-        privatePlans: [],
+        privatePlans: allComparisons.filter((c) => isPrivatePlan(c.plan)),
       };
     }
 
@@ -545,7 +545,7 @@ export const SwitchPlanModal = ({
       return {
         upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
         downgrades: [],
-        privatePlans: [],
+        privatePlans: allComparisons.filter((c) => isPrivatePlan(c.plan)),
       };
     }
 

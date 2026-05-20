@@ -218,6 +218,100 @@ describe("SwitchPlanModal", () => {
     ).toHaveLength(1);
   });
 
+  it("lists invited private plans as Private Plan Options when the current plan is private", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-private-current",
+        key: "private_developer",
+        name: "Private Developer",
+        metadata: { zuplo_private_plan: "true" },
+      }),
+      makePublicPlan({
+        id: "plan-private-invited",
+        key: "private_enterprise",
+        name: "Private Enterprise",
+        metadata: { zuplo_private_plan: "true" },
+      }),
+      makePublicPlan({
+        id: "plan-team",
+        key: "team",
+        name: "Team",
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-private-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "9.99",
+      yearlyPrice: "119.88",
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Upgrade Options")).toBeInTheDocument();
+    expect(within(dialog).getByText("Private Plan Option")).toBeInTheDocument();
+    expect(within(dialog).getByText("Private Enterprise")).toBeInTheDocument();
+    expect(within(dialog).getByText("Team")).toBeInTheDocument();
+
+    expect(
+      within(dialog).getAllByRole("button", { name: "Upgrade" }),
+    ).toHaveLength(1);
+    expect(
+      within(dialog).getAllByRole("button", { name: "Switch" }),
+    ).toHaveLength(1);
+  });
+
+  it("starts checkout with mode private when switching from one private plan to another", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-private-current",
+        key: "private_developer",
+        name: "Private Developer",
+        metadata: { zuplo_private_plan: "true" },
+      }),
+      makePublicPlan({
+        id: "plan-private-invited",
+        key: "private_enterprise",
+        name: "Private Enterprise",
+        metadata: { zuplo_private_plan: "true" },
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-private-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "9.99",
+      yearlyPrice: "119.88",
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    fireEvent.click(screen.getByRole("button", { name: "Switch" }));
+
+    expect(mutationStub.mutate).toHaveBeenCalledTimes(1);
+    expect(mutationStub.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "private",
+        subscriptionId: "sub-1",
+        plan: expect.objectContaining({
+          id: "plan-private-invited",
+          key: "private_enterprise",
+        }),
+      }),
+    );
+  });
+
   it("starts checkout with mode upgrade when switching from private (unlisted) to a public plan", () => {
     plansItems.current = [
       makePublicPlan({
