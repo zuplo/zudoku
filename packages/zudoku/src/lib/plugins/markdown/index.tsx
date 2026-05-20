@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import type { ZudokuDocsConfig } from "../../../config/validators/ZudokuConfig.js";
 import type { Toc } from "../../../vite/mdx/rehype-extract-toc-with-jsx.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
+import { markdownTranslations } from "./translations.js";
 
 export interface MarkdownPluginOptions extends ZudokuDocsConfig {
   basePath: string;
@@ -44,6 +45,7 @@ export type MDXImport = {
 export const markdownPlugin = (
   options: MarkdownPluginOptions,
 ): ZudokuPlugin => ({
+  getTranslations: () => markdownTranslations,
   getRoutes: () => {
     return Object.entries(options.fileImports).map(
       ([routePath, importPromise]) => ({

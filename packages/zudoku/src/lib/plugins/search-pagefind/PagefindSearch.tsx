@@ -11,6 +11,7 @@ import {
 import { DialogTitle } from "zudoku/ui/Dialog.js";
 import { Kbd, KbdGroup } from "zudoku/ui/Kbd.js";
 import { useAuthState } from "../../authentication/state.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { SEARCH_PROTECTED_SECTION } from "../../core/RouteGuard.js";
 import { joinUrl } from "../../util/joinUrl.js";
@@ -87,6 +88,7 @@ export const PagefindSearch = ({
   const [selectedValue, setSelectedValue] = useState<string>("");
   const auth = useAuthState();
   const context = useZudoku();
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: searchResults } = useQuery({
@@ -127,11 +129,11 @@ export const PagefindSearch = ({
       onOpenChange={onClose}
     >
       <VisuallyHidden>
-        <DialogTitle>Search</DialogTitle>
+        <DialogTitle>{t("search.title")}</DialogTitle>
       </VisuallyHidden>
       <CommandInput
         ref={inputRef}
-        placeholder="Search..."
+        placeholder={t("search.placeholder")}
         value={searchTerm}
         onValueChange={setSearchTerm}
         disabled={isError}
@@ -139,7 +141,7 @@ export const PagefindSearch = ({
       <CommandEmpty>
         {searchTerm ? (
           <div className="flex flex-col items-center">
-            No results found.
+            {t("search.noResults")}
             <Button
               variant="link"
               onClick={() => {
@@ -147,17 +149,15 @@ export const PagefindSearch = ({
                 inputRef.current?.focus();
               }}
             >
-              Clear search
+              {t("search.clearSearch")}
             </Button>
           </div>
         ) : (
-          "Start typing to search"
+          t("search.startTyping")
         )}
       </CommandEmpty>
       {isError && error.message !== "NOT_BUILT_YET" ? (
-        <div className="p-4 text-sm">
-          An error occurred while loading search.
-        </div>
+        <div className="p-4 text-sm">{t("search.loadError")}</div>
       ) : (
         <>
           <ResultList
@@ -173,15 +173,15 @@ export const PagefindSearch = ({
                 <Kbd>↑</Kbd>
                 <Kbd>↓</Kbd>
               </KbdGroup>
-              Navigate
+              {t("search.kbdNavigate")}
               <KbdGroup className="ms-4 me-1">
                 <Kbd>↵</Kbd>
               </KbdGroup>
-              Select
+              {t("search.kbdSelect")}
               <KbdGroup className="ms-4 me-1">
                 <Kbd>Esc</Kbd>
               </KbdGroup>
-              Close dialog
+              {t("search.kbdCloseDialog")}
             </div>
             {import.meta.env.DEV && (
               <IndexingDialog>
@@ -190,7 +190,7 @@ export const PagefindSearch = ({
                   className="h-7 text-xs text-muted-foreground"
                 >
                   <ListPlusIcon />
-                  Build Search Index
+                  {t("search.buildIndex")}
                 </Button>
               </IndexingDialog>
             )}

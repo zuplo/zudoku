@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import createVariantComponent from "../../util/createVariantComponent.js";
 import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
 
@@ -21,6 +22,7 @@ export const EmailVerificationUi = ({
   onResendVerification: () => Promise<void>;
   onCheckVerification: () => Promise<boolean>;
 }) => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
   const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
@@ -45,22 +47,22 @@ export const EmailVerificationUi = ({
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <MailCheck className="h-8 w-8 text-primary" />
         </div>
-        <CardTitle>Verify your email</CardTitle>
-        <CardDescription>We've sent a verification link</CardDescription>
+        <CardTitle>{t("auth.verifyEmail")}</CardTitle>
+        <CardDescription>{t("auth.verifyEmailDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {error && (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("auth.error")}</AlertTitle>
             <AlertDescription>{error?.message}</AlertDescription>
           </Alert>
         )}
 
         {resendMutation.isSuccess && (
           <Alert>
-            <AlertTitle>Email sent</AlertTitle>
+            <AlertTitle>{t("auth.emailSent")}</AlertTitle>
             <AlertDescription>
-              A new verification email has been sent. Please check your inbox.
+              {t("auth.verificationEmailSent")}
             </AlertDescription>
           </Alert>
         )}
@@ -70,8 +72,8 @@ export const EmailVerificationUi = ({
             <Alert>
               <AlertDescription>
                 {checkVerificationMutation.isFetching
-                  ? "Checking verification..."
-                  : "Your email hasn't been verified yet. Please check your inbox and click the verification link."}
+                  ? t("auth.checkingVerification")
+                  : t("auth.emailNotVerified")}
               </AlertDescription>
             </Alert>
           )}
@@ -83,7 +85,7 @@ export const EmailVerificationUi = ({
             className="w-full"
           >
             <div className="flex items-center gap-2">
-              <CheckIcon className="h-4 w-4" /> Continue
+              <CheckIcon className="h-4 w-4" /> {t("auth.continue")}
             </div>
           </ActionButton>
 
@@ -93,7 +95,7 @@ export const EmailVerificationUi = ({
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="bg-card px-2 text-muted-foreground">
-                Didn't receive the email?
+                {t("auth.didntReceiveEmail")}
               </span>
             </div>
           </div>
@@ -109,12 +111,12 @@ export const EmailVerificationUi = ({
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}
-            Resend verification email
+            {t("auth.resendVerificationEmail")}
           </Button>
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Make sure to check your spam folder if you don't see the email.
+          {t("auth.checkSpamFolder")}
         </p>
       </CardContent>
     </AuthCard>

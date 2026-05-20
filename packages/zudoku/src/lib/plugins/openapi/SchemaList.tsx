@@ -7,6 +7,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { Heading } from "../../components/Heading.js";
 import { Toc } from "../../components/navigation/Toc.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
@@ -35,6 +36,7 @@ const GET_SCHEMAS = graphql(/* GraphQL */ `
 `);
 
 export function SchemaList() {
+  const { t } = useTranslation();
   const { input, type, versions, version, options } = useOasConfig();
   const schemasQuery = useCreateQuery(GET_SCHEMAS, {
     input,
@@ -53,10 +55,15 @@ export function SchemaList() {
     return (
       <div>
         <Helmet>
-          <title>Schemas {showVersions ? version : ""}</title>
-          <meta name="description" content="List of schemas used by the API." />
+          <title>
+            {t("openapi.schemas")} {showVersions ? version : ""}
+          </title>
+          <meta
+            name="description"
+            content={t("openapi.schemasMetaDescription")}
+          />
         </Helmet>
-        No schemas found
+        {t("openapi.noSchemas")}
       </div>
     );
   }
@@ -69,11 +76,20 @@ export function SchemaList() {
     >
       <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
       <Helmet>
-        <title>Schemas {showVersions ? version : ""}</title>
-        <meta name="description" content="List of schemas used by the API." />
+        <title>
+          {t("openapi.schemas")} {showVersions ? version : ""}
+        </title>
+        <meta
+          name="description"
+          content={t("openapi.schemasMetaDescription")}
+        />
       </Helmet>
       <div className="pt-(--padding-content-top) pb-(--padding-content-bottom)">
-        <ApiHeader title={title} heading="Schemas" headingId="schemas" />
+        <ApiHeader
+          title={title}
+          heading={t("openapi.schemas")}
+          headingId="schemas"
+        />
         <hr className="my-8" />
         <div className="flex flex-col gap-y-5">
           {schemas.map((schema) => (

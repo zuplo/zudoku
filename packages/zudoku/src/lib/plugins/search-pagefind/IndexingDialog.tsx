@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 
 type IndexingState =
   | { status: "idle" }
@@ -47,6 +48,7 @@ const ProgressBar = ({
 };
 
 const IndexingDialog = ({ children }: PropsWithChildren) => {
+  const { t } = useTranslation();
   const [indexingState, setIndexingState] = useState<IndexingState>({
     status: "idle",
   });
@@ -73,7 +75,7 @@ const IndexingDialog = ({ children }: PropsWithChildren) => {
         } else {
           setIndexingState({
             status: "error",
-            message: data.error ?? "Indexing failed",
+            message: data.error ?? t("search.indexingFallback"),
           });
         }
       }
@@ -83,12 +85,12 @@ const IndexingDialog = ({ children }: PropsWithChildren) => {
       eventSource.close();
       setIndexingState({
         status: "error",
-        message: "Connection lost during indexing",
+        message: t("search.connectionLost"),
       });
     };
 
     return () => eventSource.close();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     return startIndexing();
@@ -109,10 +111,10 @@ const IndexingDialog = ({ children }: PropsWithChildren) => {
       >
         <DialogHeader>
           <DialogTitle>
-            {indexingState.status === "indexing" && "Building Search Index"}
-            {indexingState.status === "complete" && "Indexing Complete"}
-            {indexingState.status === "error" && "Indexing Failed"}
-            {indexingState.status === "idle" && "Build Search Index"}
+            {indexingState.status === "indexing" && t("search.indexing")}
+            {indexingState.status === "complete" && t("search.indexComplete")}
+            {indexingState.status === "error" && t("search.indexFailed")}
+            {indexingState.status === "idle" && t("search.buildIndex")}
           </DialogTitle>
           <DialogDescription>
             {indexingState.status === "indexing" && (
@@ -129,9 +131,8 @@ const IndexingDialog = ({ children }: PropsWithChildren) => {
                 )}
               </>
             )}
-            {indexingState.status === "complete" && (
-              <>Successfully indexed {indexingState.indexed} pages.</>
-            )}
+            {indexingState.status === "complete" &&
+              t("search.indexed", { count: indexingState.indexed })}
             {indexingState.status === "error" && (
               <span className="text-destructive">{indexingState.message}</span>
             )}
@@ -141,15 +142,15 @@ const IndexingDialog = ({ children }: PropsWithChildren) => {
           <div className="flex justify-end gap-2">
             {indexingState.status === "complete" && (
               <Button size="sm" onClick={handleDone}>
-                Close and reload
+                {t("search.closeAndReload")}
               </Button>
             )}
             {indexingState.status === "error" && (
               <>
                 <Button variant="outline" onClick={handleDone}>
-                  Cancel
+                  {t("search.cancel")}
                 </Button>
-                <Button onClick={startIndexing}>Retry</Button>
+                <Button onClick={startIndexing}>{t("search.retry")}</Button>
               </>
             )}
           </div>

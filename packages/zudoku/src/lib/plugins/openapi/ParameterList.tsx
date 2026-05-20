@@ -1,5 +1,6 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Fragment } from "react";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { Heading } from "../../components/Heading.js";
 import { Frame, FramePanel } from "../../ui/Frame.js";
 import { ItemGroup, ItemSeparator } from "../../ui/Item.js";
@@ -18,6 +19,7 @@ export const ParameterList = ({
   parameters: ParameterItem[];
   id: string;
 }) => {
+  const { t } = useTranslation();
   const sortedParameters = parameters.sort((a, b) =>
     a.required === b.required ? 0 : a.required ? -1 : 1,
   );
@@ -30,7 +32,9 @@ export const ParameterList = ({
         className="capitalize"
       >
         {summary && <VisuallyHidden>{summary} &rsaquo; </VisuallyHidden>}
-        {group === "header" ? "Headers" : `${group} Parameters`}
+        {group === "header"
+          ? t("openapi.headers")
+          : t("openapi.parametersOfGroup", { group })}
       </Heading>
       <Frame>
         <FramePanel className="p-0!">

@@ -6,6 +6,7 @@ import type { ProtectedRoutesInput } from "../../config/validators/ProtectedRout
 import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
+import type { TranslationCatalog } from "./i18n.js";
 import type {
   ApiIdentity,
   ZudokuContext,
@@ -21,7 +22,8 @@ export type ZudokuPlugin =
   | SearchProviderPlugin
   | EventConsumerPlugin
   | AuthenticationPlugin
-  | TransformConfigPlugin;
+  | TransformConfigPlugin
+  | TranslationsPlugin;
 
 export type { AuthenticationPlugin, RouteObject };
 
@@ -89,6 +91,14 @@ export interface CommonPlugin {
   getMdxComponents?: () => MdxComponentsType;
 }
 
+export interface TranslationsPlugin {
+  /**
+   * Return a per-locale message catalog. Plugin translations are merged into
+   * the global catalog under the core defaults and user overrides.
+   */
+  getTranslations: () => TranslationCatalog;
+}
+
 export type EventConsumerPlugin<Event extends ZudokuEvents = ZudokuEvents> = {
   events: { [K in keyof Event]?: Event[K] };
 };
@@ -136,3 +146,6 @@ export const isTransformConfigPlugin = (
   obj: ZudokuPlugin,
 ): obj is TransformConfigPlugin =>
   "transformConfig" in obj && typeof obj.transformConfig === "function";
+
+export const hasTranslations = (obj: ZudokuPlugin): obj is TranslationsPlugin =>
+  "getTranslations" in obj && typeof obj.getTranslations === "function";

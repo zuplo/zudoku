@@ -13,6 +13,7 @@ import {
 import type { PropsWithChildren, ReactNode } from "react";
 import { Link } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { Markdown } from "../../components/Markdown.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { Badge } from "../../ui/Badge.js";
@@ -143,6 +144,7 @@ const InfoCardContent = ({
 }: {
   schema: SchemaInfoQueryType["schema"];
 }) => {
+  const { t } = useTranslation();
   const hasInfoLinks = !!(
     schema.license ||
     schema.termsOfService ||
@@ -165,11 +167,13 @@ const InfoCardContent = ({
             </InfoLink>
           )}
           {schema.termsOfService && (
-            <InfoLink href={schema.termsOfService}>Terms of Service</InfoLink>
+            <InfoLink href={schema.termsOfService}>
+              {t("openapi.termsOfService")}
+            </InfoLink>
           )}
           {schema.externalDocs && (
             <InfoLink href={schema.externalDocs.url}>
-              {schema.externalDocs.description ?? "Documentation"}
+              {schema.externalDocs.description ?? t("openapi.documentation")}
             </InfoLink>
           )}
         </div>
@@ -178,7 +182,7 @@ const InfoCardContent = ({
       {hasContact && (
         <div className="flex flex-col gap-1.5">
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-            Contact
+            {t("openapi.contact")}
           </span>
           {schema.contact?.name && <span>{schema.contact.name}</span>}
           {schema.contact?.email && (
@@ -200,7 +204,7 @@ const InfoCardContent = ({
       {hasServers && (
         <div className="flex flex-col gap-1.5">
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-            Servers
+            {t("openapi.servers")}
           </span>
           {schema.servers.map((server) => (
             <div key={server.url}>
@@ -258,6 +262,7 @@ const securitySchemeDescription = (scheme: {
 };
 
 export const SchemaInfo = () => {
+  const { t } = useTranslation();
   const { input, type, options } = useOasConfig();
   const query = useCreateQuery(SchemaInfoQuery, { input, type });
   const {
@@ -332,7 +337,7 @@ export const SchemaInfo = () => {
               <div>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
                   <TagIcon size={14} />
-                  Tags
+                  {t("openapi.tags")}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {tags.map((tag) => (
@@ -367,7 +372,7 @@ export const SchemaInfo = () => {
                 <div>
                   <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
                     <LockIcon size={14} />
-                    Security Schemes
+                    {t("openapi.securitySchemes")}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {schema.components?.securitySchemes?.map((scheme) => (
@@ -408,7 +413,7 @@ export const SchemaInfo = () => {
               <div>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
                   <WebhookIcon size={14} />
-                  Webhooks
+                  {t("openapi.webhooks")}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {schema.webhooks.map((webhook) => (

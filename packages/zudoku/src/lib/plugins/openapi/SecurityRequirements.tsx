@@ -6,6 +6,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "zudoku/ui/HoverCard.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import type {
   SecuritySchemeIn,
   SecuritySchemeType,
@@ -69,6 +70,7 @@ const SchemeHoverContent = ({
   scheme: SecurityScheme;
   scopes: string[];
 }) => {
+  const { t } = useTranslation();
   if (!scheme.description && scopes.length === 0) return null;
 
   return (
@@ -86,7 +88,7 @@ const SchemeHoverContent = ({
       {scopes.length > 0 && (
         <div className="flex flex-col gap-1">
           <span className="text-xs text-muted-foreground">
-            Required scopes:
+            {t("openapi.requiredScopes")}
           </span>
           <div className="flex flex-wrap gap-1">
             {scopes.map((scope) => (
@@ -110,6 +112,7 @@ export const SecurityRequirements = ({
 }: {
   security?: SecurityRequirement[] | null;
 }) => {
+  const { t } = useTranslation();
   if (!security || security.length === 0) return null;
 
   // Filter out empty requirements (anonymous access markers)
@@ -124,7 +127,7 @@ export const SecurityRequirements = ({
           <div key={reqKey} className="contents">
             {reqIdx > 0 && (
               <span className="text-[10px] text-muted-foreground font-medium uppercase">
-                or
+                {t("openapi.scopesSeparatorOr")}
               </span>
             )}
             {req.schemes.map((reqScheme, schemeIdx) => {
@@ -143,7 +146,9 @@ export const SecurityRequirements = ({
               return (
                 <div key={reqScheme.scheme.name} className="contents">
                   {schemeIdx > 0 && (
-                    <span className="text-[10px] text-muted-foreground">+</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {t("openapi.scopesSeparatorAnd")}
+                    </span>
                   )}
                   {hasHoverContent ? (
                     <HoverCard openDelay={150} closeDelay={100}>

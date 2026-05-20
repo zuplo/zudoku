@@ -295,6 +295,19 @@ const SiteMapSchema = z
   })
   .optional();
 
+const I18nSchema = z
+  .object({
+    /** Locale to render in. Falls back to `defaultLocale` when missing. */
+    locale: z.string().min(1),
+    /** Locale used when a key is missing from the active locale. Defaults to "en". */
+    defaultLocale: z.string().min(1),
+    /** Per-locale message dictionaries. Plugins contribute defaults; values here override them. */
+    messages: z.record(z.string(), z.record(z.string(), z.string())),
+  })
+  .partial();
+
+export type I18nConfig = z.infer<typeof I18nSchema>;
+
 const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
 
 const LlmsConfigSchema = z
@@ -725,6 +738,7 @@ const BaseConfigSchema = z.object({
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
   enableStatusPages: z.boolean().optional(),
+  i18n: I18nSchema.optional(),
   defaults: z.object({
     apis: ApiOptionsSchema,
     /**

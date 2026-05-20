@@ -24,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
 import type { TocEntry } from "../../../vite/mdx/rehype-extract-toc-with-jsx.js";
 import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { useViewportAnchor } from "../../components/context/ViewportAnchorContext.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
@@ -71,12 +72,13 @@ const TocPopoverButton = ({
   variant?: "inline" | "button";
   className?: string;
 }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { activeAnchor } = useViewportAnchor();
   const activeAnchorText = activeAnchor
     ? findTocEntry(tocEntries, activeAnchor)?.text
     : null;
-  const label = activeAnchorText ?? "On this page";
+  const label = activeAnchorText ?? t("markdown.onThisPage");
 
   const trigger =
     variant === "button" ? (
@@ -84,7 +86,7 @@ const TocPopoverButton = ({
         <Button
           variant="outline"
           size="sm"
-          aria-label="Toggle table of contents"
+          aria-label={t("markdown.toggleToc")}
           className={cn("max-w-48", className)}
         >
           <ListTreeIcon size={14} aria-hidden="true" />
@@ -97,7 +99,7 @@ const TocPopoverButton = ({
           "flex items-center gap-1 text-muted-foreground hover:text-accent-foreground",
           className,
         )}
-        aria-label="Toggle table of contents"
+        aria-label={t("markdown.toggleToc")}
       >
         <ListTreeIcon aria-hidden="true" className="size-3" />
         <span className="text-xs font-medium truncate">{label}</span>
@@ -127,7 +129,7 @@ const TocPopoverButton = ({
           className="flex items-center gap-2 pb-3 -mx-1 font-medium"
         >
           <ArrowUpIcon size={14} aria-hidden="true" />
-          Return to top
+          {t("markdown.returnToTop")}
         </button>
         <TocContent entries={tocEntries} showHeader={false} />
       </PopoverContent>
@@ -168,6 +170,7 @@ export const MdxPage = ({
   const categoryTitle = useCurrentItem()?.categoryLabel;
   const location = useLocation();
   const { options } = useZudoku();
+  const { t, locale } = useTranslation();
   const [isCopied, setIsCopied] = useState(false);
 
   const title = frontmatter.title;
@@ -197,7 +200,9 @@ export const MdxPage = ({
   const editUrl = editConfig
     ? editConfig.url.replaceAll("{filePath}", __filepath)
     : null;
-  const editText = editConfig ? editConfig.text || "Edit this page" : null;
+  const editText = editConfig
+    ? editConfig.text || t("markdown.editThisPage")
+    : null;
 
   const copyMarkdownConfig =
     publishMarkdown === true &&
@@ -284,7 +289,7 @@ export const MdxPage = ({
             <div
               className="float-end ms-4 mt-1 flex items-center gap-2"
               role="group"
-              aria-label="Page actions"
+              aria-label={t("markdown.pageActions")}
             >
               {showTocPopover && (
                 <TocPopoverButton tocEntries={tocEntries} variant="button" />
@@ -305,14 +310,14 @@ export const MdxPage = ({
                     ) : (
                       <CopyIcon size={14} aria-hidden="true" />
                     )}
-                    <span>Copy page</span>
+                    <span>{t("markdown.copyPage")}</span>
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
                         size="icon-sm"
-                        aria-label="More actions"
+                        aria-label={t("markdown.moreActions")}
                       >
                         <ChevronDownIcon size={14} aria-hidden="true" />
                       </Button>
@@ -327,7 +332,7 @@ export const MdxPage = ({
                         }
                       >
                         <Link2Icon className="size-4" aria-hidden="true" />
-                        Copy link to page
+                        {t("markdown.copyLinkToPage")}
                       </DropdownMenuItem>
                       <DropdownMenuItem className="gap-2" asChild>
                         <a
@@ -339,7 +344,7 @@ export const MdxPage = ({
                             className="size-4"
                             aria-hidden="true"
                           />
-                          Open Markdown page
+                          {t("markdown.openMarkdownPage")}
                         </a>
                       </DropdownMenuItem>
                       <AiAssistantMenuItems
@@ -362,9 +367,7 @@ export const MdxPage = ({
         </header>
 
         {frontmatter.draft && (
-          <DeveloperHint>
-            This page is a draft and is not visible in production.
-          </DeveloperHint>
+          <DeveloperHint>{t("markdown.draftNotice")}</DeveloperHint>
         )}
 
         <MdxComponent
@@ -393,14 +396,14 @@ export const MdxPage = ({
               <div>
                 {showLastModified && lastModifiedDate && (
                   <div
-                    title={lastModifiedDate.toLocaleString(undefined, {
+                    title={lastModifiedDate.toLocaleString(locale, {
                       dateStyle: "full",
                       timeStyle: "medium",
                     })}
                   >
-                    Last modified on{" "}
+                    {t("markdown.lastModifiedOn")}{" "}
                     <time dateTime={lastModifiedDate.toISOString()}>
-                      {lastModifiedDate.toLocaleDateString("en-US", {
+                      {lastModifiedDate.toLocaleDateString(locale, {
                         dateStyle: "long",
                       })}
                     </time>

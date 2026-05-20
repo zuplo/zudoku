@@ -29,6 +29,7 @@ import {
   DrawerTrigger,
 } from "../ui/Drawer.js";
 import { ClientOnly } from "./ClientOnly.js";
+import { useTranslation } from "./context/useTranslation.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
 import { getFirstMatchingPath, shouldShowItem } from "./navigation/utils.js";
@@ -123,6 +124,7 @@ export const MobileTopNavigation = () => {
   const authState = useAuth();
   const location = useLocation();
   const currentNav = useCurrentNavigation();
+  const { t } = useTranslation();
 
   const {
     options: { header, navigation = [], site },
@@ -145,7 +147,7 @@ export const MobileTopNavigation = () => {
       onOpenChange={setDrawerOpen}
     >
       <div className="flex lg:hidden justify-self-end">
-        <DrawerTrigger className="lg:hidden" aria-label="Open navigation menu">
+        <DrawerTrigger className="lg:hidden" aria-label={t("nav.openMenu")}>
           <MenuIcon size={22} aria-hidden="true" />
         </DrawerTrigger>
         <PageProgress />
@@ -157,7 +159,7 @@ export const MobileTopNavigation = () => {
         <div className="py-2 h-full flex flex-col">
           <div className="flex-1 overflow-y-auto overscroll-none">
             <VisuallyHidden>
-              <DrawerTitle>Navigation</DrawerTitle>
+              <DrawerTitle>{t("nav.title")}</DrawerTitle>
             </VisuallyHidden>
             <ul className="flex flex-col gap-1 px-4">
               {headerNavigation.map((item) => (
@@ -198,7 +200,7 @@ export const MobileTopNavigation = () => {
                   <Separator className="my-2" />
                   <li className="py-2">
                     <div className="text-base font-medium">
-                      {profile?.name ?? "My Account"}
+                      {profile?.name ?? t("nav.myAccount")}
                     </div>
                     {profile?.email && profile.email !== profile?.name && (
                       <div className="text-sm text-muted-foreground">

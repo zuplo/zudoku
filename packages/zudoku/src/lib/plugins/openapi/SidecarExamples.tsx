@@ -1,6 +1,7 @@
 import { ExternalLinkIcon } from "lucide-react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 import type { MediaTypeObject } from "./graphql/graphql.js";
@@ -35,6 +36,7 @@ export const SidecarExamples = ({
   isOnScreen,
   shouldLazyHighlight,
 }: SidecarExamplesProps) => {
+  const { t } = useTranslation();
   // Get example value, with fallback to schema-generated example
   const selectedContent = content[selectedContentIndex];
   const examples = selectedContent?.examples ?? [];
@@ -57,7 +59,7 @@ export const SidecarExamples = ({
               rel="noopener noreferrer"
               className="text-xs text-primary hover:underline"
             >
-              View External Example
+              {t("openapi.viewExternalExample")}
               <ExternalLinkIcon className="size-3 inline-block ms-1 align-[-0.125em]" />
             </a>
           </div>
@@ -72,7 +74,7 @@ export const SidecarExamples = ({
           />
         ) : (
           <div className="grid place-items-center text-xs text-muted-foreground min-h-18">
-            No example specified for this content type
+            {t("openapi.noExampleSpecified")}
           </div>
         )}
         {selectedExample?.description && (

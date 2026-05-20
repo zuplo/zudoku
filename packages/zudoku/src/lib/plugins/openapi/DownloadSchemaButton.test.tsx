@@ -10,10 +10,15 @@ import type { AiAssistantsConfig } from "../../../config/validators/ZudokuConfig
 import { ZudokuProvider } from "../../components/context/ZudokuProvider.js";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
+import { openapiTranslations } from "./translations.js";
 
 const createWrapper = (aiAssistants?: AiAssistantsConfig) => {
   const queryClient = new QueryClient();
-  const context = new ZudokuContext({ aiAssistants }, queryClient, {});
+  const context = new ZudokuContext(
+    { aiAssistants, i18n: { messages: openapiTranslations } },
+    queryClient,
+    {},
+  );
   return ({ children }: PropsWithChildren) => (
     <QueryClientProvider client={queryClient}>
       <ZudokuProvider context={context}>{children}</ZudokuProvider>

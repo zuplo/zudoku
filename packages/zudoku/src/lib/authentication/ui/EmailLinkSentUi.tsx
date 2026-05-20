@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { cn } from "../../util/cn.js";
 import { EMAIL_LINK_STORAGE_KEY } from "../constants.js";
 import { AuthCard } from "./AuthCard.js";
@@ -19,6 +20,7 @@ export const EmailLinkSentUi = ({
 }: {
   onResendEmailLink: () => Promise<void>;
 }) => {
+  const { t } = useTranslation();
   const [email] = useState(() => localStorage.getItem(EMAIL_LINK_STORAGE_KEY));
 
   const resendMutation = useMutation({
@@ -35,25 +37,23 @@ export const EmailLinkSentUi = ({
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <Mail className="h-8 w-8 text-primary" />
         </div>
-        <CardTitle>Check your email</CardTitle>
+        <CardTitle>{t("auth.checkYourEmail")}</CardTitle>
         <CardDescription>
-          We've sent a sign-in link to <strong>{email}</strong>.
+          {t("auth.emailLinkSentTo", { email })}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {resendMutation.error && (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("auth.error")}</AlertTitle>
             <AlertDescription>{resendMutation.error.message}</AlertDescription>
           </Alert>
         )}
 
         {resendMutation.isSuccess && (
           <Alert>
-            <AlertTitle>Email sent</AlertTitle>
-            <AlertDescription>
-              A new sign-in link has been sent. Please check your inbox.
-            </AlertDescription>
+            <AlertTitle>{t("auth.emailSent")}</AlertTitle>
+            <AlertDescription>{t("auth.emailLinkResent")}</AlertDescription>
           </Alert>
         )}
 
@@ -64,7 +64,7 @@ export const EmailLinkSentUi = ({
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="bg-card px-2 text-muted-foreground">
-                Didn't receive the email?
+                {t("auth.didntReceiveEmail")}
               </span>
             </div>
           </div>
@@ -81,19 +81,19 @@ export const EmailLinkSentUi = ({
                 resendMutation.isPending && "animate-spin",
               )}
             />
-            Resend sign-in link
+            {t("auth.resendEmailLink")}
           </Button>
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Make sure to check your spam folder if you don't see the email.
+          {t("auth.checkSpamFolder")}
         </p>
 
         <Link
           to="/signin"
           className="text-sm text-muted-foreground text-center"
         >
-          Back to sign in
+          {t("auth.backToSignIn")}
         </Link>
       </CardContent>
     </AuthCard>

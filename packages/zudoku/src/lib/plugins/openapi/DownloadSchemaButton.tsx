@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
 import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
 
@@ -24,6 +25,7 @@ export const DownloadSchemaButton = ({
 }) => {
   const [, copyToClipboard] = useCopyToClipboard();
   const { options } = useZudoku();
+  const { t } = useTranslation();
 
   const handleDownload: MouseEventHandler<HTMLAnchorElement> = async (e) => {
     const isExternal = downloadUrl.includes("://");
@@ -56,7 +58,7 @@ export const DownloadSchemaButton = ({
       <Button variant="outline" asChild>
         <a href={downloadUrl} download onClick={handleDownload}>
           <DownloadIcon />
-          Download schema
+          {t("openapi.downloadSchema")}
         </a>
       </Button>
       <DropdownMenu>
@@ -69,7 +71,7 @@ export const DownloadSchemaButton = ({
           <DropdownMenuItem asChild>
             <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLinkIcon size={14} />
-              Open in new tab
+              {t("openapi.openInNewTab")}
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -80,7 +82,7 @@ export const DownloadSchemaButton = ({
             }}
           >
             <CopyIcon size={14} />
-            Copy to clipboard
+            {t("openapi.copyToClipboard")}
           </DropdownMenuItem>
           <AiAssistantMenuItems
             aiAssistants={options.aiAssistants}

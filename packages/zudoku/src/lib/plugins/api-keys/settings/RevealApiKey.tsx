@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
 import { Secret } from "zudoku/ui/Secret.js";
+import { useTranslation } from "../../../components/context/useTranslation.js";
 import { cn } from "../../../util/cn.js";
 import type { ApiKey } from "../index.js";
 
@@ -25,6 +26,7 @@ export const RevealApiKey = ({
   className?: string;
 }) => {
   const [revealed, setRevealed] = useState(false);
+  const { t, locale } = useTranslation();
 
   const { key, description, createdOn, expiresOn } = apiKey;
   const isExpired = expiresOn && new Date(expiresOn) < new Date();
@@ -51,21 +53,21 @@ export const RevealApiKey = ({
         <div className="flex gap-1 mt-0.5 text-nowrap">
           {createdOn && (
             <span className="text-xs text-muted-foreground">
-              Created {getTimeAgo(createdOn)}.
+              {t("apiKeys.created", { timeAgo: getTimeAgo(createdOn, locale) })}
             </span>
           )}{" "}
           {expiresOn && expiresSoon && (
             <span className="text-xs text-primary">
-              Expires in {daysUntilExpiry}{" "}
-              {daysUntilExpiry === 1 ? "day" : "days"}.
+              {daysUntilExpiry === 1
+                ? t("apiKeys.expiresInOne")
+                : t("apiKeys.expiresIn", { count: daysUntilExpiry })}
             </span>
           )}
           {expiresOn && isExpired && (
             <span className="text-xs text-primary">
-              Expired{" "}
               {daysUntilExpiry === 0
-                ? "today."
-                : `${daysUntilExpiry * -1} days ago.`}
+                ? t("apiKeys.expiredToday")
+                : t("apiKeys.expiredDaysAgo", { count: daysUntilExpiry * -1 })}
             </span>
           )}
         </div>
@@ -74,20 +76,24 @@ export const RevealApiKey = ({
         {expiresOn && onDeleteKey && (
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Delete API key">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t("apiKeys.deleteApiKey")}
+              >
                 <TrashIcon size={16} aria-hidden="true" />
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Delete API Key</DialogTitle>
+                <DialogTitle>{t("apiKeys.deleteDialogTitle")}</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to delete this API key?
+                  {t("apiKeys.deleteDialogDescription")}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
+                  <Button variant="outline">{t("apiKeys.cancel")}</Button>
                 </DialogClose>
                 <DialogClose asChild>
                   <Button
@@ -95,7 +101,7 @@ export const RevealApiKey = ({
                       onDeleteKey();
                     }}
                   >
-                    Delete
+                    {t("apiKeys.delete")}
                   </Button>
                 </DialogClose>
               </DialogFooter>
@@ -107,12 +113,12 @@ export const RevealApiKey = ({
   );
 };
 
-const getTimeAgo = (date: string) => {
+const getTimeAgo = (date: string, locale: string) => {
   const now = new Date();
   const created = new Date(date);
   const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
 
-  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
   if (diffInSeconds < 60) return rtf.format(-diffInSeconds, "second");
   if (diffInSeconds < 3600)

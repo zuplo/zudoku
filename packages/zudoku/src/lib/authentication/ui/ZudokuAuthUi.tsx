@@ -13,6 +13,7 @@ import {
 } from "zudoku/ui/Card.js";
 import { Input } from "zudoku/ui/Input.js";
 import { Separator } from "zudoku/ui/Separator.js";
+import { useTranslation } from "../../components/context/useTranslation.js";
 import {
   Form,
   FormControl,
@@ -101,6 +102,7 @@ const EmailPasswordForm = ({
   submitLabel: string;
   isPending: boolean;
 }) => {
+  const { t } = useTranslation();
   return (
     <Form {...form}>
       <form
@@ -108,17 +110,20 @@ const EmailPasswordForm = ({
         className="flex flex-col gap-2"
       >
         <FormItem>
-          <FormLabel>E-Mail</FormLabel>
+          <FormLabel>{t("auth.email")}</FormLabel>
           <FormControl>
-            <Input placeholder="Email" {...form.register("email")} />
+            <Input
+              placeholder={t("auth.emailPlaceholder")}
+              {...form.register("email")}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>
         <FormItem>
-          <FormLabel>Password</FormLabel>
+          <FormLabel>{t("auth.password")}</FormLabel>
           <FormControl>
             <Input
-              placeholder="Password"
+              placeholder={t("auth.passwordPlaceholder")}
               {...form.register("password")}
               type="password"
             />
@@ -149,6 +154,7 @@ export const ZudokuSignInUi = ({
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
@@ -199,13 +205,13 @@ export const ZudokuSignInUi = ({
   return (
     <AuthCard>
       <CardHeader>
-        <CardTitle>Sign in</CardTitle>
-        <CardDescription>Sign in to your account to continue.</CardDescription>
+        <CardTitle>{t("auth.signIn")}</CardTitle>
+        <CardDescription>{t("auth.signInDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {error && (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("auth.error")}</AlertTitle>
             <AlertDescription>{error?.message}</AlertDescription>
           </Alert>
         )}
@@ -219,14 +225,14 @@ export const ZudokuSignInUi = ({
                   password: data.password,
                 })
               }
-              submitLabel="Sign in"
+              submitLabel={t("auth.signIn")}
               isPending={pending}
             />
             <Link
               to="/reset-password"
               className="text-sm text-muted-foreground text-right -mt-2"
             >
-              Forgot password?
+              {t("auth.forgotPassword")}
             </Link>
           </>
         )}
@@ -251,12 +257,12 @@ export const ZudokuSignInUi = ({
               }
               className="text-sm text-muted-foreground"
             >
-              Sign in with email link
+              {t("auth.signInWithEmailLink")}
             </Link>
           )}
           {!disableSignUp && (
             <Link to="/signup" className="text-sm text-muted-foreground">
-              Don't have an account? Sign up.
+              {t("auth.dontHaveAccount")}
             </Link>
           )}
         </div>
@@ -266,23 +272,23 @@ export const ZudokuSignInUi = ({
 };
 
 export const ZudokuSignUpDisabledUi = () => {
+  const { t } = useTranslation();
   return (
     <AuthCard>
       <CardHeader>
-        <CardTitle>Sign up</CardTitle>
-        <CardDescription>Sign ups are not currently available.</CardDescription>
+        <CardTitle>{t("auth.signUp")}</CardTitle>
+        <CardDescription>{t("auth.signUpsUnavailable")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <Alert>
-          <AlertTitle>Invitation required</AlertTitle>
+          <AlertTitle>{t("auth.invitationRequired")}</AlertTitle>
           <AlertDescription>
-            New accounts are by invitation only. If you already have an account,
-            you can sign in below.
+            {t("auth.invitationRequiredDescription")}
           </AlertDescription>
         </Alert>
         <Link to="/signin">
           <Button variant="outline" className="w-full">
-            Back to sign in
+            {t("auth.backToSignIn")}
           </Button>
         </Link>
       </CardContent>
@@ -304,6 +310,7 @@ export const ZudokuSignUpUi = ({
   onUsernamePasswordSignUp: (email: string, password: string) => Promise<void>;
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
@@ -348,13 +355,13 @@ export const ZudokuSignUpUi = ({
   return (
     <AuthCard>
       <CardHeader>
-        <CardTitle>Sign up</CardTitle>
-        <CardDescription>Sign up to your account to continue.</CardDescription>
+        <CardTitle>{t("auth.signUp")}</CardTitle>
+        <CardDescription>{t("auth.signUpDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {error && (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("auth.error")}</AlertTitle>
             <AlertDescription>{error?.message}</AlertDescription>
           </Alert>
         )}
@@ -368,7 +375,7 @@ export const ZudokuSignUpUi = ({
                 password: data.password,
               })
             }
-            submitLabel="Sign up"
+            submitLabel={t("auth.signUp")}
             isPending={pending}
           />
         )}
@@ -393,11 +400,11 @@ export const ZudokuSignUpUi = ({
               }
               className="text-sm text-muted-foreground"
             >
-              Sign in with email link
+              {t("auth.signInWithEmailLink")}
             </Link>
           )}
           <Link to="/signin" className="text-sm text-muted-foreground">
-            Already have an account? Sign in.
+            {t("auth.alreadyHaveAccount")}
           </Link>
         </div>
       </CardContent>
@@ -431,11 +438,12 @@ const ProviderButtons = ({
 };
 
 const ProviderSeparator = ({ providers }: { providers: AuthProviderId[] }) => {
+  const { t } = useTranslation();
   return (
     providers.length > 0 && (
       <Separator className="my-3 relative">
         <span className="bg-card text-muted-foreground text-sm px-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          or continue with
+          {t("auth.orContinueWith")}
         </span>
       </Separator>
     )
@@ -447,6 +455,7 @@ export const ZudokuPasswordResetUi = ({
 }: {
   onPasswordReset: (email: string) => Promise<void>;
 }) => {
+  const { t } = useTranslation();
   const [isSubmitted, setIsSubmitted] = React.useState(false);
 
   const passwordResetMutation = useMutation({
@@ -469,32 +478,31 @@ export const ZudokuPasswordResetUi = ({
   return (
     <AuthCard>
       <CardHeader>
-        <CardTitle>Reset password</CardTitle>
+        <CardTitle>{t("auth.resetPassword")}</CardTitle>
         <CardDescription>
           {isSubmitted
-            ? "Check your email for a password reset link."
-            : "Enter your email address and we'll send you a link to reset your password."}
+            ? t("auth.resetPasswordSubmitted")
+            : t("auth.resetPasswordDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {error && (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("auth.error")}</AlertTitle>
             <AlertDescription>{error?.message}</AlertDescription>
           </Alert>
         )}
         {isSubmitted ? (
           <div className="flex flex-col gap-4">
             <Alert>
-              <AlertTitle>Email sent</AlertTitle>
+              <AlertTitle>{t("auth.emailSent")}</AlertTitle>
               <AlertDescription>
-                If an account exists with that email address, you will receive a
-                password reset link shortly.
+                {t("auth.resetPasswordEmailSentDescription")}
               </AlertDescription>
             </Alert>
             <Link to="/signin">
               <Button variant="outline" className="w-full">
-                Back to sign in
+                {t("auth.backToSignIn")}
               </Button>
             </Link>
           </div>
@@ -508,10 +516,10 @@ export const ZudokuPasswordResetUi = ({
                 className="flex flex-col gap-2"
               >
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("auth.email")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="you@example.com"
+                      placeholder={t("auth.emailExamplePlaceholder")}
                       {...form.register("email")}
                     />
                   </FormControl>
@@ -521,12 +529,12 @@ export const ZudokuPasswordResetUi = ({
                   type="submit"
                   isPending={passwordResetMutation.isPending}
                 >
-                  Reset password
+                  {t("auth.resetPassword")}
                 </ActionButton>
               </form>
             </Form>
             <Link to="/signin" className="text-sm text-muted-foreground">
-              Sign in
+              {t("auth.signIn")}
             </Link>
           </>
         )}
@@ -540,6 +548,7 @@ export const ZudokuPasswordUpdateUi = ({
 }: {
   onPasswordUpdate: (password: string) => Promise<void>;
 }) => {
+  const { t } = useTranslation();
   const [isSubmitted, setIsSubmitted] = React.useState(false);
 
   const passwordUpdateMutation = useMutation({
@@ -563,7 +572,7 @@ export const ZudokuPasswordUpdateUi = ({
   const onSubmit = (data: { password: string; confirmPassword: string }) => {
     if (data.password !== data.confirmPassword) {
       form.setError("confirmPassword", {
-        message: "Passwords do not match",
+        message: t("auth.passwordsDoNotMatch"),
       });
       return;
     }
@@ -573,32 +582,31 @@ export const ZudokuPasswordUpdateUi = ({
   return (
     <AuthCard>
       <CardHeader>
-        <CardTitle>Set new password</CardTitle>
+        <CardTitle>{t("auth.setNewPassword")}</CardTitle>
         <CardDescription>
           {isSubmitted
-            ? "Your password has been updated successfully."
-            : "Enter your new password below."}
+            ? t("auth.passwordUpdateSuccess")
+            : t("auth.setNewPasswordDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {error && (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("auth.error")}</AlertTitle>
             <AlertDescription>{error?.message}</AlertDescription>
           </Alert>
         )}
         {isSubmitted ? (
           <div className="flex flex-col gap-4">
             <Alert>
-              <AlertTitle>Password updated</AlertTitle>
+              <AlertTitle>{t("auth.passwordUpdated")}</AlertTitle>
               <AlertDescription>
-                Your password has been successfully updated. You can now sign in
-                with your new password.
+                {t("auth.passwordUpdatedDescription")}
               </AlertDescription>
             </Alert>
             <Link to="/signin">
               <Button variant="outline" className="w-full">
-                Sign in
+                {t("auth.signIn")}
               </Button>
             </Link>
           </div>
@@ -609,22 +617,22 @@ export const ZudokuPasswordUpdateUi = ({
               className="flex flex-col gap-2"
             >
               <FormItem>
-                <FormLabel>New password</FormLabel>
+                <FormLabel>{t("auth.newPassword")}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
-                    placeholder="Enter new password"
+                    placeholder={t("auth.newPasswordPlaceholder")}
                     {...form.register("password")}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
               <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+                <FormLabel>{t("auth.confirmPassword")}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
-                    placeholder="Confirm new password"
+                    placeholder={t("auth.confirmPasswordPlaceholder")}
                     {...form.register("confirmPassword")}
                   />
                 </FormControl>
@@ -634,7 +642,7 @@ export const ZudokuPasswordUpdateUi = ({
                 type="submit"
                 isPending={passwordUpdateMutation.isPending}
               >
-                Update password
+                {t("auth.updatePassword")}
               </ActionButton>
             </form>
           </Form>
