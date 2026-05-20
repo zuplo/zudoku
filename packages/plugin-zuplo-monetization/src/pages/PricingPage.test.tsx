@@ -58,7 +58,10 @@ vi.mock("zudoku/router", () => ({
 
 vi.mock("zudoku/hooks", () => ({
   useAuth: () => ({ isAuthenticated: false }),
-  useZudoku: () => ({ env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test-env" } }),
+  useZudoku: () => ({
+    env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test-env" },
+    getAuthState: () => ({ isAuthenticated: false }),
+  }),
 }));
 
 const mockPricingData: { items: Plan[] } = { items: [] };
@@ -69,6 +72,7 @@ const mockSubscriptionData: {
 vi.mock("zudoku/react-query", () => ({
   useSuspenseQuery: () => ({ data: mockPricingData }),
   useQuery: () => ({ data: mockSubscriptionData }),
+  queryOptions: <T,>(opts: T) => opts,
 }));
 
 vi.mock("../hooks/useDeploymentName", () => ({
