@@ -1,0 +1,15 @@
+---
+title: Protected page
+description: This page is behind authentication.
+---
+
+## Protected page
+
+You only see this page when authenticated. It is gated by the `protectedRoutes` config entry in
+`zudoku.config.ts`:
+
+```ts
+protectedRoutes: ["/documentation/protected"];
+```
+
+Unauthenticated visitors are redirected into the sign-in flow before reaching this route.

@@ -1,5 +1,7 @@
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import type { HelmetData } from "@zudoku/react-helmet-async";
+import { Hono } from "hono";
+import { compress } from "hono/compress";
 import logger from "loglevel";
 import { renderToReadableStream, renderToStaticMarkup } from "react-dom/server";
 import {
@@ -9,12 +11,48 @@ import {
   type RouteObject,
 } from "react-router";
 import "vite/modulepreload-polyfill";
+import { configuredAuthProvider } from "virtual:zudoku-auth";
+import config from "virtual:zudoku-config";
+import { parseCookies } from "../lib/authentication/cookies.js";
+import { createSessionHandler } from "../lib/authentication/session-handler.js";
+import { cachedVerifyAccessToken } from "../lib/authentication/verify-cache.js";
 import { BootstrapStatic } from "../lib/components/Bootstrap.js";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
+import type { SSRAuthState } from "../lib/components/context/RenderContext.js";
 import { ServerError } from "../lib/errors/ServerError.js";
+import { buildManifest } from "../lib/manifest.js";
 import { highlighterPromise } from "../lib/shiki.js";
+import type { Adapter } from "./adapter.js";
 import { getRoutesByConfig } from "./main.js";
+import { protectChunks as rawProtectChunks } from "./protectChunks.js";
+import { wrapProtectedRoutes } from "./wrapProtectedRoutes.js";
+
 export { getRoutesByConfig };
+export type { Adapter, AdapterContext } from "./adapter.js";
+
+// Shared cached verifier for session handler, SSR render, and protected-chunk gate.
+const verifier = configuredAuthProvider?.verifyAccessToken
+  ? (token: string) =>
+      cachedVerifyAccessToken(
+        // biome-ignore lint/style/noNonNullAssertion: verifyAccessToken is guaranteed to be defined
+        configuredAuthProvider!.verifyAccessToken!.bind(configuredAuthProvider),
+        token,
+      )
+  : undefined;
+
+// Wire verifier here so adapters remain auth-agnostic.
+export const protectChunks: typeof rawProtectChunks = (opts) =>
+  rawProtectChunks({
+    ...opts,
+    verifyAccessToken: opts.verifyAccessToken ?? verifier,
+  });
+
+const safeSerialize = (data: unknown) =>
+  JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 
 // Statically importing shiki.ts here ensures it's in the SSR bundle.
 // main.tsx dynamically imports it instead to enable lazy loading on the client.
@@ -37,7 +75,38 @@ export const handleRequest = async ({
   basePath?: string;
   bypassProtection?: boolean;
 }): Promise<Response> => {
-  const { query, dataRoutes } = createStaticHandler(routes, {
+  const { accessToken } = parseCookies(request);
+  // Always derive profile from the verifier, never trust the client cookie.
+  // An unverified profile would let a stale/forged cookie render protected HTML.
+  let verifiedProfile: SSRAuthState["profile"] = null;
+  if (accessToken && verifier) {
+    try {
+      const verified = await verifier(accessToken);
+      if (verified) verifiedProfile = verified.profile;
+    } catch (error) {
+      logger.error(
+        `SSR auth verifier error (${request.method} ${request.url}):`,
+        error,
+      );
+    }
+  }
+  const ssrAuth: SSRAuthState | undefined = configuredAuthProvider
+    ? {
+        accessToken: verifiedProfile ? accessToken : undefined,
+        profile: verifiedProfile,
+      }
+    : undefined;
+
+  // No-op lazy() on protected subtrees for unauthed requests so loaders
+  // don't run for a 401 render.
+  const effectiveRoutes = wrapProtectedRoutes(
+    routes,
+    config.protectedRoutes,
+    !!ssrAuth?.profile,
+    basePath,
+  );
+
+  const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {
     basename: basePath,
   });
   const queryClient = new QueryClient();
@@ -67,6 +136,7 @@ export const handleRequest = async ({
   const renderContext = {
     status: 200,
     bypassProtection: bypassProtection ?? false,
+    ssrAuth,
   };
 
   const App = (
@@ -84,9 +154,7 @@ export const handleRequest = async ({
     const reactStream = await renderToReadableStream(App, {
       onError(error) {
         status = 500;
-        if (import.meta.env.PROD) {
-          logger.error("SSR Error:", error);
-        }
+        logger.error(`SSR Error (${request.method} ${request.url}):`, error);
       },
     });
 
@@ -124,9 +192,6 @@ export const handleRequest = async ({
           const dehydrated = dehydrate(queryClient, {
             shouldDehydrateQuery: (q) => !q.queryKey.includes(NO_DEHYDRATE),
           });
-          const serialized = JSON.stringify(dehydrated)
-            .replace(/</g, "\\u003c")
-            .replace(/>/g, "\\u003e");
 
           const closingTag = "</body>";
           const idx = htmlEnd.lastIndexOf(closingTag);
@@ -135,8 +200,14 @@ export const handleRequest = async ({
             controller.enqueue(encoder.encode(htmlEnd));
           } else {
             controller.enqueue(encoder.encode(htmlEnd.slice(0, idx)));
+            const scripts = [`window.ZUDOKU_DATA=${safeSerialize(dehydrated)}`];
+            if (ssrAuth) {
+              scripts.push(
+                `window.ZUDOKU_SSR_AUTH=${safeSerialize({ profile: ssrAuth.profile })}`,
+              );
+            }
             controller.enqueue(
-              encoder.encode(`<script>window.DATA=${serialized}</script>`),
+              encoder.encode(`<script>${scripts.join(";")}</script>`),
             );
             controller.enqueue(encoder.encode(htmlEnd.slice(idx)));
           }
@@ -146,11 +217,24 @@ export const handleRequest = async ({
       },
     });
 
+    const headers: HeadersInit = {
+      "Content-Type": "text/html; charset=utf-8",
+    };
+    // Only suppress caching for pages that embed a per-user profile.
+    // Anonymous renders (auth configured but no session) stay cacheable.
+    if (ssrAuth?.profile) {
+      headers["Cache-Control"] = "private, no-store";
+    }
+
     return new Response(stream, {
       status: renderContext.status !== 200 ? renderContext.status : status,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
+      headers,
     });
   } catch (error) {
+    logger.error(
+      `SSR fatal render error (${request.method} ${request.url}):`,
+      error,
+    );
     const html = renderToStaticMarkup(<ServerError error={error} />);
     return new Response(html, {
       status: 500,
@@ -158,3 +242,38 @@ export const handleRequest = async ({
     });
   }
 };
+
+export const manifest = buildManifest({
+  basePath: config.basePath,
+  protectedRoutes: config.protectedRoutes,
+});
+
+export const createApp = () => new Hono();
+
+export type MountOptions<T = Hono> = {
+  adapter?: Adapter<T>;
+  template?: string;
+};
+
+declare const __ZUDOKU_TEMPLATE__: string;
+
+export const mount = <T = Hono>(
+  app: Hono,
+  options: MountOptions<T> = {},
+): T => {
+  const template = options.template ?? __ZUDOKU_TEMPLATE__;
+  const basePath = config.basePath;
+  const routes = getRoutesByConfig(config);
+
+  app.use(compress());
+  app.route(manifest.auth.sessionEndpoint, createSessionHandler(verifier));
+  options.adapter?.setup?.(app, { basePath, manifest, protectChunks });
+  app.all("*", (c) =>
+    handleRequest({ template, request: c.req.raw, routes, basePath }),
+  );
+
+  return (options.adapter?.finalize?.(app) ?? app) as T;
+};
+
+export const createServer = <T = Hono>(options: MountOptions<T> = {}): T =>
+  mount(createApp(), options);
