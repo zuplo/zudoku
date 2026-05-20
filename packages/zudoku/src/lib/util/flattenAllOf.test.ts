@@ -243,6 +243,36 @@ describe("flattenAllOf", () => {
     expect(flattenAllOf(objectSchema)).toEqual(objectSchema);
   });
 
+  it("should not throw when allOf branches share an anyOf with incompatible types", () => {
+    const JsonLdContext = {
+      anyOf: [{ type: "array", items: {} }, { type: "object" }],
+    };
+    const schema = {
+      allOf: [
+        { type: "object", properties: { ctx: JsonLdContext } },
+        { type: "object", properties: { ctx: JsonLdContext } },
+      ],
+    } as JSONSchema7;
+
+    expect(() => flattenAllOf(schema)).not.toThrow();
+    const result = flattenAllOf(schema) as JSONSchema7;
+    expect(result).not.toHaveProperty("allOf");
+    expect(result).toHaveProperty("properties.ctx");
+  });
+
+  it("should not throw on incompatible enums", () => {
+    const schema = {
+      allOf: [
+        { type: "string", enum: ["a", "b"] },
+        { type: "string", enum: ["c", "d"] },
+      ],
+    } as JSONSchema7;
+
+    expect(() => flattenAllOf(schema)).not.toThrow();
+    const result = flattenAllOf(schema) as JSONSchema7;
+    expect(result.enum).toEqual(expect.arrayContaining(["a", "b", "c", "d"]));
+  });
+
   it("should convert boolean true to empty object", () => {
     // Empty objects merge to boolean true, should convert back to {}
     const schema = { allOf: [{}] } as JSONSchema7;

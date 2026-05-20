@@ -84,10 +84,10 @@
   ],
   "security": [
     {
-      "ApiKeyAuth": []
+      "BearerAuth": []
     },
     {
-      "BearerAuth": []
+      "ApiKeyAuth": []
     }
   ],
   "components": {
@@ -743,7 +743,7 @@
             "source": "import requests\n\nresponse = requests.post(\n    'https://api.cosmocargo.com/v1/shipments',\n    headers={\n        'Content-Type': 'application/json',\n        'X-API-Key': 'YOUR_API_KEY',\n    },\n    json={\n        'recipientAddress': {\n            'name': 'Zara Nebula',\n            'planet': 'Mars',\n            'station': 'Olympus Mons Hub',\n        },\n        'packages': [{'weight': 2.5, 'dimensions': '30x20x15'}],\n    },\n)\n\nshipment = response.json()"
           }
         ],
-        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }],
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/CorrelationId"
@@ -1234,7 +1234,7 @@
         "summary": "Cancel shipment",
         "description": "Cancel a shipment that hasn't been picked up yet.",
         "operationId": "cancelShipment",
-        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }],
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
         "parameters": [
           {
             "name": "trackingNumber",

@@ -78,3 +78,13 @@ vitest.config.*.timestamp*
 
 .env.local
 .eslintcache
+
+# Claude Code: ignore everything in .claude/ except tracked
+# config/commands/skills/agents/hooks. Add new tracked paths here
+# with a leading "!".
+.claude/*
+!.claude/settings.json
+!.claude/commands/
+!.claude/skills/
+!.claude/agents/
+!.claude/hooks/

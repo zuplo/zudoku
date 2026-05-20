@@ -94,7 +94,15 @@ const ApiOptionsSchema = z
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
-    schemaDownload: z.object({ enabled: z.boolean() }).partial(),
+    schemaDownload: z
+      .object({
+        enabled: z.boolean(),
+        fileName: z
+          .string()
+          .regex(/^[A-Za-z0-9_-]+$/)
+          .optional(),
+      })
+      .partial(),
     transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
     ),
@@ -103,6 +111,8 @@ const ApiOptionsSchema = z
     ),
   })
   .partial();
+
+export type ApiOptionsConfig = z.infer<typeof ApiOptionsSchema>;
 
 const ApiConfigSchema = z
   .object({
@@ -317,7 +327,7 @@ export const DocsConfigSchema = z.object({
     .default([DEFAULT_DOCS_FILES]),
   publishMarkdown: z
     .boolean()
-    .default(false)
+    .default(true)
     .describe(
       "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
     ),

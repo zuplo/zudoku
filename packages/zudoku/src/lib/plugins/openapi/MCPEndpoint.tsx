@@ -5,6 +5,13 @@ import { Typography } from "../../components/Typography.js";
 import { Button } from "../../ui/Button.js";
 import { Callout } from "../../ui/Callout.js";
 import { Card } from "../../ui/Card.js";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/Select.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
 import {
@@ -67,6 +74,7 @@ export const MCPEndpoint = ({
   const vscodeConfig = getVscodeConfig(name, mcpUrl, auth);
 
   const defaultTab = visibleApps[0]?.id ?? "generic";
+  const [activeTab, setActiveTab] = useState(defaultTab);
 
   const handleCopy = () => {
     void navigator.clipboard.writeText(mcpUrl).then(() => {
@@ -345,9 +353,25 @@ export const MCPEndpoint = ({
 
           <hr className="my-4" />
 
-          <Tabs defaultValue={defaultTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full sm:hidden">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {visibleApps.map((app) => (
+                  <SelectItem key={app.id} value={app.id}>
+                    {app.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <TabsList
-              className="grid w-full"
+              className="hidden sm:grid w-full"
               style={{
                 gridTemplateColumns: `repeat(${visibleApps.length}, minmax(0, 1fr))`,
               }}

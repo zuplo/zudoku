@@ -1,16 +1,13 @@
-import { Suspense } from "react";
 import { type ApiIdentity, createPlugin } from "zudoku";
 import { CreditCardIcon, StarsIcon } from "zudoku/icons";
-import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
 import type { MonetizationConfig } from "./MonetizationContext.js";
 import CheckoutConfirmPage from "./pages/CheckoutConfirmPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ManagePaymentPage from "./pages/ManagePaymentPage";
 import PricingPage from "./pages/PricingPage";
-import { PricingPageSkeleton } from "./pages/PricingPageSkeleton";
 import SubscriptionChangeConfirmPage from "./pages/SubscriptionChangeConfirmPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
-import { SubscriptionsPageSkeleton } from "./pages/SubscriptionsPageSkeleton";
+import { pricingPageQuery, subscriptionsQuery } from "./queries.js";
 import ZuploMonetizationWrapper, {
   queryClient,
 } from "./ZuploMonetizationWrapper";
@@ -30,18 +27,17 @@ export const zuploMonetizationPlugin = createPlugin(
         },
       }),
 
-    getIdentities: async (context) => {
-      const deploymentName = context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME;
-      if (!deploymentName) {
-        throw new Error("ZUPLO_PUBLIC_DEPLOYMENT_NAME is not set");
+    initialize: (context) => {
+      // Warm the cache so /pricing and /subscriptions render their data
+      // synchronously on navigation instead of suspending into a skeleton.
+      void queryClient.prefetchQuery(pricingPageQuery(context));
+      if (context.getAuthState().isAuthenticated) {
+        void queryClient.prefetchQuery(subscriptionsQuery(context));
       }
+    },
 
-      const result = await queryClient.fetchQuery<SubscriptionsResponse>({
-        queryKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
-        meta: {
-          context,
-        },
-      });
+    getIdentities: async (context) => {
+      const result = await queryClient.fetchQuery(subscriptionsQuery(context));
 
       return result.items.flatMap((sub) =>
         sub.status !== "active"
@@ -111,19 +107,11 @@ export const zuploMonetizationPlugin = createPlugin(
           children: [
             {
               path: PRICING_PATH,
-              element: (
-                <Suspense fallback={<PricingPageSkeleton />}>
-                  <PricingPage />
-                </Suspense>
-              ),
+              element: <PricingPage />,
             },
             {
               path: "/subscriptions",
-              element: (
-                <Suspense fallback={<SubscriptionsPageSkeleton />}>
-                  <SubscriptionsPage />
-                </Suspense>
-              ),
+              element: <SubscriptionsPage />,
             },
           ],
         },

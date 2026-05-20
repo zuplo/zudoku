@@ -136,6 +136,36 @@ describe("SchemaManager", () => {
     expect(schemas?.[1]?.downloadUrl).toBe("/test-api/1.0.0/schema.json");
   });
 
+  it("should handle overridden fileName", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+
+    const config: ConfigWithMeta = {
+      __meta,
+      apis: [
+        {
+          type: "file",
+          path: "test-api",
+          input: [schemaPath],
+          options: {
+            schemaDownload: {
+              fileName: "openapi",
+            },
+          },
+        },
+      ],
+    };
+
+    const manager = new SchemaManager({ storeDir, config, processors: [] });
+
+    await manager.processAllSchemas();
+
+    const schemas = manager.getSchemasForPath("test-api");
+    expect(schemas).toHaveLength(1);
+    expect(schemas?.[0]?.downloadUrl).toBe("/test-api/1.0.0/openapi.json");
+  });
+
   it("should track processed files", async () => {
     const schemaPath = path.join(tempDir, "openapi.json");
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));

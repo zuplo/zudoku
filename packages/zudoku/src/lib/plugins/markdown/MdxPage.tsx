@@ -200,7 +200,9 @@ export const MdxPage = ({
   const editText = editConfig ? editConfig.text || "Edit this page" : null;
 
   const copyMarkdownConfig =
-    frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
+    publishMarkdown === true &&
+    frontmatter.copyPage !== false &&
+    defaultOptions?.copyPage !== false;
 
   const markdownUrl = joinUrl(
     basePath,

@@ -40,10 +40,10 @@
   ],
   "security": [
     {
-      "ApiKeyAuth": []
+      "BearerAuth": []
     },
     {
-      "BearerAuth": []
+      "ApiKeyAuth": []
     },
     {
       "OAuth2": ["read:labels", "write:labels"]
