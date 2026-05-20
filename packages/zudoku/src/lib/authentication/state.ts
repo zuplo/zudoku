@@ -125,3 +125,11 @@ export interface UserProfile {
   pictureUrl: string | undefined;
   [key: string]: CustomClaim;
 }
+
+// Injected by entry.server.tsx before </body>. Augment Window here so
+// packages that typecheck through this module (e.g. plugins) see the property.
+declare global {
+  interface Window {
+    ZUDOKU_SSR_AUTH?: { profile: UserProfile | null };
+  }
+}
