@@ -129,6 +129,26 @@ const openModal = () => {
   fireEvent.click(screen.getByRole("button", { name: /switch plan/i }));
 };
 
+const getPlanCard = (container: HTMLElement, planName: string) => {
+  const title = within(container).getByText(planName);
+  const card = title.closest("div.border");
+  if (!card) {
+    throw new Error(`Plan card not found for "${planName}"`);
+  }
+  return card as HTMLElement;
+};
+
+const expectPlanAction = (
+  container: HTMLElement,
+  planName: string,
+  action: "Upgrade" | "Downgrade" | "Switch",
+) => {
+  const card = getPlanCard(container, planName);
+  expect(
+    within(card).getByRole("button", { name: action }),
+  ).toBeInTheDocument();
+};
+
 describe("SwitchPlanModal", () => {
   beforeEach(() => {
     plansItems.current = [];
@@ -419,7 +439,7 @@ describe("SwitchPlanModal", () => {
     ).toHaveLength(1);
   });
 
-  it("excludes only the subscribed plan id when multiple versions share a key", () => {
+  it("classifies same-key targets by version when catalog order disagrees with version", () => {
     plansItems.current = [
       makePublicPlan({
         id: "plan-team-v2",
@@ -455,19 +475,52 @@ describe("SwitchPlanModal", () => {
     openModal();
 
     const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByText("Team (v2)")).toBeInTheDocument();
-    expect(within(dialog).getByText("Starter")).toBeInTheDocument();
+    expect(within(dialog).getByText("Upgrade Options")).toBeInTheDocument();
     expect(
-      within(dialog).getAllByRole("button", { name: "Upgrade" }),
-    ).toHaveLength(1);
-    expect(
-      within(dialog).getAllByRole("button", { name: "Downgrade" }),
-    ).toHaveLength(1);
-    expect(
-      within(dialog).getAllByRole("button", {
-        name: /Upgrade|Downgrade|Switch/,
+      within(dialog).queryByText("Downgrade Options"),
+    ).not.toBeInTheDocument();
+
+    expectPlanAction(dialog, "Team (v2)", "Upgrade");
+    expectPlanAction(dialog, "Starter", "Upgrade");
+  });
+
+  it("classifies an older same-key version as Downgrade when catalog order disagrees with version", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-team-v1",
+        key: "team",
+        name: "Team (v1)",
+        version: 1,
       }),
-    ).toHaveLength(2);
+      makePublicPlan({
+        id: "plan-team-v2",
+        key: "team",
+        name: "Team (v2)",
+        version: 2,
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-team-v2",
+      key: "team",
+      name: "Team (v2)",
+      version: 2,
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "59",
+      yearlyPrice: "590",
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Downgrade Options")).toBeInTheDocument();
+    expect(
+      within(dialog).queryByText("Upgrade Options"),
+    ).not.toBeInTheDocument();
+
+    expectPlanAction(dialog, "Team (v1)", "Downgrade");
   });
 
   it("shows Upgrade and Downgrade Options when switching between public catalog plans", () => {
@@ -508,14 +561,14 @@ describe("SwitchPlanModal", () => {
     expect(within(dialog).getByText("Growth")).toBeInTheDocument();
     expect(within(dialog).getByText("Starter")).toBeInTheDocument();
 
-    expect(
-      within(dialog).getAllByRole("button", { name: "Upgrade" }),
-    ).toHaveLength(1);
-    expect(
-      within(dialog).getAllByRole("button", { name: "Downgrade" }),
-    ).toHaveLength(1);
+    expectPlanAction(dialog, "Growth", "Upgrade");
+    expectPlanAction(dialog, "Starter", "Downgrade");
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "Downgrade" }));
+    fireEvent.click(
+      within(getPlanCard(dialog, "Starter")).getByRole("button", {
+        name: "Downgrade",
+      }),
+    );
 
     expect(mutationStub.mutate).toHaveBeenCalledTimes(1);
     expect(mutationStub.mutate).toHaveBeenCalledWith(

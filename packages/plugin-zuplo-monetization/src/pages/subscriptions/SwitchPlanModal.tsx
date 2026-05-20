@@ -257,36 +257,20 @@ const planVersion = (plan: Pick<Plan, "version">) => plan.version ?? 1;
 const resolvePlanForComparison = (
   subscribedPlan: Plan,
   catalogItems: Plan[] | undefined,
-): Plan | undefined => {
-  const fromCatalog = catalogItems?.find((p) => p.id === subscribedPlan.id);
-  if (fromCatalog) {
-    return fromCatalog;
-  }
-  if (subscribedPlan.phases?.length) {
-    return subscribedPlan;
-  }
-  return undefined;
-};
+): Plan =>
+  catalogItems?.find((p) => p.id === subscribedPlan.id) ?? subscribedPlan;
 
 const resolveIsUpgrade = ({
   target,
   targetIndex,
   subscribedPlan,
-  catalogItems,
   currentIndex,
 }: {
   target: Plan;
   targetIndex: number;
   subscribedPlan: Plan;
-  catalogItems: Plan[];
   currentIndex: number;
 }): boolean => {
-  const subscribedOnCatalog = catalogItems.some(
-    (p) => p.id === subscribedPlan.id,
-  );
-  if (subscribedOnCatalog) {
-    return targetIndex > currentIndex;
-  }
   if (target.key === subscribedPlan.key) {
     return planVersion(target) > planVersion(subscribedPlan);
   }
@@ -555,28 +539,30 @@ export const SwitchPlanModal = ({
       : -1;
     const subscribedIsPrivate = isPrivatePlan(subscribedPlan);
 
-    const allComparisons = catalogItems
-      .filter((plan) => plan.id !== subscribedPlan.id)
-      .map((plan) => {
-        const targetIndex = catalogItems.indexOf(plan);
-        const comparison = comparePlans(
-          planForComparison,
-          plan,
-          currentIndex,
-          targetIndex,
-          pricing?.units,
-        );
-        return {
+    const allComparisons = catalogItems.flatMap((plan, targetIndex) => {
+      if (plan.id === subscribedPlan.id) {
+        return [];
+      }
+
+      const comparison = comparePlans(
+        planForComparison,
+        plan,
+        currentIndex,
+        targetIndex,
+        pricing?.units,
+      );
+      return [
+        {
           ...comparison,
           isUpgrade: resolveIsUpgrade({
             target: plan,
             targetIndex,
             subscribedPlan,
-            catalogItems,
             currentIndex,
           }),
-        };
-      });
+        },
+      ];
+    });
 
     // Private subscriptions: public targets upgrade, private targets switch.
     if (subscribedIsPrivate) {
