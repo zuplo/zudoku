@@ -207,9 +207,10 @@ describe("SwitchPlanModal", () => {
 
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("Upgrade Options")).toBeInTheDocument();
+    expect(within(dialog).getByText("Private Developer")).toBeInTheDocument();
     expect(
-      within(dialog).getByText("Private Developer (portal)"),
-    ).toBeInTheDocument();
+      within(dialog).queryByText("Private Developer (portal)"),
+    ).not.toBeInTheDocument();
     expect(within(dialog).getByText("Team")).toBeInTheDocument();
     expect(within(dialog).queryByText("Starter")).not.toBeInTheDocument();
 
@@ -348,6 +349,125 @@ describe("SwitchPlanModal", () => {
         }),
       }),
     );
+  });
+
+  it("lists a newer plan version when it shares a key with the subscribed plan", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-team-v2",
+        key: "team",
+        name: "Team (v2)",
+        version: 2,
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-team-v1",
+      key: "team",
+      name: "Team (v1)",
+      version: 1,
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "49",
+      yearlyPrice: "490",
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Team (v1)")).toBeInTheDocument();
+    expect(within(dialog).getByText("Team (v2)")).toBeInTheDocument();
+    expect(
+      within(dialog).getAllByRole("button", { name: "Upgrade" }),
+    ).toHaveLength(1);
+  });
+
+  it("lists a newer private plan version when the subscribed version is not on the pricing page", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-private-v2",
+        key: "private_developer",
+        name: "Private Developer (v2)",
+        version: 2,
+        metadata: { zuplo_private_plan: "true" },
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-private-v1",
+      key: "private_developer",
+      name: "Private Developer (v1)",
+      version: 1,
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "9.99",
+      yearlyPrice: "119.88",
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Private Plan Option")).toBeInTheDocument();
+    expect(
+      within(dialog).getByText("Private Developer (v2)"),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getAllByRole("button", { name: "Switch" }),
+    ).toHaveLength(1);
+  });
+
+  it("excludes only the subscribed plan id when multiple versions share a key", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-team-v2",
+        key: "team",
+        name: "Team (v2)",
+        version: 2,
+      }),
+      makePublicPlan({
+        id: "plan-team-v1",
+        key: "team",
+        name: "Team (v1)",
+        version: 1,
+      }),
+      makePublicPlan({
+        id: "plan-starter",
+        key: "starter",
+        name: "Starter",
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-team-v1",
+      key: "team",
+      name: "Team (v1)",
+      version: 1,
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "49",
+      yearlyPrice: "490",
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Team (v2)")).toBeInTheDocument();
+    expect(within(dialog).getByText("Starter")).toBeInTheDocument();
+    expect(
+      within(dialog).getAllByRole("button", { name: "Upgrade" }),
+    ).toHaveLength(1);
+    expect(
+      within(dialog).getAllByRole("button", { name: "Downgrade" }),
+    ).toHaveLength(1);
+    expect(
+      within(dialog).getAllByRole("button", {
+        name: /Upgrade|Downgrade|Switch/,
+      }),
+    ).toHaveLength(2);
   });
 
   it("shows Upgrade and Downgrade Options when switching between public catalog plans", () => {
