@@ -1,6 +1,5 @@
-import { type ApiIdentity, createPlugin, type ZudokuContext } from "zudoku";
+import { type ApiIdentity, createPlugin } from "zudoku";
 import { CreditCardIcon, StarsIcon } from "zudoku/icons";
-import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
 import type { MonetizationConfig } from "./MonetizationContext.js";
 import CheckoutConfirmPage from "./pages/CheckoutConfirmPage";
 import CheckoutPage from "./pages/CheckoutPage";
@@ -8,31 +7,12 @@ import ManagePaymentPage from "./pages/ManagePaymentPage";
 import PricingPage from "./pages/PricingPage";
 import SubscriptionChangeConfirmPage from "./pages/SubscriptionChangeConfirmPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
+import { pricingPageQuery, subscriptionsQuery } from "./queries.js";
 import ZuploMonetizationWrapper, {
   queryClient,
 } from "./ZuploMonetizationWrapper";
 
 const PRICING_PATH = "/pricing";
-
-const getDeploymentName = (context: ZudokuContext) => {
-  const deploymentName = context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME;
-  if (!deploymentName) {
-    throw new Error("ZUPLO_PUBLIC_DEPLOYMENT_NAME is not set");
-  }
-  return deploymentName;
-};
-
-const pricingPageQuery = (context: ZudokuContext) => ({
-  queryKey: [`/v3/zudoku-metering/${getDeploymentName(context)}/pricing-page`],
-  meta: {
-    context: context.getAuthState().isAuthenticated ? context : undefined,
-  },
-});
-
-const subscriptionsQuery = (context: ZudokuContext) => ({
-  queryKey: [`/v3/zudoku-metering/${getDeploymentName(context)}/subscriptions`],
-  meta: { context },
-});
 
 export const zuploMonetizationPlugin = createPlugin(
   (options: MonetizationConfig = {}) => ({
@@ -57,9 +37,7 @@ export const zuploMonetizationPlugin = createPlugin(
     },
 
     getIdentities: async (context) => {
-      const result = await queryClient.fetchQuery<SubscriptionsResponse>(
-        subscriptionsQuery(context),
-      );
+      const result = await queryClient.fetchQuery(subscriptionsQuery(context));
 
       return result.items.flatMap((sub) =>
         sub.status !== "active"

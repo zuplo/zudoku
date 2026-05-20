@@ -2,29 +2,23 @@ import { Button, Head, Heading, Slot } from "zudoku/components";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { useQuery } from "zudoku/react-query";
 import { Link } from "zudoku/router";
-import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
-import type { SubscriptionsResponse } from "../hooks/useSubscriptions";
 import { useMonetizationConfig } from "../MonetizationContext";
 import { PricingTable } from "../pricing-ui/PricingTable.js";
+import { subscriptionsQuery } from "../queries.js";
 
 const PricingPage = () => {
   const { pricing } = useMonetizationConfig();
 
   const zudoku = useZudoku();
-  const deploymentName = useDeploymentName();
   const auth = useAuth();
 
   const { data: pricingTable } = usePlans();
 
-  const { data: subscriptions = { items: [] } } =
-    useQuery<SubscriptionsResponse>({
-      meta: {
-        context: zudoku,
-      },
-      queryKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
-      enabled: auth.isAuthenticated,
-    });
+  const { data: subscriptions = { items: [] } } = useQuery({
+    ...subscriptionsQuery(zudoku),
+    enabled: auth.isAuthenticated,
+  });
 
   const isSubscribed = subscriptions.items.some((subscription) =>
     ["active", "canceled"].includes(subscription.status),
