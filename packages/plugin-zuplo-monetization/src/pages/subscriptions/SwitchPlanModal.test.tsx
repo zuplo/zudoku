@@ -129,6 +129,26 @@ const openModal = () => {
   fireEvent.click(screen.getByRole("button", { name: /switch plan/i }));
 };
 
+const getPlanCard = (container: HTMLElement, planName: string) => {
+  const title = within(container).getByText(planName);
+  const card = title.closest("div.border");
+  if (!card) {
+    throw new Error(`Plan card not found for "${planName}"`);
+  }
+  return card as HTMLElement;
+};
+
+const expectPlanAction = (
+  container: HTMLElement,
+  planName: string,
+  action: "Upgrade" | "Downgrade" | "Switch",
+) => {
+  const card = getPlanCard(container, planName);
+  expect(
+    within(card).getByRole("button", { name: action }),
+  ).toBeInTheDocument();
+};
+
 describe("SwitchPlanModal", () => {
   beforeEach(() => {
     plansItems.current = [];
@@ -207,15 +227,110 @@ describe("SwitchPlanModal", () => {
 
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("Upgrade Options")).toBeInTheDocument();
+    expect(within(dialog).getByText("Private Developer")).toBeInTheDocument();
     expect(
-      within(dialog).getByText("Private Developer (portal)"),
-    ).toBeInTheDocument();
+      within(dialog).queryByText("Private Developer (portal)"),
+    ).not.toBeInTheDocument();
     expect(within(dialog).getByText("Team")).toBeInTheDocument();
     expect(within(dialog).queryByText("Starter")).not.toBeInTheDocument();
 
     expect(
       within(dialog).getAllByRole("button", { name: "Upgrade" }),
     ).toHaveLength(1);
+  });
+
+  it("lists invited private plans as Private Plan Options when the current plan is private", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-private-current",
+        key: "private_developer",
+        name: "Private Developer",
+        metadata: { zuplo_private_plan: "true" },
+      }),
+      makePublicPlan({
+        id: "plan-private-invited",
+        key: "private_enterprise",
+        name: "Private Enterprise",
+        metadata: { zuplo_private_plan: "true" },
+      }),
+      makePublicPlan({
+        id: "plan-team",
+        key: "team",
+        name: "Team",
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-private-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "9.99",
+      yearlyPrice: "119.88",
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Upgrade Options")).toBeInTheDocument();
+    expect(within(dialog).getByText("Private Plan Option")).toBeInTheDocument();
+    expect(within(dialog).getByText("Private Enterprise")).toBeInTheDocument();
+    expect(within(dialog).getByText("Team")).toBeInTheDocument();
+
+    expect(
+      within(dialog).getAllByRole("button", { name: "Upgrade" }),
+    ).toHaveLength(1);
+    expect(
+      within(dialog).getAllByRole("button", { name: "Switch" }),
+    ).toHaveLength(1);
+  });
+
+  it("starts checkout with mode private when switching from one private plan to another", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-private-current",
+        key: "private_developer",
+        name: "Private Developer",
+        metadata: { zuplo_private_plan: "true" },
+      }),
+      makePublicPlan({
+        id: "plan-private-invited",
+        key: "private_enterprise",
+        name: "Private Enterprise",
+        metadata: { zuplo_private_plan: "true" },
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-private-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "9.99",
+      yearlyPrice: "119.88",
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    fireEvent.click(screen.getByRole("button", { name: "Switch" }));
+
+    expect(mutationStub.mutate).toHaveBeenCalledTimes(1);
+    expect(mutationStub.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "private",
+        subscriptionId: "sub-1",
+        plan: expect.objectContaining({
+          id: "plan-private-invited",
+          key: "private_enterprise",
+        }),
+      }),
+    );
   });
 
   it("starts checkout with mode upgrade when switching from private (unlisted) to a public plan", () => {
@@ -256,6 +371,175 @@ describe("SwitchPlanModal", () => {
     );
   });
 
+  it("lists a newer plan version when it shares a key with the subscribed plan", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-team-v2",
+        key: "team",
+        name: "Team (v2)",
+        version: 2,
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-team-v1",
+      key: "team",
+      name: "Team (v1)",
+      version: 1,
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "49",
+      yearlyPrice: "490",
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Team (v1)")).toBeInTheDocument();
+    expect(within(dialog).getByText("Team (v2)")).toBeInTheDocument();
+    expect(
+      within(dialog).getAllByRole("button", { name: "Upgrade" }),
+    ).toHaveLength(1);
+    expect(
+      within(getPlanCard(dialog, "Team (v2)")).getByText("New version"),
+    ).toBeInTheDocument();
+  });
+
+  it("lists a newer private plan version when the subscribed version is not on the pricing page", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-private-v2",
+        key: "private_developer",
+        name: "Private Developer (v2)",
+        version: 2,
+        metadata: { zuplo_private_plan: "true" },
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-private-v1",
+      key: "private_developer",
+      name: "Private Developer (v1)",
+      version: 1,
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "9.99",
+      yearlyPrice: "119.88",
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Private Plan Option")).toBeInTheDocument();
+    expect(
+      within(dialog).getByText("Private Developer (v2)"),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getAllByRole("button", { name: "Switch" }),
+    ).toHaveLength(1);
+    expect(
+      within(getPlanCard(dialog, "Private Developer (v2)")).getByText(
+        "New version",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("classifies same-key targets by version when catalog order disagrees with version", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-team-v2",
+        key: "team",
+        name: "Team (v2)",
+        version: 2,
+      }),
+      makePublicPlan({
+        id: "plan-team-v1",
+        key: "team",
+        name: "Team (v1)",
+        version: 1,
+      }),
+      makePublicPlan({
+        id: "plan-starter",
+        key: "starter",
+        name: "Starter",
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-team-v1",
+      key: "team",
+      name: "Team (v1)",
+      version: 1,
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "49",
+      yearlyPrice: "490",
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Upgrade Options")).toBeInTheDocument();
+    expect(
+      within(dialog).queryByText("Downgrade Options"),
+    ).not.toBeInTheDocument();
+
+    expectPlanAction(dialog, "Team (v2)", "Upgrade");
+    expectPlanAction(dialog, "Starter", "Upgrade");
+    expect(
+      within(getPlanCard(dialog, "Team (v2)")).getByText("New version"),
+    ).toBeInTheDocument();
+    expect(
+      within(getPlanCard(dialog, "Starter")).queryByText("New version"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("classifies an older same-key version as Downgrade when catalog order disagrees with version", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-team-v1",
+        key: "team",
+        name: "Team (v1)",
+        version: 1,
+      }),
+      makePublicPlan({
+        id: "plan-team-v2",
+        key: "team",
+        name: "Team (v2)",
+        version: 2,
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-team-v2",
+      key: "team",
+      name: "Team (v2)",
+      version: 2,
+      billingCadence: "P1M",
+      phases: [],
+      monthlyPrice: "59",
+      yearlyPrice: "590",
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Downgrade Options")).toBeInTheDocument();
+    expect(
+      within(dialog).queryByText("Upgrade Options"),
+    ).not.toBeInTheDocument();
+
+    expectPlanAction(dialog, "Team (v1)", "Downgrade");
+    expect(
+      within(getPlanCard(dialog, "Team (v1)")).queryByText("New version"),
+    ).not.toBeInTheDocument();
+  });
+
   it("shows Upgrade and Downgrade Options when switching between public catalog plans", () => {
     plansItems.current = [
       makePublicPlan({
@@ -294,14 +578,15 @@ describe("SwitchPlanModal", () => {
     expect(within(dialog).getByText("Growth")).toBeInTheDocument();
     expect(within(dialog).getByText("Starter")).toBeInTheDocument();
 
-    expect(
-      within(dialog).getAllByRole("button", { name: "Upgrade" }),
-    ).toHaveLength(1);
-    expect(
-      within(dialog).getAllByRole("button", { name: "Downgrade" }),
-    ).toHaveLength(1);
+    expectPlanAction(dialog, "Growth", "Upgrade");
+    expectPlanAction(dialog, "Starter", "Downgrade");
+    expect(within(dialog).queryByText("New version")).not.toBeInTheDocument();
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "Downgrade" }));
+    fireEvent.click(
+      within(getPlanCard(dialog, "Starter")).getByRole("button", {
+        name: "Downgrade",
+      }),
+    );
 
     expect(mutationStub.mutate).toHaveBeenCalledTimes(1);
     expect(mutationStub.mutate).toHaveBeenCalledWith(
