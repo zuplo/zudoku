@@ -49,11 +49,11 @@ const noopStorage: StateStorage = {
 const ssrAuthInitial =
   typeof window !== "undefined" ? window.ZUDOKU_SSR_AUTH : undefined;
 
-// When the server injected ZUDOKU_SSR_AUTH, cookies are the single source of
-// truth. Persisting would let stale localStorage contradict the SSR signal
-// (ghost login after cookies expire). SSG has no SSR signal, so persist the
-// full snapshot for reload continuity.
-const ssrMode = ssrAuthInitial !== undefined;
+// SSR builds use cookies as the source of truth; SSG uses localStorage.
+// `import.meta.env` is missing when this module is loaded outside a Vite
+// build (e.g. esbuild bundling a vite.*.config.ts), so guard the access.
+const ssrMode =
+  typeof import.meta.env !== "undefined" && import.meta.env.ZUDOKU_HAS_SERVER;
 
 export const authState = create<AuthState>()(
   persist(
