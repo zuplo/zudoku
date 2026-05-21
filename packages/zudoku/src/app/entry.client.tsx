@@ -8,7 +8,7 @@ import {
 import "vite/modulepreload-polyfill";
 import config from "virtual:zudoku-config";
 import { setupCookieSync } from "../lib/authentication/cookie-sync.js";
-import { authState, type UserProfile } from "../lib/authentication/state.js";
+import { authState } from "../lib/authentication/state.js";
 import { BootstrapClient } from "../lib/components/Bootstrap.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getRoutesByConfig, shikiReady } from "./main.js";
@@ -19,14 +19,10 @@ const routes = getRoutesByConfig(config);
 // biome-ignore lint/style/noNonNullAssertion: We know the root element exists
 const root = document.getElementById("root")!;
 
-// Injected by entry.server.tsx before </body>. `ZUDOKU_SSR_AUTH` present
-// signals "server checked auth"; `profile: null` is an authoritative
-// logged-out. state.ts reads this to seed the client store.
 declare global {
   interface Window {
     ZUDOKU_VERSION: string;
     ZUDOKU_DATA?: DehydratedState;
-    ZUDOKU_SSR_AUTH?: { profile: UserProfile | null };
   }
 }
 
