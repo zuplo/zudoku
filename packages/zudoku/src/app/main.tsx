@@ -151,8 +151,9 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
             </Meta>
           ),
           errorElement: <RouterError />,
+          // Chunk-gate protected routes only in SSR; SSG has no 401 to avoid.
           children:
-            typeof window === "undefined"
+            typeof window === "undefined" || !import.meta.env.ZUDOKU_HAS_SERVER
               ? processRoutes(routes)
               : wrapProtectedRoutes(
                   processRoutes(routes),

@@ -54,6 +54,31 @@ const safeSerialize = (data: unknown) =>
     .replace(/\u2028/g, "\\u2028")
     .replace(/\u2029/g, "\\u2029");
 
+// Profile must come from the verifier so a forged cookie can't render
+// protected HTML. SSG has no runtime cookie and short-circuits.
+const resolveSsrAuth = async (
+  request: Request,
+): Promise<SSRAuthState | undefined> => {
+  if (!import.meta.env.ZUDOKU_HAS_SERVER || !configuredAuthProvider) return;
+
+  const { accessToken } = parseCookies(request);
+  if (!accessToken || !verifier)
+    return { accessToken: undefined, profile: null };
+
+  try {
+    const verified = await verifier(accessToken);
+    return verified
+      ? { accessToken, profile: verified.profile }
+      : { accessToken: undefined, profile: null };
+  } catch (error) {
+    logger.error(
+      `SSR auth verifier error (${request.method} ${request.url}):`,
+      error,
+    );
+    return { accessToken: undefined, profile: null };
+  }
+};
+
 // Statically importing shiki.ts here ensures it's in the SSR bundle.
 // main.tsx dynamically imports it instead to enable lazy loading on the client.
 await import("virtual:zudoku-shiki-register").then(
@@ -75,27 +100,7 @@ export const handleRequest = async ({
   basePath?: string;
   bypassProtection?: boolean;
 }): Promise<Response> => {
-  const { accessToken } = parseCookies(request);
-  // Always derive profile from the verifier, never trust the client cookie.
-  // An unverified profile would let a stale/forged cookie render protected HTML.
-  let verifiedProfile: SSRAuthState["profile"] = null;
-  if (accessToken && verifier) {
-    try {
-      const verified = await verifier(accessToken);
-      if (verified) verifiedProfile = verified.profile;
-    } catch (error) {
-      logger.error(
-        `SSR auth verifier error (${request.method} ${request.url}):`,
-        error,
-      );
-    }
-  }
-  const ssrAuth: SSRAuthState | undefined = configuredAuthProvider
-    ? {
-        accessToken: verifiedProfile ? accessToken : undefined,
-        profile: verifiedProfile,
-      }
-    : undefined;
+  const ssrAuth = await resolveSsrAuth(request);
 
   // No-op lazy() on protected subtrees for unauthed requests so loaders
   // don't run for a 401 render.

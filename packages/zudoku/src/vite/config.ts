@@ -123,6 +123,7 @@ export async function getViteConfig(
       "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
       "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
       "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
+      "import.meta.env.ZUDOKU_HAS_SERVER": JSON.stringify(options.ssr === true),
       "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME":
         JSON.stringify(deploymentName),
       ...defineEnvVars([
