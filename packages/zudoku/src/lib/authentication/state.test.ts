@@ -26,7 +26,11 @@ describe("authState — SSG (ZUDOKU_HAS_SERVER unset)", () => {
 
   test("persists login to localStorage so refresh keeps the session", async () => {
     const store = await loadState();
-    store.getState().setLoggedIn({ profile: PROFILE, providerData: null });
+    store.setState({
+      isAuthenticated: true,
+      isPending: false,
+      profile: PROFILE,
+    });
 
     const persisted = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
     expect(persisted?.state?.isAuthenticated).toBe(true);
@@ -89,7 +93,11 @@ describe("authState — SSR (ZUDOKU_HAS_SERVER=true)", () => {
 
   test("does not write to localStorage; cookies are the source of truth", async () => {
     const store = await loadState();
-    store.getState().setLoggedIn({ profile: PROFILE, providerData: null });
+    store.setState({
+      isAuthenticated: true,
+      isPending: false,
+      profile: PROFILE,
+    });
 
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
