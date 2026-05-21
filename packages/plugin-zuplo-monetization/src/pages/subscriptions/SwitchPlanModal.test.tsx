@@ -401,6 +401,9 @@ describe("SwitchPlanModal", () => {
     expect(
       within(dialog).getAllByRole("button", { name: "Upgrade" }),
     ).toHaveLength(1);
+    expect(
+      within(getPlanCard(dialog, "Team (v2)")).getByText("New version"),
+    ).toBeInTheDocument();
   });
 
   it("lists a newer private plan version when the subscribed version is not on the pricing page", () => {
@@ -437,6 +440,11 @@ describe("SwitchPlanModal", () => {
     expect(
       within(dialog).getAllByRole("button", { name: "Switch" }),
     ).toHaveLength(1);
+    expect(
+      within(getPlanCard(dialog, "Private Developer (v2)")).getByText(
+        "New version",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("classifies same-key targets by version when catalog order disagrees with version", () => {
@@ -482,6 +490,12 @@ describe("SwitchPlanModal", () => {
 
     expectPlanAction(dialog, "Team (v2)", "Upgrade");
     expectPlanAction(dialog, "Starter", "Upgrade");
+    expect(
+      within(getPlanCard(dialog, "Team (v2)")).getByText("New version"),
+    ).toBeInTheDocument();
+    expect(
+      within(getPlanCard(dialog, "Starter")).queryByText("New version"),
+    ).not.toBeInTheDocument();
   });
 
   it("classifies an older same-key version as Downgrade when catalog order disagrees with version", () => {
@@ -521,6 +535,9 @@ describe("SwitchPlanModal", () => {
     ).not.toBeInTheDocument();
 
     expectPlanAction(dialog, "Team (v1)", "Downgrade");
+    expect(
+      within(getPlanCard(dialog, "Team (v1)")).queryByText("New version"),
+    ).not.toBeInTheDocument();
   });
 
   it("shows Upgrade and Downgrade Options when switching between public catalog plans", () => {
@@ -563,6 +580,7 @@ describe("SwitchPlanModal", () => {
 
     expectPlanAction(dialog, "Growth", "Upgrade");
     expectPlanAction(dialog, "Starter", "Downgrade");
+    expect(within(dialog).queryByText("New version")).not.toBeInTheDocument();
 
     fireEvent.click(
       within(getPlanCard(dialog, "Starter")).getByRole("button", {

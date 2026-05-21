@@ -10,6 +10,7 @@ import {
 } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { Alert, AlertDescription } from "zudoku/ui/Alert";
+import { Badge } from "zudoku/ui/Badge";
 import { Button } from "zudoku/ui/Button";
 import {
   Dialog,
@@ -33,6 +34,7 @@ import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 type PlanComparison = {
   plan: Plan;
   isUpgrade: boolean;
+  isNewerVersion: boolean;
   quotaChanges: QuotaChange[];
   featureChanges: FeatureChange[];
 };
@@ -227,7 +229,13 @@ const comparePlans = (
     }
   }
 
-  return { plan: targetPlan, isUpgrade, quotaChanges, featureChanges };
+  return {
+    plan: targetPlan,
+    isUpgrade,
+    isNewerVersion: false,
+    quotaChanges,
+    featureChanges,
+  };
 };
 
 const ChangeIndicator = ({
@@ -252,6 +260,10 @@ const isPrivatePlan = (plan: Plan) =>
   plan.metadata?.zuplo_private_plan === "true";
 
 const planVersion = (plan: Pick<Plan, "version">) => plan.version ?? 1;
+
+const isNewerPlanVersion = (subscribedPlan: Plan, target: Plan): boolean =>
+  target.key === subscribedPlan.key &&
+  planVersion(target) > planVersion(subscribedPlan);
 
 /** Baseline for comparisons: catalog entry when present, else subscription plan. */
 const resolvePlanForComparison = (
@@ -322,10 +334,20 @@ const PlanComparisonItem = ({
   return (
     <div className="border rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-baseline gap-2">
-          <h4 className="font-semibold text-foreground">
-            {comparison.plan.name}
-          </h4>
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <h4 className="font-semibold text-foreground">
+              {comparison.plan.name}
+            </h4>
+            {comparison.isNewerVersion && (
+              <Badge
+                variant="outline"
+                className="rounded-full border-primary/30 bg-primary/10 text-primary font-medium"
+              >
+                New version
+              </Badge>
+            )}
+          </div>
           {isCustom ? (
             <span className="text-primary font-medium">Custom</span>
           ) : displayPrice === 0 ? (
@@ -560,6 +582,7 @@ export const SwitchPlanModal = ({
             subscribedPlan,
             currentIndex,
           }),
+          isNewerVersion: isNewerPlanVersion(subscribedPlan, plan),
         },
       ];
     });
