@@ -77,11 +77,16 @@ export const PricingTable = ({
       ? taxBehaviorLegendSentence(collectDefaultTaxBehaviors(firstPlan))
       : undefined;
 
+  const useFourPerRow = plans.length > 6;
+
   return (
     <>
       <div
         className={cn(
-          "w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] justify-center gap-2",
+          "w-full gap-2",
+          useFourPerRow
+            ? "flex flex-wrap justify-center [&>*]:basis-full [&>*]:min-w-[200px] sm:[&>*]:basis-[calc(50%-0.25rem)] lg:[&>*]:basis-[calc(25%-0.375rem)]"
+            : "grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] justify-center",
           className,
         )}
       >
