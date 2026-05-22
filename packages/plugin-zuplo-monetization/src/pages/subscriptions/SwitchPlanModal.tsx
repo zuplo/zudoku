@@ -10,6 +10,7 @@ import {
 } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { Alert, AlertDescription } from "zudoku/ui/Alert";
+import { Badge } from "zudoku/ui/Badge";
 import { Button } from "zudoku/ui/Button";
 import {
   Dialog,
@@ -33,6 +34,7 @@ import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 type PlanComparison = {
   plan: Plan;
   isUpgrade: boolean;
+  isNewerVersion: boolean;
   quotaChanges: QuotaChange[];
   featureChanges: FeatureChange[];
 };
@@ -227,7 +229,13 @@ const comparePlans = (
     }
   }
 
-  return { plan: targetPlan, isUpgrade, quotaChanges, featureChanges };
+  return {
+    plan: targetPlan,
+    isUpgrade,
+    isNewerVersion: false,
+    quotaChanges,
+    featureChanges,
+  };
 };
 
 const ChangeIndicator = ({
@@ -250,6 +258,36 @@ const ChangeIndicator = ({
 
 const isPrivatePlan = (plan: Plan) =>
   plan.metadata?.zuplo_private_plan === "true";
+
+const planVersion = (plan: Pick<Plan, "version">) => plan.version ?? 1;
+
+const isNewerPlanVersion = (subscribedPlan: Plan, target: Plan): boolean =>
+  target.key === subscribedPlan.key &&
+  planVersion(target) > planVersion(subscribedPlan);
+
+/** Baseline for comparisons: catalog entry when present, else subscription plan. */
+const resolvePlanForComparison = (
+  subscribedPlan: Plan,
+  catalogItems: Plan[] | undefined,
+): Plan =>
+  catalogItems?.find((p) => p.id === subscribedPlan.id) ?? subscribedPlan;
+
+const resolveIsUpgrade = ({
+  target,
+  targetIndex,
+  subscribedPlan,
+  currentIndex,
+}: {
+  target: Plan;
+  targetIndex: number;
+  subscribedPlan: Plan;
+  currentIndex: number;
+}): boolean => {
+  if (target.key === subscribedPlan.key) {
+    return planVersion(target) > planVersion(subscribedPlan);
+  }
+  return targetIndex > currentIndex;
+};
 
 const modeLabelMap: Record<SwitchPlanTarget["mode"], string> = {
   upgrade: "Upgrade",
@@ -296,10 +334,20 @@ const PlanComparisonItem = ({
   return (
     <div className="border rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-baseline gap-2">
-          <h4 className="font-semibold text-foreground">
-            {comparison.plan.name}
-          </h4>
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <h4 className="font-semibold text-foreground">
+              {comparison.plan.name}
+            </h4>
+            {comparison.isNewerVersion && (
+              <Badge
+                variant="outline"
+                className="rounded-full border-primary/30 bg-primary/10 text-primary font-medium"
+              >
+                New version
+              </Badge>
+            )}
+          </div>
           {isCustom ? (
             <span className="text-primary font-medium">Custom</span>
           ) : displayPrice === 0 ? (
@@ -489,12 +537,11 @@ export const SwitchPlanModal = ({
     },
   });
 
-  const currentPlan = plansData?.items.find(
-    (p) => p.key === subscription.plan.key,
-  );
+  const subscribedPlan = subscription.plan;
 
   const { upgrades, downgrades, privatePlans } = useMemo(() => {
-    if (!plansData?.items) {
+    const catalogItems = plansData?.items;
+    if (!catalogItems?.length) {
       return {
         upgrades: [],
         downgrades: [],
@@ -502,68 +549,52 @@ export const SwitchPlanModal = ({
       };
     }
 
-    // If the current plan isn't present in the pricing page response (common for
-    // private/unlisted plans), we still want to allow switching to visible plans.
-    if (!currentPlan) {
-      const currentIndex = -1;
-      const allComparisons = plansData.items.map((plan, targetIndex) =>
-        comparePlans(
-          undefined,
-          plan,
-          currentIndex,
-          targetIndex,
-          pricing?.units,
-        ),
-      );
-
-      return {
-        upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
-        downgrades: [],
-        privatePlans: [],
-      };
-    }
-
-    // If the user is currently on a private plan, treat all available targets as a "switch"
-    // (not an upgrade/downgrade) to avoid an empty modal and confusing labels.
-    if (isPrivatePlan(currentPlan)) {
-      const currentIndex = plansData.items.findIndex(
-        (p) => p.id === currentPlan.id,
-      );
-      const allComparisons = plansData.items
-        .filter((p) => p.id !== currentPlan.id)
-        .map((plan) => {
-          const targetIndex = plansData.items.indexOf(plan);
-          return comparePlans(
-            currentPlan,
-            plan,
-            currentIndex,
-            targetIndex,
-            pricing?.units,
-          );
-        });
-
-      return {
-        upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
-        downgrades: [],
-        privatePlans: [],
-      };
-    }
-
-    const currentIndex = plansData.items.findIndex(
-      (p) => p.id === currentPlan.id,
+    const planForComparison = resolvePlanForComparison(
+      subscribedPlan,
+      catalogItems,
     );
-    const allComparisons = plansData.items
-      .filter((p) => p.id !== currentPlan.id)
-      .map((plan) => {
-        const targetIndex = plansData.items.indexOf(plan);
-        return comparePlans(
-          currentPlan,
-          plan,
-          currentIndex,
-          targetIndex,
-          pricing?.units,
-        );
-      });
+    const subscribedOnCatalog = catalogItems.some(
+      (p) => p.id === subscribedPlan.id,
+    );
+    const currentIndex = subscribedOnCatalog
+      ? catalogItems.findIndex((p) => p.id === subscribedPlan.id)
+      : -1;
+    const subscribedIsPrivate = isPrivatePlan(subscribedPlan);
+
+    const allComparisons = catalogItems.flatMap((plan, targetIndex) => {
+      if (plan.id === subscribedPlan.id) {
+        return [];
+      }
+
+      const comparison = comparePlans(
+        planForComparison,
+        plan,
+        currentIndex,
+        targetIndex,
+        pricing?.units,
+      );
+      return [
+        {
+          ...comparison,
+          isUpgrade: resolveIsUpgrade({
+            target: plan,
+            targetIndex,
+            subscribedPlan,
+            currentIndex,
+          }),
+          isNewerVersion: isNewerPlanVersion(subscribedPlan, plan),
+        },
+      ];
+    });
+
+    // Private subscriptions: public targets upgrade, private targets switch.
+    if (subscribedIsPrivate) {
+      return {
+        upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
+        downgrades: [],
+        privatePlans: allComparisons.filter((c) => isPrivatePlan(c.plan)),
+      };
+    }
 
     return {
       upgrades: allComparisons.filter(
@@ -574,7 +605,7 @@ export const SwitchPlanModal = ({
       ),
       privatePlans: allComparisons.filter((c) => isPrivatePlan(c.plan)),
     };
-  }, [plansData?.items, currentPlan, pricing?.units]);
+  }, [plansData?.items, subscribedPlan, pricing?.units]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -600,26 +631,14 @@ export const SwitchPlanModal = ({
                 </AlertDescription>
               </Alert>
             )}
-            {currentPlan && (
-              <Item variant="outline">
-                <ItemContent>
-                  <ItemTitle>Current Plan</ItemTitle>
-                  <ItemDescription className="text-lg font-bold">
-                    {currentPlan.name}
-                  </ItemDescription>
-                </ItemContent>
-              </Item>
-            )}
-            {!currentPlan && (
-              <Item variant="outline">
-                <ItemContent>
-                  <ItemTitle>Current Plan</ItemTitle>
-                  <ItemDescription className="text-lg font-bold">
-                    {subscription.plan.name}
-                  </ItemDescription>
-                </ItemContent>
-              </Item>
-            )}
+            <Item variant="outline">
+              <ItemContent>
+                <ItemTitle>Current Plan</ItemTitle>
+                <ItemDescription className="text-lg font-bold">
+                  {subscribedPlan.name}
+                </ItemDescription>
+              </ItemContent>
+            </Item>
 
             {upgrades.length > 0 && (
               <div>
