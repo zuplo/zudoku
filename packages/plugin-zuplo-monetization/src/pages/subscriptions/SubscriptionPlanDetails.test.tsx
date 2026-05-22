@@ -395,6 +395,53 @@ describe("SubscriptionPlanDetails", () => {
     ).toBeInTheDocument();
   });
 
+  it("keeps the issued amount visible when the first tier is priced but no breakdown is available", () => {
+    // Single-tier "tiered" prices don't produce a breakdown, so suppressing
+    // the issued amount would leave the row empty. Keep limit/period visible.
+    const base = makeSubscription();
+    const baseEntitlement = base.phases[0]?.items[0]?.included?.entitlement;
+    if (!baseEntitlement) {
+      throw new Error("Expected base metered entitlement");
+    }
+
+    const subscription = makeSubscription({
+      phases: [
+        {
+          ...base.phases[0],
+          items: [
+            {
+              ...base.phases[0].items[0],
+              included: {
+                ...base.phases[0].items[0].included,
+                entitlement: {
+                  ...baseEntitlement,
+                  issueAfterReset: 1_000,
+                },
+              },
+              price: {
+                type: "tiered",
+                // Backend requires at least one open-ended tier — a
+                // single-tier price has no upToAmount.
+                tiers: [
+                  {
+                    flatPrice: { amount: "499", type: "money" },
+                    unitPrice: { amount: "0", type: "money" },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    render(<SubscriptionPlanDetails subscription={subscription} />);
+
+    const api = screen.getByText("API").closest("li");
+    if (!api) throw new Error("Expected API row");
+    expect(within(api).getByText(/1,000 \/ month/)).toBeInTheDocument();
+  });
+
   it("shows a subscription tax legend under Price when plan.defaultTaxConfig.behavior is set", () => {
     const subscription = makeSubscription({
       plan: {

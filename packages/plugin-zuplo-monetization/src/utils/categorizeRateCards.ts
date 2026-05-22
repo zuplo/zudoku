@@ -88,8 +88,43 @@ export const categorizeRateCards = (
       // change what the card should display.
       const unitLabel = unitLabelFor(rc);
       if (rc.price.type === "tiered" && rc.price.tiers.length > 0) {
+        const tiers = rc.price.tiers;
+        // If every tier is flat=0 AND unit=0, the schedule is effectively
+        // free — render as a feature rather than a PAYG quota with only
+        // "Included" lines.
+        const hasPositivePrice = tiers.some(
+          (t) =>
+            parseFloat(t.flatPrice?.amount ?? "0") > 0 ||
+            parseFloat(t.unitPrice?.amount ?? "0") > 0,
+        );
+        if (!hasPositivePrice) {
+          features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
+          continue;
+        }
+        // Single-tier "tiered" prices can't produce a breakdown
+        // (`formatTieredPriceBreakdown` needs ≥2 tiers). Treat them as a
+        // unit price so the card body isn't empty.
+        if (tiers.length === 1) {
+          const unit = parseFloat(tiers[0].unitPrice?.amount ?? "0");
+          if (unit > 0) {
+            quotas.push({
+              key: rc.featureKey ?? rc.key,
+              name: rc.name,
+              limit: 0,
+              period: periodFor(rc),
+              unitPrice: `${formatPrice(unit, currency)}/${unitLabel}`,
+              isPayg: true,
+            });
+            continue;
+          }
+          // Single tier with only a positive flat price — uncommon and
+          // not naturally a "per-unit" display; fall back to a feature
+          // entry so we don't render an empty body.
+          features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
+          continue;
+        }
         const tierPrices = formatTieredPriceBreakdown({
-          tiers: rc.price.tiers.map((t) => ({
+          tiers: tiers.map((t) => ({
             upToAmount: t.upToAmount,
             unitPriceAmount: t.unitPrice?.amount,
             flatPriceAmount: t.flatPrice?.amount,

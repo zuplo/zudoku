@@ -109,18 +109,23 @@ const getEntitlementsFromItems = (
         entitlement.usagePeriod?.intervalISO ??
         item.billingCadence ??
         fallbackBillingCadence;
-      const pricedFirstTier = hasPricedFirstTier(item);
+      const tierPrices = getTierPricesFromItem(item, currency, units);
+      // Only suppress the issued amount when there is a tier breakdown to
+      // fall back on. A single-tier priced item produces no breakdown, so
+      // keeping limit/period visible is the only way to show anything.
+      const suppressLimit =
+        hasPricedFirstTier(item) && !!tierPrices && tierPrices.length > 0;
       features.push({
         entitlementType: "metered",
         key: item.featureKey ?? item.key,
         name: item.name ?? item.featureKey ?? item.key,
-        limit: pricedFirstTier ? undefined : entitlement.issueAfterReset,
-        period: pricedFirstTier
+        limit: suppressLimit ? undefined : entitlement.issueAfterReset,
+        period: suppressLimit
           ? undefined
           : cadence
             ? formatDuration(cadence)
             : "month",
-        tierPrices: getTierPricesFromItem(item, currency, units),
+        tierPrices,
       });
       continue;
     }

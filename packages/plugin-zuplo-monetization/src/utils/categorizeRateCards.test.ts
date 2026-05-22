@@ -448,6 +448,61 @@ describe("categorizeRateCards", () => {
       expect(features).toEqual([]);
     });
 
+    it("treats a single open-ended tiered price as a unit-priced PAYG quota", () => {
+      // The metering backend requires at least one tier to be open-ended
+      // (no `upToAmount`), so a single-tier tiered price will not carry
+      // an upToAmount. Match that shape here.
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [{ unitPrice: { amount: "0.05" } }],
+        },
+        entitlementTemplate: { type: "metered", isSoftLimit: true },
+      };
+      const { quotas, features } = categorizeRateCards([rc]);
+      expect(features).toEqual([]);
+      expect(quotas).toEqual([
+        {
+          key: "api",
+          name: "API Calls",
+          limit: 0,
+          period: "month",
+          isPayg: true,
+          unitPrice: "$0.05/unit",
+        },
+      ]);
+    });
+
+    it("falls back to features bucket when all tiers are free", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [
+            {
+              flatPrice: { amount: "0" },
+              unitPrice: { amount: "0" },
+              upToAmount: "1000",
+            },
+            { flatPrice: { amount: "0" }, unitPrice: { amount: "0" } },
+          ],
+        },
+        entitlementTemplate: { type: "metered", isSoftLimit: true },
+      };
+      const { quotas, features } = categorizeRateCards([rc]);
+      expect(quotas).toEqual([]);
+      expect(features).toEqual([{ key: "api", name: "API Calls" }]);
+    });
+
     it("falls back to features bucket when unit price is zero", () => {
       const rc: RateCard = {
         type: "usage_based",
