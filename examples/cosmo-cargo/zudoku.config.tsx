@@ -38,6 +38,7 @@ const config: ZudokuConfig = {
   metadata: {
     title: "%s | Cosmo Cargo Inc.",
     defaultTitle: "Cosmo Cargo Inc.",
+    description: "Interstellar shipping API documentation",
   },
   header: {
     navigation: [

@@ -78,6 +78,30 @@ test("plugin head injection works (SSR)", async ({ page }) => {
   expect(html).toContain("__COSMO_HEAD_TEST");
 });
 
+test("SSR emits page title and meta description on landing", async ({
+  page,
+}) => {
+  const res = await page.goto("/");
+  const html = (await res?.text()) ?? "";
+  expect(html).toMatch(/<title[^>]*>[^<]*Cosmo Cargo Inc\.[^<]*<\/title>/);
+  expect(html).toMatch(
+    /<meta[^>]*name="description"[^>]*content="Interstellar shipping API documentation"/,
+  );
+});
+
+test("SSR emits per-page title on API operation page", async ({ page }) => {
+  const res = await page.goto("/api-shipments/shipment-management");
+  const html = (await res?.text()) ?? "";
+  expect(html).toMatch(/<title[^>]*>[^<]*Cosmo Cargo Inc\.[^<]*<\/title>/);
+});
+
+test("document.title updates on SPA navigation", async ({ page }) => {
+  await page.goto("/documentation", { waitUntil: "networkidle" });
+  await page.locator('a[href*="/api-shipments"]').first().click();
+  await page.waitForURL("**/api-shipments**");
+  await expect.poll(() => page.title()).toContain("Shipment API");
+});
+
 test("client-side navigation between sections", async ({ page }) => {
   await page.goto("/documentation", { waitUntil: "networkidle" });
   await expect(page.locator("main")).toBeVisible();
