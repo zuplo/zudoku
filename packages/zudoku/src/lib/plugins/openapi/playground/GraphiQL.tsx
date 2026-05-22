@@ -3,6 +3,7 @@ import { GraphiQL } from "graphiql";
 import { useMemo } from "react";
 import { useTheme } from "../../../hooks/index.js";
 import "graphiql/style.css";
+import "./graphiql-theme.css";
 
 export type GraphiQLPanelProps = {
   endpoint: string;

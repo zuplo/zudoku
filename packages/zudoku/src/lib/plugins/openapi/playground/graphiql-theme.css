@@ -1,0 +1,76 @@
+/**
+ * Zudoku theme overrides for GraphiQL.
+ *
+ * GraphiQL exposes its palette as raw HSL components (e.g. `220, 14%, 96%`)
+ * via CSS variables, so we approximate Zudoku's default Zinc theme here and
+ * route the most prominent surfaces (buttons, accents, dialog backdrop) to
+ * Zudoku's own variables so custom themes still bleed through.
+ */
+
+.graphiql-container,
+.graphiql-dialog,
+.graphiql-dialog-overlay,
+.graphiql-tooltip,
+[data-radix-popper-content-wrapper] {
+  --font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-family-mono: var(--font-mono, ui-monospace, monospace);
+
+  --border-radius-2: 2px;
+  --border-radius-4: calc(var(--radius) - 4px);
+  --border-radius-8: calc(var(--radius) - 2px);
+  --border-radius-12: var(--radius);
+
+  /* HSL approximations of Zudoku's default zinc palette (light) */
+  --color-base: 0, 0%, 100%;
+  --color-neutral: 240, 6%, 10%;
+  --color-primary: 240, 6%, 12%;
+}
+
+.dark .graphiql-container,
+.dark .graphiql-dialog,
+.dark .graphiql-dialog-overlay,
+.dark .graphiql-tooltip,
+.dark [data-radix-popper-content-wrapper],
+body.graphiql-dark .graphiql-container,
+body.graphiql-dark .graphiql-dialog,
+body.graphiql-dark .graphiql-dialog-overlay,
+body.graphiql-dark .graphiql-tooltip,
+body.graphiql-dark [data-radix-popper-content-wrapper] {
+  --color-base: 240, 10%, 4%;
+  --color-neutral: 0, 0%, 98%;
+  --color-primary: 240, 6%, 90%;
+}
+
+/* Honour the user's primary on the surfaces that matter most. */
+.graphiql-container .graphiql-execute-button,
+.graphiql-container .graphiql-execute-button:hover,
+.graphiql-container .graphiql-execute-button:focus {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.graphiql-container .graphiql-sidebar button.active,
+.graphiql-container .graphiql-tab.graphiql-tab-active,
+.graphiql-container .graphiql-doc-explorer-back,
+.graphiql-container a {
+  color: var(--primary);
+}
+
+/* Match Zudoku's radius on common controls */
+.graphiql-container .graphiql-button,
+.graphiql-container .graphiql-execute-button,
+.graphiql-container .graphiql-sidebar > button,
+.graphiql-container .graphiql-toolbar > button,
+.graphiql-dialog {
+  border-radius: var(--radius);
+}
+
+/* Reset the GraphiQL dialog chrome — we render inside Zudoku's Dialog. */
+.graphiql-container {
+  border-radius: inherit;
+}
+
+/* Subtle: align hover ring color with Zudoku */
+.graphiql-container *:focus-visible {
+  outline-color: var(--ring);
+}
