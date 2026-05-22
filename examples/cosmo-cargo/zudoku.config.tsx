@@ -279,6 +279,7 @@ const config: ZudokuConfig = {
             "tracking",
             "quantum-express",
             "ship-states",
+            "ai-cargo-mcp",
           ],
         },
         "global",
