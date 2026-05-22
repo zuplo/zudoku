@@ -714,8 +714,8 @@ importers:
         specifier: 'catalog:'
         version: 19.2.3(@types/react@19.2.14)
       '@unhead/react':
-        specifier: 3.0.5
-        version: 3.0.5(bufferutil@4.1.0)(esbuild@0.28.0)(lightningcss@1.32.0)(oxc-parser@0.126.0)(react@19.2.5)(rolldown@1.0.1)(typescript@6.0.3)(utf-8-validate@6.0.6)(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+        specifier: 3.1.0
+        version: 3.1.0(bufferutil@4.1.0)(esbuild@0.28.0)(lightningcss@1.32.0)(oxc-parser@0.126.0)(react@19.2.5)(rolldown@1.0.1)(typescript@6.0.3)(utf-8-validate@6.0.6)(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
       '@vitejs/plugin-react':
         specifier: 6.0.1
         version: 6.0.1(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
@@ -5561,28 +5561,40 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@unhead/bundler@3.0.5':
-    resolution: {integrity: sha512-NByETf7g0PQ3msif6HAgtkDGpjfjJfWfJwB4m2fHgW6+BpXRqQQxCscLi3UILhZ06XZVVxx5oCUA8SGfGE7j8A==}
+  '@unhead/bundler@3.1.0':
+    resolution: {integrity: sha512-PzIa26mo1fk2t3KJ6ACJXTi1MD1nDJXb4hl/P8+UTMmdK0EWyDo3LMttePsIgKKR5PTnrtSeyhd43Pdoym4z2g==}
     peerDependencies:
+      '@unhead/cli': ^3.1.0
       esbuild: '>=0.17.0'
       lightningcss: '>=1.20.0'
       rolldown: '>=1.0.0-beta.0'
-      unhead: ^3.0.5
+      unhead: ^3.1.0
+      vite: '>=6.4.2'
+      webpack: '>=5.0.0'
     peerDependenciesMeta:
+      '@unhead/cli':
+        optional: true
       esbuild:
         optional: true
       lightningcss:
         optional: true
       rolldown:
         optional: true
+      vite:
+        optional: true
+      webpack:
+        optional: true
 
-  '@unhead/react@3.0.5':
-    resolution: {integrity: sha512-+Mv6YfUmw714P/mceG5FD8FopotiQusBsDRJWeZ86Kj0OoBTJGzv9jJLgChj/0ODzAQl+pxWMGlPhFjXg0Z+3Q==}
+  '@unhead/react@3.1.0':
+    resolution: {integrity: sha512-qOBA80ECsk5+OWNVPXmMAGLdvivSlodU57HWqF4vu5ZNddoVWBMKJXFkYKc45bdXytewNoErThT515rmXcrPWg==}
     peerDependencies:
       react: '>=19.2.4'
       vite: '>=6.4.2'
+      webpack: '>=5.0.0'
     peerDependenciesMeta:
       vite:
+        optional: true
+      webpack:
         optional: true
 
   '@upsetjs/venn.js@2.0.0':
@@ -8968,8 +8980,8 @@ packages:
   unenv@2.0.0-rc.24:
     resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
 
-  unhead@3.0.5:
-    resolution: {integrity: sha512-CJldelG14jlsUYq4S6e4RevzcuGRnsyelZ4WrPWcbivHn4COtT7ECTbvY5TVrpUVC+VQH506LRHWyflgC6w+qA==}
+  unhead@3.1.0:
+    resolution: {integrity: sha512-SH1PAjAMspLIoBjAjE/R8hty2NYo7YcIrdu5I+PVfiW4QmmwEG4pgoiKG0MCs6WRSwiatzeha+4lqSqvHW9PEg==}
     peerDependencies:
       vite: '>=6.4.2'
     peerDependenciesMeta:
@@ -14001,38 +14013,40 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@unhead/bundler@3.0.5(bufferutil@4.1.0)(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.0.5(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(utf-8-validate@6.0.6)(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
+  '@unhead/bundler@3.1.0(bufferutil@4.1.0)(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(utf-8-validate@6.0.6)(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
     dependencies:
       '@vitejs/devtools-kit': 0.1.24(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@6.0.6)(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
       magic-string: 0.30.21
       oxc-parser: 0.127.0
       oxc-walker: 0.7.0(oxc-parser@0.127.0)
       ufo: 1.6.4
-      unhead: 3.0.5(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+      unhead: 3.1.0(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
       unplugin: 3.0.0
     optionalDependencies:
       esbuild: 0.28.0
       lightningcss: 1.32.0
       rolldown: 1.0.1
+      vite: 8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
     transitivePeerDependencies:
       - '@modelcontextprotocol/sdk'
       - bufferutil
       - crossws
       - typescript
       - utf-8-validate
-      - vite
 
-  '@unhead/react@3.0.5(bufferutil@4.1.0)(esbuild@0.28.0)(lightningcss@1.32.0)(oxc-parser@0.126.0)(react@19.2.5)(rolldown@1.0.1)(typescript@6.0.3)(utf-8-validate@6.0.6)(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
+  '@unhead/react@3.1.0(bufferutil@4.1.0)(esbuild@0.28.0)(lightningcss@1.32.0)(oxc-parser@0.126.0)(react@19.2.5)(rolldown@1.0.1)(typescript@6.0.3)(utf-8-validate@6.0.6)(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))':
     dependencies:
-      '@unhead/bundler': 3.0.5(bufferutil@4.1.0)(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.0.5(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(utf-8-validate@6.0.6)(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+      '@unhead/bundler': 3.1.0(bufferutil@4.1.0)(esbuild@0.28.0)(lightningcss@1.32.0)(rolldown@1.0.1)(typescript@6.0.3)(unhead@3.1.0(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)))(utf-8-validate@6.0.6)(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
       magic-string: 0.30.21
       oxc-walker: 0.7.0(oxc-parser@0.126.0)
       react: 19.2.5
-      unhead: 3.0.5(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+      unhead: 3.1.0(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+      unplugin: 3.0.0
     optionalDependencies:
       vite: 8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
     transitivePeerDependencies:
       - '@modelcontextprotocol/sdk'
+      - '@unhead/cli'
       - bufferutil
       - crossws
       - esbuild
@@ -18072,9 +18086,10 @@ snapshots:
     dependencies:
       pathe: 2.0.3
 
-  unhead@3.0.5(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)):
+  unhead@3.1.0(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)):
     dependencies:
       hookable: 6.1.1
+      unplugin: 3.0.0
     optionalDependencies:
       vite: 8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4)
 
