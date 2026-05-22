@@ -92,7 +92,10 @@ test("SSR emits page title and meta description on landing", async ({
 test("SSR emits per-page title on API operation page", async ({ page }) => {
   const res = await page.goto("/api-shipments/shipment-management");
   const html = (await res?.text()) ?? "";
-  expect(html).toMatch(/<title[^>]*>[^<]*Cosmo Cargo Inc\.[^<]*<\/title>/);
+  // Asserts both the per-page fragment and the title template suffix render
+  expect(html).toMatch(
+    /<title[^>]*>[^<]*Shipment Management[^<]*Cosmo Cargo Inc\.[^<]*<\/title>/,
+  );
 });
 
 test("document.title updates on SPA navigation", async ({ page }) => {
