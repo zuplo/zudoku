@@ -387,7 +387,7 @@ describe("categorizeRateCards", () => {
       expect(quotas[0].tierPrices?.length).toBeGreaterThan(0);
     });
 
-    it("falls back to features bucket when isSoftLimit is false", () => {
+    it("renders hard-limit unit-priced cards as PAYG (isSoftLimit only affects metering, not display)", () => {
       const rc: RateCard = {
         type: "usage_based",
         key: "api",
@@ -397,7 +397,16 @@ describe("categorizeRateCards", () => {
         entitlementTemplate: { type: "metered", isSoftLimit: false },
       };
       const { quotas, features } = categorizeRateCards([rc]);
-      expect(quotas).toEqual([]);
+      expect(quotas).toEqual([
+        {
+          key: "api",
+          name: "API Calls",
+          limit: 0,
+          period: "month",
+          isPayg: true,
+          unitPrice: "$0.10/unit",
+        },
+      ]);
       expect(features).toEqual([]);
     });
 

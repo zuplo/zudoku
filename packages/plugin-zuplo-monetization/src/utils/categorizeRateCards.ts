@@ -72,16 +72,13 @@ export const categorizeRateCards = (
         period: periodFor(rc),
         tierPrices,
       });
-    } else if (
-      et.type === "metered" &&
-      rc.type === "usage_based" &&
-      (et.isSoftLimit !== false || firstTierIsPriced) &&
-      rc.price
-    ) {
+    } else if (et.type === "metered" && rc.type === "usage_based" && rc.price) {
       // Pay-as-you-go: usage-based card without a free included quota.
-      // Covers both true PAYG (no `issueAfterReset`) and tiered plans where
-      // the first tier carries a non-zero price (the issued amount is a
-      // tier boundary, not free included usage).
+      // Covers true PAYG (no `issueAfterReset`), tiered plans whose first
+      // tier carries a non-zero price (the issued amount is a tier boundary,
+      // not free included usage), and hard-limit metered cards with a
+      // positive price — `isSoftLimit` is a metering concern that doesn't
+      // change what the card should display.
       const unitLabel = unitLabelFor(rc);
       if (rc.price.type === "tiered" && rc.price.tiers.length > 0) {
         const tierPrices = formatTieredPriceBreakdown({
