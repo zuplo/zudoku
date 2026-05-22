@@ -87,14 +87,14 @@ export const Callout = ({
         className,
       )}
     >
-      {icon === true ? (
+      {!icon ? null : icon === true ? (
         <Icon
           className="shrink-0 mt-0.5"
           style={{ color: "var(--callout-color)" }}
           size={18}
           aria-hidden="true"
         />
-      ) : icon === false ? null : (
+      ) : (
         <span
           aria-hidden="true"
           className="shrink-0 mt-0.5 inline-flex items-center justify-center size-[18px] [&_svg]:size-full"
