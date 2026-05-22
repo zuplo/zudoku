@@ -3805,6 +3805,23 @@
         }
       }
     },
+    "/graphql": {
+      "post": {
+        "tags": ["Shipment Management"],
+        "operationId": "graphqlShipmentQuery",
+        "summary": "GraphQL endpoint",
+        "description": "Query the Cosmo Cargo registry via GraphQL. Test live against the public Rick and Morty universe schema.",
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
+        "x-graphql": {
+          "endpoint": "https://rickandmortyapi.com/graphql"
+        },
+        "responses": {
+          "200": {
+            "description": "GraphQL response"
+          }
+        }
+      }
+    },
     "/version": {
       "get": {
         "summary": "Get API version",
