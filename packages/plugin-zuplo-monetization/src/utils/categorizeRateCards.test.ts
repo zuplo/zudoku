@@ -39,29 +39,43 @@ describe("categorizeRateCards", () => {
     });
   });
 
-  it("includes overage price when isSoftLimit is true", () => {
+  it("emits 'Included' for the free tier and an 'Over X' tier for the overage", () => {
     const { quotas } = categorizeRateCards([
       makeMeteredRateCard({
         isSoftLimit: true,
         tiers: [
-          { flatPrice: { amount: "10" }, upToAmount: "1000" },
+          {
+            flatPrice: { amount: "0" },
+            unitPrice: { amount: "0" },
+            upToAmount: "1000",
+          },
           { flatPrice: { amount: "0" }, unitPrice: { amount: "0.01" } },
         ],
       }),
     ]);
-    expect(quotas[0].overagePrice).toBe("$0.01/unit");
+    expect(quotas[0].tierPrices).toEqual([
+      "Up to 1,000: Included",
+      "Over 1,000: $0.01/unit",
+    ]);
   });
 
-  it("includes overage price when isSoftLimit is undefined", () => {
+  it("emits the breakdown when isSoftLimit is undefined", () => {
     const { quotas } = categorizeRateCards([
       makeMeteredRateCard({
         tiers: [
-          { flatPrice: { amount: "10" }, upToAmount: "1000" },
+          {
+            flatPrice: { amount: "0" },
+            unitPrice: { amount: "0" },
+            upToAmount: "1000",
+          },
           { flatPrice: { amount: "0" }, unitPrice: { amount: "0.05" } },
         ],
       }),
     ]);
-    expect(quotas[0].overagePrice).toBe("$0.05/unit");
+    expect(quotas[0].tierPrices).toEqual([
+      "Up to 1,000: Included",
+      "Over 1,000: $0.05/unit",
+    ]);
   });
 
   it("uses custom unit label from units config matched by rc.key", () => {
@@ -69,14 +83,18 @@ describe("categorizeRateCards", () => {
       [
         makeMeteredRateCard({
           tiers: [
-            { flatPrice: { amount: "10" }, upToAmount: "1000" },
+            {
+              flatPrice: { amount: "0" },
+              unitPrice: { amount: "0" },
+              upToAmount: "1000",
+            },
             { flatPrice: { amount: "0" }, unitPrice: { amount: "0.01" } },
           ],
         }),
       ],
       { units: { requests: "API call" } },
     );
-    expect(quotas[0].overagePrice).toMatch(/\/API call$/);
+    expect(quotas[0].tierPrices?.[1]).toMatch(/\/API call$/);
   });
 
   it("falls back to featureKey lookup when rc.key is not in units", () => {
@@ -90,7 +108,11 @@ describe("categorizeRateCards", () => {
         type: "tiered",
         mode: "graduated",
         tiers: [
-          { flatPrice: { amount: "10" }, upToAmount: "1000" },
+          {
+            flatPrice: { amount: "0" },
+            unitPrice: { amount: "0" },
+            upToAmount: "1000",
+          },
           { flatPrice: { amount: "0" }, unitPrice: { amount: "0.01" } },
         ],
       },
@@ -99,7 +121,7 @@ describe("categorizeRateCards", () => {
     const { quotas } = categorizeRateCards([rc], {
       units: { "feature-key": "request" },
     });
-    expect(quotas[0].overagePrice).toMatch(/\/request$/);
+    expect(quotas[0].tierPrices?.[1]).toMatch(/\/request$/);
   });
 
   it("prefers rc.key over featureKey when both are present in units config", () => {
@@ -113,7 +135,11 @@ describe("categorizeRateCards", () => {
         type: "tiered",
         mode: "graduated",
         tiers: [
-          { flatPrice: { amount: "10" }, upToAmount: "1000" },
+          {
+            flatPrice: { amount: "0" },
+            unitPrice: { amount: "0" },
+            upToAmount: "1000",
+          },
           { flatPrice: { amount: "0" }, unitPrice: { amount: "0.01" } },
         ],
       },
@@ -122,7 +148,7 @@ describe("categorizeRateCards", () => {
     const { quotas } = categorizeRateCards([rc], {
       units: { "rc-key": "token", "feature-key": "request" },
     });
-    expect(quotas[0].overagePrice).toMatch(/\/token$/);
+    expect(quotas[0].tierPrices?.[1]).toMatch(/\/token$/);
   });
 
   it("falls back to 'unit' when key is not in units config", () => {
@@ -130,14 +156,18 @@ describe("categorizeRateCards", () => {
       [
         makeMeteredRateCard({
           tiers: [
-            { flatPrice: { amount: "10" }, upToAmount: "1000" },
+            {
+              flatPrice: { amount: "0" },
+              unitPrice: { amount: "0" },
+              upToAmount: "1000",
+            },
             { flatPrice: { amount: "0" }, unitPrice: { amount: "0.01" } },
           ],
         }),
       ],
       { units: { "other-key": "something" } },
     );
-    expect(quotas[0].overagePrice).toMatch(/\/unit$/);
+    expect(quotas[0].tierPrices?.[1]).toMatch(/\/unit$/);
   });
 
   it("uses rc billingCadence for period", () => {
@@ -193,20 +223,7 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].period).toBe("month");
   });
 
-  it("excludes overage price when isSoftLimit is false", () => {
-    const { quotas } = categorizeRateCards([
-      makeMeteredRateCard({
-        isSoftLimit: false,
-        tiers: [
-          { flatPrice: { amount: "10" }, upToAmount: "1000" },
-          { flatPrice: { amount: "0" }, unitPrice: { amount: "0.01" } },
-        ],
-      }),
-    ]);
-    expect(quotas[0].overagePrice).toBeUndefined();
-  });
-
-  it("omits the redundant included up-to tier in tierPrices when it matches the quota limit", () => {
+  it("emits the free first tier as an 'Up to X: Included' line so the included quota is explicit", () => {
     const { quotas } = categorizeRateCards([
       makeMeteredRateCard({
         issueAfterReset: 5000,
@@ -221,7 +238,10 @@ describe("categorizeRateCards", () => {
       }),
     ]);
 
-    expect(quotas[0].tierPrices).toEqual(["Over 5,000: $0.05/unit"]);
+    expect(quotas[0].tierPrices).toEqual([
+      "Up to 5,000: Included",
+      "Over 5,000: $0.05/unit",
+    ]);
   });
 
   it("categorizes boolean rate card as feature", () => {
@@ -393,6 +413,139 @@ describe("categorizeRateCards", () => {
       const { quotas, features } = categorizeRateCards([rc]);
       expect(quotas).toEqual([]);
       expect(features).toEqual([{ key: "api", name: "API Calls" }]);
+    });
+  });
+
+  describe("tiered plans with a priced first tier", () => {
+    it("routes to PAYG when the first tier has a flat price (no free quota)", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api_requests",
+        name: "API Calls",
+        featureKey: "api_requests",
+        billingCadence: "P1M",
+        price: {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [
+            {
+              flatPrice: { amount: "499" },
+              unitPrice: { amount: "0" },
+              upToAmount: "1000000",
+            },
+            {
+              flatPrice: { amount: "199" },
+              unitPrice: { amount: "0.05" },
+              upToAmount: "2000000",
+            },
+            { flatPrice: { amount: "0" }, unitPrice: { amount: "0.02" } },
+          ],
+        },
+        entitlementTemplate: {
+          type: "metered",
+          isSoftLimit: true,
+          issueAfterReset: 1000000,
+        },
+      };
+      const { quotas } = categorizeRateCards([rc]);
+      expect(quotas).toHaveLength(1);
+      expect(quotas[0]).toMatchObject({
+        key: "api_requests",
+        name: "API Calls",
+        limit: 0,
+        isPayg: true,
+      });
+      expect(quotas[0].tierPrices).toEqual([
+        "Up to 1,000,000: $499",
+        "Up to 2,000,000: $199 + $0.05/unit",
+        "Over 2,000,000: $0.02/unit",
+      ]);
+    });
+
+    it("routes to PAYG when the first tier has a unit price (no free quota)", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [
+            { unitPrice: { amount: "0.10" }, upToAmount: "10000" },
+            { unitPrice: { amount: "0.05" } },
+          ],
+        },
+        entitlementTemplate: {
+          type: "metered",
+          isSoftLimit: true,
+          issueAfterReset: 10000,
+        },
+      };
+      const { quotas } = categorizeRateCards([rc]);
+      expect(quotas[0]).toMatchObject({ isPayg: true, limit: 0 });
+    });
+
+    it("routes priced-first-tier card to PAYG even with isSoftLimit=false", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [
+            { flatPrice: { amount: "10" }, upToAmount: "1000" },
+            { unitPrice: { amount: "0.05" } },
+          ],
+        },
+        entitlementTemplate: {
+          type: "metered",
+          isSoftLimit: false,
+          issueAfterReset: 1000,
+        },
+      };
+      const { quotas } = categorizeRateCards([rc]);
+      expect(quotas).toHaveLength(1);
+      expect(quotas[0]).toMatchObject({ isPayg: true, limit: 0 });
+      expect(quotas[0].tierPrices).toEqual([
+        "Up to 1,000: $10",
+        "Over 1,000: $0.05/unit",
+      ]);
+    });
+
+    it("keeps free-first-tier (flat=0, unit=0) cards as quotas with limit", () => {
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api",
+        name: "API Calls",
+        billingCadence: "P1M",
+        price: {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [
+            {
+              flatPrice: { amount: "0" },
+              unitPrice: { amount: "0" },
+              upToAmount: "5000",
+            },
+            { unitPrice: { amount: "0.05" } },
+          ],
+        },
+        entitlementTemplate: {
+          type: "metered",
+          isSoftLimit: true,
+          issueAfterReset: 5000,
+        },
+      };
+      const { quotas } = categorizeRateCards([rc]);
+      expect(quotas[0]).toMatchObject({ limit: 5000 });
+      expect(quotas[0].tierPrices).toEqual([
+        "Up to 5,000: Included",
+        "Over 5,000: $0.05/unit",
+      ]);
+      expect(quotas[0].isPayg).toBeUndefined();
     });
   });
 

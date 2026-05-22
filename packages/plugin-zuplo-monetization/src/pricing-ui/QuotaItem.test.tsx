@@ -17,26 +17,17 @@ describe("QuotaItem", () => {
     expect(screen.getByText(/month/)).toBeInTheDocument();
   });
 
-  it("renders overage price when present", () => {
+  it("renders tier breakdown lines below the quota line", () => {
     const quota: Quota = {
       key: "api-calls",
       name: "API Calls",
       limit: 1000,
       period: "month",
-      overagePrice: "$0.01/unit",
+      tierPrices: ["Over 1,000: $0.01/unit"],
     };
     render(<QuotaItem quota={quota} />);
-    expect(screen.getByText(/\+\$0\.01\/unit after quota/)).toBeInTheDocument();
-  });
-
-  it("does not render overage text when no overage price", () => {
-    const quota: Quota = {
-      key: "api-calls",
-      name: "API Calls",
-      limit: 500,
-      period: "month",
-    };
-    render(<QuotaItem quota={quota} />);
+    expect(screen.getByText("Over 1,000: $0.01/unit")).toBeInTheDocument();
+    // The dedicated "after quota" line was removed; tier breakdown carries the info.
     expect(screen.queryByText(/after quota/)).not.toBeInTheDocument();
   });
 

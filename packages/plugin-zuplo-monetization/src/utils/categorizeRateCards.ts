@@ -29,13 +29,31 @@ export const categorizeRateCards = (
           ? formatDuration(planBillingCadence)
           : "month";
 
-    if (et.type === "metered" && et.issueAfterReset != null) {
-      let overagePrice: string | undefined;
+    // A metered card with `issueAfterReset` represents a "free quota" only
+    // when the first tier (matching the issued amount) is truly free —
+    // i.e. flat=0 and unit=0. If the first tier has any positive price,
+    // the plan is a tiered/graduated pricing schedule and the issued
+    // amount is just a tier boundary, not free included usage.
+    const firstTier =
+      rc.price?.type === "tiered" && rc.price.tiers.length > 0
+        ? rc.price.tiers[0]
+        : undefined;
+    const firstTierIsPriced =
+      !!firstTier &&
+      (parseFloat(firstTier.flatPrice?.amount ?? "0") > 0 ||
+        parseFloat(firstTier.unitPrice?.amount ?? "0") > 0);
+
+    if (
+      et.type === "metered" &&
+      et.issueAfterReset != null &&
+      !firstTierIsPriced
+    ) {
       let tierPrices: string[] | undefined;
       if (rc.price?.type === "tiered" && rc.price.tiers) {
-        const unitLabel = unitLabelFor(rc);
-
         // Build a readable tier breakdown (useful for graduated/volume).
+        // The breakdown's "Up to X: Included" line conveys the included
+        // quota; the UI hides the separate "X / period" header when this
+        // breakdown is present, so the two never duplicate each other.
         tierPrices = formatTieredPriceBreakdown({
           tiers: rc.price.tiers.map((t) => ({
             upToAmount: t.upToAmount,
@@ -43,36 +61,27 @@ export const categorizeRateCards = (
             flatPriceAmount: t.flatPrice?.amount,
           })),
           currency,
-          unitLabel,
+          unitLabel: unitLabelFor(rc),
           includedLabel: "Included",
-          omitIncludedUpToAmount: et.issueAfterReset,
         });
-
-        const overageTier = rc.price.tiers.find(
-          (t) => t.unitPrice?.amount && parseFloat(t.unitPrice.amount) > 0,
-        );
-        if (et.isSoftLimit !== false && overageTier?.unitPrice) {
-          const amount = parseFloat(overageTier.unitPrice.amount);
-          overagePrice = `${formatPrice(amount, currency)}/${unitLabel}`;
-        }
       }
       quotas.push({
         key: rc.featureKey ?? rc.key,
         name: rc.name,
         limit: et.issueAfterReset,
         period: periodFor(rc),
-        overagePrice,
         tierPrices,
       });
     } else if (
       et.type === "metered" &&
       rc.type === "usage_based" &&
-      et.isSoftLimit !== false &&
+      (et.isSoftLimit !== false || firstTierIsPriced) &&
       rc.price
     ) {
-      // Pay-as-you-go: usage-based card with no `issueAfterReset` quota.
-      // Previously skipped, so PAYG plans rendered with an empty body and a
-      // misleading "Free" headline.
+      // Pay-as-you-go: usage-based card without a free included quota.
+      // Covers both true PAYG (no `issueAfterReset`) and tiered plans where
+      // the first tier carries a non-zero price (the issued amount is a
+      // tier boundary, not free included usage).
       const unitLabel = unitLabelFor(rc);
       if (rc.price.type === "tiered" && rc.price.tiers.length > 0) {
         const tierPrices = formatTieredPriceBreakdown({

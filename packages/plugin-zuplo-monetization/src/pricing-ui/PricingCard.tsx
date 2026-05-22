@@ -63,7 +63,7 @@ export const PricingCard = ({
             </div>
           ) : priceLabel.type === "payg" ? (
             <div>
-              <div className="text-3xl font-bold text-card-foreground">
+              <div className="text-2xl font-bold text-card-foreground text-balance">
                 {priceLabel.main}
               </div>
               <div className="text-sm text-muted-foreground mt-1">
