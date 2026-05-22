@@ -22,12 +22,19 @@ export const categorizeRateCards = (
 
     const unitLabelFor = (rcArg: typeof rc) =>
       units?.[rcArg.key] ?? units?.[rcArg.featureKey ?? ""] ?? "unit";
-    const periodFor = (rcArg: typeof rc) =>
-      rcArg.billingCadence
-        ? formatDuration(rcArg.billingCadence)
-        : planBillingCadence
-          ? formatDuration(planBillingCadence)
-          : "month";
+    // The displayed "X / period" tracks when the quota refills, not when
+    // billing happens. Prefer the entitlement's `usagePeriod` (the admin
+    // UI's "Quota resets every" field) — it's explicitly independent of
+    // billing cadence. Fall back to the rate card or plan billing cadence
+    // when no usage period is set.
+    const periodFor = (rcArg: typeof rc) => {
+      if (et.type === "metered" && et.usagePeriod) {
+        return formatDuration(et.usagePeriod);
+      }
+      if (rcArg.billingCadence) return formatDuration(rcArg.billingCadence);
+      if (planBillingCadence) return formatDuration(planBillingCadence);
+      return "month";
+    };
 
     // A metered card with `issueAfterReset` represents a "free quota" only
     // when the first tier (matching the issued amount) is truly free —

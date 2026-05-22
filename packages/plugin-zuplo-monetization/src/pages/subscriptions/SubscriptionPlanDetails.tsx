@@ -103,7 +103,12 @@ const getEntitlementsFromItems = (
     if (!entitlement) continue;
 
     if (entitlement.type === "metered" && entitlement.issueAfterReset != null) {
-      const cadence = item.billingCadence ?? fallbackBillingCadence;
+      // Prefer the entitlement's usage period (when the quota refills) over
+      // the billing cadence — the two are explicitly independent.
+      const cadence =
+        entitlement.usagePeriod?.intervalISO ??
+        item.billingCadence ??
+        fallbackBillingCadence;
       const pricedFirstTier = hasPricedFirstTier(item);
       features.push({
         entitlementType: "metered",

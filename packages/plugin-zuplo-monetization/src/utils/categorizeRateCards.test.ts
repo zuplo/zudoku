@@ -187,6 +187,44 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].period).toBe("week");
   });
 
+  it("prefers entitlement usagePeriod over rc billingCadence", () => {
+    const rc: RateCard = {
+      type: "flat_fee",
+      key: "api_requests",
+      name: "API Requests (Trial)",
+      featureKey: "api_requests",
+      billingCadence: null,
+      price: null,
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 10000,
+        usagePeriod: "P1W",
+      },
+    };
+    const { quotas } = categorizeRateCards([rc], {
+      planBillingCadence: "P1M",
+    });
+    expect(quotas[0].period).toBe("week");
+  });
+
+  it("prefers entitlement usagePeriod over planBillingCadence too", () => {
+    const rc: RateCard = {
+      type: "usage_based",
+      key: "api_requests",
+      name: "API Requests",
+      featureKey: "api_requests",
+      billingCadence: "P1M",
+      price: null,
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 1000,
+        usagePeriod: "P1D",
+      },
+    };
+    const { quotas } = categorizeRateCards([rc]);
+    expect(quotas[0].period).toBe("day");
+  });
+
   it("falls back to planBillingCadence when rc billingCadence is missing", () => {
     const rc: RateCard = {
       type: "flat_fee",
