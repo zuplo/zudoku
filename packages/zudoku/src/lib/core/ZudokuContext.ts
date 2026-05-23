@@ -73,6 +73,7 @@ type Metadata = Partial<{
 type Site = Partial<{
   dir?: "ltr" | "rtl";
   showPoweredBy?: boolean;
+  collapsibleSidebar?: boolean;
   title?: string;
   logo?: {
     src: {

@@ -94,6 +94,7 @@ const ApiOptionsSchema = z
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
+    disableSecurity: z.boolean(),
     schemaDownload: z
       .object({
         enabled: z.boolean(),
@@ -602,6 +603,7 @@ const SiteSchema = z
     dir: z.enum(["ltr", "rtl"]).optional(),
     logo: LogoSchema,
     showPoweredBy: z.boolean().optional(),
+    collapsibleSidebar: z.boolean().optional(),
     notFoundPage: z.custom<NonNullable<ReactNode>>(),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),

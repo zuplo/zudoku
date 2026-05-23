@@ -14,6 +14,7 @@ import type { PropsWithChildren, ReactNode } from "react";
 import { Link } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Markdown } from "../../components/Markdown.js";
+import { useSidebar } from "../../components/navigation/sidebarStore.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { Badge } from "../../ui/Badge.js";
 import { Button } from "../../ui/Button.js";
@@ -26,6 +27,7 @@ import {
   ItemTitle,
 } from "../../ui/Item.js";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/Popover.js";
+import { cn } from "../../util/cn.js";
 import { slugify } from "../../util/slugify.js";
 import { ApiHeader } from "./ApiHeader.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
@@ -280,6 +282,7 @@ export const SchemaInfo = () => {
   const tags = schema.tags.flatMap(({ name, description, extensions }) =>
     name ? { name, description, extensions } : [],
   );
+  const sidebarCollapsed = useSidebar((s) => s.isCollapsed);
 
   return (
     <div
@@ -324,7 +327,10 @@ export const SchemaInfo = () => {
             )}
             {schema.description && (
               <Markdown
-                className="prose-img:max-w-prose prose-sm max-w-full lg:max-w-2xl"
+                className={cn(
+                  "prose-img:max-w-prose prose-sm max-w-full",
+                  sidebarCollapsed ? "lg:max-w-4xl" : "lg:max-w-2xl",
+                )}
                 content={schema.description}
               />
             )}

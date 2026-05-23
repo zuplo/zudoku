@@ -127,6 +127,20 @@ export const NotFound = () => (
 
 ## Layout
 
+### Collapsible Sidebar
+
+The navigation sidebar is collapsible by default. A small toggle button on the sidebar's right
+border lets users hide and reveal it. Set `collapsibleSidebar` to `false` to disable the toggle and
+keep the sidebar always expanded:
+
+```tsx title=zudoku.config.tsx
+{
+  site: {
+    collapsibleSidebar: false, // defaults to true
+  }
+}
+```
+
 ### Banner
 
 Add a banner message to the top of the page:

@@ -73,8 +73,10 @@ const NavigationCategoryInner = ({
 
   const icon = category.icon && (
     <category.icon
-      size={16}
-      className={cn("align-[-0.125em] ", isActive && "text-primary")}
+      className={cn(
+        "size-4 shrink-0 align-[-0.125em]",
+        isActive && "text-primary",
+      )}
     />
   );
 
