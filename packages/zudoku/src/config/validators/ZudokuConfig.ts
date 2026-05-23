@@ -339,6 +339,7 @@ export const DocsConfigSchema = z.object({
       disablePager: z.boolean(),
       showLastModified: z.boolean(),
       fullWidth: z.boolean().optional(),
+      centered: z.boolean().optional(),
       suggestEdit: z
         .object({
           url: z.string(),

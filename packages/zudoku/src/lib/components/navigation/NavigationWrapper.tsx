@@ -28,6 +28,7 @@ export const NavigationWrapper = ({
         isCollapsed && "lg:opacity-0 lg:pointer-events-none",
       )}
       data-pagefind-ignore="all"
+      inert={isCollapsed}
     >
       <nav
         ref={navRef}
