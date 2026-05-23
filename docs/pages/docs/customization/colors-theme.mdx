@@ -214,6 +214,25 @@ const config = {
 };
 ```
 
+### Enabling Code Ligatures
+
+Zudoku disables ligatures in code blocks by default to avoid unwanted glyph joining in fonts like
+Geist Mono (e.g. `---`, `###`, `|--|`). If you're using a coding font designed around ligatures
+(Fira Code, JetBrains Mono, etc.), re-enable them via `customCss`:
+
+```ts title=zudoku.config.ts
+const config = {
+  theme: {
+    customCss: `
+      code, pre, kbd, samp, .shiki, .shiki span {
+        font-variant-ligatures: normal;
+        font-feature-settings: normal;
+      }
+    `,
+  },
+};
+```
+
 ## Default Theme
 
 Zudoku comes with a built-in default theme based on
