@@ -738,8 +738,8 @@ importers:
         specifier: 1.1.1
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       dotenv:
-        specifier: 17.3.1
-        version: 17.3.1
+        specifier: 17.4.2
+        version: 17.4.2
       embla-carousel-react:
         specifier: 8.6.0
         version: 8.6.0(react@19.2.5)
@@ -6270,8 +6270,8 @@ packages:
     resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
     engines: {node: '>=12'}
 
-  dotenv@17.3.1:
-    resolution: {integrity: sha512-IO8C/dzEb6O3F9/twg6ZLXz164a2fhTnEWb95H23Dm4OuN+92NmEAlTrupP9VW6Jm3sO26tQlqyvyi4CsnY9GA==}
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
   dts-resolver@3.0.0:
@@ -14559,7 +14559,7 @@ snapshots:
 
   dotenv@16.4.7: {}
 
-  dotenv@17.3.1: {}
+  dotenv@17.4.2: {}
 
   dts-resolver@3.0.0: {}
 
