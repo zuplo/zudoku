@@ -11,10 +11,6 @@ import { printDiagnosticsToConsole } from "./common/output.js";
 import { getZudokuPackageJson } from "./common/package-json.js";
 import { warnPackageVersionMismatch } from "./common/version-check.js";
 
-process.env.ZUDOKU_ENV = process.env.ZUDOKU_INTERNAL_DEV
-  ? "internal"
-  : "module";
-
 const packageJson = getZudokuPackageJson();
 
 if (SENTRY_DSN) {

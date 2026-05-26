@@ -26,41 +26,37 @@ npm install -g pnpm
 
 2. Run `pnpm install` to install dependencies.
 
-3. Install [nx](https://nx.dev/) globally by running:
-
-```
-pnpm add --global nx@latest
-```
-
-4. **Editor Setup**: This project uses [Biome](https://biomejs.dev/) for linting and
+3. **Editor Setup**: This project uses [Biome](https://biomejs.dev/) for linting and
    [oxfmt](https://oxc.rs/docs/guide/usage/formatter/quickstart.html) for formatting. Install the
    Biome and OXC extensions for your editor for the best development experience.
 
-## 3. Environment Variables
+## 3. Dev
 
-When working on Zudoku, you will need to create a `.env` file in the root of the project and set the
-following environment variable in order to run the project locally.
-
-```
-ZUDOKU_INTERNAL_DEV=true
-```
-
-> [!IMPORTANT] If you are a Zuplo employee you should authenticate to NX Cloud in order to use the
-> build cache.
-
-To authenticate run:
+To run the extensive sample project called "Cosmo Cargo" locally:
 
 ```
-nx login
+pnpm -F cosmo-cargo dev
 ```
 
-## 4. Dev
+The CLI runs from source via `tsx`, so no build step is required first.
 
-To run the extensive sample project called "Cosmo Cargo" locally, run the following:
+## 4. Changesets
+
+This repo uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing.
+
+When your PR includes a user-visible change, add a changeset:
 
 ```
-nx run cosmo-cargo:dev
+pnpm changeset
 ```
+
+Pick the affected package(s), the semver bump, and a one-line summary. Commit the generated
+`.changeset/*.md` file with your PR. A bot opens a "Version Packages" PR that, when merged, releases
+to npm.
+
+To preview a PR's build on npm without releasing, comment `/prerelease` on the PR. Members /
+collaborators / owners can trigger this; the bot will reply with install URLs via
+[pkg.pr.new](https://pkg.pr.new).
 
 # Submitting Contributions
 

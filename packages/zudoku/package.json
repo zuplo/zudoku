@@ -75,13 +75,15 @@
     "./testing": "./src/lib/testing/index.tsx"
   },
   "scripts": {
+    "prebuild": "pnpm generate:types",
     "build": "tsx scripts/build.ts",
     "postbuild": "tsx scripts/check-external-deps.ts",
     "typecheck": "tsc --project tsconfig.app.json --noEmit",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
+    "copy:docs": "rm -rf docs && rsync -a --include='*/' --include='*.md' --include='*.mdx' --exclude='*' ../../docs/pages/docs/ docs/",
     "generate:sri": "tsx scripts/generate-graphiql-sri.ts",
     "build:standalone": "vite build --mode standalone --config vite.standalone.config.ts --log-level=error",
-    "prepublishOnly": "tsx scripts/generate-publish-exports.ts && publint .",
+    "prepublishOnly": "pnpm copy:docs && tsx scripts/generate-publish-exports.ts && publint .",
     "postpublish": "git checkout -- package.json",
     "clean": "rm -rf dist",
     "codegen": "graphql-codegen --config ./src/codegen.ts"

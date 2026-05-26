@@ -7,18 +7,6 @@
     "build": "zudoku build",
     "preview": "zudoku preview"
   },
-  "nx": {
-    "tags": [
-      "example"
-    ],
-    "targets": {
-      "build": {
-        "dependsOn": [
-          "zudoku:build"
-        ]
-      }
-    }
-  },
   "devDependencies": {
     "react": "catalog:",
     "react-dom": "catalog:",

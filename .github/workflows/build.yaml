@@ -18,7 +18,6 @@ jobs:
 
     env:
       COREPACK_ENABLE_STRICT: 0
-      ZUDOKU_INTERNAL_DEV: true
 
     steps:
       - uses: actions/checkout@v6
@@ -38,10 +37,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - run: pnpm install nx --global
-
-      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
-
       - name: Detect monetization plugin changes
         if: github.event_name == 'pull_request'
         id: monetization-changes
@@ -58,7 +53,9 @@ jobs:
         if: github.event_name == 'pull_request' && steps.monetization-changes.outputs.monetization == 'true'
         run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
 
-      - run: nx run-many -t build:ci
+      - run: pnpm -r --filter "./packages/*" build
+      - run: pnpm -r --filter "./packages/*" typecheck
+      - run: pnpm -F zudoku build:standalone
       - run: pnpm test:coverage
 
       - name: Upload coverage report
@@ -101,20 +98,8 @@ jobs:
         with:
           json-summary-path: coverage/coverage-summary.json
 
-      - name: Get Variables
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Version (Canary)
-        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
-        run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
-
-      - name: Publish Modules
-        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
-        run: pnpm publish --provenance --filter zudoku --filter create-zudoku --filter config --tag canary --no-git-checks
-
       - name: Build Examples
-        run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
+        run: pnpm -r --filter "./examples/**" --filter "!mermaid" --filter "!many-apis" build
 
       - name: Smoke Test with-base-path
         run: |
@@ -167,9 +152,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - run: pnpm install nx --global
-
-      - run: nx run docs:build
+      - run: pnpm -F docs build
 
       - name: Restore lychee cache
         id: restore-cache

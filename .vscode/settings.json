@@ -33,8 +33,6 @@
     "editor.rulers": [100]
   },
   "files.associations": {
-    "nx.json": "jsonc",
-    "project.json": "jsonc",
     "biome.jsonc": "jsonc",
     "*.mdx": "markdown"
   },

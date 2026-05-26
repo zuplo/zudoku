@@ -1,0 +1,68 @@
+name: pkg.pr.new
+on:
+  push:
+    branches: [main]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: pkg-pr-new-${{ github.event.issue.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    name: Publish to pkg.pr.new
+    if: |
+      github.event_name == 'push' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '/prerelease') &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Acknowledge command
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: "eyes",
+            });
+
+      - name: Get PR ref
+        id: pr
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v9
+        with:
+          result-encoding: string
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            return pr.data.head.sha;
+
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.pr.outputs.result || github.sha }}
+
+      - uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r --filter "./packages/*" build
+
+      - run: pnpm dlx pkg-pr-new publish --pnpm --comment=update "./packages/zudoku" "./packages/create-zudoku" "./packages/plugin-zuplo-monetization" "./packages/plugin-search-algolia"
