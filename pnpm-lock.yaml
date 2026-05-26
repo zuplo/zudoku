@@ -864,8 +864,8 @@ importers:
         specifier: 6.1.1
         version: 6.1.1(react@19.2.5)
       react-hook-form:
-        specifier: 7.75.0
-        version: 7.75.0(react@19.2.5)
+        specifier: 7.76.1
+        version: 7.76.1(react@19.2.5)
       react-is:
         specifier: 'catalog:'
         version: 19.2.5
@@ -8425,8 +8425,8 @@ packages:
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
 
-  react-hook-form@7.75.0:
-    resolution: {integrity: sha512-Ovv94H+0p3sJ7B9B5QxPuCP1u8V/cHuVGyH55cSwodYDtoJwK+fqk3vjfIgSX59I2U/bU4z0nRJ9HMLpNiWEmw==}
+  react-hook-form@7.76.1:
+    resolution: {integrity: sha512-rYM7tPiWlu3nZchkR/ex7piyzui2vFPyaLnXnI/RnblB/L4qfMmyses8llJVtF1NpE9WBBsJlGtcSZzPCXW1qQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -17690,7 +17690,7 @@ snapshots:
     dependencies:
       react: 19.2.5
 
-  react-hook-form@7.75.0(react@19.2.5):
+  react-hook-form@7.76.1(react@19.2.5):
     dependencies:
       react: 19.2.5
 
