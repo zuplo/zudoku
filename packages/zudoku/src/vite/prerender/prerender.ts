@@ -1,8 +1,8 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { createIndex, type PagefindIndex } from "pagefind";
 import colors from "picocolors";
 import PiscinaImport from "piscina";
@@ -121,15 +121,21 @@ export const prerender = async ({
     pagefindIndex = index;
   }
 
+  const workerJsUrl = new URL("./worker.js", import.meta.url);
+  const workerTsUrl = new URL("./worker.ts", import.meta.url);
+  const hasCompiledWorker = existsSync(fileURLToPath(workerJsUrl));
+
   const pool = new Piscina<WorkerData, WorkerResult>({
-    filename: new URL("./worker.js", import.meta.url).href,
+    filename: (hasCompiledWorker ? workerJsUrl : workerTsUrl).href,
     idleTimeout: 5_000,
     minThreads: 1,
     maxThreads,
     resourceLimits: {
       maxOldGenerationSizeMb,
     },
-    execArgv: ["--no-deprecation"],
+    execArgv: hasCompiledWorker
+      ? ["--no-deprecation"]
+      : ["--import", "tsx", "--no-deprecation"],
     workerData: {
       template: html,
       distDir,
