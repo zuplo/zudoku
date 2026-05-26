@@ -3815,6 +3815,28 @@
         "x-graphql": {
           "endpoint": "https://rickandmortyapi.com/graphql"
         },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "list-characters": {
+                  "summary": "List characters",
+                  "value": {
+                    "query": "query ListCharacters($page: Int) {\n  characters(page: $page) {\n    info { count pages }\n    results { id name species }\n  }\n}",
+                    "variables": { "page": 1 }
+                  }
+                },
+                "get-character": {
+                  "summary": "Get a character",
+                  "value": {
+                    "query": "query GetCharacter($id: ID!) {\n  character(id: $id) {\n    id\n    name\n    status\n    origin { name }\n  }\n}",
+                    "variables": { "id": "1" }
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "GraphQL response"

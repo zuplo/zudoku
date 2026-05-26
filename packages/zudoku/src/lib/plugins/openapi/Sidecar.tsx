@@ -229,6 +229,9 @@ export const Sidecar = ({
   const hasResolvedAuth =
     resolvedAuth.headers.length > 0 || resolvedAuth.queryString.length > 0;
 
+  const graphQLEndpoint = getGraphQLEndpoint(operation);
+  const isGraphQLEndpoint = graphQLEndpoint !== undefined;
+
   const httpSnippetCode = useMemo<string | undefined>(() => {
     if (codeSamples && !hasResolvedAuth) {
       const match = codeSamples.find((s) => s.lang === selectedLang);
@@ -250,16 +253,17 @@ export const Sidecar = ({
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
-      exampleBody: currentExampleCode
-        ? {
-            mimeType: selectedContent?.mediaType ?? "application/json",
-            text:
-              formatRequestBodyForDisplay(
-                selectedContent?.mediaType,
-                currentExampleCode,
-              ) ?? "",
-          }
-        : { mimeType: selectedContent?.mediaType ?? "application/json" },
+      exampleBody:
+        isGraphQLEndpoint || !currentExampleCode
+          ? { mimeType: selectedContent?.mediaType ?? "application/json" }
+          : {
+              mimeType: selectedContent?.mediaType ?? "application/json",
+              text:
+                formatRequestBodyForDisplay(
+                  selectedContent?.mediaType,
+                  currentExampleCode,
+                ) ?? "",
+            },
       resolvedAuth,
     });
 
@@ -276,6 +280,7 @@ export const Sidecar = ({
     context,
     resolvedAuth,
     hasResolvedAuth,
+    isGraphQLEndpoint,
   ]);
 
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
@@ -292,8 +297,44 @@ export const Sidecar = ({
     response.content?.some((content) => (content.examples?.length ?? 0) > 0),
   );
 
-  const graphQLEndpoint = getGraphQLEndpoint(operation);
-  const isGraphQLEndpoint = graphQLEndpoint !== undefined;
+  const displayRequestBodyContent =
+    isGraphQLEndpoint && transformedRequestBodyContent
+      ? transformedRequestBodyContent.map((c) => ({
+          ...c,
+          mediaType: "application/graphql",
+          examples: c.examples?.map((ex) => {
+            const value = ex.value as { query?: unknown } | null | undefined;
+            return {
+              ...ex,
+              value:
+                value && typeof value.query === "string"
+                  ? value.query
+                  : ex.value,
+            };
+          }),
+        }))
+      : undefined;
+
+  const graphQLTabs = isGraphQLEndpoint
+    ? transformedRequestBodyContent
+        ?.flatMap((c) => c.examples ?? [])
+        .flatMap((example) => {
+          const value = example.value as
+            | { query?: unknown; variables?: unknown }
+            | null
+            | undefined;
+          if (!value || typeof value.query !== "string") return [];
+          return [
+            {
+              query: value.query,
+              variables:
+                value.variables !== undefined
+                  ? JSON.stringify(value.variables, null, 2)
+                  : undefined,
+            },
+          ];
+        })
+    : undefined;
 
   return (
     <aside
@@ -322,6 +363,11 @@ export const Sidecar = ({
                   endpoint={
                     graphQLEndpoint?.endpoint ??
                     joinUrl(selectedServer, operation.path)
+                  }
+                  defaultTabs={
+                    graphQLTabs && graphQLTabs.length > 0
+                      ? graphQLTabs
+                      : undefined
                   }
                   defaultHeaders={
                     resolvedAuth.headers.length > 0
@@ -450,9 +496,9 @@ export const Sidecar = ({
         </SidecarBox.Footer>
       </SidecarBox.Root>
 
-      {!isGraphQLEndpoint && transformedRequestBodyContent && currentExample ? (
+      {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox
-          content={transformedRequestBodyContent}
+          content={displayRequestBodyContent ?? transformedRequestBodyContent}
           onExampleChange={(selected) => {
             setSelectedRequestExample(selected);
           }}
@@ -477,7 +523,7 @@ export const Sidecar = ({
         />
       ) : null}
 
-      {!isGraphQLEndpoint &&
+      {(hasResponseExamples || !isGraphQLEndpoint) &&
         (hasResponseExamples ? (
           <ResponsesSidecarBox
             isOnScreen={isOnScreen}

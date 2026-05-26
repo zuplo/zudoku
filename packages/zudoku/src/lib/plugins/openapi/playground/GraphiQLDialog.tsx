@@ -11,16 +11,22 @@ import {
 
 const GraphiQLPanel = lazy(() => import("./GraphiQL.js"));
 
+export type GraphiQLTab = {
+  query: string;
+  variables?: string;
+  headers?: string;
+};
+
 export type GraphiQLDialogProps = {
   endpoint: string;
-  defaultQuery?: string;
   defaultHeaders?: string;
+  defaultTabs?: GraphiQLTab[];
 };
 
 export const GraphiQLDialog = ({
   endpoint,
-  defaultQuery,
   defaultHeaders,
+  defaultTabs,
 }: GraphiQLDialogProps) => {
   const [open, setOpen] = useState(false);
 
@@ -41,14 +47,14 @@ export const GraphiQLDialog = ({
         showCloseButton
       >
         <VisuallyHidden>
-          <DialogTitle>GraphiQL</DialogTitle>
+          <DialogTitle>GraphQL Playground</DialogTitle>
         </VisuallyHidden>
         {open && (
           <Suspense fallback={null}>
             <GraphiQLPanel
               endpoint={endpoint}
-              defaultQuery={defaultQuery}
               defaultHeaders={defaultHeaders}
+              defaultTabs={defaultTabs}
             />
           </Suspense>
         )}

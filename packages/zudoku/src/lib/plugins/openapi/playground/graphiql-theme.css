@@ -74,3 +74,10 @@ body.graphiql-dark [data-radix-popper-content-wrapper] {
 .graphiql-container *:focus-visible {
   outline-color: var(--ring);
 }
+
+/* GraphiQL's own dialogs portal to body at z-index 10, which renders behind
+ * Zudoku's outer Radix Dialog (z-50). Lift them above. */
+.graphiql-dialog,
+.graphiql-dialog-overlay {
+  z-index: 60;
+}
