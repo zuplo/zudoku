@@ -38,6 +38,17 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+  --callout-note: oklch(0.55 0.02 280);
+  --callout-tip: oklch(0.62 0.17 145);
+  --callout-info: oklch(0.58 0.16 250);
+  --callout-caution: oklch(0.7 0.16 75);
+  --callout-danger: oklch(0.6 0.22 25);
+  --callout-sparkles: oklch(0.6 0.2 300);
+  --callout-rocket: oklch(0.55 0.2 270);
+  --callout-settings: oklch(0.5 0.015 285);
+  --callout-zap: oklch(0.68 0.17 95);
+  --callout-lock: oklch(0.52 0.06 230);
+  --callout-megaphone: oklch(0.62 0.15 220);
 }
 
 .dark {
@@ -74,4 +85,15 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
+  --callout-note: oklch(0.72 0.02 280);
+  --callout-tip: oklch(0.75 0.17 145);
+  --callout-info: oklch(0.72 0.16 250);
+  --callout-caution: oklch(0.8 0.16 75);
+  --callout-danger: oklch(0.7 0.2 25);
+  --callout-sparkles: oklch(0.72 0.18 300);
+  --callout-rocket: oklch(0.7 0.18 270);
+  --callout-settings: oklch(0.72 0.015 285);
+  --callout-zap: oklch(0.85 0.16 90);
+  --callout-lock: oklch(0.7 0.06 230);
+  --callout-megaphone: oklch(0.75 0.14 220);
 }

@@ -9,10 +9,12 @@ import {
   loadConfigFromFile,
   mergeConfig,
 } from "vite";
-import packageJson from "../../package.json" with { type: "json" };
 import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
-import { getZudokuRootDir } from "../cli/common/package-json.js";
+import {
+  getZudokuPackageJson,
+  getZudokuRootDir,
+} from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/ZudokuConfig.js";
 import { PROTECTED_CHUNK_DIR } from "../lib/manifest.js";
@@ -120,7 +122,9 @@ export async function getViteConfig(
       },
     },
     define: {
-      "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
+      "process.env.ZUDOKU_VERSION": JSON.stringify(
+        getZudokuPackageJson().version,
+      ),
       "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
       "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
       "import.meta.env.ZUDOKU_HAS_SERVER": JSON.stringify(options.ssr === true),

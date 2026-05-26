@@ -218,6 +218,18 @@
       "calt" 1;
   }
 
+  code,
+  pre,
+  kbd,
+  samp,
+  .shiki,
+  .shiki span {
+    font-variant-ligatures: none;
+    font-feature-settings:
+      "liga" 0,
+      "calt" 0;
+  }
+
   ::selection {
     background: var(--color-primary);
     color: var(--color-primary-foreground);

@@ -106,6 +106,12 @@ export const MdxComponents = {
   caution: (props) => <Callout type="caution" {...props} />,
   warning: (props) => <Callout type="caution" {...props} />,
   danger: (props) => <Callout type="danger" {...props} />,
+  sparkles: (props) => <Callout type="sparkles" {...props} />,
+  rocket: (props) => <Callout type="rocket" {...props} />,
+  settings: (props) => <Callout type="settings" {...props} />,
+  zap: (props) => <Callout type="zap" {...props} />,
+  lock: (props) => <Callout type="lock" {...props} />,
+  megaphone: (props) => <Callout type="megaphone" {...props} />,
   CodeTabs: (props) => (
     <Suspense>
       <CodeTabs {...props} />

@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import { SearchIcon, XIcon } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { Link } from "zudoku/components";
@@ -103,9 +103,9 @@ export const Catalog = ({
 
   return (
     <section className="pt-(--padding-content-top) pb-12">
-      <Helmet>
+      <Head>
         <title>{label}</title>
-      </Helmet>
+      </Head>
       <div className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">
           <Heading level={1} className="text-4xl font-bold tracking-tight">
