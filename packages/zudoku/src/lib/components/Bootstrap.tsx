@@ -3,7 +3,8 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { type HelmetData, HelmetProvider } from "@zudoku/react-helmet-async";
+import { type Unhead, UnheadProvider } from "@unhead/react/client";
+import { UnheadProvider as UnheadServerProvider } from "@unhead/react/server";
 import { StrictMode } from "react";
 import {
   type createBrowserRouter,
@@ -27,19 +28,21 @@ const queryClient = new QueryClient({
 
 export const BootstrapClient = ({
   router,
+  head,
   hydrate = false,
 }: {
   hydrate?: boolean;
+  head: Unhead;
   router: ReturnType<typeof createBrowserRouter>;
 }) => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <HydrationBoundary state={hydrate ? window.ZUDOKU_DATA : undefined}>
-        <HelmetProvider>
+        <UnheadProvider head={head}>
           <RenderContext value={{ status: 200, bypassProtection: false }}>
             <RouterProvider router={router} />
           </RenderContext>
-        </HelmetProvider>
+        </UnheadProvider>
       </HydrationBoundary>
     </QueryClientProvider>
   </StrictMode>
@@ -49,11 +52,11 @@ const BootstrapStatic = ({
   router,
   context,
   queryClient,
-  helmetContext,
+  head,
   bypassProtection = false,
   renderContext,
 }: {
-  helmetContext: HelmetData["context"];
+  head: Unhead;
   context: StaticHandlerContext;
   queryClient: QueryClient;
   router: ReturnType<typeof createStaticRouter>;
@@ -63,7 +66,7 @@ const BootstrapStatic = ({
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <HydrationBoundary state={undefined}>
-        <HelmetProvider context={helmetContext}>
+        <UnheadServerProvider value={head}>
           <RenderContext
             value={
               renderContext ?? {
@@ -74,7 +77,7 @@ const BootstrapStatic = ({
           >
             <StaticRouterProvider router={router} context={context} />
           </RenderContext>
-        </HelmetProvider>
+        </UnheadServerProvider>
       </HydrationBoundary>
     </QueryClientProvider>
   </StrictMode>

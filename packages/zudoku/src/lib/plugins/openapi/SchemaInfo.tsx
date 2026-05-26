@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import {
   GlobeIcon,
   InfoIcon,
@@ -288,10 +288,10 @@ export const SchemaInfo = () => {
       data-pagefind-meta="section:openapi"
     >
       <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
-      <Helmet>
+      <Head>
         {title && <title>{title}</title>}
         {description && <meta name="description" content={description} />}
-      </Helmet>
+      </Head>
 
       <div className="mb-8 flex flex-col gap-4">
         <ApiHeader heading={title} headingId="description" />

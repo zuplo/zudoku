@@ -1,4 +1,5 @@
 import type { DehydratedState } from "@tanstack/react-query";
+import { createHead } from "@unhead/react/client";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import {
   createBrowserRouter,
@@ -20,6 +21,7 @@ if (import.meta.env.ZUDOKU_HAS_SERVER) {
 const routes = getRoutesByConfig(config);
 // biome-ignore lint/style/noNonNullAssertion: We know the root element exists
 const root = document.getElementById("root")!;
+const head = createHead();
 
 declare global {
   interface Window {
@@ -105,7 +107,7 @@ function render(routes: RouteObject[]) {
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });
-  createRoot(root).render(<BootstrapClient router={router} />);
+  createRoot(root).render(<BootstrapClient router={router} head={head} />);
 }
 
 async function hydrate(routes: RouteObject[]) {
@@ -115,7 +117,7 @@ async function hydrate(routes: RouteObject[]) {
     basename: config.basePath,
   });
 
-  hydrateRoot(root, <BootstrapClient hydrate router={router} />);
+  hydrateRoot(root, <BootstrapClient hydrate router={router} head={head} />);
 }
 
 // Reload on chunk preload failures to recover from version skew.

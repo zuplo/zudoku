@@ -1,4 +1,8 @@
-import { type HelmetData, HelmetProvider } from "@zudoku/react-helmet-async";
+import {
+  createHead,
+  renderSSRHead,
+  UnheadProvider,
+} from "@unhead/react/server";
 import { renderToString } from "react-dom/server";
 import type { Location } from "react-router";
 import { describe, expect, it } from "vitest";
@@ -13,28 +17,28 @@ const loc = {
   key: "default",
 } as Location;
 
-const renderHeadSSR = (plugins: ZudokuPlugin[]) => {
-  const ctx = {} as HelmetData["context"];
+const renderHeadSSR = async (plugins: ZudokuPlugin[]) => {
+  const head = createHead();
 
   renderToString(
-    <HelmetProvider context={ctx}>
+    <UnheadProvider value={head}>
       <PluginHeads plugins={plugins} location={loc} />
-    </HelmetProvider>,
+    </UnheadProvider>,
   );
 
-  return ctx.helmet;
+  return renderSSRHead(head);
 };
 
 describe("PluginHeads SSR injection", () => {
-  it("single meta element", () => {
-    const helmet = renderHeadSSR([
+  it("single meta element", async () => {
+    const { headTags } = await renderHeadSSR([
       { getHead: () => <meta name="test-single" content="val" /> },
     ]);
-    expect(helmet?.meta?.toString()).toContain('name="test-single"');
+    expect(headTags).toContain('name="test-single"');
   });
 
-  it("array of elements", () => {
-    const helmet = renderHeadSSR([
+  it("array of elements", async () => {
+    const { headTags } = await renderHeadSSR([
       {
         getHead: () => [
           <meta key="a" name="arr-a" content="a" />,
@@ -42,13 +46,12 @@ describe("PluginHeads SSR injection", () => {
         ],
       },
     ]);
-    const meta = helmet?.meta?.toString() ?? "";
-    expect(meta).toContain('name="arr-a"');
-    expect(meta).toContain('name="arr-b"');
+    expect(headTags).toContain('name="arr-a"');
+    expect(headTags).toContain('name="arr-b"');
   });
 
-  it("fragment with scripts (PostHog pattern)", () => {
-    const helmet = renderHeadSSR([
+  it("fragment with scripts (PostHog pattern)", async () => {
+    const { headTags } = await renderHeadSSR([
       {
         getHead: () => (
           <>
@@ -58,12 +61,12 @@ describe("PluginHeads SSR injection", () => {
         ),
       },
     ]);
-    expect(helmet?.script?.toString()).toContain("__PH");
-    expect(helmet?.meta?.toString()).toContain("ph-verify");
+    expect(headTags).toContain("__PH");
+    expect(headTags).toContain("ph-verify");
   });
 
-  it("multiple plugins", () => {
-    const helmet = renderHeadSSR([
+  it("multiple plugins", async () => {
+    const { headTags } = await renderHeadSSR([
       { getHead: () => <meta name="plugin-a" content="a" /> },
       {
         getHead: () => (
@@ -73,8 +76,7 @@ describe("PluginHeads SSR injection", () => {
         ),
       },
     ]);
-    const meta = helmet?.meta?.toString() ?? "";
-    expect(meta).toContain('name="plugin-a"');
-    expect(meta).toContain('name="plugin-b"');
+    expect(headTags).toContain('name="plugin-a"');
+    expect(headTags).toContain('name="plugin-b"');
   });
 });
