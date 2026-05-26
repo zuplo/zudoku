@@ -81,6 +81,45 @@ describe("formatPlanPrice", () => {
     });
   });
 
+  it("returns free for a usage_based card with price: null (quota-only metered)", () => {
+    // Used elsewhere in this repo for free, quota-only metered entitlements
+    // (e.g. "1000 calls included, no overage"). Should not flip to PAYG.
+    const quotaOnly: RateCard = {
+      type: "usage_based",
+      key: "api",
+      name: "API Calls",
+      billingCadence: "P1M",
+      price: null,
+      entitlementTemplate: { type: "metered", issueAfterReset: 1000 },
+    };
+    expect(formatPlanPrice(makePlan([quotaOnly]))).toEqual({ type: "free" });
+  });
+
+  it("returns free for a usage_based card with all-zero tiered price", () => {
+    const allFreeTiered: RateCard = {
+      type: "usage_based",
+      key: "api",
+      name: "API Calls",
+      billingCadence: "P1M",
+      price: {
+        type: "tiered",
+        mode: "graduated",
+        tiers: [
+          {
+            flatPrice: { amount: "0" },
+            unitPrice: { amount: "0" },
+            upToAmount: "1000",
+          },
+          { flatPrice: { amount: "0" }, unitPrice: { amount: "0" } },
+        ],
+      },
+      entitlementTemplate: { type: "metered", isSoftLimit: true },
+    };
+    expect(formatPlanPrice(makePlan([allFreeTiered]))).toEqual({
+      type: "free",
+    });
+  });
+
   it("returns payg for a tiered usage-only plan", () => {
     const tieredUsage: RateCard = {
       type: "usage_based",
