@@ -152,7 +152,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - run: pnpm -F docs build
+      - run: pnpm -F 'docs...' build
 
       - name: Restore lychee cache
         id: restore-cache

@@ -1,7 +1,7 @@
 {
   "framework": null,
   "devCommand": "pnpm dev",
-  "buildCommand": "pnpm build",
+  "buildCommand": "pnpm -F 'cosmo-cargo...' build",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "cleanUrls": true
