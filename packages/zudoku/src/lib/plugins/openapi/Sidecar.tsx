@@ -21,6 +21,7 @@ import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { AuthorizeDialog } from "./playground/AuthorizeDialog.js";
 import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./playground/constants.js";
+import { GraphiQLDialog } from "./playground/GraphiQLDialog.js";
 import IdentitySelector from "./playground/IdentitySelector.js";
 import { useIdentityStore } from "./playground/rememberedIdentity.js";
 import { useSecurityCredentialsStore } from "./playground/securityCredentialsStore.js";
@@ -35,6 +36,7 @@ import {
   getLanguageForMediaType,
 } from "./util/formatRequestBody.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
+import { getGraphQLEndpoint } from "./util/graphqlEndpoint.js";
 import { methodForColor } from "./util/methodToColor.js";
 import { useResolvedAuth } from "./util/useResolvedAuth.js";
 
@@ -227,6 +229,9 @@ export const Sidecar = ({
   const hasResolvedAuth =
     resolvedAuth.headers.length > 0 || resolvedAuth.queryString.length > 0;
 
+  const graphQLEndpoint = getGraphQLEndpoint(operation);
+  const isGraphQLEndpoint = graphQLEndpoint !== undefined;
+
   const httpSnippetCode = useMemo<string | undefined>(() => {
     if (codeSamples && !hasResolvedAuth) {
       const match = codeSamples.find((s) => s.lang === selectedLang);
@@ -248,16 +253,17 @@ export const Sidecar = ({
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
-      exampleBody: currentExampleCode
-        ? {
-            mimeType: selectedContent?.mediaType ?? "application/json",
-            text:
-              formatRequestBodyForDisplay(
-                selectedContent?.mediaType,
-                currentExampleCode,
-              ) ?? "",
-          }
-        : { mimeType: selectedContent?.mediaType ?? "application/json" },
+      exampleBody:
+        isGraphQLEndpoint || !currentExampleCode
+          ? { mimeType: selectedContent?.mediaType ?? "application/json" }
+          : {
+              mimeType: selectedContent?.mediaType ?? "application/json",
+              text:
+                formatRequestBodyForDisplay(
+                  selectedContent?.mediaType,
+                  currentExampleCode,
+                ) ?? "",
+            },
       resolvedAuth,
     });
 
@@ -274,6 +280,7 @@ export const Sidecar = ({
     context,
     resolvedAuth,
     hasResolvedAuth,
+    isGraphQLEndpoint,
   ]);
 
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
@@ -289,6 +296,45 @@ export const Sidecar = ({
   const hasResponseExamples = operation.responses.some((response) =>
     response.content?.some((content) => (content.examples?.length ?? 0) > 0),
   );
+
+  const displayRequestBodyContent =
+    isGraphQLEndpoint && transformedRequestBodyContent
+      ? transformedRequestBodyContent.map((c) => ({
+          ...c,
+          mediaType: "application/graphql",
+          examples: c.examples?.map((ex) => {
+            const value = ex.value as { query?: unknown } | null | undefined;
+            return {
+              ...ex,
+              value:
+                value && typeof value.query === "string"
+                  ? value.query
+                  : ex.value,
+            };
+          }),
+        }))
+      : undefined;
+
+  const graphQLTabs = isGraphQLEndpoint
+    ? transformedRequestBodyContent
+        ?.flatMap((c) => c.examples ?? [])
+        .flatMap((example) => {
+          const value = example.value as
+            | { query?: unknown; variables?: unknown }
+            | null
+            | undefined;
+          if (!value || typeof value.query !== "string") return [];
+          return [
+            {
+              query: value.query,
+              variables:
+                value.variables !== undefined
+                  ? JSON.stringify(value.variables, null, 2)
+                  : undefined,
+            },
+          ];
+        })
+    : undefined;
 
   return (
     <aside
@@ -311,13 +357,40 @@ export const Sidecar = ({
               </Badge>
               {path}
             </span>
-            {showPlayground && (
-              <PlaygroundDialogWrapper
-                servers={operation.servers.map((server) => server.url)}
-                operation={operation}
-                examples={requestBodyContent ?? undefined}
-              />
-            )}
+            {showPlayground &&
+              (isGraphQLEndpoint ? (
+                <GraphiQLDialog
+                  endpoint={
+                    graphQLEndpoint?.endpoint ??
+                    joinUrl(selectedServer, operation.path)
+                  }
+                  defaultTabs={
+                    graphQLTabs && graphQLTabs.length > 0
+                      ? graphQLTabs
+                      : undefined
+                  }
+                  defaultHeaders={
+                    resolvedAuth.headers.length > 0
+                      ? JSON.stringify(
+                          Object.fromEntries(
+                            resolvedAuth.headers.map(({ name, value }) => [
+                              name,
+                              value,
+                            ]),
+                          ),
+                          null,
+                          2,
+                        )
+                      : undefined
+                  }
+                />
+              ) : (
+                <PlaygroundDialogWrapper
+                  servers={operation.servers.map((server) => server.url)}
+                  operation={operation}
+                  examples={requestBodyContent ?? undefined}
+                />
+              ))}
           </div>
         </SidecarBox.Head>
         <SidecarBox.Body>
@@ -425,7 +498,7 @@ export const Sidecar = ({
 
       {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox
-          content={transformedRequestBodyContent}
+          content={displayRequestBodyContent ?? transformedRequestBodyContent}
           onExampleChange={(selected) => {
             setSelectedRequestExample(selected);
           }}
@@ -434,7 +507,9 @@ export const Sidecar = ({
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
         />
-      ) : transformedRequestBodyContent && currentExampleCode ? (
+      ) : !isGraphQLEndpoint &&
+        transformedRequestBodyContent &&
+        currentExampleCode ? (
         <GeneratedExampleSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
@@ -448,42 +523,43 @@ export const Sidecar = ({
         />
       ) : null}
 
-      {hasResponseExamples ? (
-        <ResponsesSidecarBox
-          isOnScreen={isOnScreen}
-          shouldLazyHighlight={shouldLazyHighlight}
-          selectedResponse={selectedResponse}
-          responses={operation.responses.map((response) => ({
-            ...response,
-            content:
-              response.content && options?.transformExamples
-                ? options.transformExamples({
-                    auth,
-                    type: "response",
-                    context,
-                    operation,
-                    content: response.content,
-                  })
-                : response.content,
-          }))}
-        />
-      ) : (
-        <ResponsesSidecarBox
-          isGenerated
-          isOnScreen={isOnScreen}
-          shouldLazyHighlight={shouldLazyHighlight}
-          selectedResponse={selectedResponse}
-          responses={operation.responses.map((response) => ({
-            ...response,
-            content: response.content?.map((content) => ({
-              ...content,
-              examples: content.schema
-                ? [{ name: "", value: generateSchemaExample(content.schema) }]
-                : content.examples,
-            })),
-          }))}
-        />
-      )}
+      {(hasResponseExamples || !isGraphQLEndpoint) &&
+        (hasResponseExamples ? (
+          <ResponsesSidecarBox
+            isOnScreen={isOnScreen}
+            shouldLazyHighlight={shouldLazyHighlight}
+            selectedResponse={selectedResponse}
+            responses={operation.responses.map((response) => ({
+              ...response,
+              content:
+                response.content && options?.transformExamples
+                  ? options.transformExamples({
+                      auth,
+                      type: "response",
+                      context,
+                      operation,
+                      content: response.content,
+                    })
+                  : response.content,
+            }))}
+          />
+        ) : (
+          <ResponsesSidecarBox
+            isGenerated
+            isOnScreen={isOnScreen}
+            shouldLazyHighlight={shouldLazyHighlight}
+            selectedResponse={selectedResponse}
+            responses={operation.responses.map((response) => ({
+              ...response,
+              content: response.content?.map((content) => ({
+                ...content,
+                examples: content.schema
+                  ? [{ name: "", value: generateSchemaExample(content.schema) }]
+                  : content.examples,
+              })),
+            }))}
+          />
+        ))}
     </aside>
   );
 };
