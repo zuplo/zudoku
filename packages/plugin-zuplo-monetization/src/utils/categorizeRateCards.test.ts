@@ -478,6 +478,68 @@ describe("categorizeRateCards", () => {
       ]);
     });
 
+    it("surfaces both flat and unit price for a single-tier tiered price when both are non-zero", () => {
+      // Matches the multi-tier line format: "$flat + $unit/label".
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api_requests",
+        featureKey: "api_requests",
+        name: "API Requests Add-On",
+        billingCadence: "P1M",
+        price: {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [
+            {
+              flatPrice: { amount: "499" },
+              unitPrice: { amount: "0.10" },
+            },
+          ],
+        },
+        entitlementTemplate: { type: "metered", isSoftLimit: true },
+      };
+      const { quotas } = categorizeRateCards([rc], {
+        units: { api_requests: "request" },
+      });
+      expect(quotas[0].unitPrice).toBe("$499 + $0.10/request");
+    });
+
+    it("surfaces a single-tier flat-only tiered price as a bare price (no /unit suffix)", () => {
+      // Edge case flagged by review: a usage_based card with a single
+      // open-ended tier carrying only a flat price (e.g. "$499 flat").
+      // Previously dropped to the features bucket, losing the price.
+      const rc: RateCard = {
+        type: "usage_based",
+        key: "api_requests",
+        featureKey: "api_requests",
+        name: "API Requests Add-On",
+        billingCadence: "P1M",
+        price: {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [
+            {
+              flatPrice: { amount: "499" },
+              unitPrice: { amount: "0" },
+            },
+          ],
+        },
+        entitlementTemplate: { type: "metered", isSoftLimit: true },
+      };
+      const { quotas, features } = categorizeRateCards([rc]);
+      expect(features).toEqual([]);
+      expect(quotas).toEqual([
+        {
+          key: "api_requests",
+          name: "API Requests Add-On",
+          limit: 0,
+          period: "month",
+          isPayg: true,
+          unitPrice: "$499",
+        },
+      ]);
+    });
+
     it("falls back to features bucket when all tiers are free", () => {
       const rc: RateCard = {
         type: "usage_based",

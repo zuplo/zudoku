@@ -102,24 +102,36 @@ export const categorizeRateCards = (
           continue;
         }
         // Single-tier "tiered" prices can't produce a breakdown
-        // (`formatTieredPriceBreakdown` needs ≥2 tiers). Treat them as a
-        // unit price so the card body isn't empty.
+        // (`formatTieredPriceBreakdown` needs ≥2 tiers), so synthesize
+        // a single inline price string using the same flat-then-unit
+        // format the multi-tier breakdown uses: "$flat + $unit/label",
+        // or just one part if the other is zero. "unitPrice" is a mild
+        // misnomer when the result is a bare flat charge, but it's
+        // rendered as a free-form inline string after the name.
         if (tiers.length === 1) {
           const unit = parseFloat(tiers[0].unitPrice?.amount ?? "0");
-          if (unit > 0) {
+          const flat = parseFloat(tiers[0].flatPrice?.amount ?? "0");
+          const flatPart = flat > 0 ? formatPrice(flat, currency) : "";
+          const unitPart =
+            unit > 0 ? `${formatPrice(unit, currency)}/${unitLabel}` : "";
+          const pricePart =
+            flatPart && unitPart
+              ? `${flatPart} + ${unitPart}`
+              : flatPart || unitPart;
+          if (pricePart) {
             quotas.push({
               key: rc.featureKey ?? rc.key,
               name: rc.name,
               limit: 0,
               period: periodFor(rc),
-              unitPrice: `${formatPrice(unit, currency)}/${unitLabel}`,
+              unitPrice: pricePart,
               isPayg: true,
             });
             continue;
           }
-          // Single tier with only a positive flat price — uncommon and
-          // not naturally a "per-unit" display; fall back to a feature
-          // entry so we don't render an empty body.
+          // Unreachable — `hasPositivePrice` above guarantees at
+          // least one of flat/unit is positive. Defensive fallback
+          // so we never render an empty body if invariants change.
           features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
           continue;
         }
