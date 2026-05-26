@@ -9,7 +9,7 @@ import { Slot } from "./Slot.js";
 
 export const Main = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { navigation } = useCurrentNavigation();
+  const { navigation, topNavItem } = useCurrentNavigation();
   const hasNavigation = navigation.length > 0;
   const isNavigating = useNavigation().state === "loading";
   const { options } = useZudoku();
@@ -24,6 +24,7 @@ export const Main = ({ children }: PropsWithChildren) => {
         <Navigation
           onRequestClose={() => setDrawerOpen(false)}
           navigation={navigation}
+          topNavItem={topNavItem}
         />
       )}
       {hasNavigation && (

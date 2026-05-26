@@ -5,15 +5,20 @@ import { Slot } from "../Slot.js";
 import { NavigationFilterProvider } from "./NavigationFilterContext.js";
 import { NavigationItem } from "./NavigationItem.js";
 import { NavigationWrapper } from "./NavigationWrapper.js";
+import { getItemPath } from "./utils.js";
 
 export const Navigation = ({
   onRequestClose,
   navigation,
+  topNavItem,
 }: {
   onRequestClose?: () => void;
   navigation: NavigationItemType[];
+  topNavItem?: NavigationItemType;
 }) => (
-  <NavigationFilterProvider>
+  <NavigationFilterProvider
+    key={topNavItem ? (getItemPath(topNavItem) ?? topNavItem.label) : undefined}
+  >
     <NavigationWrapper>
       <Slot.Target name="navigation-before" />
       {navigation.map((item) => (
