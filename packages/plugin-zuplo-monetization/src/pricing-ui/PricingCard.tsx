@@ -87,11 +87,6 @@ export const PricingCard = ({
                   {formatPrice(priceLabel.yearly, plan.currency)}/year
                 </div>
               )}
-              {priceLabel.hasUsage && (
-                <div className="w-full text-sm text-muted-foreground">
-                  + usage
-                </div>
-              )}
             </>
           )}
         </div>

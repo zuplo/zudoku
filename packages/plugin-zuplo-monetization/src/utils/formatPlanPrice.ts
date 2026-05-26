@@ -4,7 +4,7 @@ import { getPriceFromPlan } from "./getPriceFromPlan.js";
 export type PlanPriceLabel =
   | { type: "free" }
   | { type: "payg"; main: "Pay as you go"; sub: "Usage-based pricing" }
-  | { type: "priced"; monthly: number; yearly: number; hasUsage: boolean };
+  | { type: "priced"; monthly: number; yearly: number };
 
 const hasUsageRateCard = (plan: Plan) =>
   plan.phases.some((phase) =>
@@ -20,13 +20,12 @@ export const formatPlanPrice = (plan: Plan): PlanPriceLabel => {
   if (plan.phases.length === 0) return { type: "free" };
 
   const { monthly, yearly } = getPriceFromPlan(plan);
-  const hasUsage = hasUsageRateCard(plan);
 
   if (monthly > 0) {
-    return { type: "priced", monthly, yearly, hasUsage };
+    return { type: "priced", monthly, yearly };
   }
 
-  if (hasUsage) {
+  if (hasUsageRateCard(plan)) {
     return { type: "payg", main: "Pay as you go", sub: "Usage-based pricing" };
   }
 

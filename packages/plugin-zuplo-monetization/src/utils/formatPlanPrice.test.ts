@@ -56,17 +56,20 @@ describe("formatPlanPrice", () => {
       type: "priced",
       monthly: 49,
       yearly: 0,
-      hasUsage: false,
     });
   });
 
-  it("flags hasUsage on hybrid plans (flat + usage rate cards)", () => {
+  it("returns priced for a hybrid plan with flat + usage rate cards", () => {
+    // Hybrid plans (flat fee + usage) classify as "priced" because their
+    // monthly base is positive. Usage on top of the base is communicated
+    // by the per-feature tier breakdown, not a separate label.
     const plan = makePlan([flatFee("49"), unitUsage("0.01")], {
       monthlyPrice: "49",
     });
-    expect(formatPlanPrice(plan)).toMatchObject({
+    expect(formatPlanPrice(plan)).toEqual({
       type: "priced",
-      hasUsage: true,
+      monthly: 49,
+      yearly: 0,
     });
   });
 

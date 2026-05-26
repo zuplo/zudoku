@@ -86,7 +86,7 @@ const config: ZudokuConfig = {
     clientId: "f8I87rdsCRo4nU2FHf0fHVwA9P7xi7Ml",
     audience: "https://api.example.com/",
   },
-  plugins: [zuploMonetizationPlugin()],
+  plugins: [zuploMonetizationPlugin({ pricing: { showYearlyPrice: false } })],
 };
 
 export default config;
