@@ -242,7 +242,7 @@ describe("PricingPage", () => {
     expect(screen.getByText("Most Popular")).toBeInTheDocument();
   });
 
-  it("Shows custom unit label in overage price when units config is provided", () => {
+  it("Shows custom unit label in tier breakdown when units config is provided", () => {
     mockPricingData.items = [
       {
         ...makePlan("1", "pro", "Pro"),
@@ -284,7 +284,9 @@ describe("PricingPage", () => {
       pricing: { units: { "api-requests": "request" } },
     });
 
-    expect(screen.getByText(/\/request after quota/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Over 1,000: \$0\.001\/request/),
+    ).toBeInTheDocument();
   });
 
   it("Shows yearly price by default", () => {

@@ -73,7 +73,7 @@ const makeSubscription = (
               {
                 flatPrice: { amount: "0", type: "money" },
                 unitPrice: { amount: "0", type: "money" },
-                upToAmount: "3000",
+                upToAmount: "1000",
               },
               {
                 flatPrice: { amount: "0", type: "money" },
@@ -248,13 +248,15 @@ describe("SubscriptionPlanDetails", () => {
     expect(screen.getByText("Trial")).toBeInTheDocument();
     expect(screen.getByText("Paid")).toBeInTheDocument();
 
-    // Metered row
+    // Metered row — the "1,000 / month" header is hidden when the tier
+    // breakdown is present; the included quota is conveyed by the
+    // "Up to 1,000: Included" line.
     const api = screen.getByText("API").closest("li");
     expect(api).not.toBeNull();
     if (!api) throw new Error("Expected API row");
-    expect(within(api).getByText("1,000 / month")).toBeInTheDocument();
-    expect(within(api).getByText(/Over 3,000:/)).toBeInTheDocument();
-    expect(within(api).getByText("Overage: $0.10/call")).toBeInTheDocument();
+    expect(within(api).queryByText(/1,000 \/ month/)).not.toBeInTheDocument();
+    expect(within(api).getByText("Up to 1,000: Included")).toBeInTheDocument();
+    expect(within(api).getByText("Over 1,000: $0.10/call")).toBeInTheDocument();
 
     // Boolean row
     const boolRow = screen.getByText("Boolean feature").closest("li");
@@ -327,7 +329,7 @@ describe("SubscriptionPlanDetails", () => {
     ).toBeInTheDocument();
   });
 
-  it("does not show overage price for hard-limit meters", () => {
+  it("hides the issued amount when the first tier has a flat price", () => {
     const base = makeSubscription();
     const baseEntitlement = base.phases[0]?.items[0]?.included?.entitlement;
     if (!baseEntitlement) {
@@ -345,8 +347,27 @@ describe("SubscriptionPlanDetails", () => {
                 ...base.phases[0].items[0].included,
                 entitlement: {
                   ...baseEntitlement,
-                  isSoftLimit: false,
+                  issueAfterReset: 1_000_000,
                 },
+              },
+              price: {
+                type: "tiered",
+                tiers: [
+                  {
+                    flatPrice: { amount: "499", type: "money" },
+                    unitPrice: { amount: "0", type: "money" },
+                    upToAmount: "1000000",
+                  },
+                  {
+                    flatPrice: { amount: "199", type: "money" },
+                    unitPrice: { amount: "0.05", type: "money" },
+                    upToAmount: "2000000",
+                  },
+                  {
+                    flatPrice: { amount: "0", type: "money" },
+                    unitPrice: { amount: "0.02", type: "money" },
+                  },
+                ],
               },
             },
           ],
@@ -355,9 +376,70 @@ describe("SubscriptionPlanDetails", () => {
     });
 
     render(<SubscriptionPlanDetails subscription={subscription} />);
+
     const api = screen.getByText("API").closest("li");
     if (!api) throw new Error("Expected API row");
-    expect(within(api).queryByText(/Overage:/)).not.toBeInTheDocument();
+
+    // Issued amount line should not appear — first tier is priced, not free.
+    expect(
+      within(api).queryByText(/1,000,000\s*\/\s*month/),
+    ).not.toBeInTheDocument();
+
+    // Tier breakdown should be visible using the new format (flat first, no "base").
+    expect(within(api).getByText("Up to 1,000,000: $499")).toBeInTheDocument();
+    expect(
+      within(api).getByText("Up to 2,000,000: $199 + $0.05/call"),
+    ).toBeInTheDocument();
+    expect(
+      within(api).getByText("Over 2,000,000: $0.02/call"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the issued amount visible when the first tier is priced but no breakdown is available", () => {
+    // Single-tier "tiered" prices don't produce a breakdown, so suppressing
+    // the issued amount would leave the row empty. Keep limit/period visible.
+    const base = makeSubscription();
+    const baseEntitlement = base.phases[0]?.items[0]?.included?.entitlement;
+    if (!baseEntitlement) {
+      throw new Error("Expected base metered entitlement");
+    }
+
+    const subscription = makeSubscription({
+      phases: [
+        {
+          ...base.phases[0],
+          items: [
+            {
+              ...base.phases[0].items[0],
+              included: {
+                ...base.phases[0].items[0].included,
+                entitlement: {
+                  ...baseEntitlement,
+                  issueAfterReset: 1_000,
+                },
+              },
+              price: {
+                type: "tiered",
+                // Backend requires at least one open-ended tier — a
+                // single-tier price has no upToAmount.
+                tiers: [
+                  {
+                    flatPrice: { amount: "499", type: "money" },
+                    unitPrice: { amount: "0", type: "money" },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    render(<SubscriptionPlanDetails subscription={subscription} />);
+
+    const api = screen.getByText("API").closest("li");
+    if (!api) throw new Error("Expected API row");
+    expect(within(api).getByText(/1,000 \/ month/)).toBeInTheDocument();
   });
 
   it("shows a subscription tax legend under Price when plan.defaultTaxConfig.behavior is set", () => {

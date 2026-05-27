@@ -36,32 +36,6 @@ const formatDateRange = (from: string, to: string) =>
 
 const formatNumber = (value: number) => value.toLocaleString("en-US");
 
-const getOveragePriceFromItem = (
-  item: Item,
-  currency: string | undefined,
-  units?: Record<string, string>,
-) => {
-  const tiers = item.price?.tiers;
-  if (!tiers || tiers.length === 0) return undefined;
-
-  // Align with `categorizeRateCards`: overage is only meaningful when there's a
-  // non-zero unit price tier (regardless of `upToAmount` shape).
-  const overageTier = tiers.find((t) => {
-    const amount = t.unitPrice?.amount;
-    if (!amount) return false;
-    const parsed = parseFloat(amount);
-    return Number.isFinite(parsed) && parsed > 0;
-  });
-  const amount = overageTier?.unitPrice?.amount;
-  if (!amount) return undefined;
-
-  const parsed = parseFloat(amount);
-  if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
-
-  const unitLabel = units?.[item.key] ?? units?.[item.featureKey] ?? "unit";
-  return `${formatPrice(parsed, currency)}/${unitLabel}`;
-};
-
 const getTierPricesFromItem = (
   item: Item,
   currency: string | undefined,
@@ -81,8 +55,19 @@ const getTierPricesFromItem = (
     currency,
     unitLabel,
     includedLabel: "Included",
-    omitIncludedUpToAmount: item.included?.entitlement?.issueAfterReset,
   });
+};
+
+// The "issued amount" represents free included usage only when the first tier
+// (matching that amount) carries no flat or unit price. Otherwise it's just
+// the boundary of a graduated/tiered pricing schedule, so the limit shouldn't
+// be displayed as a free quota.
+const hasPricedFirstTier = (item: Item): boolean => {
+  const firstTier = item.price?.tiers?.[0];
+  if (!firstTier) return false;
+  const flat = parseFloat(firstTier.flatPrice?.amount ?? "0");
+  const unit = parseFloat(firstTier.unitPrice?.amount ?? "0");
+  return flat > 0 || unit > 0;
 };
 
 const getEntitlementsFromItems = (
@@ -96,9 +81,8 @@ const getEntitlementsFromItems = (
         entitlementType: "metered";
         key: string;
         name: string;
-        limit: number;
-        period: string;
-        overagePrice?: string;
+        limit?: number;
+        period?: string;
         tierPrices?: string[];
       }
     | {
@@ -119,18 +103,29 @@ const getEntitlementsFromItems = (
     if (!entitlement) continue;
 
     if (entitlement.type === "metered" && entitlement.issueAfterReset != null) {
-      const cadence = item.billingCadence ?? fallbackBillingCadence;
+      // Prefer the entitlement's usage period (when the quota refills) over
+      // the billing cadence — the two are explicitly independent.
+      const cadence =
+        entitlement.usagePeriod?.intervalISO ??
+        item.billingCadence ??
+        fallbackBillingCadence;
+      const tierPrices = getTierPricesFromItem(item, currency, units);
+      // Only suppress the issued amount when there is a tier breakdown to
+      // fall back on. A single-tier priced item produces no breakdown, so
+      // keeping limit/period visible is the only way to show anything.
+      const suppressLimit =
+        hasPricedFirstTier(item) && !!tierPrices && tierPrices.length > 0;
       features.push({
         entitlementType: "metered",
         key: item.featureKey ?? item.key,
         name: item.name ?? item.featureKey ?? item.key,
-        limit: entitlement.issueAfterReset,
-        period: cadence ? formatDuration(cadence) : "month",
-        overagePrice:
-          entitlement.isSoftLimit !== false
-            ? getOveragePriceFromItem(item, currency, units)
-            : undefined,
-        tierPrices: getTierPricesFromItem(item, currency, units),
+        limit: suppressLimit ? undefined : entitlement.issueAfterReset,
+        period: suppressLimit
+          ? undefined
+          : cadence
+            ? formatDuration(cadence)
+            : "month",
+        tierPrices,
       });
       continue;
     }
@@ -175,7 +170,6 @@ type FeatureRow = {
   entitlementType: "metered" | "boolean" | "static";
   limit?: number;
   period?: string;
-  overagePrice?: string;
   tierPrices?: string[];
   value?: string;
 };
@@ -218,8 +212,6 @@ const getPhaseRows = (opts: {
         entitlementType: f.entitlementType,
         limit: f.entitlementType === "metered" ? f.limit : undefined,
         period: f.entitlementType === "metered" ? f.period : undefined,
-        overagePrice:
-          f.entitlementType === "metered" ? f.overagePrice : undefined,
         tierPrices: f.entitlementType === "metered" ? f.tierPrices : undefined,
         value: f.entitlementType === "static" ? f.value : undefined,
         phaseId: phase.id,
@@ -374,22 +366,29 @@ export const SubscriptionPlanDetails = ({
 
                               <div className="text-muted-foreground">
                                 {row.entitlementType === "metered" &&
-                                row.limit != null ? (
+                                (row.limit != null ||
+                                  (row.tierPrices &&
+                                    row.tierPrices.length > 0)) ? (
                                   <>
-                                    {formatNumber(row.limit)}
-                                    {row.period ? ` / ${row.period}` : ""}
+                                    {/* Tier breakdown carries the included
+                                        quota as a "Up to X: Included" line,
+                                        so suppress the redundant "X / period"
+                                        when both are present. */}
+                                    {row.limit != null &&
+                                    (!row.tierPrices ||
+                                      row.tierPrices.length === 0) ? (
+                                      <>
+                                        {formatNumber(row.limit)}
+                                        {row.period ? ` / ${row.period}` : ""}
+                                      </>
+                                    ) : null}
                                     {row.tierPrices &&
                                     row.tierPrices.length > 0 ? (
-                                      <ul className="text-xs mt-1 space-y-0.5">
+                                      <ul className="text-xs space-y-0.5">
                                         {row.tierPrices.map((line) => (
                                           <li key={line}>{line}</li>
                                         ))}
                                       </ul>
-                                    ) : null}
-                                    {row.overagePrice ? (
-                                      <div className="text-xs mt-0.5">
-                                        Overage: {row.overagePrice}
-                                      </div>
                                     ) : null}
                                   </>
                                 ) : row.entitlementType === "static" &&

@@ -100,8 +100,11 @@ export interface Quota {
   name: string;
   limit: number;
   period: string;
-  overagePrice?: string;
   tierPrices?: string[];
+  // Pay-as-you-go: usage-based with no included quota. `limit` is 0 and the
+  // body displays `unitPrice` (or `tierPrices`) without a "X / period" line.
+  isPayg?: boolean;
+  unitPrice?: string;
 }
 
 export interface Feature {
