@@ -62,6 +62,10 @@
       "name": "Schemas",
       "description": "Endpoints for retrieving and validating data schemas used across the Cosmo Cargo platform.",
       "x-zudoku-collapsed": false
+    },
+    {
+      "name": "GraphQL",
+      "description": "GraphQL endpoint for querying the Cosmo Cargo registry. Issue GraphQL queries to fetch shipments, fleets, and route data in a single round trip."
     }
   ],
   "servers": [
@@ -3807,7 +3811,7 @@
     },
     "/graphql": {
       "post": {
-        "tags": ["Shipment Management"],
+        "tags": ["GraphQL"],
         "operationId": "graphqlShipmentQuery",
         "summary": "GraphQL endpoint",
         "description": "Query the Cosmo Cargo registry via GraphQL. Test live against the public Rick and Morty universe schema.",
