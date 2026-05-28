@@ -230,7 +230,7 @@
     "oxc-parser": "^0.126.0",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "tsx": "4.21.0",
+    "tsx": "4.22.3",
     "typescript": "catalog:"
   },
   "peerDependencies": {
