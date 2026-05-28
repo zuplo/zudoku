@@ -275,11 +275,11 @@ importers:
         version: 11.15.0
       rehype-mermaid:
         specifier: ^3.0.0
-        version: 3.0.0(playwright@1.59.1)
+        version: 3.0.0(playwright@1.60.0)
     devDependencies:
       playwright:
-        specifier: 1.59.1
-        version: 1.59.1
+        specifier: 1.60.0
+        version: 1.60.0
       react:
         specifier: 'catalog:'
         version: 19.2.5
@@ -5625,6 +5625,7 @@ packages:
 
   '@types/tar@7.0.87':
     resolution: {integrity: sha512-3IxNBV8LeY5oi2ZFpvAhOtW1+mHswkzM7BuisVrwJgPv67GBO2rkLPQlEKtzfHuLdhDDczhkCZeT+RuizMay4A==}
+    deprecated: This is a stub types definition. tar provides its own type definitions, so you do not need this installed.
 
   '@types/tedious@4.0.14':
     resolution: {integrity: sha512-KHPsfX/FoVbUGbyYvk1q9MMQHLPeRZhRJZdO45Q4YjvFkv4hMNghCWTvy7rdKessBsmtz4euWCWAB6/tVpI1Iw==}
@@ -5655,6 +5656,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@unhead/bundler@3.1.0':
     resolution: {integrity: sha512-PzIa26mo1fk2t3KJ6ACJXTi1MD1nDJXb4hl/P8+UTMmdK0EWyDo3LMttePsIgKKR5PTnrtSeyhd43Pdoym4z2g==}
@@ -6000,6 +6002,7 @@ packages:
 
   boolean@3.2.0:
     resolution: {integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   brace-expansion@5.0.5:
     resolution: {integrity: sha512-VZznLgtwhn+Mact9tfiwx64fA9erHH/MCXEUfB/0bX/6Fz6ny5EGTXYltMocqg4xFAQZtnO3DHWWXi8RiuN7cQ==}
@@ -8069,6 +8072,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch@3.3.2:
     resolution: {integrity: sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==}
@@ -8289,8 +8293,18 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  playwright-core@1.60.0:
+    resolution: {integrity: sha512-9bW6zvX/m0lEbgTKJ6YppOKx8H3VOPBMOCFh2irXFOT4BbHgrx5hPjwJYLT40Lu+4qtD36qKc/Hn56StUW57IA==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   playwright@1.59.1:
     resolution: {integrity: sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.60.0:
+    resolution: {integrity: sha512-hheHdokM8cdqCb0lcE3s+zT4t4W+vvjpGxsZlDnikarzx8tSzMebh3UiFtgqwFwnTnjYQcsyMF8ei2mCO/tpeA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -16769,12 +16783,12 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  mermaid-isomorphic@3.0.4(playwright@1.59.1):
+  mermaid-isomorphic@3.0.4(playwright@1.60.0):
     dependencies:
       '@fortawesome/fontawesome-free': 6.7.2
       mermaid: 11.15.0
     optionalDependencies:
-      playwright: 1.59.1
+      playwright: 1.60.0
 
   mermaid@11.15.0:
     dependencies:
@@ -17546,9 +17560,17 @@ snapshots:
 
   playwright-core@1.59.1: {}
 
+  playwright-core@1.60.0: {}
+
   playwright@1.59.1:
     dependencies:
       playwright-core: 1.59.1
+    optionalDependencies:
+      fsevents: 2.3.2
+
+  playwright@1.60.0:
+    dependencies:
+      playwright-core: 1.60.0
     optionalDependencies:
       fsevents: 2.3.2
 
@@ -17860,19 +17882,19 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  rehype-mermaid@3.0.0(playwright@1.59.1):
+  rehype-mermaid@3.0.0(playwright@1.60.0):
     dependencies:
       '@types/hast': 3.0.4
       hast-util-from-html-isomorphic: 2.0.0
       hast-util-to-text: 4.0.2
-      mermaid-isomorphic: 3.0.4(playwright@1.59.1)
+      mermaid-isomorphic: 3.0.4(playwright@1.60.0)
       mini-svg-data-uri: 1.4.4
       space-separated-tokens: 2.0.2
       unified: 11.0.5
       unist-util-visit-parents: 6.0.2
       vfile: 6.0.3
     optionalDependencies:
-      playwright: 1.59.1
+      playwright: 1.60.0
 
   rehype-raw@7.0.0:
     dependencies:
