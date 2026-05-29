@@ -9,6 +9,7 @@ import { renderIf } from "../../util/renderIf.js";
 import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
 import { useOasConfig } from "./context.js";
+import { GraphQLInlineSections } from "./graphql-inline/GraphQLInlineSections.js";
 import { type FragmentType, useFragment } from "./graphql/index.js";
 import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
@@ -113,12 +114,12 @@ export const OperationListItem = ({
             {heading}
             {methodPathBlock}
             {description}
-            {/* {graphqlEndpoint?.schemaId && (
+            {graphqlEndpoint?.schemaId && (
               <GraphQLInlineSections
                 schemaId={graphqlEndpoint.schemaId}
                 slug={operation.slug}
               />
-            )} */}
+            )}
           </div>
         ) : (
           <>

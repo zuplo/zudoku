@@ -1,6 +1,12 @@
-import { Heading } from "zudoku/components";
+import { Head, Heading } from "zudoku/components";
 import { Link } from "zudoku/router";
 import { Badge } from "zudoku/ui/Badge.js";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from "zudoku/ui/Item.js";
 import { useGraphQLSchema } from "../context.js";
 import {
   findMutationFields,
@@ -53,6 +59,9 @@ export const TypeListPage = ({ kind }: TypeListPageProps) => {
 
   return (
     <div className="pt-(--padding-content-top)">
+      <Head>
+        <title>{meta.label}</title>
+      </Head>
       <div className="flex items-center gap-3 mb-6">
         <Heading level={1}>{meta.label}</Heading>
         <Badge variant="outline" className="font-mono">
@@ -65,25 +74,24 @@ export const TypeListPage = ({ kind }: TypeListPageProps) => {
           No {meta.label.toLowerCase()} defined.
         </p>
       ) : (
-        <ul className="divide-y divide-border rounded-lg border">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {items.map((item) => (
-            <li key={item.name}>
-              <Link
-                to={`${basePath}/${rootType}/${item.name}`}
-                className="block p-4 hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <code className="font-mono font-semibold">{item.name}</code>
-                </div>
-                {item.description && (
-                  <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                    {item.description}
-                  </p>
-                )}
+            <Item key={item.name} variant="outline" asChild>
+              <Link to={`${basePath}/${rootType}/${item.name}`}>
+                <ItemContent>
+                  <ItemTitle>
+                    <code className="font-mono">{item.name}</code>
+                  </ItemTitle>
+                  {item.description && (
+                    <ItemDescription className="line-clamp-2">
+                      {item.description}
+                    </ItemDescription>
+                  )}
+                </ItemContent>
               </Link>
-            </li>
+            </Item>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

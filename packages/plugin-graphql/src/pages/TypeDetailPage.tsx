@@ -6,7 +6,7 @@ import type {
   IntrospectionTypeRef,
   IntrospectionUnionType,
 } from "graphql";
-import { Heading, Markdown } from "zudoku/components";
+import { Head, Heading, Markdown } from "zudoku/components";
 import { Link } from "zudoku/router";
 import { Badge } from "zudoku/ui/Badge.js";
 import { EnumValueList } from "../components/EnumValueList.js";
@@ -20,7 +20,7 @@ import {
   findType,
   type GraphQLSchema,
 } from "../util/findType.js";
-import { ROOT_TYPES } from "../util/types.js";
+import { kindToRootType, ROOT_TYPES, typeMetadata } from "../util/types.js";
 import { unwrapType } from "../util/unwrapType.js";
 
 type TypeDetailPageProps = {
@@ -38,8 +38,15 @@ export const TypeDetailPage = ({ name }: TypeDetailPageProps) => {
     return <div>Type not found: {name}</div>;
   }
 
+  const categoryLabel = typeMetadata[kindToRootType[type.kind]]?.label;
+
   return (
     <div className="pt-(--padding-content-top)">
+      <Head>
+        <title>
+          {categoryLabel ? `${type.name} · ${categoryLabel}` : type.name}
+        </title>
+      </Head>
       <div className="flex items-center gap-3 mb-2">
         <Heading level={1}>{type.name}</Heading>
         <TypeKindBadge kind={type.kind} />
@@ -260,9 +267,14 @@ const TypeReferences = ({
       <div className="grid gap-3 md:grid-cols-3">
         {sections.map((section) => (
           <div key={section.title} className="rounded-lg border bg-card p-3">
-            <div className="mb-2 text-sm font-medium">{section.title}</div>
-            <div className="flex flex-col gap-1.5">
-              {section.items.slice(0, 6).map((item) => (
+            <div className="mb-2 text-sm font-medium">
+              {section.title}
+              <span className="ms-2 text-muted-foreground text-xs">
+                {section.items.length}
+              </span>
+            </div>
+            <div className="scrollbar flex max-h-80 flex-col gap-1.5 overflow-y-auto">
+              {section.items.map((item) => (
                 <Link
                   key={`${item.to}:${item.label}`}
                   to={item.to}

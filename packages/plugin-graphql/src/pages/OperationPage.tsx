@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Heading, Markdown } from "zudoku/components";
+import { Head, Heading, Markdown } from "zudoku/components";
 import { PlayIcon } from "zudoku/icons";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Button } from "zudoku/ui/Button.js";
@@ -49,6 +49,11 @@ export const OperationPage = ({ kind, name }: OperationPageProps) => {
 
   return (
     <div className="pt-(--padding-content-top)">
+      <Head>
+        <title>
+          {meta ? `${operation.name} · ${meta.label}` : operation.name}
+        </title>
+      </Head>
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-3">

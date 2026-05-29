@@ -1,4 +1,4 @@
-import { Heading } from "zudoku/components";
+import { Head, Heading } from "zudoku/components";
 import { GraphQLPlayground } from "../components/GraphQLPlayground.js";
 import { useGraphQLWorkbench } from "../components/GraphQLWorkbench.js";
 import { useGraphQLSchema } from "../context.js";
@@ -11,6 +11,9 @@ export const PlaygroundPage = () => {
   if (options.playground?.enabled === false) {
     return (
       <div className="pt-(--padding-content-top)">
+        <Head>
+          <title>Playground</title>
+        </Head>
         <Heading level={1}>Playground</Heading>
         <p className="mt-4 text-muted-foreground">
           The GraphQL playground is disabled for this schema.
@@ -21,6 +24,9 @@ export const PlaygroundPage = () => {
 
   return (
     <div className="pt-(--padding-content-top)">
+      <Head>
+        <title>Playground</title>
+      </Head>
       <div className="mb-6">
         <Heading level={1}>Playground</Heading>
         <p className="mt-3 text-muted-foreground">

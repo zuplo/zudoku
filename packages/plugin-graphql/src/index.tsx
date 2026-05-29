@@ -94,19 +94,32 @@ const buildNavigation = (
     { type: "link", label: "Overview", to: basePath },
   ];
 
+  const SIDEBAR_ITEM_LIMIT = 8;
+
   for (const { rootType, find } of OPERATION_NAV_GROUPS) {
     const fields = find(gqlSchema);
     if (fields.length === 0) continue;
+    const listPath = joinUrl(basePath, rootType);
+    const visible = fields.slice(0, SIDEBAR_ITEM_LIMIT);
+    const items: NavigationItem[] = visible.map((field) => ({
+      type: "link",
+      label: field.name,
+      to: joinUrl(basePath, rootType, field.name),
+    }));
+    if (fields.length > SIDEBAR_ITEM_LIMIT) {
+      items.push({
+        type: "link",
+        label: `View all (${fields.length})`,
+        to: listPath,
+      });
+    }
     navigation.push({
       type: "category",
       label: typeMetadata[rootType].label,
       collapsible: true,
       collapsed: true,
-      items: fields.map((field) => ({
-        type: "link",
-        label: field.name,
-        to: joinUrl(basePath, rootType, field.name),
-      })),
+      link: { type: "link", to: listPath },
+      items,
     });
   }
 

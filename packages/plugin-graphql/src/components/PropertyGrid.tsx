@@ -1,8 +1,8 @@
-import * as Collapsible from "@radix-ui/react-collapsible";
 import { type ReactNode, useState } from "react";
 import { cn } from "zudoku";
 import { MinusIcon, PlusIcon } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
+import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 
 const gridColumns =
   "grid-cols-[minmax(0,18rem)_minmax(0,max-content)_minmax(0,1fr)]";
@@ -76,17 +76,17 @@ export const PropertyRow = ({
         </Button>
       )}
       {collapsible && (
-        <Collapsible.Root
+        <Collapsible
           open={isOpen}
           onOpenChange={setIsOpen}
           className="col-span-full"
         >
-          <Collapsible.Content>
+          <CollapsibleContent>
             <div className="mt-3 mb-1 rounded-lg border border-border/60 bg-muted/30 px-4">
               {children}
             </div>
-          </Collapsible.Content>
-        </Collapsible.Root>
+          </CollapsibleContent>
+        </Collapsible>
       )}
     </div>
   );

@@ -3,18 +3,17 @@ import {
   type IntrospectionQuery,
   printSchema,
 } from "graphql";
-import { Heading, Markdown } from "zudoku/components";
+import { Head, Heading, Markdown } from "zudoku/components";
 import { DownloadIcon, ExternalLinkIcon, PlayIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Button } from "zudoku/ui/Button.js";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "zudoku/ui/Card.js";
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from "zudoku/ui/Item.js";
 import { SchemaSearch } from "../components/SchemaSearch.js";
 import { useGraphQLSchema } from "../context.js";
 import {
@@ -112,10 +111,15 @@ export const OverviewPage = () => {
     },
   ].filter((cat) => cat.count > 0);
 
+  const title = options.title ?? "GraphQL API";
+
   return (
     <div className="pt-(--padding-content-top)">
+      <Head>
+        <title>{title}</title>
+      </Head>
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <Heading level={1}>{options.title ?? "GraphQL API"}</Heading>
+        <Heading level={1}>{title}</Heading>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={openSchema}>
             <ExternalLinkIcon size={14} aria-hidden="true" />
@@ -144,25 +148,23 @@ export const OverviewPage = () => {
 
       <SchemaSearch />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
         {categories.map((cat) => {
           const meta = typeMetadata[cat.type];
           return (
-            <Link key={cat.type} to={`${basePath}/${cat.type}`}>
-              <Card className="h-full transition-colors hover:bg-accent/50">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{meta.label}</CardTitle>
+            <Item key={cat.type} variant="outline" asChild>
+              <Link to={`${basePath}/${cat.type}`}>
+                <ItemContent>
+                  <ItemTitle className="flex items-center justify-between gap-2">
+                    <span>{meta.label}</span>
                     <Badge variant="outline" className="font-mono">
                       {cat.count}
                     </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{cat.description}</CardDescription>
-                </CardContent>
-              </Card>
-            </Link>
+                  </ItemTitle>
+                  <ItemDescription>{cat.description}</ItemDescription>
+                </ItemContent>
+              </Link>
+            </Item>
           );
         })}
       </div>
