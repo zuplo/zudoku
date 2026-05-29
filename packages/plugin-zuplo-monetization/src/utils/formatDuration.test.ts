@@ -62,6 +62,29 @@ describe("formatDuration", () => {
     expect(formatDuration("PT30S")).toBe("30 seconds");
   });
 
+  // Portal models billing cadences using these less-common ISO 8601 forms,
+  // so the renderer must format them sensibly when the plan flows through
+  // the monetization plugin.
+  it("returns '14 days' for P14D", () => {
+    expect(formatDuration("P14D")).toBe("14 days");
+  });
+
+  it("returns '30 days' for P30D", () => {
+    expect(formatDuration("P30D")).toBe("30 days");
+  });
+
+  it("returns '4 weeks' for P4W", () => {
+    expect(formatDuration("P4W")).toBe("4 weeks");
+  });
+
+  it("returns '6 months' for P6M", () => {
+    expect(formatDuration("P6M")).toBe("6 months");
+  });
+
+  it("returns '12 months' for P12M", () => {
+    expect(formatDuration("P12M")).toBe("12 months");
+  });
+
   it("returns raw string for invalid input", () => {
     expect(formatDuration("not-a-duration")).toBe("not-a-duration");
   });
