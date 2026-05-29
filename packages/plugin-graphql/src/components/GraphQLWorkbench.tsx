@@ -33,7 +33,6 @@ type OpenWorkbenchInput = {
 };
 
 type GraphQLWorkbenchContextValue = {
-  label: string;
   operation?: GraphQLPlaygroundOperation;
   openWorkbench: (input: OpenWorkbenchInput) => void;
   updateWorkbenchOperation: (
@@ -48,11 +47,7 @@ const GraphQLWorkbenchContext = createContext<
 export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
   const { options } = useGraphQLSchema();
   const requestId = useRef(0);
-  const [state, setState] = useState<WorkbenchState>("collapsed");
-  const [hasOpened, setHasOpened] = useState(false);
-  const [height, setHeight] = useState(420);
   const [operation, setOperation] = useState<GraphQLPlaygroundOperation>();
-  const [label, setLabel] = useState("Ready");
 
   const updateWorkbenchOperation = useCallback(
     (input: Partial<Omit<GraphQLPlaygroundOperation, "id">>) => {
@@ -73,24 +68,22 @@ export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
     [],
   );
 
+  const openWorkbench = useCallback((input: OpenWorkbenchInput) => {
+    requestId.current += 1;
+    setOperation({
+      id: requestId.current,
+      query: input.query,
+      variables: input.variables,
+    });
+  }, []);
+
   const value = useMemo<GraphQLWorkbenchContextValue>(
     () => ({
-      label,
       operation,
-      openWorkbench(input) {
-        requestId.current += 1;
-        setOperation({
-          id: requestId.current,
-          query: input.query,
-          variables: input.variables,
-        });
-        setLabel(input.label ?? "Operation loaded");
-        setHasOpened(true);
-        setState("open");
-      },
+      openWorkbench,
       updateWorkbenchOperation,
     }),
-    [label, operation, updateWorkbenchOperation],
+    [operation, openWorkbench, updateWorkbenchOperation],
   );
 
   const drawerEnabled = options.playground?.enabled !== false;
@@ -98,19 +91,10 @@ export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
   return (
     <GraphQLWorkbenchContext.Provider value={value}>
       {/* Reserve room for the 44px collapsed drawer. */}
-      <div className={cn(drawerEnabled && "pb-11")}>{children}</div>
+      <div className={cn(drawerEnabled && "pb-14")}>{children}</div>
       {drawerEnabled && (
         <GraphQLWorkbenchDrawer
-          state={state}
-          height={height}
-          label={label}
           operation={operation}
-          setHeight={setHeight}
-          setState={(nextState) => {
-            if (nextState !== "collapsed") setHasOpened(true);
-            setState(nextState);
-          }}
-          hasOpened={hasOpened}
           updateWorkbenchOperation={updateWorkbenchOperation}
         />
       )}
@@ -128,41 +112,44 @@ export const useGraphQLWorkbench = () => {
   return context;
 };
 
+const MAX_HEIGHT_LIMIT = 900;
+const MIN_HEIGHT = 100;
+const DEFAULT_HEIGHT = 420;
+
 const GraphQLWorkbenchDrawer = ({
-  state,
-  height,
-  label,
   operation,
-  setHeight,
-  setState,
-  hasOpened,
   updateWorkbenchOperation,
 }: {
-  state: WorkbenchState;
-  height: number;
-  label: string;
   operation?: GraphQLPlaygroundOperation;
-  setHeight: (height: number) => void;
-  setState: (state: WorkbenchState) => void;
-  hasOpened: boolean;
   updateWorkbenchOperation: GraphQLWorkbenchContextValue["updateWorkbenchOperation"];
 }) => {
   const { options, schema } = useGraphQLSchema();
   const location = useLocation();
   const drawerRef = useRef<HTMLDivElement>(null);
   const resizeFrameRef = useRef<number | undefined>(undefined);
-  const resizedHeightRef = useRef(height);
+  const resizedHeightRef = useRef(DEFAULT_HEIGHT);
   const resizeStartRef = useRef<
     { clientY: number; height: number } | undefined
   >(undefined);
   const [isResizing, setIsResizing] = useState(false);
+  const [state, setState] = useState<WorkbenchState>("collapsed");
+  const [height, setHeight] = useState(DEFAULT_HEIGHT);
+  // Auto-open the drawer when openWorkbench is called (id bumps).
+  const [lastOpenedId, setLastOpenedId] = useState(operation?.id);
+  if (operation?.id !== undefined && operation.id !== lastOpenedId) {
+    setLastOpenedId(operation.id);
+    setState("open");
+  }
+  // Mount the playground lazily on first open and keep it alive thereafter.
+  const [hasOpened, setHasOpened] = useState(state !== "collapsed");
+  if (!hasOpened && state !== "collapsed") {
+    setHasOpened(true);
+  }
   const isStandalonePlayground = location.pathname.endsWith("/playground");
-  const maxHeight = 900;
-  const minHeight = 100;
   const getMaxHeight = () =>
-    typeof window === "undefined" ? maxHeight : window.innerHeight - 48;
+    typeof window === "undefined" ? MAX_HEIGHT_LIMIT : window.innerHeight - 48;
   const clampHeight = (nextHeight: number) =>
-    Math.min(Math.max(nextHeight, minHeight), getMaxHeight());
+    Math.min(Math.max(nextHeight, MIN_HEIGHT), getMaxHeight());
   const drawerHeight =
     state === "collapsed"
       ? "44px"
@@ -232,34 +219,35 @@ const GraphQLWorkbenchDrawer = ({
       style={{ height: drawerHeight }}
       data-pagefind-ignore="all"
     >
+      <div
+        className="absolute inset-x-3 top-0 z-20 mx-auto h-0.5 max-w-6xl cursor-ns-resize hover:bg-border/50 after:absolute after:inset-x-3 after:-top-1 after:-bottom-1 after:content-['']"
+        role="separator"
+        aria-label="Resize playground"
+        aria-orientation="horizontal"
+        aria-valuemin={280}
+        aria-valuemax={Math.max(280, MAX_HEIGHT_LIMIT)}
+        aria-valuenow={height}
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowUp") {
+            event.preventDefault();
+            setState("open");
+            setHeight(clampHeight(height + 40));
+          }
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            setState("open");
+            setHeight(clampHeight(height - 40));
+          }
+        }}
+        onPointerDown={startResize}
+        onPointerMove={resize}
+        onPointerUp={stopResize}
+        onPointerCancel={stopResize}
+        onLostPointerCapture={stopResize}
+      />
       <div className="mx-auto flex h-full max-w-6xl flex-col overflow-hidden rounded-t-lg border bg-background shadow-2xl">
-        <div
-          className="flex h-11 shrink-0 cursor-ns-resize items-center gap-2 border-b px-3"
-          role="separator"
-          aria-label="Resize playground"
-          aria-orientation="horizontal"
-          aria-valuemin={280}
-          aria-valuemax={Math.max(280, maxHeight)}
-          aria-valuenow={height}
-          tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key === "ArrowUp") {
-              event.preventDefault();
-              setState("open");
-              setHeight(clampHeight(height + 40));
-            }
-            if (event.key === "ArrowDown") {
-              event.preventDefault();
-              setState("open");
-              setHeight(clampHeight(height - 40));
-            }
-          }}
-          onPointerDown={startResize}
-          onPointerMove={resize}
-          onPointerUp={stopResize}
-          onPointerCancel={stopResize}
-          onLostPointerCapture={stopResize}
-        >
+        <div className="flex h-11 shrink-0 items-center gap-2 border-b px-3">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <PlayIcon
               className="size-3.5 fill-current text-primary"
@@ -268,56 +256,33 @@ const GraphQLWorkbenchDrawer = ({
             <span className="truncate text-sm font-medium">
               GraphQL Playground
             </span>
-            <span className="truncate text-xs text-muted-foreground">
-              {label}
-            </span>
           </div>
           <div className="flex items-center gap-1">
             {state === "collapsed" ? (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Open playground"
-                className="cursor-pointer"
-                onPointerDown={(event) => event.stopPropagation()}
+              <DrawerToolbarButton
+                label="Open playground"
+                icon={ChevronsUpIcon}
                 onClick={() => setState("open")}
-              >
-                <ChevronsUpIcon size={14} />
-              </Button>
+              />
             ) : (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Collapse playground"
-                className="cursor-pointer"
-                onPointerDown={(event) => event.stopPropagation()}
+              <DrawerToolbarButton
+                label="Collapse playground"
+                icon={ChevronsDownIcon}
                 onClick={() => setState("collapsed")}
-              >
-                <ChevronsDownIcon size={14} />
-              </Button>
+              />
             )}
             {state === "maximized" ? (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Restore playground"
-                className="cursor-pointer"
-                onPointerDown={(event) => event.stopPropagation()}
+              <DrawerToolbarButton
+                label="Restore playground"
+                icon={Minimize2Icon}
                 onClick={() => setState("open")}
-              >
-                <Minimize2Icon size={14} />
-              </Button>
+              />
             ) : (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Maximize playground"
-                className="cursor-pointer"
-                onPointerDown={(event) => event.stopPropagation()}
+              <DrawerToolbarButton
+                label="Maximize playground"
+                icon={Maximize2Icon}
                 onClick={() => setState("maximized")}
-              >
-                <Maximize2Icon size={14} />
-              </Button>
+              />
             )}
           </div>
         </div>
@@ -335,3 +300,24 @@ const GraphQLWorkbenchDrawer = ({
     </div>
   );
 };
+
+const DrawerToolbarButton = ({
+  label,
+  icon: Icon,
+  onClick,
+}: {
+  label: string;
+  icon: typeof ChevronsUpIcon;
+  onClick: () => void;
+}) => (
+  <Button
+    variant="ghost"
+    size="icon-sm"
+    aria-label={label}
+    className="cursor-pointer"
+    onPointerDown={(event) => event.stopPropagation()}
+    onClick={onClick}
+  >
+    <Icon size={14} />
+  </Button>
+);

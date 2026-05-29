@@ -3,25 +3,18 @@ import type {
   IntrospectionInputObjectType,
   IntrospectionInterfaceType,
   IntrospectionObjectType,
-  IntrospectionTypeRef,
   IntrospectionUnionType,
 } from "graphql";
+import { joinUrl } from "zudoku";
 import { Head, Heading, Markdown } from "zudoku/components";
 import { Link } from "zudoku/router";
 import { Badge } from "zudoku/ui/Badge.js";
 import { EnumValueList } from "../components/EnumValueList.js";
-import { FieldList, InputFieldList } from "../components/FieldList.js";
+import { FieldList } from "../components/FieldList.js";
 import { TypeKindBadge } from "../components/TypeBadge.js";
 import { useGraphQLSchema } from "../context.js";
-import {
-  findMutationFields,
-  findQueryFields,
-  findSubscriptionFields,
-  findType,
-  type GraphQLSchema,
-} from "../util/findType.js";
+import type { SchemaIndex } from "../util/schemaIndex.js";
 import { kindToRootType, ROOT_TYPES, typeMetadata } from "../util/types.js";
-import { unwrapType } from "../util/unwrapType.js";
 
 type TypeDetailPageProps = {
   kind: string;
@@ -29,10 +22,10 @@ type TypeDetailPageProps = {
 };
 
 export const TypeDetailPage = ({ name }: TypeDetailPageProps) => {
-  const { schema, basePath } = useGraphQLSchema();
+  const { index, basePath } = useGraphQLSchema();
 
-  const type = findType(name, schema);
-  const references = getTypeReferences(name, schema, basePath);
+  const type = index.getType(name);
+  const references = getTypeReferences(name, index, basePath);
 
   if (!type) {
     return <div>Type not found: {name}</div>;
@@ -69,7 +62,7 @@ export const TypeDetailPage = ({ name }: TypeDetailPageProps) => {
       {type.kind === "SCALAR" && <ScalarTypeDetail />}
 
       {type.kind === "INTERFACE" && (
-        <InterfaceTypeDetail type={type} basePath={basePath} schema={schema} />
+        <InterfaceTypeDetail type={type} basePath={basePath} index={index} />
       )}
 
       {type.kind === "UNION" && (
@@ -132,7 +125,7 @@ const InputObjectTypeDetail = ({
       <Heading level={3} className="mb-3">
         Fields
       </Heading>
-      <InputFieldList fields={type.inputFields} />
+      <FieldList fields={type.inputFields} />
     </div>
   ) : null;
 
@@ -158,17 +151,13 @@ const ScalarTypeDetail = () => (
 const InterfaceTypeDetail = ({
   type,
   basePath,
-  schema,
+  index,
 }: {
   type: IntrospectionInterfaceType;
   basePath: string;
-  schema: GraphQLSchema;
+  index: SchemaIndex;
 }) => {
-  const implementingTypes = schema.types.filter(
-    (t): t is IntrospectionObjectType =>
-      t.kind === "OBJECT" &&
-      (t.interfaces?.some((i) => i.name === type.name) ?? false),
-  );
+  const implementingTypes = index.implementedBy(type.name);
 
   return (
     <>
@@ -190,7 +179,7 @@ const InterfaceTypeDetail = ({
             {implementingTypes.map((t) => (
               <Link
                 key={t.name}
-                to={`${basePath}/${ROOT_TYPES.OBJECT}/${t.name}`}
+                to={joinUrl(basePath, ROOT_TYPES.OBJECT, t.name)}
               >
                 <Badge variant="outline" className="font-mono">
                   {t.name}
@@ -298,99 +287,29 @@ const TypeReferences = ({
 
 const getTypeReferences = (
   typeName: string,
-  schema: ReturnType<typeof useGraphQLSchema>["schema"],
+  index: SchemaIndex,
   basePath: string,
 ) => {
-  const operations = [
-    {
-      rootType: ROOT_TYPES.QUERY,
-      fields: findQueryFields(schema),
-    },
-    {
-      rootType: ROOT_TYPES.MUTATION,
-      fields: findMutationFields(schema),
-    },
-    {
-      rootType: ROOT_TYPES.SUBSCRIPTION,
-      fields: findSubscriptionFields(schema),
-    },
-  ];
-
-  const returnedBy = operations.flatMap(({ rootType, fields }) =>
-    fields
-      .filter((field) => typeRefContains(field.type, typeName))
-      .map((field) => ({
-        label: field.name,
-        description: rootType,
-        to: `${basePath}/${rootType}/${field.name}`,
-      })),
-  );
-
-  const acceptedBy = operations.flatMap(({ rootType, fields }) =>
-    fields.flatMap((field) =>
-      field.args
-        .filter((arg) => typeRefContains(arg.type, typeName))
-        .map((arg) => ({
-          label: `${field.name}(${arg.name})`,
-          description: rootType,
-          to: `${basePath}/${rootType}/${field.name}`,
-        })),
-    ),
-  );
-
-  // Link root operation type fields to the operation page, not the type page.
-  const rootOperationKind = (name: string) =>
-    name === schema.queryType?.name
-      ? ROOT_TYPES.QUERY
-      : name === schema.mutationType?.name
-        ? ROOT_TYPES.MUTATION
-        : name === schema.subscriptionType?.name
-          ? ROOT_TYPES.SUBSCRIPTION
-          : null;
-
-  const usedByFields = schema.types.flatMap((type) => {
-    if (type.name.startsWith("__")) return [];
-    const operationKind = rootOperationKind(type.name);
-    const rootType =
-      operationKind ??
-      (type.kind === "OBJECT"
-        ? ROOT_TYPES.OBJECT
-        : type.kind === "INPUT_OBJECT"
-          ? ROOT_TYPES.INPUT_OBJECT
-          : type.kind === "INTERFACE"
-            ? ROOT_TYPES.INTERFACE
-            : null);
-
-    if (!rootType) return [];
-
-    const fields =
-      type.kind === "INPUT_OBJECT"
-        ? type.inputFields
-        : type.kind === "OBJECT" || type.kind === "INTERFACE"
-          ? type.fields
-          : [];
-
-    return fields
-      .filter((field) => typeRefContains(field.type, typeName))
-      .map((field) => ({
-        label: `${type.name}.${field.name}`,
-        description: type.kind,
-        to: operationKind
-          ? `${basePath}/${operationKind}/${field.name}`
-          : `${basePath}/${rootType}/${type.name}`,
-      }));
-  });
+  const refs = index.typeReferences(typeName);
 
   return {
-    returnedBy,
-    usedByFields: usedByFields.filter(
-      (item) => item.label !== `${typeName}.${item.label.split(".").at(-1)}`,
-    ),
-    acceptedBy,
+    returnedBy: refs.returnedBy.map((ref) => ({
+      label: ref.fieldName,
+      description: ref.rootType,
+      to: `${basePath}/${ref.rootType}/${ref.fieldName}`,
+    })),
+    acceptedBy: refs.acceptedBy.map((ref) => ({
+      label: `${ref.fieldName}(${ref.argName})`,
+      description: ref.rootType,
+      to: `${basePath}/${ref.rootType}/${ref.fieldName}`,
+    })),
+    // Self-references are shown inline on the type itself, so skip them here.
+    usedByFields: refs.usedByFields
+      .filter((ref) => ref.ownerName !== typeName)
+      .map((ref) => ({
+        label: ref.label,
+        description: ref.ownerKind,
+        to: `${basePath}/${ref.linkKind}/${ref.linkName}`,
+      })),
   };
-};
-
-const typeRefContains = (type: IntrospectionTypeRef, typeName: string) => {
-  const unwrapped = unwrapType(type, []);
-  return unwrapped.name === typeName;
 };

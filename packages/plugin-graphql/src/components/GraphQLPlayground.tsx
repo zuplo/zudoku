@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { cn } from "zudoku";
 import { GraphiQLViewer, type GraphiQLFetcher } from "zudoku/graphiql";
 
+const EMPTY_HEADERS: Record<string, string> = {};
+
 export type GraphQLPlaygroundOperation = {
   id: number;
   query: string;
@@ -24,7 +26,7 @@ type GraphQLPlaygroundProps = {
 
 export const GraphQLPlayground = ({
   endpoint,
-  headers = {},
+  headers = EMPTY_HEADERS,
   schema,
   query,
   variables,

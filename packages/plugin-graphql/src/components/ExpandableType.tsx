@@ -4,18 +4,11 @@ import type {
   IntrospectionTypeRef,
 } from "graphql";
 import { type ReactNode, useState } from "react";
-import { cn } from "zudoku";
-import { MinusIcon, PlusIcon } from "zudoku/icons";
 import { useGraphQLSchema } from "../context.js";
-import { findType } from "../util/findType.js";
 import { unwrapType } from "../util/unwrapType.js";
-import { FieldList, InputFieldList } from "./FieldList.js";
+import { FieldList } from "./FieldList.js";
+import { SectionTitle } from "./SectionTitle.js";
 import { TypeBadge } from "./TypeBadge.js";
-
-const iconTransition =
-  "absolute transition-[opacity,scale,filter] duration-200 ease-[cubic-bezier(0.2,0,0,1)]";
-const iconOpen = "opacity-100 scale-100 blur-0";
-const iconClosed = "opacity-0 scale-[0.25] blur-[4px]";
 
 export const ExpandableType = ({
   type,
@@ -25,10 +18,10 @@ export const ExpandableType = ({
   label?: ReactNode;
 }) => {
   const [open, setOpen] = useState(true);
-  const { schema } = useGraphQLSchema();
+  const { index } = useGraphQLSchema();
 
   const unwrapped = unwrapType(type, []);
-  const resolvedType = findType(unwrapped.name, schema);
+  const resolvedType = index.getType(unwrapped.name);
 
   const inputFields: readonly IntrospectionInputValue[] =
     resolvedType?.kind === "INPUT_OBJECT" ? resolvedType.inputFields : [];
@@ -40,39 +33,36 @@ export const ExpandableType = ({
   const hasFields = inputFields.length > 0 || objectFields.length > 0;
 
   if (!hasFields) {
-    return <TypeBadge type={type} linked={false} />;
+    return (
+      <div className="flex items-baseline gap-2">
+        {label && (
+          <h3 className="text-xl font-semibold leading-none">{label}</h3>
+        )}
+        {label && <span className="text-muted-foreground">·</span>}
+        <TypeBadge type={type} />
+      </div>
+    );
   }
 
-  const toggle = () => setOpen(!open);
-
   return (
-    <div className="flex flex-col border-y border-border/60">
-      <button
-        type="button"
-        onClick={toggle}
-        aria-expanded={open}
-        className="flex items-center justify-between gap-3 py-2.5 text-left hover:opacity-80"
-      >
-        <span className="flex items-center gap-3">
-          {label && (
-            <h3 className="text-xl font-semibold leading-none">{label}</h3>
-          )}
-          <TypeBadge type={type} linked={false} />
-        </span>
-        <span className="relative flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent">
-          <PlusIcon
-            size={16}
-            className={cn(iconTransition, open ? iconClosed : iconOpen)}
-          />
-          <MinusIcon
-            size={16}
-            className={cn(iconTransition, open ? iconOpen : iconClosed)}
-          />
-        </span>
-      </button>
+    <div className="flex flex-col">
+      <SectionTitle
+        label={label}
+        suffix={<TypeBadge type={type} />}
+        actions={
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            className="text-xs text-primary hover:underline"
+          >
+            {open ? "Hide fields" : "Show fields"}
+          </button>
+        }
+      />
       {open ? (
         isInputType ? (
-          <InputFieldList fields={inputFields} depth={1} />
+          <FieldList fields={inputFields} depth={1} />
         ) : (
           <FieldList fields={objectFields} showArguments={false} depth={1} />
         )

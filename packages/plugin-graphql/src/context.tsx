@@ -1,9 +1,11 @@
 import { createContext, type PropsWithChildren, use } from "react";
 import type { GraphQLPluginOptions } from "./interfaces.js";
 import type { GraphQLSchema } from "./util/findType.js";
+import type { SchemaIndex } from "./util/schemaIndex.js";
 
 type GraphQLContextValue = {
   schema: GraphQLSchema;
+  index: SchemaIndex;
   basePath: string;
   options: GraphQLPluginOptions;
 };

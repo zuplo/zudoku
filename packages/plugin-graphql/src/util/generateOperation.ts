@@ -7,8 +7,7 @@ import type {
   IntrospectionType,
   IntrospectionTypeRef,
 } from "graphql";
-import type { GraphQLSchema } from "./findType.js";
-import { findType } from "./findType.js";
+import type { SchemaIndex } from "./schemaIndex.js";
 import { stringifyType } from "./stringifyType.js";
 import { unwrapType, type TypeWrapper } from "./unwrapType.js";
 
@@ -24,15 +23,15 @@ export type GeneratedGraphQLOperation = {
 export const generateGraphQLOperation = ({
   field,
   operationType,
-  schema,
+  index,
 }: {
   field: IntrospectionField;
   operationType: OperationType;
-  schema: GraphQLSchema;
+  index: SchemaIndex;
 }): GeneratedGraphQLOperation => {
   const operationName = toOperationName(field.name);
   const variables = Object.fromEntries(
-    field.args.map((arg) => [arg.name, getExampleValue(arg.type, schema)]),
+    field.args.map((arg) => [arg.name, getExampleValue(arg.type, index)]),
   );
   const variableDefinitions = field.args
     .map((arg) => `$${arg.name}: ${formatType(arg.type)}`)
@@ -40,7 +39,7 @@ export const generateGraphQLOperation = ({
   const argumentList = field.args
     .map((arg) => `${arg.name}: $${arg.name}`)
     .join(", ");
-  const selectionSet = buildSelectionSet(field.type, schema, 1);
+  const selectionSet = buildSelectionSet(field.type, index, 1);
 
   const lines = [
     `${operationType} ${operationName}${
@@ -75,12 +74,12 @@ const formatType = (type: IntrospectionTypeRef) => {
 
 const buildSelectionSet = (
   type: IntrospectionTypeRef,
-  schema: GraphQLSchema,
+  index: SchemaIndex,
   depth = 0,
   seen = new Set<string>(),
 ): string => {
   const unwrapped = unwrapType(type, []);
-  const resolvedType = findType(unwrapped.name, schema);
+  const resolvedType = index.getType(unwrapped.name);
 
   if (!resolvedType) return "";
 
@@ -93,14 +92,13 @@ const buildSelectionSet = (
     const lines = ["{", `${indent(depth + 1)}__typename`];
 
     for (const possibleType of possibleTypes) {
-      const objectType = findType<IntrospectionObjectType>(
+      const objectType = index.getType<IntrospectionObjectType>(
         possibleType.name,
-        schema,
         ["OBJECT"],
       );
       if (!objectType) continue;
 
-      const nested = buildFieldSelection(objectType, schema, depth + 2, seen);
+      const nested = buildFieldSelection(objectType, index, depth + 2, seen);
       if (nested.length > 0) {
         lines.push(
           `${indent(depth + 1)}... on ${possibleType.name} {`,
@@ -122,7 +120,7 @@ const buildSelectionSet = (
     return "";
   }
 
-  const lines = buildFieldSelection(resolvedType, schema, depth + 1, seen);
+  const lines = buildFieldSelection(resolvedType, index, depth + 1, seen);
   if (lines.length === 0) return "";
 
   return ["{", ...lines, `${indent(depth)}}`].join("\n");
@@ -132,7 +130,7 @@ const buildFieldSelection = (
   type:
     | IntrospectionObjectType
     | Extract<IntrospectionType, { kind: "INTERFACE" }>,
-  schema: GraphQLSchema,
+  index: SchemaIndex,
   depth: number,
   seen: Set<string>,
 ) => {
@@ -145,22 +143,20 @@ const buildFieldSelection = (
 
     const nestedSelection = buildSelectionSet(
       field.type,
-      schema,
+      index,
       depth,
       nextSeen,
     );
 
     if (nestedSelection) {
       lines.push(`${indent(depth)}${field.name} ${nestedSelection}`);
-    } else if (isLeafType(field.type, schema)) {
+    } else if (isLeafType(field.type, index)) {
       lines.push(`${indent(depth)}${field.name}`);
     }
   }
 
   if (lines.length === 0) {
-    const fallback = type.fields.find((field) =>
-      isLeafType(field.type, schema),
-    );
+    const fallback = type.fields.find((field) => isLeafType(field.type, index));
     if (fallback) lines.push(`${indent(depth)}${fallback.name}`);
   }
 
@@ -184,25 +180,25 @@ const hasRequiredArgs = (field: IntrospectionField) =>
 
 const isNonNull = (type: IntrospectionTypeRef) => type.kind === "NON_NULL";
 
-const isLeafType = (type: IntrospectionTypeRef, schema: GraphQLSchema) => {
+const isLeafType = (type: IntrospectionTypeRef, index: SchemaIndex) => {
   const unwrapped = unwrapType(type, []);
-  const resolvedType = findType(unwrapped.name, schema);
+  const resolvedType = index.getType(unwrapped.name);
   return resolvedType?.kind === "SCALAR" || resolvedType?.kind === "ENUM";
 };
 
 const getExampleValue = (
   type: IntrospectionTypeRef,
-  schema: GraphQLSchema,
+  index: SchemaIndex,
 ): unknown => {
   if (type.kind === "NON_NULL") {
-    return getExampleValue(type.ofType, schema);
+    return getExampleValue(type.ofType, index);
   }
 
   if (type.kind === "LIST") {
-    return [getExampleValue(type.ofType, schema)];
+    return [getExampleValue(type.ofType, index)];
   }
 
-  const resolvedType = findType(type.name, schema);
+  const resolvedType = index.getType(type.name);
 
   switch (resolvedType?.kind) {
     case "SCALAR":
@@ -210,7 +206,7 @@ const getExampleValue = (
     case "ENUM":
       return (resolvedType as IntrospectionEnumType).enumValues[0]?.name ?? "";
     case "INPUT_OBJECT":
-      return getInputObjectExample(resolvedType, schema);
+      return getInputObjectExample(resolvedType, index);
     default:
       return null;
   }
@@ -218,18 +214,18 @@ const getExampleValue = (
 
 const getInputObjectExample = (
   type: IntrospectionInputObjectType,
-  schema: GraphQLSchema,
+  index: SchemaIndex,
 ) =>
   Object.fromEntries(
     type.inputFields
       .filter((field) => field.defaultValue == null && isNonNull(field.type))
-      .map((field) => [field.name, getInputFieldExample(field, schema)]),
+      .map((field) => [field.name, getInputFieldExample(field, index)]),
   );
 
 const getInputFieldExample = (
   field: IntrospectionInputValue,
-  schema: GraphQLSchema,
-) => getExampleValue(field.type, schema);
+  index: SchemaIndex,
+) => getExampleValue(field.type, index);
 
 const getScalarExample = (name: string) => {
   switch (name) {

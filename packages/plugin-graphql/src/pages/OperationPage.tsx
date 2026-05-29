@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Head, Heading, Markdown } from "zudoku/components";
 import { PlayIcon } from "zudoku/icons";
-import { Badge } from "zudoku/ui/Badge.js";
 import { Button } from "zudoku/ui/Button.js";
 import {
   Collapsible,
@@ -11,10 +10,10 @@ import {
 import * as SidecarBox from "zudoku/ui/SidecarBox.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { ExpandableType } from "../components/ExpandableType.js";
-import { InputFieldList } from "../components/FieldList.js";
+import { FieldList } from "../components/FieldList.js";
 import { useGraphQLWorkbench } from "../components/GraphQLWorkbench.js";
+import { SectionTitle } from "../components/SectionTitle.js";
 import { useGraphQLSchema } from "../context.js";
-import { findOperationFields } from "../util/findType.js";
 import { generateGraphQLOperation } from "../util/generateOperation.js";
 import { typeMetadata } from "../util/types.js";
 
@@ -26,20 +25,20 @@ type OperationPageProps = {
 };
 
 export const OperationPage = ({ kind, name }: OperationPageProps) => {
-  const { schema, options } = useGraphQLSchema();
+  const { index, options } = useGraphQLSchema();
 
   const operationType = kind as OperationType;
   const meta = typeMetadata[operationType];
-  const operation = findOperationFields(operationType, schema).find(
-    (f) => f.name === name,
-  );
+  const operation = index
+    .operationFields(operationType)
+    .find((f) => f.name === name);
 
   const generatedOperation = useMemo(
     () =>
       operation
-        ? generateGraphQLOperation({ field: operation, operationType, schema })
+        ? generateGraphQLOperation({ field: operation, operationType, index })
         : undefined,
-    [operation, operationType, schema],
+    [operation, operationType, index],
   );
   const playgroundEnabled = options.playground?.enabled !== false;
 
@@ -56,9 +55,13 @@ export const OperationPage = ({ kind, name }: OperationPageProps) => {
       </Head>
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0">
-          <div className="mb-2 flex flex-wrap items-center gap-3">
-            <Heading level={1}>{operation.name}</Heading>
-            <Badge className={meta?.colorClass}>{meta?.labelSingular}</Badge>
+          <div className="mb-2 flex flex-wrap items-baseline gap-3">
+            <Heading level={1} className="font-mono break-all min-w-0">
+              {operation.name}
+            </Heading>
+            <span className="text-muted-foreground text-base">
+              {meta?.labelSingular.toLowerCase()}
+            </span>
           </div>
 
           {operation.description && (
@@ -77,16 +80,14 @@ export const OperationPage = ({ kind, name }: OperationPageProps) => {
           )}
 
           <div className="mt-8 flex flex-col gap-6">
-            <ExpandableType type={operation.type} label="Return Type" />
-
             {operation.args && operation.args.length > 0 && (
               <div>
-                <Heading level={3} className="mb-2">
-                  Arguments
-                </Heading>
-                <InputFieldList fields={operation.args} />
+                <SectionTitle label="Arguments" />
+                <FieldList fields={operation.args} />
               </div>
             )}
+
+            <ExpandableType type={operation.type} label="Return Type" />
           </div>
         </div>
 

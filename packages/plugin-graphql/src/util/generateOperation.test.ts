@@ -2,6 +2,7 @@ import { buildSchema, introspectionFromSchema } from "graphql";
 import { describe, expect, it } from "vitest";
 import { findMutationFields, findQueryFields } from "./findType.js";
 import { generateGraphQLOperation } from "./generateOperation.js";
+import { buildSchemaIndex } from "./schemaIndex.js";
 
 const schema = introspectionFromSchema(
   buildSchema(/* GraphQL */ `
@@ -34,6 +35,8 @@ const schema = introspectionFromSchema(
   `),
 ).__schema;
 
+const index = buildSchemaIndex(schema);
+
 describe("generateGraphQLOperation", () => {
   it("generates a query with variables and a nested selection set", () => {
     const field = findQueryFields(schema).find(
@@ -45,7 +48,7 @@ describe("generateGraphQLOperation", () => {
       generateGraphQLOperation({
         field,
         operationType: "query",
-        schema,
+        index,
       }),
     ).toEqual({
       document: `query Product($id: ID!) {
@@ -75,7 +78,7 @@ describe("generateGraphQLOperation", () => {
       generateGraphQLOperation({
         field,
         operationType: "mutation",
-        schema,
+        index,
       }).variables,
     ).toEqual({
       input: {

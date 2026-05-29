@@ -1,13 +1,15 @@
 import { type ReactNode, useState } from "react";
 import { cn } from "zudoku";
-import { MinusIcon, PlusIcon } from "zudoku/icons";
-import { Button } from "zudoku/ui/Button.js";
-import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
-
-const gridColumns =
-  "grid-cols-[minmax(0,18rem)_minmax(0,max-content)_minmax(0,1fr)]";
+import { LinkIcon } from "zudoku/icons";
+import { Button } from "zudoku/ui/Button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "zudoku/ui/Collapsible.js";
 
 export const PropertyRow = ({
+  id,
   name,
   infos,
   description,
@@ -16,6 +18,7 @@ export const PropertyRow = ({
   collapsible: collapsibleProp,
   defaultOpen = false,
 }: {
+  id?: string;
   name: ReactNode;
   infos?: ReactNode;
   description?: ReactNode;
@@ -26,11 +29,12 @@ export const PropertyRow = ({
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const collapsible = collapsibleProp ?? Boolean(children);
+
   const nameNode =
     typeof name === "string" ? (
       <code
         className={cn(
-          "font-semibold text-foreground",
+          "font-mono text-foreground bg-muted/60 rounded px-1.5 py-0.5 text-[0.8125rem]",
           deprecated && "line-through",
         )}
       >
@@ -42,47 +46,51 @@ export const PropertyRow = ({
 
   return (
     <div
+      id={id}
       className={cn(
-        "relative col-span-full grid grid-cols-subgrid items-baseline gap-x-3 py-3 pe-10 text-sm",
+        "relative scroll-mt-(--scroll-padding) py-3 text-sm",
         deprecated && "opacity-50 hover:opacity-100 transition",
       )}
     >
-      <div className="min-w-0 break-words">
-        {collapsible ? (
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            type="button"
-            className="text-left hover:underline"
-          >
-            {nameNode}
-          </button>
-        ) : (
-          nameNode
+      <div className="group/row flex flex-wrap items-baseline gap-1">
+        {id && (
+          <div className="absolute -inset-s-5 top-3.5 bottom-0 text-muted-foreground">
+            <a
+              href={`#${id}`}
+              aria-label={`Link to ${id}`}
+              className="bg-background rounded p-1 -m-1 inline-block opacity-0 group-hover/row:opacity-100 hover:text-primary"
+            >
+              <LinkIcon className="size-3.5" />
+            </a>
+          </div>
+        )}
+        {nameNode}
+        {infos && <span className="text-muted-foreground/75">&middot;</span>}
+        {infos && (
+          <span className="inline-flex flex-wrap items-baseline gap-2 min-w-0">
+            {infos}
+          </span>
         )}
       </div>
-      <div className="flex items-center gap-2">{infos}</div>
-      <div className="text-muted-foreground min-w-0 [&>p]:m-0 [&>p]:inline">
-        {description}
-      </div>
-      {collapsible && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute end-0 top-1.5 rounded-full"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle properties"
-        >
-          {isOpen ? <MinusIcon size={16} /> : <PlusIcon size={16} />}
-        </Button>
+      {description && (
+        <div className="text-muted-foreground mt-1 [&>p]:m-0 [&>p]:inline">
+          {description}
+        </div>
       )}
       {collapsible && (
-        <Collapsible
-          open={isOpen}
-          onOpenChange={setIsOpen}
-          className="col-span-full"
-        >
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="link"
+              type="button"
+              className="mt-2 px-0"
+              size="xs"
+            >
+              {isOpen ? "Hide fields" : "Show fields"}
+            </Button>
+          </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="mt-3 mb-1 rounded-lg border border-border/60 bg-muted/30 px-4">
+            <div className="mt-2 mb-1 border-l-2 border-border/60 ps-4">
               {children}
             </div>
           </CollapsibleContent>
@@ -92,21 +100,8 @@ export const PropertyRow = ({
   );
 };
 
-export const PropertyGrid = ({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) => (
-  <div
-    data-property-grid=""
-    className={cn(
-      "grid border-y border-border/50 [&_[data-property-grid]]:border-y-0",
-      gridColumns,
-      className,
-    )}
-  >
+export const PropertyGrid = ({ children }: { children: ReactNode }) => (
+  <div data-property-grid="" className="divide-y divide-border/50">
     {children}
   </div>
 );

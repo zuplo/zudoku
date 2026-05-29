@@ -6,12 +6,7 @@ import { Link } from "zudoku/router";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Input } from "zudoku/ui/Input.js";
 import { useGraphQLSchema } from "../context.js";
-import {
-  findMutationFields,
-  findQueryFields,
-  findSubscriptionFields,
-  findTypes,
-} from "../util/findType.js";
+import type { SchemaIndex } from "../util/schemaIndex.js";
 import { kindToRootType, ROOT_TYPES, typeMetadata } from "../util/types.js";
 
 type SearchItem = {
@@ -23,23 +18,24 @@ type SearchItem = {
 };
 
 export const SchemaSearch = () => {
-  const { schema, basePath } = useGraphQLSchema();
+  const { index, basePath } = useGraphQLSchema();
   const [query, setQuery] = useState("");
 
   const items = useMemo(
-    () => buildSearchItems(schema, basePath),
-    [schema, basePath],
+    () => buildSearchItems(index, basePath),
+    [index, basePath],
   );
   const normalizedQuery = query.trim().toLowerCase();
-  const results = normalizedQuery
-    ? items
-        .filter((item) =>
-          [item.label, item.detail, item.kind]
-            .filter(Boolean)
-            .some((value) => value?.toLowerCase().includes(normalizedQuery)),
-        )
-        .slice(0, 8)
-    : [];
+  const results = useMemo(() => {
+    if (!normalizedQuery) return [];
+    return items
+      .filter((item) =>
+        [item.label, item.detail, item.kind]
+          .filter(Boolean)
+          .some((value) => value?.toLowerCase().includes(normalizedQuery)),
+      )
+      .slice(0, 8);
+  }, [items, normalizedQuery]);
 
   return (
     <div className="relative mt-8 max-w-3xl">
@@ -86,29 +82,26 @@ export const SchemaSearch = () => {
 };
 
 const buildSearchItems = (
-  schema: ReturnType<typeof useGraphQLSchema>["schema"],
+  index: SchemaIndex,
   basePath: string,
 ): SearchItem[] => {
   const operations = [
-    ...toOperationItems(findQueryFields(schema), ROOT_TYPES.QUERY, basePath),
+    ...toOperationItems(index.queryFields, ROOT_TYPES.QUERY, basePath),
+    ...toOperationItems(index.mutationFields, ROOT_TYPES.MUTATION, basePath),
     ...toOperationItems(
-      findMutationFields(schema),
-      ROOT_TYPES.MUTATION,
-      basePath,
-    ),
-    ...toOperationItems(
-      findSubscriptionFields(schema),
+      index.subscriptionFields,
       ROOT_TYPES.SUBSCRIPTION,
       basePath,
     ),
   ];
 
-  const types = findTypes(schema)
+  const types = index
+    .getTypes()
     .filter(
       (type) =>
-        type.name !== schema.queryType?.name &&
-        type.name !== schema.mutationType?.name &&
-        type.name !== schema.subscriptionType?.name,
+        type.name !== index.schema.queryType?.name &&
+        type.name !== index.schema.mutationType?.name &&
+        type.name !== index.schema.subscriptionType?.name,
     )
     .flatMap((type) => toTypeItems(type, basePath));
 

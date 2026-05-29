@@ -8,12 +8,7 @@ import {
   ItemTitle,
 } from "zudoku/ui/Item.js";
 import { useGraphQLSchema } from "../context.js";
-import {
-  findMutationFields,
-  findQueryFields,
-  findSubscriptionFields,
-  findTypes,
-} from "../util/findType.js";
+import type { SchemaIndex } from "../util/schemaIndex.js";
 import { ROOT_TYPES, type RootType, typeMetadata } from "../util/types.js";
 
 type TypeListPageProps = {
@@ -22,40 +17,42 @@ type TypeListPageProps = {
 
 const getItems = (
   rootType: RootType,
-  schema: ReturnType<typeof useGraphQLSchema>["schema"],
+  index: SchemaIndex,
 ): Array<{ name: string; description?: string | null }> => {
   switch (rootType) {
     case ROOT_TYPES.QUERY:
-      return [...findQueryFields(schema)];
+      return [...index.queryFields];
     case ROOT_TYPES.MUTATION:
-      return [...findMutationFields(schema)];
+      return [...index.mutationFields];
     case ROOT_TYPES.SUBSCRIPTION:
-      return [...findSubscriptionFields(schema)];
+      return [...index.subscriptionFields];
     case ROOT_TYPES.OBJECT:
-      return findTypes(schema, ["OBJECT"]).filter(
-        (t) =>
-          t.name !== schema.queryType?.name &&
-          t.name !== schema.mutationType?.name &&
-          t.name !== schema.subscriptionType?.name,
-      );
+      return index
+        .getTypes(["OBJECT"])
+        .filter(
+          (t) =>
+            t.name !== index.schema.queryType?.name &&
+            t.name !== index.schema.mutationType?.name &&
+            t.name !== index.schema.subscriptionType?.name,
+        );
     case ROOT_TYPES.INPUT_OBJECT:
-      return findTypes(schema, ["INPUT_OBJECT"]);
+      return index.getTypes(["INPUT_OBJECT"]);
     case ROOT_TYPES.ENUM:
-      return findTypes(schema, ["ENUM"]);
+      return index.getTypes(["ENUM"]);
     case ROOT_TYPES.SCALAR:
-      return findTypes(schema, ["SCALAR"]);
+      return index.getTypes(["SCALAR"]);
     case ROOT_TYPES.INTERFACE:
-      return findTypes(schema, ["INTERFACE"]);
+      return index.getTypes(["INTERFACE"]);
     case ROOT_TYPES.UNION:
-      return findTypes(schema, ["UNION"]);
+      return index.getTypes(["UNION"]);
   }
 };
 
 export const TypeListPage = ({ kind }: TypeListPageProps) => {
-  const { schema, basePath } = useGraphQLSchema();
+  const { index, basePath } = useGraphQLSchema();
   const rootType = kind as RootType;
   const meta = typeMetadata[rootType];
-  const items = getItems(rootType, schema);
+  const items = getItems(rootType, index);
 
   return (
     <div className="pt-(--padding-content-top)">
