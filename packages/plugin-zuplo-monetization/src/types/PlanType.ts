@@ -119,7 +119,7 @@ export interface Alignment {
 
 export interface ProRatingConfig {
   enabled: boolean; // defaults to true
-  mode: "prorate_prices" | "prorate_quantities"; // defaults to "prorate_prices"
+  mode: "max_consumption_based"; // currently the only supported mode
 }
 
 export interface ValidationError {
