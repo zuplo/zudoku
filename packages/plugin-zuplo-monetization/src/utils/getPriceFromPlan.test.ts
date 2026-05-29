@@ -21,10 +21,46 @@ const plan = (overrides: Partial<Plan> = {}): Plan => ({
 });
 
 describe("getPriceFromPlan", () => {
-  it("prefers explicit monthlyPrice / yearlyPrice when set", () => {
+  it("ignores server-provided monthlyPrice/yearlyPrice and derives from rate cards", () => {
+    // The server aggregate can disagree with the rate cards (e.g. it omits a
+    // priced feature flat-fee). We always derive so every surface — including
+    // the portal admin preview, which gets no server aggregate — matches.
+    expect(
+      getPriceFromPlan(
+        plan({
+          monthlyPrice: "999",
+          yearlyPrice: "9999",
+          billingCadence: "P1M",
+          phases: [
+            phase({
+              rateCards: [
+                {
+                  type: "flat_fee",
+                  key: "base",
+                  name: "Base",
+                  billingCadence: "P1M",
+                  price: { type: "flat", amount: "20" },
+                },
+                {
+                  type: "flat_fee",
+                  key: "support",
+                  name: "Priority Support",
+                  billingCadence: "P1M",
+                  price: { type: "flat", amount: "1" },
+                  entitlementTemplate: { type: "boolean" },
+                },
+              ],
+            }),
+          ],
+        }),
+      ),
+    ).toEqual({ monthly: 21, yearly: 252 });
+  });
+
+  it("treats a plan with no phases as Free, even when the server sends a price", () => {
     expect(
       getPriceFromPlan(plan({ monthlyPrice: "19.50", yearlyPrice: "200" })),
-    ).toEqual({ monthly: 19.5, yearly: 200 });
+    ).toEqual({ monthly: 0, yearly: 0 });
   });
 
   it("treats null monthlyPrice/yearlyPrice with no phases as Free", () => {

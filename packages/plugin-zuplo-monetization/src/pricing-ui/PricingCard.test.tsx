@@ -22,6 +22,23 @@ const plan = (overrides: Partial<Plan> = {}): Plan => ({
   ...overrides,
 });
 
+// A priced plan: the headline is derived from the rate cards (the server
+// monthlyPrice/yearlyPrice are ignored), so a $29 P1M flat fee yields a $29
+// monthly headline and a $348 (29 * 12) annualized yearly figure.
+const flatFeePhase = (amount: string): PlanPhase => ({
+  key: "default",
+  name: "Default",
+  rateCards: [
+    {
+      type: "flat_fee",
+      key: "base",
+      name: "Monthly Fee",
+      billingCadence: "P1M",
+      price: { type: "flat", amount },
+    },
+  ],
+});
+
 describe("PricingCard", () => {
   it("renders nothing when the plan has no phases", () => {
     const { container } = render(<PricingCard plan={plan({ phases: [] })} />);
@@ -39,35 +56,24 @@ describe("PricingCard", () => {
   });
 
   it("renders the monthly price and billing interval for a priced plan", () => {
-    render(
-      <PricingCard plan={plan({ monthlyPrice: "29", yearlyPrice: "348" })} />,
-    );
+    render(<PricingCard plan={plan({ phases: [flatFeePhase("29")] })} />);
     expect(screen.getByText("$29")).toBeInTheDocument();
     expect(screen.getByText("/month")).toBeInTheDocument();
   });
 
   it("renders the yearly price when showYearlyPrice is true (default)", () => {
-    render(
-      <PricingCard plan={plan({ monthlyPrice: "29", yearlyPrice: "348" })} />,
-    );
+    render(<PricingCard plan={plan({ phases: [flatFeePhase("29")] })} />);
     expect(screen.getByText("$348/year")).toBeInTheDocument();
   });
 
   it("hides the yearly price line when showYearlyPrice is false", () => {
     render(
       <PricingCard
-        plan={plan({ monthlyPrice: "29", yearlyPrice: "348" })}
+        plan={plan({ phases: [flatFeePhase("29")] })}
         showYearlyPrice={false}
       />,
     );
     expect(screen.queryByText("$348/year")).not.toBeInTheDocument();
-  });
-
-  it("hides the yearly price line when yearly is 0", () => {
-    render(
-      <PricingCard plan={plan({ monthlyPrice: "29", yearlyPrice: "0" })} />,
-    );
-    expect(screen.queryByText(/\$0\/year/)).not.toBeInTheDocument();
   });
 
   it("renders 'Pay as you go / Usage-based pricing' for a PAYG plan", () => {

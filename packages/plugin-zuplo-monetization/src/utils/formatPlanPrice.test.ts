@@ -46,16 +46,19 @@ describe("formatPlanPrice", () => {
     });
   });
 
-  it("returns free for a flat plan with monthlyPrice 0", () => {
+  it("returns free for a flat plan with a zero flat fee", () => {
     expect(formatPlanPrice(makePlan([flatFee("0")]))).toEqual({ type: "free" });
   });
 
-  it("returns priced for a flat plan with monthlyPrice > 0", () => {
-    const plan = makePlan([flatFee("49")], { monthlyPrice: "49" });
+  it("returns priced for a flat plan with a positive flat fee (yearly annualized)", () => {
+    // Price is derived from the rate cards, not the server aggregate, so the
+    // yearly figure is the annualized monthly (49 * 12), matching the admin
+    // preview in portal.
+    const plan = makePlan([flatFee("49")]);
     expect(formatPlanPrice(plan)).toEqual({
       type: "priced",
       monthly: 49,
-      yearly: 0,
+      yearly: 588,
     });
   });
 
@@ -63,17 +66,15 @@ describe("formatPlanPrice", () => {
     // Hybrid plans (flat fee + usage) classify as "priced" because their
     // monthly base is positive. Usage on top of the base is communicated
     // by the per-feature tier breakdown, not a separate label.
-    const plan = makePlan([flatFee("49"), unitUsage("0.01")], {
-      monthlyPrice: "49",
-    });
+    const plan = makePlan([flatFee("49"), unitUsage("0.01")]);
     expect(formatPlanPrice(plan)).toEqual({
       type: "priced",
       monthly: 49,
-      yearly: 0,
+      yearly: 588,
     });
   });
 
-  it("returns payg for a usage-only plan with monthlyPrice 0", () => {
+  it("returns payg for a usage-only plan with no flat fee", () => {
     expect(formatPlanPrice(makePlan([unitUsage("0.05")]))).toEqual({
       type: "payg",
       main: "Pay as you go",
