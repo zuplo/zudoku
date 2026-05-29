@@ -53,7 +53,7 @@ export const PropertyItem = ({
     >
       <ItemContent className="gap-y-1">
         <div className="flex flex-wrap items-baseline gap-x-2">
-          <ItemTitle className="!me-0">
+          <ItemTitle className="me-0!">
             {collapsible ? (
               <button
                 onClick={() => setIsOpen(!isOpen)}
@@ -131,7 +131,7 @@ export const PropertyList = ({
   if (embedded) {
     return (
       <ItemGroup
-        className={cn("overflow-clip [&_[data-slot=item]]:px-0", className)}
+        className={cn("overflow-clip **:data-[slot=item]:px-0", className)}
       >
         {interleavedRows}
       </ItemGroup>

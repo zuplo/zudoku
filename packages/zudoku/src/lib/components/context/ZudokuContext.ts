@@ -73,6 +73,10 @@ export const useCurrentNavigation = () => {
   const { data } = useSuspenseQuery({
     queryFn: () => getPluginNavigation(pathname),
     queryKey: ["plugin-navigation", pathname, isAuthenticated],
+    // Plugin navigation derives from build-time sources that can change via HMR;
+    // recompute on mount so a swapped schema doesn't leave a stale sidebar.
+    // Cheap (local computation), so no real cost over the cached default.
+    staleTime: 0,
   });
 
   let topNavItem = navItem;
