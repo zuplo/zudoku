@@ -88,6 +88,9 @@
     },
     {
       "ApiKeyAuth": []
+    },
+    {
+      "ClientCredentials": ["shipments:read", "shipments:write"]
     }
   ],
   "components": {
@@ -136,6 +139,18 @@
         "scheme": "bearer",
         "bearerFormat": "JWT",
         "description": "JWT bearer token obtained from the authentication service."
+      },
+      "ClientCredentials": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://8f9618f3bc0f4eec989627ceaafd5e4d_oas.api.mockbin.io/oauth/token",
+            "scopes": {
+              "shipments:read": "Read shipments",
+              "shipments:write": "Update shipments"
+            }
+          }
+        }
       }
     },
     "schemas": {
@@ -743,7 +758,11 @@
             "source": "import requests\n\nresponse = requests.post(\n    'https://api.cosmocargo.com/v1/shipments',\n    headers={\n        'Content-Type': 'application/json',\n        'X-API-Key': 'YOUR_API_KEY',\n    },\n    json={\n        'recipientAddress': {\n            'name': 'Zara Nebula',\n            'planet': 'Mars',\n            'station': 'Olympus Mons Hub',\n        },\n        'packages': [{'weight': 2.5, 'dimensions': '30x20x15'}],\n    },\n)\n\nshipment = response.json()"
           }
         ],
-        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
+        "security": [
+          { "BearerAuth": [] },
+          { "ApiKeyAuth": [] },
+          { "ClientCredentials": ["shipments:write"] }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/CorrelationId"
@@ -1234,7 +1253,11 @@
         "summary": "Cancel shipment",
         "description": "Cancel a shipment that hasn't been picked up yet.",
         "operationId": "cancelShipment",
-        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
+        "security": [
+          { "BearerAuth": [] },
+          { "ApiKeyAuth": [] },
+          { "ClientCredentials": ["shipments:write"] }
+        ],
         "parameters": [
           {
             "name": "trackingNumber",
@@ -1937,7 +1960,10 @@
         "summary": "Pay import duties",
         "description": "Pay import duties and taxes for an international shipment. Requires both an API key **and** a bearer token.",
         "operationId": "payDuties",
-        "security": [{ "ApiKeyAuth": [], "BearerAuth": [] }],
+        "security": [
+          { "ApiKeyAuth": [], "BearerAuth": [] },
+          { "ClientCredentials": ["shipments:write"] }
+        ],
         "parameters": [
           {
             "name": "shipmentId",
@@ -3811,7 +3837,11 @@
         "operationId": "graphqlShipmentQuery",
         "summary": "GraphQL endpoint",
         "description": "Query the Cosmo Cargo registry via GraphQL. Test live against the public Rick and Morty universe schema.",
-        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
+        "security": [
+          { "BearerAuth": [] },
+          { "ApiKeyAuth": [] },
+          { "ClientCredentials": ["shipments:read"] }
+        ],
         "x-graphql": {
           "endpoint": "https://rickandmortyapi.com/graphql"
         },
