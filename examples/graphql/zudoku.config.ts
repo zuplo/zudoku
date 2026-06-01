@@ -52,7 +52,7 @@ const config: ZudokuConfig = {
   ],
   redirects: [{ from: "/", to: "/graphql" }],
   theme: {
-    registryUrl: "https://tweakcn.com/r/themes/claude.json",
+    registryUrl: "https://tweakcn.com/r/themes/cmjgilzlg000404ju2wgs7uj9",
   },
   apis: [
     {

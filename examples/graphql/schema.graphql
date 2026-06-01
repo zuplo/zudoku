@@ -1,5 +1,16 @@
 """
 A simple e-commerce GraphQL API example.
+
+Browse products, manage a cart, and place orders.
+"""
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+"""
+Read-only entry points for fetching products, carts, and orders.
 """
 type Query {
   """
@@ -8,19 +19,32 @@ type Query {
   product(id: ID!): Product
 
   """
-  List all products with optional filtering
+  List products in the catalog with optional filtering and pagination.
+
+  Results are returned as a `ProductConnection`, which exposes the matching
+  `items` along with a `totalCount` and a `hasNextPage` flag. Combine
+  `category`, `limit`, and `offset` to page through large catalogs.
+
+  Learn more about [pagination](https://graphql.org/learn/pagination/).
   """
   products(
     """
-    Filter products by category
+    Restrict results to products in the category with this name. Omit to return
+    products from every category.
     """
     category: String
     """
-    Maximum number of results to return
+    Filter products by category name.
+    """
+    categoryName: String @deprecated(reason: "Use `category` instead.")
+    """
+    Maximum number of products to return in a single page. Defaults to `10` and
+    is capped at `100`.
     """
     limit: Int = 10
     """
-    Offset for pagination
+    Number of products to skip before collecting the result page. Combine with
+    `limit` to paginate.
     """
     offset: Int = 0
   ): ProductConnection!
@@ -34,6 +58,27 @@ type Query {
   Search for products by name or description
   """
   searchProducts(query: String!): [Product!]!
+
+  """
+  Full-text search across products and categories.
+
+  Returns a list of `SearchResult` union members, so you must use inline
+  fragments (`... on Product`, `... on Category`) to select fields for each
+  possible type. Matches are ranked by relevance.
+
+  Learn more about [unions](https://graphql.org/learn/schema/#union-types).
+  """
+  search(
+    """
+    The search term to match against product and category names.
+    """
+    query: String!
+  ): [SearchResult!]!
+
+  """
+  Look up any node by its global ID
+  """
+  node(id: ID!): Node
 }
 
 type Mutation {
@@ -63,14 +108,26 @@ type Mutation {
   removeFromCart(productId: ID!): Cart!
 
   """
-  Place an order from the current cart
+  Place an order from the current cart.
+
+  Converts the authenticated user's `Cart` into an `Order`, charging the
+  selected payment method and shipping to the chosen address. The cart is
+  emptied once the order is created.
+
+  This operation is **not** idempotent: calling it twice creates two orders.
   """
   checkout(input: CheckoutInput!): Order!
 }
 
 type Subscription {
   """
-  Subscribe to product updates
+  Subscribe to real-time updates for a single product.
+
+  Emits the updated `Product` whenever its price, stock, or other fields
+  change. Useful for keeping product detail pages and inventory dashboards in
+  sync without polling.
+
+  Learn more about [subscriptions](https://graphql.org/learn/subscriptions/).
   """
   productUpdated(id: ID!): Product!
 
@@ -81,9 +138,31 @@ type Subscription {
 }
 
 """
-A product in the catalog
+An object with a globally unique identifier.
 """
-type Product {
+interface Node {
+  """
+  Unique identifier
+  """
+  id: ID!
+}
+
+"""
+A result returned from a search query, either a product or a category.
+"""
+union SearchResult = Product | Category
+
+"""
+A product in the catalog.
+
+Products are the core sellable items in the store. Each product has a `price`
+(stored in cents), belongs to a `Category`, and can carry multiple `images`,
+`reviews`, and stock information.
+
+Use the `product` query to fetch a single product by ID, or `products` to page
+through the catalog.
+"""
+type Product implements Node {
   """
   Unique identifier
   """
@@ -108,6 +187,10 @@ type Product {
   Images of the product
   """
   images: [String!]!
+  """
+  Legacy primary image URL.
+  """
+  imageUrl: String @deprecated(reason: "Use `images` instead.")
   """
   Available stock quantity
   """
@@ -147,7 +230,7 @@ type ProductConnection {
 """
 A product category
 """
-type Category {
+type Category implements Node {
   """
   Unique identifier
   """
@@ -233,7 +316,12 @@ type CartItem {
 }
 
 """
-A customer order
+A customer order.
+
+Created at `checkout` from the items in a `Cart`. An order captures the
+purchased `items`, the `total` (in cents), the shipping `Address`, and a
+lifecycle `status` that moves from `PENDING` through to `DELIVERED` or
+`CANCELLED`.
 """
 type Order {
   """
@@ -364,6 +452,10 @@ enum OrderStatus {
   Order has been cancelled
   """
   CANCELLED
+  """
+  Order was refunded.
+  """
+  REFUNDED @deprecated(reason: "Refunds are now tracked on the payment record.")
 }
 
 """
@@ -394,6 +486,10 @@ input CreateProductInput {
   Image URLs
   """
   images: [String!]
+  """
+  Legacy single image URL.
+  """
+  imageUrl: String @deprecated(reason: "Use `images` instead.")
 }
 
 """
@@ -444,3 +540,4 @@ input CheckoutInput {
 A date-time string in ISO 8601 format
 """
 scalar DateTime
+  @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc3339")
