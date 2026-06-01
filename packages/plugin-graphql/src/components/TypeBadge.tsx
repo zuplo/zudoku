@@ -30,18 +30,3 @@ export const TypeBadge = ({ type }: { type: IntrospectionTypeRef }) => {
     <span className={textClasses}>{displayName}</span>
   );
 };
-
-export const TypeKindBadge = ({ kind }: { kind: string }) => {
-  const rootType = kindToRootType[kind];
-  const meta = rootType ? typeMetadata[rootType] : null;
-  return (
-    <span
-      className={cn(
-        "font-mono text-sm",
-        meta?.textColorClass ?? "text-muted-foreground",
-      )}
-    >
-      {meta?.labelSingular.toLowerCase() ?? kind.toLowerCase()}
-    </span>
-  );
-};

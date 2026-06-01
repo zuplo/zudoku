@@ -38,7 +38,7 @@ export const SchemaSearch = () => {
   }, [items, normalizedQuery]);
 
   return (
-    <div className="relative mt-8 max-w-3xl">
+    <div className="relative max-w-3xl">
       <SearchIcon
         className="absolute left-3 top-2.5 size-4 text-muted-foreground"
         aria-hidden="true"

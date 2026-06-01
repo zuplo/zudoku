@@ -1,12 +1,12 @@
 import { type ReactNode, useState } from "react";
-import { cn } from "zudoku";
-import { LinkIcon } from "zudoku/icons";
+import { LinkIcon, MinusIcon, PlusIcon } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
+import { DeprecatedBadge, DeprecationReason } from "./Deprecation.js";
 
 export const PropertyRow = ({
   id,
@@ -15,6 +15,7 @@ export const PropertyRow = ({
   description,
   children,
   deprecated = false,
+  deprecationReason,
   collapsible: collapsibleProp,
   defaultOpen = false,
 }: {
@@ -24,20 +25,17 @@ export const PropertyRow = ({
   description?: ReactNode;
   children?: ReactNode;
   deprecated?: boolean;
+  deprecationReason?: string | null;
   collapsible?: boolean;
   defaultOpen?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [reasonOpen, setReasonOpen] = useState(false);
   const collapsible = collapsibleProp ?? Boolean(children);
 
   const nameNode =
     typeof name === "string" ? (
-      <code
-        className={cn(
-          "font-mono text-foreground bg-muted/60 rounded px-1.5 py-0.5 text-[0.8125rem]",
-          deprecated && "line-through",
-        )}
-      >
+      <code className="font-mono text-foreground bg-muted/60 rounded px-1.5 py-0.5 text-[0.8125rem]">
         {name}
       </code>
     ) : (
@@ -45,33 +43,50 @@ export const PropertyRow = ({
     );
 
   return (
-    <div
-      id={id}
-      className={cn(
-        "relative scroll-mt-(--scroll-padding) py-3 text-sm",
-        deprecated && "opacity-50 hover:opacity-100 transition",
-      )}
-    >
-      <div className="group/row flex flex-wrap items-baseline gap-1">
-        {id && (
-          <div className="absolute -inset-s-5 top-3.5 bottom-0 text-muted-foreground">
-            <a
-              href={`#${id}`}
-              aria-label={`Link to ${id}`}
-              className="bg-background rounded p-1 -m-1 inline-block opacity-0 group-hover/row:opacity-100 hover:text-primary"
-            >
-              <LinkIcon className="size-3.5" />
-            </a>
-          </div>
+    <div id={id} className="relative scroll-mt-(--scroll-padding) py-3 text-sm">
+      <Collapsible open={reasonOpen} onOpenChange={setReasonOpen}>
+        <div className="group/row flex flex-wrap items-baseline gap-1.5">
+          {id && (
+            <div className="absolute -inset-s-5 top-3.5 bottom-0 text-muted-foreground">
+              <a
+                href={`#${id}`}
+                aria-label={`Link to ${id}`}
+                className="bg-background rounded p-1 -m-1 inline-block opacity-0 group-hover/row:opacity-100 hover:text-primary"
+              >
+                <LinkIcon className="size-3.5" />
+              </a>
+            </div>
+          )}
+          {nameNode}
+          {infos && <span className="text-muted-foreground/75">&middot;</span>}
+          {infos && (
+            <span className="inline-flex flex-wrap items-baseline gap-2 min-w-0">
+              {infos}
+            </span>
+          )}
+          {deprecated && <DeprecatedBadge className="ms-0.5" />}
+          {deprecated && deprecationReason && (
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                aria-label={
+                  reasonOpen
+                    ? "Hide deprecation details"
+                    : "Show deprecation details"
+                }
+                className="inline-flex size-5 items-center justify-center rounded bg-muted/60 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                {reasonOpen ? <MinusIcon size={12} /> : <PlusIcon size={12} />}
+              </button>
+            </CollapsibleTrigger>
+          )}
+        </div>
+        {deprecated && deprecationReason && (
+          <CollapsibleContent className="mt-2">
+            <DeprecationReason reason={deprecationReason} />
+          </CollapsibleContent>
         )}
-        {nameNode}
-        {infos && <span className="text-muted-foreground/75">&middot;</span>}
-        {infos && (
-          <span className="inline-flex flex-wrap items-baseline gap-2 min-w-0">
-            {infos}
-          </span>
-        )}
-      </div>
+      </Collapsible>
       {description && (
         <div className="text-muted-foreground mt-1 [&>p]:m-0 [&>p]:inline">
           {description}

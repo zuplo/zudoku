@@ -69,58 +69,69 @@ export const OverviewPage = () => {
     .filter((c) => c.count > 0);
 
   const title = options.title ?? "GraphQL API";
+  const description = options.description ?? schema.description;
 
   return (
     <div className="pt-(--padding-content-top)">
       <Head>
         <title>{title}</title>
       </Head>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <Heading level={1}>{title}</Heading>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={openSchema}>
-            <ExternalLinkIcon size={14} aria-hidden="true" />
-            Open schema
-          </Button>
-          <Button variant="outline" onClick={downloadSchema}>
-            <DownloadIcon size={14} aria-hidden="true" />
-            Download schema
-          </Button>
-          {options.playground?.enabled !== false && (
-            <Button asChild variant="outline">
-              <Link to={`${basePath}/playground`}>
-                <PlayIcon size={14} fill="currentColor" aria-hidden="true" />
-                Playground
-              </Link>
-            </Button>
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <Heading level={1} className="text-balance">
+              {title}
+            </Heading>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" onClick={openSchema}>
+                <ExternalLinkIcon size={14} aria-hidden="true" />
+                Open schema
+              </Button>
+              <Button variant="outline" onClick={downloadSchema}>
+                <DownloadIcon size={14} aria-hidden="true" />
+                Download schema
+              </Button>
+              {options.playground?.enabled !== false && (
+                <Button asChild variant="outline">
+                  <Link to={`${basePath}/playground`}>
+                    <PlayIcon
+                      size={14}
+                      fill="currentColor"
+                      aria-hidden="true"
+                    />
+                    Playground
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {description && (
+            <div className="text-muted-foreground max-w-2xl text-pretty">
+              <Markdown content={description} />
+            </div>
           )}
         </div>
-      </div>
 
-      {options.description && (
-        <div className="mt-4 text-muted-foreground">
-          <Markdown content={options.description} />
+        <SchemaSearch />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {categories.map(({ type, count, meta }) => (
+            <Item key={type} variant="outline" asChild>
+              <Link to={`${basePath}/${type}`}>
+                <ItemContent>
+                  <ItemTitle className="flex items-center justify-between gap-2">
+                    <span>{meta.label}</span>
+                    <Badge variant="outline" className="font-mono">
+                      {count}
+                    </Badge>
+                  </ItemTitle>
+                  <ItemDescription>{meta.description}</ItemDescription>
+                </ItemContent>
+              </Link>
+            </Item>
+          ))}
         </div>
-      )}
-
-      <SchemaSearch />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-        {categories.map(({ type, count, meta }) => (
-          <Item key={type} variant="outline" asChild>
-            <Link to={`${basePath}/${type}`}>
-              <ItemContent>
-                <ItemTitle className="flex items-center justify-between gap-2">
-                  <span>{meta.label}</span>
-                  <Badge variant="outline" className="font-mono">
-                    {count}
-                  </Badge>
-                </ItemTitle>
-                <ItemDescription>{meta.description}</ItemDescription>
-              </ItemContent>
-            </Link>
-          </Item>
-        ))}
       </div>
     </div>
   );

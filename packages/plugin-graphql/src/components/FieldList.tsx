@@ -1,6 +1,5 @@
 import type { IntrospectionField, IntrospectionInputValue } from "graphql";
 import { Markdown } from "zudoku/components";
-import { Badge } from "zudoku/ui/Badge.js";
 import { useGraphQLSchema } from "../context.js";
 import type { SchemaIndex } from "../util/schemaIndex.js";
 import { unwrapType } from "../util/unwrapType.js";
@@ -49,11 +48,6 @@ const FieldInfos = ({ field }: { field: AnyField }) => {
           = {field.defaultValue}
         </span>
       )}
-      {isField(field) && field.isDeprecated && (
-        <Badge variant="destructive" className="ms-1 text-xs">
-          Deprecated
-        </Badge>
-      )}
     </>
   );
 };
@@ -66,9 +60,7 @@ const FieldDescription = ({
   showArguments: boolean;
 }) => {
   const hasArgs = isField(field) && field.args.length > 0 && showArguments;
-  const deprecationReason =
-    isField(field) && field.isDeprecated ? field.deprecationReason : undefined;
-  const hasContent = field.description || deprecationReason || hasArgs;
+  const hasContent = field.description || hasArgs;
   if (!hasContent) return undefined;
 
   return (
@@ -78,11 +70,6 @@ const FieldDescription = ({
           className="text-muted-foreground text-sm"
           content={field.description}
         />
-      )}
-      {deprecationReason && (
-        <div className="rounded bg-destructive/10 px-2 py-1 text-destructive text-sm">
-          <strong>Deprecated:</strong> {deprecationReason}
-        </div>
       )}
       {hasArgs && isField(field) && (
         <div className="mt-2">
@@ -113,7 +100,8 @@ const FieldItem = ({
     <PropertyRow
       id={depth <= 1 ? `${idPrefix}-${field.name}` : undefined}
       name={field.name}
-      deprecated={isField(field) && field.isDeprecated}
+      deprecated={Boolean(field.isDeprecated)}
+      deprecationReason={field.deprecationReason}
       collapsible={isCollapsible}
       infos={<FieldInfos field={field} />}
       description={

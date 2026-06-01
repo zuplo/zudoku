@@ -4,6 +4,7 @@ import {
   buildSchema,
   getIntrospectionQuery,
   introspectionFromSchema,
+  type IntrospectionOptions,
   type IntrospectionQuery,
 } from "graphql";
 import { joinUrl } from "zudoku";
@@ -32,6 +33,12 @@ const resolveInputPath = (
     ? config.input
     : path.join(rootDir, config.input);
 
+const sharedIntrospectionOptions = {
+  inputValueDeprecation: true,
+  specifiedByUrl: true,
+  schemaDescription: true,
+} satisfies IntrospectionOptions;
+
 const loadSchema = async (
   config: GraphQLConfig & { input: string },
   rootDir: string,
@@ -40,7 +47,9 @@ const loadSchema = async (
     const response = await fetch(config.input, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: getIntrospectionQuery() }),
+      body: JSON.stringify({
+        query: getIntrospectionQuery(sharedIntrospectionOptions),
+      }),
     });
 
     if (!response.ok) {
@@ -55,7 +64,7 @@ const loadSchema = async (
 
   const sdl = await fs.readFile(resolveInputPath(config, rootDir), "utf-8");
 
-  return introspectionFromSchema(buildSchema(sdl));
+  return introspectionFromSchema(buildSchema(sdl), sharedIntrospectionOptions);
 };
 
 type Instance = {

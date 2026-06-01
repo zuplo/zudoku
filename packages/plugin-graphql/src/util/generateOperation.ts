@@ -59,6 +59,32 @@ export const generateGraphQLOperation = ({
   };
 };
 
+export const generateGraphQLTypeFragment = ({
+  type,
+  index,
+}: {
+  type: IntrospectionType;
+  index: SchemaIndex;
+}): string | undefined => {
+  if (
+    type.kind !== "OBJECT" &&
+    type.kind !== "INTERFACE" &&
+    type.kind !== "UNION"
+  ) {
+    return undefined;
+  }
+
+  const selectionSet = buildSelectionSet(
+    { kind: type.kind, name: type.name },
+    index,
+    0,
+  );
+
+  if (!selectionSet) return undefined;
+
+  return `fragment ${type.name}Fields on ${type.name} ${selectionSet}`;
+};
+
 const toOperationName = (name: string) =>
   name
     .replace(/(^|[^a-zA-Z0-9])([a-zA-Z0-9])/g, (_match, _separator, char) =>
@@ -139,7 +165,7 @@ const buildFieldSelection = (
   const lines: string[] = [];
 
   for (const field of selectedFields) {
-    if (hasRequiredArgs(field)) continue;
+    if (field.isDeprecated || hasRequiredArgs(field)) continue;
 
     const nestedSelection = buildSelectionSet(
       field.type,
@@ -156,7 +182,9 @@ const buildFieldSelection = (
   }
 
   if (lines.length === 0) {
-    const fallback = type.fields.find((field) => isLeafType(field.type, index));
+    const fallback = type.fields.find(
+      (field) => !field.isDeprecated && isLeafType(field.type, index),
+    );
     if (fallback) lines.push(`${indent(depth)}${fallback.name}`);
   }
 

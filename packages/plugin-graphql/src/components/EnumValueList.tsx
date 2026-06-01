@@ -1,6 +1,6 @@
 import type { IntrospectionEnumValue } from "graphql";
 import { Markdown } from "zudoku/components";
-import { Badge } from "zudoku/ui/Badge.js";
+import { DeprecatedBadge, DeprecationReason } from "./Deprecation.js";
 
 export const EnumValueList = ({
   values,
@@ -16,27 +16,21 @@ export const EnumValueList = ({
   return (
     <ul className="divide-y divide-border rounded-lg border">
       {values.map((value) => (
-        <li key={value.name} className="p-4">
+        <li key={value.name} className="flex flex-col gap-2 p-4">
           <div className="flex flex-wrap items-center gap-2">
             <code className="font-mono font-semibold text-sm bg-muted px-1.5 py-0.5 rounded">
               {value.name}
             </code>
-            {value.isDeprecated && (
-              <Badge variant="destructive" className="text-xs">
-                Deprecated
-              </Badge>
-            )}
+            {value.isDeprecated && <DeprecatedBadge />}
           </div>
 
-          {value.description && (
-            <div className="mt-2 text-sm text-muted-foreground">
-              <Markdown content={value.description} />
-            </div>
+          {value.isDeprecated && value.deprecationReason && (
+            <DeprecationReason reason={value.deprecationReason} />
           )}
 
-          {value.isDeprecated && value.deprecationReason && (
-            <div className="mt-2 text-sm text-destructive bg-destructive/10 rounded px-2 py-1">
-              <strong>Deprecated:</strong> {value.deprecationReason}
+          {value.description && (
+            <div className="text-sm text-muted-foreground">
+              <Markdown content={value.description} />
             </div>
           )}
         </li>

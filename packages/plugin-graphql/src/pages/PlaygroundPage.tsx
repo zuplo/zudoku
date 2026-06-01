@@ -14,10 +14,12 @@ export const PlaygroundPage = () => {
         <Head>
           <title>Playground</title>
         </Head>
-        <Heading level={1}>Playground</Heading>
-        <p className="mt-4 text-muted-foreground">
-          The GraphQL playground is disabled for this schema.
-        </p>
+        <div className="flex flex-col gap-4">
+          <Heading level={1}>Playground</Heading>
+          <p className="text-muted-foreground">
+            The GraphQL playground is disabled for this schema.
+          </p>
+        </div>
       </div>
     );
   }
@@ -27,21 +29,23 @@ export const PlaygroundPage = () => {
       <Head>
         <title>Playground</title>
       </Head>
-      <div className="mb-6">
-        <Heading level={1}>Playground</Heading>
-        <p className="mt-3 text-muted-foreground">
-          Explore the schema, compose operations, and send live GraphQL
-          requests.
-        </p>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
+          <Heading level={1}>Playground</Heading>
+          <p className="text-muted-foreground">
+            Explore the schema, compose operations, and send live GraphQL
+            requests.
+          </p>
+        </div>
+        <GraphQLPlayground
+          endpoint={endpoint}
+          headers={options.playground?.headers}
+          schema={{ __schema: schema }}
+          operation={operation}
+          onOperationChange={updateWorkbenchOperation}
+          className="h-[calc(100vh-var(--padding-content-top)-8rem)] min-h-[640px]"
+        />
       </div>
-      <GraphQLPlayground
-        endpoint={endpoint}
-        headers={options.playground?.headers}
-        schema={{ __schema: schema }}
-        operation={operation}
-        onOperationChange={updateWorkbenchOperation}
-        className="h-[calc(100vh-var(--padding-content-top)-8rem)] min-h-[640px]"
-      />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import type { IntrospectionInputValue } from "graphql";
 import { Markdown } from "zudoku/components";
+import { DeprecatedBadge, DeprecationReason } from "./Deprecation.js";
 import { TypeBadge } from "./TypeBadge.js";
 
 export const ArgumentList = ({
@@ -16,7 +17,7 @@ export const ArgumentList = ({
       </div>
       <ul className="space-y-2 pl-4 border-l-2 border-border">
         {args.map((arg) => (
-          <li key={arg.name}>
+          <li key={arg.name} className="flex flex-col gap-1">
             <div className="flex flex-wrap items-center gap-2">
               <code className="font-mono text-xs">{arg.name}</code>
               <TypeBadge type={arg.type} />
@@ -25,9 +26,13 @@ export const ArgumentList = ({
                   = {arg.defaultValue}
                 </span>
               )}
+              {arg.isDeprecated && <DeprecatedBadge />}
             </div>
+            {arg.isDeprecated && arg.deprecationReason && (
+              <DeprecationReason reason={arg.deprecationReason} />
+            )}
             {arg.description && (
-              <div className="mt-1 text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 <Markdown content={arg.description} />
               </div>
             )}

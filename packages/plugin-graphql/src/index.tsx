@@ -65,13 +65,10 @@ export const graphqlPlugin = createPlugin(
   },
 );
 
-const OPERATION_NAV_ROOT_TYPES: RootType[] = [
+const NAV_ROOT_TYPES: RootType[] = [
   ROOT_TYPES.QUERY,
   ROOT_TYPES.MUTATION,
   ROOT_TYPES.SUBSCRIPTION,
-];
-
-const TYPE_NAV_ROOT_TYPES: RootType[] = [
   ROOT_TYPES.OBJECT,
   ROOT_TYPES.INPUT_OBJECT,
   ROOT_TYPES.ENUM,
@@ -79,8 +76,6 @@ const TYPE_NAV_ROOT_TYPES: RootType[] = [
   ROOT_TYPES.INTERFACE,
   ROOT_TYPES.UNION,
 ];
-
-const SIDEBAR_ITEM_LIMIT = 8;
 
 const buildNavigation = (
   manifest: GraphQLManifest,
@@ -90,42 +85,20 @@ const buildNavigation = (
     { type: "link", label: "Overview", to: basePath },
   ];
 
-  for (const rootType of OPERATION_NAV_ROOT_TYPES) {
+  for (const rootType of NAV_ROOT_TYPES) {
     const names = manifest[rootType];
     if (names.length === 0) continue;
-    const listPath = joinUrl(basePath, rootType);
-    const items: NavigationItem[] = names
-      .slice(0, SIDEBAR_ITEM_LIMIT)
-      .map((name) => ({
-        type: "link",
-        label: name,
-        to: joinUrl(basePath, rootType, name),
-      }));
-    if (names.length > SIDEBAR_ITEM_LIMIT) {
-      items.push({
-        type: "link",
-        label: `View all (${names.length})`,
-        to: listPath,
-      });
-    }
     navigation.push({
       type: "category",
       label: typeMetadata[rootType].label,
       collapsible: true,
       collapsed: true,
-      link: { type: "link", to: listPath },
-      items,
-    });
-  }
-
-  for (const rootType of TYPE_NAV_ROOT_TYPES) {
-    const names = manifest[rootType];
-    if (names.length === 0) continue;
-    navigation.push({
-      type: "link",
-      label: typeMetadata[rootType].label,
-      to: joinUrl(basePath, rootType),
-      badge: { label: String(names.length), color: "outline" },
+      link: { type: "link", to: joinUrl(basePath, rootType) },
+      items: names.map((name) => ({
+        type: "link",
+        label: name,
+        to: joinUrl(basePath, rootType, name),
+      })),
     });
   }
 

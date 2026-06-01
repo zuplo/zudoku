@@ -3,18 +3,34 @@ import type {
   IntrospectionInputObjectType,
   IntrospectionInterfaceType,
   IntrospectionObjectType,
+  IntrospectionScalarType,
   IntrospectionUnionType,
 } from "graphql";
-import { joinUrl } from "zudoku";
-import { Head, Heading, Markdown } from "zudoku/components";
+import { useMemo } from "react";
+import { cn, joinUrl } from "zudoku";
+import { Head, Heading } from "zudoku/components";
+import { ExternalLinkIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
-import { Badge } from "zudoku/ui/Badge.js";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from "zudoku/ui/Item.js";
+import * as SidecarBox from "zudoku/ui/SidecarBox.js";
+import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
+import { DetailPageHeader } from "../components/DetailPageHeader.js";
 import { EnumValueList } from "../components/EnumValueList.js";
 import { FieldList } from "../components/FieldList.js";
-import { TypeKindBadge } from "../components/TypeBadge.js";
 import { useGraphQLSchema } from "../context.js";
+import { generateGraphQLTypeFragment } from "../util/generateOperation.js";
 import type { SchemaIndex } from "../util/schemaIndex.js";
-import { kindToRootType, ROOT_TYPES, typeMetadata } from "../util/types.js";
+import {
+  kindToRootType,
+  ROOT_TYPES,
+  type RootType,
+  typeMetadata,
+} from "../util/types.js";
 
 type TypeDetailPageProps = {
   kind: string;
@@ -27,11 +43,19 @@ export const TypeDetailPage = ({ name }: TypeDetailPageProps) => {
   const type = index.getType(name);
   const references = getTypeReferences(name, index, basePath);
 
+  const example = useMemo(
+    () => (type ? generateGraphQLTypeFragment({ type, index }) : undefined),
+    [type, index],
+  );
+
   if (!type) {
     return <div>Type not found: {name}</div>;
   }
 
-  const categoryLabel = typeMetadata[kindToRootType[type.kind]]?.label;
+  const meta = typeMetadata[kindToRootType[type.kind]];
+  const categoryLabel = meta?.label;
+  const kindLabel =
+    meta?.labelSingular.toLowerCase() ?? type.kind.toLowerCase();
 
   return (
     <div className="pt-(--padding-content-top)">
@@ -40,39 +64,71 @@ export const TypeDetailPage = ({ name }: TypeDetailPageProps) => {
           {categoryLabel ? `${type.name} · ${categoryLabel}` : type.name}
         </title>
       </Head>
-      <div className="flex items-center gap-3 mb-2">
-        <Heading level={1}>{type.name}</Heading>
-        <TypeKindBadge kind={type.kind} />
-      </div>
+      <div
+        className={cn(
+          example && "grid gap-8 xl:grid-cols-[minmax(0,1fr)_420px]",
+        )}
+      >
+        <div className="min-w-0 flex flex-col gap-6">
+          <DetailPageHeader
+            name={type.name}
+            label={kindLabel}
+            description={type.description}
+          />
 
-      {type.description && (
-        <div className="mt-4 text-muted-foreground">
-          <Markdown content={type.description} />
+          {type.kind === "OBJECT" && (
+            <ObjectTypeDetail type={type} basePath={basePath} />
+          )}
+
+          {type.kind === "INPUT_OBJECT" && (
+            <InputObjectTypeDetail type={type} />
+          )}
+
+          {type.kind === "ENUM" && <EnumTypeDetail type={type} />}
+
+          {type.kind === "SCALAR" && <ScalarTypeDetail type={type} />}
+
+          {type.kind === "INTERFACE" && (
+            <InterfaceTypeDetail
+              type={type}
+              basePath={basePath}
+              index={index}
+            />
+          )}
+
+          {type.kind === "UNION" && (
+            <UnionTypeDetail type={type} basePath={basePath} />
+          )}
+
+          <TypeReferences references={references} />
         </div>
-      )}
 
-      {type.kind === "OBJECT" && (
-        <ObjectTypeDetail type={type} basePath={basePath} />
-      )}
-
-      {type.kind === "INPUT_OBJECT" && <InputObjectTypeDetail type={type} />}
-
-      {type.kind === "ENUM" && <EnumTypeDetail type={type} />}
-
-      {type.kind === "SCALAR" && <ScalarTypeDetail />}
-
-      {type.kind === "INTERFACE" && (
-        <InterfaceTypeDetail type={type} basePath={basePath} index={index} />
-      )}
-
-      {type.kind === "UNION" && (
-        <UnionTypeDetail type={type} basePath={basePath} />
-      )}
-
-      <TypeReferences references={references} />
+        {example && (
+          <aside className="min-w-0 xl:sticky xl:top-(--scroll-padding) xl:self-start">
+            <ExampleSidecar code={example} />
+          </aside>
+        )}
+      </div>
     </div>
   );
 };
+
+const ExampleSidecar = ({ code }: { code: string }) => (
+  <SidecarBox.Root>
+    <SidecarBox.Head className="text-xs py-1.5">
+      <span className="font-medium">Example</span>
+    </SidecarBox.Head>
+    <SidecarBox.Body className="p-0">
+      <SyntaxHighlight
+        embedded
+        code={code}
+        language="graphql"
+        showLanguageIndicator={false}
+        className="scrollbar rounded-none border-0 max-h-100 text-xs overflow-auto"
+      />
+    </SidecarBox.Body>
+  </SidecarBox.Root>
+);
 
 const ObjectTypeDetail = ({
   type,
@@ -84,30 +140,19 @@ const ObjectTypeDetail = ({
   return (
     <>
       {type.interfaces && type.interfaces.length > 0 && (
-        <div className="mt-6">
-          <Heading level={3} className="mb-3">
-            Implements
-          </Heading>
-          <div className="flex flex-wrap gap-2">
-            {type.interfaces.map((iface) => (
-              <Link
-                key={iface.name}
-                to={`${basePath}/${ROOT_TYPES.INTERFACE}/${iface.name}`}
-              >
-                <Badge variant="outline" className="font-mono">
-                  {iface.name}
-                </Badge>
-              </Link>
-            ))}
-          </div>
+        <div className="flex flex-col gap-3">
+          <Heading level={3}>Implements</Heading>
+          <TypeCardGrid
+            types={type.interfaces}
+            basePath={basePath}
+            kind={ROOT_TYPES.INTERFACE}
+          />
         </div>
       )}
 
       {type.fields && type.fields.length > 0 && (
-        <div className="mt-6">
-          <Heading level={3} className="mb-3">
-            Fields
-          </Heading>
+        <div className="flex flex-col gap-3">
+          <Heading level={3}>Fields</Heading>
           <FieldList fields={type.fields} />
         </div>
       )}
@@ -121,32 +166,75 @@ const InputObjectTypeDetail = ({
   type: IntrospectionInputObjectType;
 }) =>
   type.inputFields && type.inputFields.length > 0 ? (
-    <div className="mt-6">
-      <Heading level={3} className="mb-3">
-        Fields
-      </Heading>
+    <div className="flex flex-col gap-3">
+      <Heading level={3}>Fields</Heading>
       <FieldList fields={type.inputFields} />
     </div>
   ) : null;
 
 const EnumTypeDetail = ({ type }: { type: IntrospectionEnumType }) =>
   type.enumValues && type.enumValues.length > 0 ? (
-    <div className="mt-6">
-      <Heading level={3} className="mb-3">
-        Values
-      </Heading>
+    <div className="flex flex-col gap-3">
+      <Heading level={3}>Values</Heading>
       <EnumValueList values={type.enumValues} />
     </div>
   ) : null;
 
-const ScalarTypeDetail = () => (
-  <div className="mt-6">
+const ScalarTypeDetail = ({ type }: { type: IntrospectionScalarType }) => (
+  <div className="flex flex-col gap-3">
     <p className="text-muted-foreground">
       This is a scalar type. Scalar types represent primitive values like
       strings, numbers, and booleans.
     </p>
+    {type.specifiedByURL && (
+      <a
+        href={type.specifiedByURL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex w-fit items-center gap-1 text-primary hover:underline"
+      >
+        Specification
+        <ExternalLinkIcon size={13} aria-hidden="true" />
+      </a>
+    )}
   </div>
 );
+
+const TypeCardGrid = ({
+  types,
+  basePath,
+  kind,
+}: {
+  types: readonly { name: string }[];
+  basePath: string;
+  kind: RootType;
+}) => {
+  const { index } = useGraphQLSchema();
+
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {types.map(({ name }) => {
+        const description = index.getType(name)?.description;
+        return (
+          <Item key={name} variant="outline" asChild>
+            <Link to={joinUrl(basePath, kind, name)}>
+              <ItemContent>
+                <ItemTitle>
+                  <code className="font-mono">{name}</code>
+                </ItemTitle>
+                {description && (
+                  <ItemDescription className="line-clamp-2">
+                    {description}
+                  </ItemDescription>
+                )}
+              </ItemContent>
+            </Link>
+          </Item>
+        );
+      })}
+    </div>
+  );
+};
 
 const InterfaceTypeDetail = ({
   type,
@@ -162,31 +250,20 @@ const InterfaceTypeDetail = ({
   return (
     <>
       {type.fields && type.fields.length > 0 && (
-        <div className="mt-6">
-          <Heading level={3} className="mb-3">
-            Fields
-          </Heading>
+        <div className="flex flex-col gap-3">
+          <Heading level={3}>Fields</Heading>
           <FieldList fields={type.fields} />
         </div>
       )}
 
       {implementingTypes.length > 0 && (
-        <div className="mt-6">
-          <Heading level={3} className="mb-3">
-            Implemented By
-          </Heading>
-          <div className="flex flex-wrap gap-2">
-            {implementingTypes.map((t) => (
-              <Link
-                key={t.name}
-                to={joinUrl(basePath, ROOT_TYPES.OBJECT, t.name)}
-              >
-                <Badge variant="outline" className="font-mono">
-                  {t.name}
-                </Badge>
-              </Link>
-            ))}
-          </div>
+        <div className="flex flex-col gap-3">
+          <Heading level={3}>Implemented By</Heading>
+          <TypeCardGrid
+            types={implementingTypes}
+            basePath={basePath}
+            kind={ROOT_TYPES.OBJECT}
+          />
         </div>
       )}
     </>
@@ -203,22 +280,13 @@ const UnionTypeDetail = ({
   return (
     <>
       {type.possibleTypes && type.possibleTypes.length > 0 && (
-        <div className="mt-6">
-          <Heading level={3} className="mb-3">
-            Possible Types
-          </Heading>
-          <div className="flex flex-wrap gap-2">
-            {type.possibleTypes.map((t) => (
-              <Link
-                key={t.name}
-                to={`${basePath}/${ROOT_TYPES.OBJECT}/${t.name}`}
-              >
-                <Badge variant="outline" className="font-mono">
-                  {t.name}
-                </Badge>
-              </Link>
-            ))}
-          </div>
+        <div className="flex flex-col gap-3">
+          <Heading level={3}>Possible Types</Heading>
+          <TypeCardGrid
+            types={type.possibleTypes}
+            basePath={basePath}
+            kind={ROOT_TYPES.OBJECT}
+          />
         </div>
       )}
     </>
@@ -249,14 +317,15 @@ const TypeReferences = ({
   if (sections.length === 0) return null;
 
   return (
-    <div className="mt-8">
-      <Heading level={3} className="mb-3">
-        Schema Context
-      </Heading>
-      <div className="grid gap-3 md:grid-cols-3">
+    <div className="flex flex-col gap-3">
+      <Heading level={3}>Schema Context</Heading>
+      <div className="grid gap-3 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))]">
         {sections.map((section) => (
-          <div key={section.title} className="rounded-lg border bg-card p-3">
-            <div className="mb-2 text-sm font-medium">
+          <div
+            key={section.title}
+            className="flex flex-col gap-2 rounded-lg border bg-card p-3"
+          >
+            <div className="text-sm font-medium">
               {section.title}
               <span className="ms-2 text-muted-foreground text-xs">
                 {section.items.length}

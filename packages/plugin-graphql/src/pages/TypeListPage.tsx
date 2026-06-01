@@ -1,6 +1,6 @@
 import { Head, Heading } from "zudoku/components";
+import { ExternalLinkIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
-import { Badge } from "zudoku/ui/Badge.js";
 import {
   Item,
   ItemContent,
@@ -59,37 +59,51 @@ export const TypeListPage = ({ kind }: TypeListPageProps) => {
       <Head>
         <title>{meta.label}</title>
       </Head>
-      <div className="flex items-center gap-3 mb-6">
-        <Heading level={1}>{meta.label}</Heading>
-        <Badge variant="outline" className="font-mono">
-          {items.length}
-        </Badge>
-      </div>
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4">
+          <Heading level={1} className="text-balance">
+            {meta.label}
+          </Heading>
 
-      {items.length === 0 ? (
-        <p className="text-muted-foreground">
-          No {meta.label.toLowerCase()} defined.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {items.map((item) => (
-            <Item key={item.name} variant="outline" asChild>
-              <Link to={`${basePath}/${rootType}/${item.name}`}>
-                <ItemContent>
-                  <ItemTitle>
-                    <code className="font-mono">{item.name}</code>
-                  </ItemTitle>
-                  {item.description && (
-                    <ItemDescription className="line-clamp-2">
-                      {item.description}
-                    </ItemDescription>
-                  )}
-                </ItemContent>
-              </Link>
-            </Item>
-          ))}
+          <p className="text-muted-foreground max-w-2xl text-pretty">
+            {meta.intro}{" "}
+            <a
+              href={meta.docsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-primary hover:underline whitespace-nowrap"
+            >
+              Learn more
+              <ExternalLinkIcon size={13} aria-hidden="true" />
+            </a>
+          </p>
         </div>
-      )}
+
+        {items.length === 0 ? (
+          <p className="text-muted-foreground">
+            No {meta.label.toLowerCase()} defined.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {items.map((item) => (
+              <Item key={item.name} variant="outline" asChild>
+                <Link to={`${basePath}/${rootType}/${item.name}`}>
+                  <ItemContent>
+                    <ItemTitle>
+                      <code className="font-mono">{item.name}</code>
+                    </ItemTitle>
+                    {item.description && (
+                      <ItemDescription className="line-clamp-2">
+                        {item.description}
+                      </ItemDescription>
+                    )}
+                  </ItemContent>
+                </Link>
+              </Item>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

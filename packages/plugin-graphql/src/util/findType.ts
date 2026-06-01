@@ -5,6 +5,7 @@ import type {
 } from "graphql";
 
 export type GraphQLSchema = {
+  description?: string | null;
   queryType: { name: string } | null | undefined;
   mutationType: { name: string } | null | undefined;
   subscriptionType: { name: string } | null | undefined;
