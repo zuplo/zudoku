@@ -21,6 +21,7 @@ catalog:
   tsdown: 0.22.0
   typescript: 6.0.3
   graphql: 16.4.0
+  zod: 4.3.6
 
 minimumReleaseAge: 4320
 

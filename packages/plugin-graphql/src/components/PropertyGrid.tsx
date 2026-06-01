@@ -69,7 +69,6 @@ export const PropertyRow = ({
                       ? "Hide deprecation details"
                       : "Show deprecation details"
                   }
-                  // className="inline-flex size-5 items-center justify-center rounded bg-muted/60 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   {reasonOpen ? (
                     <MinusIcon size={12} />

@@ -51,6 +51,9 @@ catalogs:
     typescript:
       specifier: 6.0.3
       version: 6.0.3
+    zod:
+      specifier: 4.3.6
+      version: 4.3.6
 
 overrides:
   bs58: '>=6'
@@ -514,6 +517,9 @@ importers:
       graphql:
         specifier: 'catalog:'
         version: 16.4.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.3.6
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -998,7 +1004,7 @@ importers:
         specifier: 18.0.0
         version: 18.0.0
       zod:
-        specifier: 4.3.6
+        specifier: 'catalog:'
         version: 4.3.6
       zustand:
         specifier: 5.0.13

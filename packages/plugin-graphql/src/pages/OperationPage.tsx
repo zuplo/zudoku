@@ -88,7 +88,6 @@ export const OperationPage = ({ kind, name }: OperationPageProps) => {
             document={generatedOperation.document}
             variablesJson={generatedOperation.variablesJson}
             playgroundEnabled={playgroundEnabled}
-            operationName={generatedOperation.operationName}
           />
         </aside>
       </div>
@@ -100,12 +99,10 @@ const OperationSidecar = ({
   document,
   variablesJson,
   playgroundEnabled,
-  operationName,
 }: {
   document: string;
   variablesJson: string;
   playgroundEnabled: boolean;
-  operationName: string;
 }) => {
   const { openWorkbench } = useGraphQLWorkbench();
   const [variablesOpen, setVariablesOpen] = useState(false);
@@ -124,7 +121,6 @@ const OperationSidecar = ({
                 openWorkbench({
                   query: document,
                   variables: variablesJson,
-                  label: operationName,
                 })
               }
             >

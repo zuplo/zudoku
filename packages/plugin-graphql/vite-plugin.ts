@@ -3,10 +3,11 @@ import path from "node:path";
 import {
   buildSchema,
   getIntrospectionQuery,
-  introspectionFromSchema,
   type IntrospectionOptions,
+  introspectionFromSchema,
   type IntrospectionQuery,
 } from "graphql";
+import { z } from "zod/mini";
 import { joinUrl } from "zudoku";
 import { getPluginConfigs, getZudokuConfig, type Plugin } from "zudoku/vite";
 import { type GraphQLConfig, GRAPHQL_PLUGIN_NAME } from "./src/interfaces.js";
@@ -39,6 +40,36 @@ const sharedIntrospectionOptions = {
   schemaDescription: true,
 } satisfies IntrospectionOptions;
 
+// Validate the response envelope only: surface `errors` and require
+// `data.__schema`. The full introspection shape is too large to model.
+const IntrospectionResponseSchema = z.object({
+  data: z.optional(z.object({ __schema: z.unknown() })),
+  errors: z.optional(z.array(z.object({ message: z.string() }))),
+});
+
+const parseIntrospectionResponse = (
+  json: unknown,
+  source: string,
+): IntrospectionQuery => {
+  const parsed = IntrospectionResponseSchema.safeParse(json);
+  if (!parsed.success) {
+    throw new Error(`Unexpected GraphQL introspection response from ${source}`);
+  }
+  if (parsed.data.errors && parsed.data.errors.length > 0) {
+    throw new Error(
+      `GraphQL introspection failed for ${source}: ${parsed.data.errors
+        .map((error) => error.message)
+        .join("; ")}`,
+    );
+  }
+  if (!parsed.data.data) {
+    throw new Error(
+      `GraphQL introspection response from ${source} contained no data`,
+    );
+  }
+  return parsed.data.data as IntrospectionQuery;
+};
+
 const loadSchema = async (
   config: GraphQLConfig & { input: string },
   rootDir: string,
@@ -51,19 +82,15 @@ const loadSchema = async (
         query: getIntrospectionQuery(sharedIntrospectionOptions),
       }),
     });
-
     if (!response.ok) {
       throw new Error(
         `Failed to fetch GraphQL schema from ${config.input}: ${response.statusText}`,
       );
     }
-    const json = (await response.json()) as { data: IntrospectionQuery };
-
-    return json.data;
+    return parseIntrospectionResponse(await response.json(), config.input);
   }
 
   const sdl = await fs.readFile(resolveInputPath(config, rootDir), "utf-8");
-
   return introspectionFromSchema(buildSchema(sdl), sharedIntrospectionOptions);
 };
 
@@ -72,6 +99,21 @@ type Instance = {
   basePath: string;
   slug: string;
   rootDir: string;
+};
+
+// The manifest and the per-schema module both need the full introspection.
+// Cache it per slug so a schema is loaded once (one network round-trip for URL
+// inputs) instead of twice. Cleared on watchChange so edits stay fresh in dev.
+const schemaCache = new Map<string, Promise<IntrospectionQuery>>();
+
+const loadInstanceSchema = (
+  instance: Instance,
+): Promise<IntrospectionQuery> => {
+  const cached = schemaCache.get(instance.slug);
+  if (cached) return cached;
+  const promise = loadSchema(instance.config, instance.rootDir);
+  schemaCache.set(instance.slug, promise);
+  return promise;
 };
 
 const getInstances = (): Instance[] => {
@@ -94,6 +136,18 @@ export const graphqlSchemaPlugin = (): Plugin => {
       if (id === MANIFEST_ID) return resolvedManifestId;
       if (id.startsWith(SCHEMA_PREFIX)) return `\0${id}`;
     },
+    watchChange(id) {
+      // Drop the cached schema for any file input that changed so the next
+      // load re-reads it.
+      for (const instance of getInstances()) {
+        if (
+          instance.config.type === "file" &&
+          resolveInputPath(instance.config, instance.rootDir) === id
+        ) {
+          schemaCache.delete(instance.slug);
+        }
+      }
+    },
     async load(id) {
       // Names-only manifest + lazy loaders. Stays inlined in the entry bundle;
       // each loader dynamically imports a per-schema virtual module so the full
@@ -114,7 +168,7 @@ export const graphqlSchemaPlugin = (): Plugin => {
             );
           }
           manifests[instance.basePath] = buildManifest(
-            await loadSchema(instance.config, instance.rootDir),
+            await loadInstanceSchema(instance),
           );
         }
 
@@ -145,10 +199,7 @@ export const graphqlSchemaPlugin = (): Plugin => {
             resolveInputPath(instance.config, instance.rootDir),
           );
         }
-        const introspection = await loadSchema(
-          instance.config,
-          instance.rootDir,
-        );
+        const introspection = await loadInstanceSchema(instance);
 
         return `export default JSON.parse(${JSON.stringify(
           JSON.stringify(introspection),

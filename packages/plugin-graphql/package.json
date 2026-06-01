@@ -14,7 +14,8 @@
   ],
   "scripts": {},
   "dependencies": {
-    "graphql": "catalog:"
+    "graphql": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

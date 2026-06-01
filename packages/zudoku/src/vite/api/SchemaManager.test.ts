@@ -386,54 +386,6 @@ describe("SchemaManager", () => {
     ]);
   });
 
-  it("should load x-graphql SDL schemas and stamp a schemaId", async () => {
-    const sdlPath = path.join(tempDir, "registry.graphql");
-    await fs.writeFile(
-      sdlPath,
-      "type Query { vessel(id: ID!): Vessel } type Vessel { id: ID! name: String! }",
-    );
-
-    const schemaPath = path.join(tempDir, "openapi.json");
-    await fs.writeFile(
-      schemaPath,
-      JSON.stringify({
-        openapi: "3.1.0",
-        info: { title: "Test API", version: "1.0.0" },
-        paths: {
-          "/graphql": {
-            post: {
-              "x-graphql": { schema: "./registry.graphql" },
-              responses: { "200": { description: "OK" } },
-            },
-          },
-        },
-      }),
-    );
-
-    const config: ConfigWithMeta = {
-      __meta,
-      apis: [{ type: "file", path: "test-api", input: schemaPath }],
-    };
-
-    const manager = new SchemaManager({ storeDir, config, processors: [] });
-    await manager.processAllSchemas();
-
-    const schemas = manager.getGraphQLSchemas();
-    const keys = Object.keys(schemas);
-    expect(keys).toHaveLength(1);
-
-    const introspection = schemas[keys[0]!]!;
-    const typeNames = introspection.__schema.types.map((t) => t.name);
-    expect(typeNames).toContain("Vessel");
-
-    const operation =
-      manager.getLatestSchema("test-api")?.schema.paths?.["/graphql"]?.post;
-    expect(
-      (operation as { "x-graphql"?: { schemaId?: string } })?.["x-graphql"]
-        ?.schemaId,
-    ).toBe(keys[0]);
-  });
-
   it("should reprocess all param variants when file changes", async () => {
     const schemaPath = path.join(tempDir, "openapi.json");
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));

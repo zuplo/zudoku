@@ -145,7 +145,7 @@ const toTypeItems = (
         label: `${type.name}.${field.name}`,
         detail: field.description,
         kind: "Field",
-        to: `${basePath}/${rootType}/${type.name}`,
+        to: `${basePath}/${rootType}/${type.name}#field-${field.name}`,
       })),
     );
   }
@@ -157,7 +157,7 @@ const toTypeItems = (
         label: `${type.name}.${field.name}`,
         detail: field.description,
         kind: "Input",
-        to: `${basePath}/${rootType}/${type.name}`,
+        to: `${basePath}/${rootType}/${type.name}#arg-${field.name}`,
       })),
     );
   }

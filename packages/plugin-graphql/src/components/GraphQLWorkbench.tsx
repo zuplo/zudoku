@@ -29,7 +29,6 @@ type WorkbenchState = "collapsed" | "open" | "maximized";
 type OpenWorkbenchInput = {
   query?: string;
   variables?: string;
-  label?: string;
 };
 
 type GraphQLWorkbenchContextValue = {
@@ -227,8 +226,8 @@ const GraphQLWorkbenchDrawer = ({
         role="separator"
         aria-label="Resize playground"
         aria-orientation="horizontal"
-        aria-valuemin={280}
-        aria-valuemax={Math.max(280, MAX_HEIGHT_LIMIT)}
+        aria-valuemin={MIN_HEIGHT}
+        aria-valuemax={getMaxHeight()}
         aria-valuenow={height}
         tabIndex={0}
         onKeyDown={(event) => {

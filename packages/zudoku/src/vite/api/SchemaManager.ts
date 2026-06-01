@@ -6,7 +6,6 @@ import {
 } from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
 import { deepEqual } from "fast-equals";
-import type { IntrospectionQuery } from "graphql";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
 import type {
@@ -18,29 +17,7 @@ import { ensureArray } from "../../lib/util/ensureArray.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { slugify } from "../../lib/util/slugify.js";
-import { loadSchema, type SchemaSource } from "../graphql/load-schema.js";
 import { generateCode } from "./schema-codegen.js";
-
-// Short stable id for a schema source. Avoids leaking absolute paths into the
-// published output while staying deterministic so the same source dedups.
-const schemaKey = (source: string) => {
-  let hash = 5381;
-  for (let i = 0; i < source.length; i++) {
-    hash = (hash * 33) ^ source.charCodeAt(i);
-  }
-  return `gql-${(hash >>> 0).toString(36)}`;
-};
-
-const HTTP_METHODS = new Set([
-  "get",
-  "post",
-  "put",
-  "patch",
-  "delete",
-  "options",
-  "head",
-  "trace",
-]);
 
 type ProcessedSchema = {
   schema: OpenAPIDocument;
@@ -107,8 +84,6 @@ export class SchemaManager {
   private processors: Processor[];
   private processedSchemas: Record<string, ProcessedSchema[]> = {};
   private referencedBy = new Map<string, Set<string>>();
-  // Introspected GraphQL schemas for `x-graphql` operations, keyed by source.
-  private graphqlSchemas: Record<string, IntrospectionQuery> = {};
   public config: LoadedConfig;
 
   constructor({
@@ -142,60 +117,6 @@ export class SchemaManager {
           deepEqual(i.params, params),
       );
       if (match) return apiConfig.path;
-    }
-  };
-
-  public getGraphQLSchemas = () => this.graphqlSchemas;
-
-  private resolveGraphQLSource = (
-    ext: { endpoint?: string; schema?: string },
-    oasFilePath: string,
-  ): SchemaSource | undefined => {
-    if (ext.schema) {
-      return {
-        type: "file",
-        input: path.resolve(path.dirname(oasFilePath), ext.schema),
-      };
-    }
-    if (ext.endpoint) return { type: "url", input: ext.endpoint };
-    return undefined;
-  };
-
-  // Walk operations for `x-graphql`, load each schema once (SDL file or
-  // endpoint introspection), and stamp a `schemaId` into the extension so the
-  // client can look the introspected schema up in the bundled module.
-  private processGraphQLEndpoints = async (
-    schema: OpenAPIDocument,
-    oasFilePath: string,
-  ) => {
-    for (const pathItem of Object.values(schema.paths ?? {})) {
-      if (!pathItem || typeof pathItem !== "object") continue;
-      for (const [method, operation] of Object.entries(pathItem)) {
-        if (!HTTP_METHODS.has(method.toLowerCase())) continue;
-        const ext = (operation as Record<string, unknown>)?.["x-graphql"];
-        if (!ext || typeof ext !== "object") continue;
-
-        const source = this.resolveGraphQLSource(ext, oasFilePath);
-        if (!source) continue;
-
-        const key = schemaKey(source.input);
-        if (!this.graphqlSchemas[key]) {
-          try {
-            this.graphqlSchemas[key] = await loadSchema(
-              source,
-              this.config.__meta.rootDir,
-            );
-          } catch (error) {
-            // Degrade to the playground-only experience on load failure.
-            // biome-ignore lint/suspicious/noConsole: Logging allowed here
-            console.warn(
-              `Failed to load GraphQL schema for ${source.input}: ${String(error)}`,
-            );
-            continue;
-          }
-        }
-        (ext as { schemaId?: string }).schemaId = key;
-      }
     }
   };
 
@@ -243,8 +164,6 @@ export class SchemaManager {
         }),
       Promise.resolve(validatedSchema),
     );
-
-    await this.processGraphQLEndpoints(processedSchema, filePath);
 
     const processedTime = Date.now();
     const code = generateCode(processedSchema, filePath);
