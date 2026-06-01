@@ -115,11 +115,20 @@ const NavigationCategoryInner = ({
               }
             }}
           >
-            {icon}
-            <div className="flex items-center gap-2 justify-between w-full text-foreground/80 group-aria-[current='page']:text-primary">
-              <div className="truncate">{category.label}</div>
-              {ToggleButton}
-            </div>
+            {({ isActive: linkActive, isPending }) => (
+              <>
+                {icon}
+                <div
+                  className={cn(
+                    "flex items-center gap-2 justify-between w-full text-foreground/80",
+                    (linkActive || isPending) && "text-primary",
+                  )}
+                >
+                  <div className="truncate">{category.label}</div>
+                  {ToggleButton}
+                </div>
+              </>
+            )}
           </NavLink>
         ) : (
           <div className={styles}>

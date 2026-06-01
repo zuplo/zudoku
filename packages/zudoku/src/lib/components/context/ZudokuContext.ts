@@ -73,10 +73,9 @@ export const useCurrentNavigation = () => {
   const { data } = useSuspenseQuery({
     queryFn: () => getPluginNavigation(pathname),
     queryKey: ["plugin-navigation", pathname, isAuthenticated],
-    // Plugin navigation derives from build-time sources that can change via HMR;
-    // recompute on mount so a swapped schema doesn't leave a stale sidebar.
-    // Cheap (local computation), so no real cost over the cached default.
-    staleTime: 0,
+    // Navigation comes from static build-time sources, so it never changes at
+    // runtime in production. In dev, recompute on mount so an HMR schema swap doesn't leave a stale sidebar.
+    staleTime: import.meta.env.DEV ? 0 : undefined,
   });
 
   let topNavItem = navItem;

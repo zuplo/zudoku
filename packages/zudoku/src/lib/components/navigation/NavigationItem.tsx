@@ -125,21 +125,25 @@ export const NavigationItem = ({
       const hasAnchor = href.includes("#");
       return !href.startsWith("http") ? (
         <AnchorLink
+          end
           to={{
             pathname: href.split("#")[0],
             hash: href.split("#")[1],
             search: location.search,
           }}
           {...{ [DATA_ANCHOR_ATTR]: href.split("#")[1] }}
-          className={navigationListItem({
-            isActive:
-              href ===
-              (hasAnchor
-                ? [joinUrl(location.pathname), activeAnchor]
-                    .filter(Boolean)
-                    .join("#")
-                : joinUrl(location.pathname)),
-          })}
+          className={({ isPending }) =>
+            navigationListItem({
+              isActive:
+                href ===
+                (hasAnchor
+                  ? [joinUrl(location.pathname), activeAnchor]
+                      .filter(Boolean)
+                      .join("#")
+                  : joinUrl(location.pathname)),
+              isPending,
+            })
+          }
           onClick={onRequestClose}
         >
           {item.icon && (

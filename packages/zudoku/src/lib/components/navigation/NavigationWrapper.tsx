@@ -13,9 +13,26 @@ export const NavigationWrapper = ({
   const { options } = useZudoku();
   const navRef = useRef<HTMLDivElement>(null);
 
+  // Scroll the active item into view on mount and whenever it changes.
   useEffect(() => {
-    const active = navRef.current?.querySelector('[aria-current="page"]');
-    scrollIntoViewIfNeeded(active ?? null);
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const scrollActiveIntoView = () => {
+      // Leaf and its category both get aria-current; the leaf is last in DOM.
+      const active = nav.querySelectorAll('[aria-current="page"]');
+      scrollIntoViewIfNeeded(active.item(active.length - 1));
+    };
+    scrollActiveIntoView();
+
+    const observer = new MutationObserver(scrollActiveIntoView);
+    observer.observe(nav, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["aria-current"],
+    });
+    return () => observer.disconnect();
   }, []);
 
   return (
