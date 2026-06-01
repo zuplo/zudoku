@@ -99,8 +99,8 @@ importers:
         specifier: 0.36.0
         version: 0.36.0
       publint:
-        specifier: ^0.3.18
-        version: 0.3.18
+        specifier: ^0.3.21
+        version: 0.3.21
       size-limit:
         specifier: ^12.1.0
         version: 12.1.0(jiti@2.6.1)
@@ -516,7 +516,7 @@ importers:
         version: 19.2.5(react@19.2.5)
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(publint@0.3.18)(tsx@4.22.3)(typescript@6.0.3)
+        version: 0.22.0(publint@0.3.21)(tsx@4.22.3)(typescript@6.0.3)
       zudoku:
         specifier: workspace:*
         version: link:../zudoku
@@ -559,7 +559,7 @@ importers:
         version: 19.2.5(react@19.2.5)
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.0(publint@0.3.18)(tsx@4.22.3)(typescript@6.0.3)
+        version: 0.22.0(publint@0.3.21)(tsx@4.22.3)(typescript@6.0.3)
       zudoku:
         specifier: workspace:*
         version: link:../zudoku
@@ -8373,8 +8373,8 @@ packages:
     resolution: {integrity: sha512-cJ+oHTW1VAEa8cJslgmUZrc+sjRKgAKl3Zyse6+PV38hZe/V6Z14TbCuXcan9F9ghlz4QrFr2c92TNF82UkYHA==}
     engines: {node: '>=10'}
 
-  publint@0.3.18:
-    resolution: {integrity: sha512-JRJFeBTrfx4qLwEuGFPk+haJOJN97KnPuK01yj+4k/Wj5BgoOK5uNsivporiqBjk2JDaslg7qJOhGRnpltGeog==}
+  publint@0.3.21:
+    resolution: {integrity: sha512-OqejcnMV6E9zel2oCrUOJEiiFkGiAAni0A6ibfQNh1k9Gu5z4F+Yso8lllam7AzmV6Do0vp7u3UpZNRBwuXaHQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -17630,7 +17630,7 @@ snapshots:
 
   proxy-from-env@2.1.0: {}
 
-  publint@0.3.18:
+  publint@0.3.21:
     dependencies:
       '@publint/pack': 0.1.4
       package-manager-detector: 1.6.0
@@ -18490,7 +18490,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tsdown@0.22.0(publint@0.3.18)(tsx@4.22.3)(typescript@6.0.3):
+  tsdown@0.22.0(publint@0.3.21)(tsx@4.22.3)(typescript@6.0.3):
     dependencies:
       ansis: 4.2.0
       cac: 7.0.0
@@ -18508,7 +18508,7 @@ snapshots:
       tree-kill: 1.2.2
       unconfig-core: 7.5.0
     optionalDependencies:
-      publint: 0.3.18
+      publint: 0.3.21
       tsx: 4.22.3
       typescript: 6.0.3
     transitivePeerDependencies:
