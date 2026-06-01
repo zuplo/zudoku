@@ -116,6 +116,8 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
       case "custom-page":
       case "doc":
         return joinUrl(item.path) === pathname ? true : undefined;
+      case "link":
+        return joinUrl(item.to) === pathname ? true : undefined;
       default:
         return undefined;
     }
