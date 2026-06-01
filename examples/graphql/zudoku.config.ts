@@ -29,8 +29,8 @@ const config: ZudokuConfig = {
           label: "GraphQL",
           collapsed: false,
           items: [
-            { label: "Developer API", type: "link", to: "/dev-graphql" },
-            { label: "Analytics API", type: "link", to: "/analytics-graphql" },
+            { label: "Developer API", type: "link", to: "/graphql/dev" },
+            { label: "Analytics API", type: "link", to: "/graphql/analytics" },
           ],
         },
         {
@@ -47,10 +47,11 @@ const config: ZudokuConfig = {
         },
       ],
     },
-    { label: "GraphQL API", type: "link", to: "/graphql" },
+    { label: "GraphQL API", type: "link", to: "/graphql/default" },
     { label: "REST API", type: "link", to: "/api" },
+    { label: "GraphQL OAS", type: "link", to: "/graphql-api" },
   ],
-  redirects: [{ from: "/", to: "/graphql" }],
+  redirects: [{ from: "/", to: "/graphql/default" }],
   theme: {
     registryUrl: "https://tweakcn.com/r/themes/cmjgilzlg000404ju2wgs7uj9",
   },
@@ -63,14 +64,42 @@ const config: ZudokuConfig = {
         showInfoPage: false,
       },
     },
+    {
+      type: "file",
+      input: "./openapi-graphql.json",
+      path: "graphql-api",
+      options: {
+        showInfoPage: false,
+      },
+    },
   ],
   plugins: [
     graphqlPlugin({
       type: "file",
       input: "./schema.graphql",
-      path: "graphql",
+      path: "graphql/default",
       options: {
         title: "E-Commerce GraphQL API",
+        description:
+          "A sample e-commerce API with products, orders, and user management.",
+      },
+    }),
+    graphqlPlugin({
+      type: "file",
+      input: "./schema.graphql",
+      path: "graphql/dev",
+      options: {
+        title: "Developer GraphQL API",
+        description:
+          "A sample e-commerce API with products, orders, and user management.",
+      },
+    }),
+    graphqlPlugin({
+      type: "file",
+      input: "./schema.graphql",
+      path: "graphql/analytics",
+      options: {
+        title: "Analytics GraphQL API",
         description:
           "A sample e-commerce API with products, orders, and user management.",
       },

@@ -99,7 +99,7 @@
         "operationId": "graphqlQuery",
         "summary": "GraphQL endpoint",
         "tags": ["Products"],
-        "description": "Query the e-commerce API via GraphQL. See [the full documentation →](/graphql)",
+        "description": "Query the e-commerce API via GraphQL. See [the full documentation →](/graphql/default)",
         "x-graphql": { "schema": "./schema.graphql" },
         "requestBody": {
           "content": {

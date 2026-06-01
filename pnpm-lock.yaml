@@ -225,8 +225,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/zudoku
 
-  examples/aws-lambda-ssr/dist: {}
-
   examples/cloudflare-ssr:
     devDependencies:
       react:
