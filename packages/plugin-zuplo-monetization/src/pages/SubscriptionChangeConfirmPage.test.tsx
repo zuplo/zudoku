@@ -57,8 +57,6 @@ const makePlan = (overrides: Partial<Plan> = {}): Plan => ({
       ],
     },
   ],
-  monthlyPrice: "45",
-  yearlyPrice: "540",
   currency: "USD",
   ...overrides,
 });

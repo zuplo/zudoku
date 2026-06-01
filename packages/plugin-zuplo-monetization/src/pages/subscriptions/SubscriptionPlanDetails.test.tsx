@@ -171,8 +171,6 @@ const makeSubscription = (
     name: "Plan name",
     billingCadence: "P1M",
     phases: [],
-    monthlyPrice: null,
-    yearlyPrice: null,
     version: 1,
   },
   proRatingConfig: { enabled: true, mode: "prorate_prices" },

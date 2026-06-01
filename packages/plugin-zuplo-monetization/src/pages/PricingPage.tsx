@@ -47,7 +47,6 @@ const PricingPage = () => {
       </div>
       <PricingTable
         plans={pricingTable.items}
-        showYearlyPrice={pricing?.showYearlyPrice !== false}
         units={pricing?.units}
         renderAction={(plan, isPopular) =>
           isSubscribed ? (

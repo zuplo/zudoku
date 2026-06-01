@@ -67,8 +67,6 @@ const makePublicPlan = (
 ): Plan => ({
   billingCadence: "P1M",
   currency: "USD",
-  monthlyPrice: "10",
-  yearlyPrice: "100",
   phases: [
     {
       key: "default",
@@ -178,8 +176,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -217,8 +213,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -266,8 +260,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -310,8 +302,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -348,8 +338,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -388,8 +376,6 @@ describe("SwitchPlanModal", () => {
       version: 1,
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "49",
-      yearlyPrice: "490",
     });
 
     render(<SwitchPlanModal subscription={subscription} />);
@@ -424,8 +410,6 @@ describe("SwitchPlanModal", () => {
       version: 1,
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -475,8 +459,6 @@ describe("SwitchPlanModal", () => {
       version: 1,
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "49",
-      yearlyPrice: "490",
     });
 
     render(<SwitchPlanModal subscription={subscription} />);
@@ -521,8 +503,6 @@ describe("SwitchPlanModal", () => {
       version: 2,
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "59",
-      yearlyPrice: "590",
     });
 
     render(<SwitchPlanModal subscription={subscription} />);
@@ -565,8 +545,6 @@ describe("SwitchPlanModal", () => {
       name: "Team",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "49",
-      yearlyPrice: "490",
     });
 
     render(<SwitchPlanModal subscription={subscription} />);

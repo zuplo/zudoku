@@ -28,8 +28,8 @@ import type { Plan } from "../../types/PlanType.js";
 import type { Subscription } from "../../types/SubscriptionType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import { formatDuration } from "../../utils/formatDuration.js";
+import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
 import { formatPrice } from "../../utils/formatPrice.js";
-import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 
 type PlanComparison = {
   plan: Plan;
@@ -324,9 +324,8 @@ const PlanComparisonItem = ({
   onRequestChange: (switchTo: SwitchPlanTarget) => void;
   isSwitching: boolean;
 }) => {
-  const price = getPriceFromPlan(comparison.plan);
+  const priceLabel = formatPlanPrice(comparison.plan);
   const isCustom = comparison.plan.key === "enterprise";
-  const displayPrice = price.monthly;
 
   const hasChanges =
     comparison.quotaChanges.length > 0 || comparison.featureChanges.length > 0;
@@ -350,13 +349,15 @@ const PlanComparisonItem = ({
           </div>
           {isCustom ? (
             <span className="text-primary font-medium">Custom</span>
-          ) : displayPrice === 0 ? (
-            <span className="text-primary font-medium">Free</span>
-          ) : (
+          ) : priceLabel.type === "priced" ? (
             <span className="text-primary font-medium text-lg">
-              {formatPrice(displayPrice, comparison.plan.currency)}/
+              {formatPrice(priceLabel.amount, comparison.plan.currency)}/
               {formatDuration(comparison.plan.billingCadence)}
             </span>
+          ) : priceLabel.type === "payg" ? (
+            <span className="text-primary font-medium">Pay as you go</span>
+          ) : (
+            <span className="text-primary font-medium">Free</span>
           )}
         </div>
         {isCustom ? (

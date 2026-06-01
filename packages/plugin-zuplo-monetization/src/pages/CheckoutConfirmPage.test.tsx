@@ -57,8 +57,6 @@ const makePlan = (overrides: Partial<Plan> = {}): Plan => ({
       ],
     },
   ],
-  monthlyPrice: "49",
-  yearlyPrice: "49",
   currency: "USD",
   ...overrides,
 });
@@ -192,8 +190,6 @@ describe("CheckoutConfirmPage", () => {
     testState.purchaseData.data = {
       ...makePlan({
         name: "Free",
-        monthlyPrice: "0",
-        yearlyPrice: "0",
         phases: [
           {
             key: "default",

@@ -1,20 +1,10 @@
-import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
-import { CheckIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
-import { Link, useNavigate, useSearchParams } from "zudoku/router";
-import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
-import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
-import { Separator } from "zudoku/ui/Separator";
+import { useNavigate, useSearchParams } from "zudoku/router";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePurchaseDetails } from "../hooks/usePurchaseDetails";
 import { useMonetizationConfig } from "../MonetizationContext";
-import { PlanEntitlements } from "../pricing-ui/PlanEntitlements.js";
 import type { Subscription } from "../types/SubscriptionType.js";
-import { formatBillingCycle } from "../utils/formatBillingCycle";
-import { formatDuration } from "../utils/formatDuration";
-import { formatMinorCurrencyAmount, formatPrice } from "../utils/formatPrice";
-import { getPriceFromPlan } from "../utils/getPriceFromPlan";
 import {
   getPlanFromPurchaseDetails,
   getTaxAmountFromPurchaseDetails,
@@ -22,6 +12,8 @@ import {
   isTaxInclusiveFromPurchaseDetails,
 } from "../utils/purchaseDetails";
 import { queryClient } from "../ZuploMonetizationWrapper";
+import { ConfirmationScreen } from "./components/ConfirmationScreen.js";
+import { PlanSummaryCard } from "./components/PlanSummaryCard.js";
 
 const SubscriptionChangeConfirmPage = () => {
   const [search] = useSearchParams();
@@ -42,10 +34,6 @@ const SubscriptionChangeConfirmPage = () => {
   const taxAmount = getTaxAmountFromPurchaseDetails(purchaseDetails.data);
   const taxLabel = getTaxLabelFromPurchaseDetails(purchaseDetails.data);
   const taxInclusive = isTaxInclusiveFromPurchaseDetails(purchaseDetails.data);
-  const price = selectedPlan ? getPriceFromPlan(selectedPlan) : null;
-  const billingCycle = selectedPlan?.billingCadence
-    ? formatDuration(selectedPlan.billingCadence)
-    : null;
   const effectiveChangeMessage =
     mode === "downgrade"
       ? "This change will take effect at the start of your next billing cycle."
@@ -72,124 +60,39 @@ const SubscriptionChangeConfirmPage = () => {
   });
 
   return (
-    <div className="w-full bg-muted min-h-screen flex items-center justify-center px-4 py-12 gap-4">
-      <div className="max-w-2xl w-full">
-        {changeMutation.isError && (
-          <Alert className="mb-4" variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{changeMutation.error.message}</AlertDescription>
-          </Alert>
-        )}
-        <Card className="p-8 w-full max-w-7xl">
-          <div className="flex justify-center mb-6">
-            <div className="rounded-full bg-primary/10 p-3">
-              <CheckIcon className="size-9 text-primary" />
-            </div>
-          </div>
-
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-card-foreground mb-3">
-              Confirm plan change
-            </h1>
-            <p className="text-muted-foreground text-base">
-              {effectiveChangeMessage}
-            </p>
-            <p className="text-muted-foreground text-base">
-              Please confirm the details below to change your subscription.
-            </p>
-          </div>
-
-          {selectedPlan && (
-            <Card className="bg-muted/50">
-              <CardHeader>
-                <CardTitle className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col text-2xl font-bold bg-primary text-primary-foreground items-center justify-center rounded size-12">
-                      {selectedPlan.name.at(0)?.toUpperCase()}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-lg font-bold">
-                        {selectedPlan.name}
-                      </span>
-                      <span className="text-sm font-normal text-muted-foreground">
-                        {selectedPlan.description || "New plan"}
-                      </span>
-                    </div>
-                  </div>
-                  {price && price.monthly > 0 && (
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">
-                        {formatPrice(price.monthly, selectedPlan?.currency)}
-                      </div>
-                      {taxAmount != null && (
-                        <div className="text-sm font-normal mt-1">
-                          {taxInclusive
-                            ? `${formatMinorCurrencyAmount(taxAmount, selectedPlan?.currency)} ${taxLabel} included`
-                            : `+ ${formatMinorCurrencyAmount(taxAmount, selectedPlan?.currency)} ${taxLabel}`}
-                        </div>
-                      )}
-                      {billingCycle && (
-                        <div className="text-sm text-muted-foreground font-normal">
-                          Billed {formatBillingCycle(billingCycle)}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {price && price.monthly === 0 && (
-                    <div className="text-2xl text-muted-foreground font-bold">
-                      Free
-                    </div>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Separator />
-                <div className="text-sm font-medium mb-3 mt-3">
-                  What's included:
-                </div>
-                <PlanEntitlements
-                  phases={selectedPlan.phases}
-                  currency={selectedPlan.currency}
-                  billingCadence={selectedPlan.billingCadence}
-                  units={pricing?.units}
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="space-y-3 mt-4">
-            <Button
-              className="w-full"
-              onClick={() => changeMutation.mutate()}
-              disabled={changeMutation.isPending}
-            >
-              {changeMutation.isPending
-                ? "Changing plan..."
-                : "Confirm & Change Plan"}
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full"
-              disabled={changeMutation.isPending}
-              asChild={!changeMutation.isPending}
-            >
-              <Link
-                to={`/subscriptions?${new URLSearchParams({ subscriptionId: subscriptionId ?? "" })}`}
-              >
-                Cancel
-              </Link>
-            </Button>
-          </div>
-
-          <div className="mt-6 pt-6 border-t text-center">
-            <p className="text-xs text-muted-foreground">
-              By confirming, you agree to our Terms of Service and Privacy
-              Policy.
-            </p>
-          </div>
-        </Card>
-      </div>
-    </div>
+    <ConfirmationScreen
+      title="Confirm plan change"
+      message={
+        <>
+          <p className="text-muted-foreground text-base">
+            {effectiveChangeMessage}
+          </p>
+          <p className="text-muted-foreground text-base">
+            Please confirm the details below to change your subscription.
+          </p>
+        </>
+      }
+      errorMessage={
+        changeMutation.isError ? changeMutation.error.message : undefined
+      }
+      confirmLabel="Confirm & Change Plan"
+      pendingLabel="Changing plan..."
+      onConfirm={() => changeMutation.mutate()}
+      isPending={changeMutation.isPending}
+      cancelTo={`/subscriptions?${new URLSearchParams({ subscriptionId })}`}
+      termsNote="By confirming, you agree to our Terms of Service and Privacy Policy."
+    >
+      {selectedPlan && (
+        <PlanSummaryCard
+          plan={selectedPlan}
+          descriptionFallback="New plan"
+          taxAmount={taxAmount}
+          taxLabel={taxLabel}
+          taxInclusive={taxInclusive}
+          units={pricing?.units}
+        />
+      )}
+    </ConfirmationScreen>
   );
 };
 

@@ -62,6 +62,10 @@ export {
   formatDurationInterval,
 } from "../utils/formatDuration.js";
 export {
+  formatPlanPrice,
+  type PlanPriceLabel,
+} from "../utils/formatPlanPrice.js";
+export {
   formatMinorCurrencyAmount,
   formatPrice,
 } from "../utils/formatPrice.js";
@@ -70,10 +74,7 @@ export {
   formatTieredPriceBreakdown,
   type TieredPriceBreakdownTier,
 } from "../utils/formatTieredPriceBreakdown.js";
-export {
-  derivePriceFromPlan,
-  getPriceFromPlan,
-} from "../utils/getPriceFromPlan.js";
+export { getPlanPrice } from "../utils/getPlanPrice.js";
 export {
   collectDefaultTaxBehaviors,
   planHasDefaultTaxBehavior,

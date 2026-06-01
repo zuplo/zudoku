@@ -10,8 +10,6 @@ const makePlan = (
   key: "plan-1",
   name: "Plan",
   billingCadence: "P1M",
-  monthlyPrice: "0",
-  yearlyPrice: "0",
   phases: [
     {
       key: "default",
@@ -46,34 +44,31 @@ describe("formatPlanPrice", () => {
     });
   });
 
-  it("returns free for a flat plan with monthlyPrice 0", () => {
+  it("returns free for a flat plan with a zero flat fee", () => {
     expect(formatPlanPrice(makePlan([flatFee("0")]))).toEqual({ type: "free" });
   });
 
-  it("returns priced for a flat plan with monthlyPrice > 0", () => {
-    const plan = makePlan([flatFee("49")], { monthlyPrice: "49" });
-    expect(formatPlanPrice(plan)).toEqual({
+  it("returns priced with the flat-fee amount for a flat plan", () => {
+    expect(formatPlanPrice(makePlan([flatFee("49")]))).toEqual({
       type: "priced",
-      monthly: 49,
-      yearly: 0,
+      amount: 49,
     });
+  });
+
+  it("surfaces the flat fee for a sub-day (hourly) cadence rather than Free", () => {
+    const plan = makePlan([flatFee("2.99")], { billingCadence: "PT1H" });
+    expect(formatPlanPrice(plan)).toEqual({ type: "priced", amount: 2.99 });
   });
 
   it("returns priced for a hybrid plan with flat + usage rate cards", () => {
     // Hybrid plans (flat fee + usage) classify as "priced" because their
-    // monthly base is positive. Usage on top of the base is communicated
+    // recurring base is positive. Usage on top of the base is communicated
     // by the per-feature tier breakdown, not a separate label.
-    const plan = makePlan([flatFee("49"), unitUsage("0.01")], {
-      monthlyPrice: "49",
-    });
-    expect(formatPlanPrice(plan)).toEqual({
-      type: "priced",
-      monthly: 49,
-      yearly: 0,
-    });
+    const plan = makePlan([flatFee("49"), unitUsage("0.01")]);
+    expect(formatPlanPrice(plan)).toEqual({ type: "priced", amount: 49 });
   });
 
-  it("returns payg for a usage-only plan with monthlyPrice 0", () => {
+  it("returns payg for a usage-only plan with no flat fee", () => {
     expect(formatPlanPrice(makePlan([unitUsage("0.05")]))).toEqual({
       type: "payg",
       main: "Pay as you go",

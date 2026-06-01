@@ -10,10 +10,10 @@ import {
 import { useMonetizationConfig } from "../../MonetizationContext.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDuration } from "../../utils/formatDuration.js";
+import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { formatStaticEntitlementConfig } from "../../utils/formatStaticEntitlementConfig.js";
 import { formatTieredPriceBreakdown } from "../../utils/formatTieredPriceBreakdown.js";
-import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 import {
   planHasDefaultTaxBehavior,
   subscriptionTaxLegendSentence,
@@ -247,24 +247,26 @@ export const SubscriptionPlanDetails = ({
   const { pricing } = useMonetizationConfig();
   const plan = subscription.plan;
   const currency = subscription.currency ?? plan.currency;
-  const priceInfo = getPriceFromPlan(plan);
+  const priceLabel = formatPlanPrice(plan);
   const taxLegendSentence = planHasDefaultTaxBehavior(plan)
     ? subscriptionTaxLegendSentence(plan.defaultTaxConfig?.behavior ?? "")
     : undefined;
 
   const primaryPrice =
-    priceInfo.monthly === 0 && priceInfo.yearly === 0 ? (
-      <span className="text-primary font-medium">Free</span>
-    ) : (
+    priceLabel.type === "priced" ? (
       <>
         <span className="text-primary font-medium text-lg">
-          {formatPrice(priceInfo.monthly, currency)}
+          {formatPrice(priceLabel.amount, currency)}
         </span>
         <span className="text-muted-foreground">
           {" / "}
           {formatDuration(plan.billingCadence)}
         </span>
       </>
+    ) : priceLabel.type === "payg" ? (
+      <span className="text-primary font-medium">Pay as you go</span>
+    ) : (
+      <span className="text-primary font-medium">Free</span>
     );
 
   const { phaseGroups } = getPhaseRows({

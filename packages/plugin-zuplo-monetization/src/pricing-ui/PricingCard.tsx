@@ -9,7 +9,6 @@ import { PlanEntitlements } from "./PlanEntitlements.js";
 export type PricingCardProps = {
   plan: Plan;
   isPopular?: boolean;
-  showYearlyPrice?: boolean;
   units?: Record<string, string>;
   /** CTA element rendered at the bottom of the card (e.g. a Subscribe button). */
   action?: ReactNode;
@@ -19,7 +18,6 @@ export type PricingCardProps = {
 export const PricingCard = ({
   plan,
   isPopular = false,
-  showYearlyPrice = true,
   units,
   action,
   className,
@@ -77,16 +75,11 @@ export const PricingCard = ({
           ) : (
             <>
               <span className="text-3xl font-bold text-card-foreground">
-                {formatPrice(priceLabel.monthly, plan.currency)}
+                {formatPrice(priceLabel.amount, plan.currency)}
               </span>
               <span className="text-muted-foreground text-sm">
                 /{billingInterval}
               </span>
-              {showYearlyPrice && priceLabel.yearly > 0 && (
-                <div className="w-full text-sm text-muted-foreground mt-1">
-                  {formatPrice(priceLabel.yearly, plan.currency)}/year
-                </div>
-              )}
             </>
           )}
         </div>
