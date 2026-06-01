@@ -3,30 +3,50 @@ import {
   type IntrospectionQuery,
   printSchema,
 } from "graphql";
+import { useMemo } from "react";
 import { Head, Heading, Markdown } from "zudoku/components";
-import { DownloadIcon, ExternalLinkIcon, PlayIcon } from "zudoku/icons";
+import {
+  ChevronDownIcon,
+  CopyIcon,
+  DownloadIcon,
+  ExternalLinkIcon,
+  PlayIcon,
+} from "zudoku/icons";
 import { Link } from "zudoku/router";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Button } from "zudoku/ui/Button.js";
+import { ButtonGroup } from "zudoku/ui/ButtonGroup.js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "zudoku/ui/DropdownMenu.js";
 import {
   Item,
   ItemContent,
   ItemDescription,
   ItemTitle,
 } from "zudoku/ui/Item.js";
+import { useGraphQLWorkbench } from "../components/GraphQLWorkbench.js";
 import { SchemaSearch } from "../components/SchemaSearch.js";
 import { useGraphQLSchema } from "../context.js";
 import { ROOT_TYPES, type RootType, typeMetadata } from "../util/types.js";
 
 export const OverviewPage = () => {
   const { schema, index, basePath, options } = useGraphQLSchema();
+  const { openWorkbench } = useGraphQLWorkbench();
 
-  const getSchemaBlobUrl = () => {
-    const sdl = printSchema(
-      buildClientSchema({ __schema: schema } as IntrospectionQuery),
-    );
-    return URL.createObjectURL(new Blob([sdl], { type: "text/plain" }));
-  };
+  const sdl = useMemo(
+    () =>
+      printSchema(
+        buildClientSchema({ __schema: schema } as IntrospectionQuery),
+      ),
+    [schema],
+  );
+
+  const getSchemaBlobUrl = () =>
+    URL.createObjectURL(new Blob([sdl], { type: "text/plain" }));
 
   const downloadSchema = () => {
     const url = getSchemaBlobUrl();
@@ -42,6 +62,8 @@ export const OverviewPage = () => {
     window.open(url, "_blank", "noopener,noreferrer");
     setTimeout(() => URL.revokeObjectURL(url), 60_000);
   };
+
+  const copySchema = () => navigator.clipboard.writeText(sdl);
 
   const objects = index
     .getTypes(["OBJECT"])
@@ -83,24 +105,37 @@ export const OverviewPage = () => {
               {title}
             </Heading>
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" onClick={openSchema}>
-                <ExternalLinkIcon size={14} aria-hidden="true" />
-                Open schema
-              </Button>
-              <Button variant="outline" onClick={downloadSchema}>
-                <DownloadIcon size={14} aria-hidden="true" />
-                Download schema
-              </Button>
+              <ButtonGroup>
+                <Button variant="outline" onClick={downloadSchema}>
+                  <DownloadIcon size={14} aria-hidden="true" />
+                  Download schema
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="px-1.5"
+                      aria-label="More schema actions"
+                    >
+                      <ChevronDownIcon size={14} aria-hidden="true" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={openSchema}>
+                      <ExternalLinkIcon size={14} aria-hidden="true" />
+                      Open in new tab
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={copySchema}>
+                      <CopyIcon size={14} aria-hidden="true" />
+                      Copy schema
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </ButtonGroup>
               {options.playground?.enabled !== false && (
-                <Button asChild variant="outline">
-                  <Link to={`${basePath}/playground`}>
-                    <PlayIcon
-                      size={14}
-                      fill="currentColor"
-                      aria-hidden="true"
-                    />
-                    Playground
-                  </Link>
+                <Button onClick={() => openWorkbench()}>
+                  <PlayIcon size={14} fill="currentColor" aria-hidden="true" />
+                  Playground
                 </Button>
               )}
             </div>

@@ -2,6 +2,7 @@ import {
   createContext,
   type PropsWithChildren,
   type PointerEvent,
+  type RefObject,
   use,
   useCallback,
   useMemo,
@@ -16,7 +17,6 @@ import {
   Minimize2Icon,
   PlayIcon,
 } from "zudoku/icons";
-import { useLocation } from "zudoku/router";
 import { Button } from "zudoku/ui/Button.js";
 import { useGraphQLSchema } from "../context.js";
 import {
@@ -27,14 +27,14 @@ import {
 type WorkbenchState = "collapsed" | "open" | "maximized";
 
 type OpenWorkbenchInput = {
-  query: string;
+  query?: string;
   variables?: string;
   label?: string;
 };
 
 type GraphQLWorkbenchContextValue = {
   operation?: GraphQLPlaygroundOperation;
-  openWorkbench: (input: OpenWorkbenchInput) => void;
+  openWorkbench: (input?: OpenWorkbenchInput) => void;
   updateWorkbenchOperation: (
     operation: Partial<Omit<GraphQLPlaygroundOperation, "id">>,
   ) => void;
@@ -46,8 +46,9 @@ const GraphQLWorkbenchContext = createContext<
 
 export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
   const { options } = useGraphQLSchema();
-  const requestId = useRef(0);
+  const nextId = useRef(0);
   const [operation, setOperation] = useState<GraphQLPlaygroundOperation>();
+  const [drawerState, setDrawerState] = useState<WorkbenchState>("collapsed");
 
   const updateWorkbenchOperation = useCallback(
     (input: Partial<Omit<GraphQLPlaygroundOperation, "id">>) => {
@@ -55,10 +56,9 @@ export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
         if (current) {
           return { ...current, ...input };
         }
-
-        requestId.current += 1;
+        nextId.current += 1;
         return {
-          id: requestId.current,
+          id: nextId.current,
           query: input.query ?? "",
           variables: input.variables,
           headers: input.headers,
@@ -68,13 +68,16 @@ export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
     [],
   );
 
-  const openWorkbench = useCallback((input: OpenWorkbenchInput) => {
-    requestId.current += 1;
-    setOperation({
-      id: requestId.current,
-      query: input.query,
-      variables: input.variables,
-    });
+  const openWorkbench = useCallback((input?: OpenWorkbenchInput) => {
+    if (input?.query !== undefined) {
+      nextId.current += 1;
+      setOperation({
+        id: nextId.current,
+        query: input.query,
+        variables: input.variables,
+      });
+    }
+    setDrawerState("open");
   }, []);
 
   const value = useMemo<GraphQLWorkbenchContextValue>(
@@ -90,11 +93,12 @@ export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
 
   return (
     <GraphQLWorkbenchContext.Provider value={value}>
-      {/* Reserve room for the 44px collapsed drawer. */}
       <div className={cn(drawerEnabled && "pb-14")}>{children}</div>
       {drawerEnabled && (
         <GraphQLWorkbenchDrawer
           operation={operation}
+          state={drawerState}
+          onStateChange={setDrawerState}
           updateWorkbenchOperation={updateWorkbenchOperation}
         />
       )}
@@ -116,40 +120,91 @@ const MAX_HEIGHT_LIMIT = 900;
 const MIN_HEIGHT = 100;
 const DEFAULT_HEIGHT = 420;
 
+const getMaxHeight = () =>
+  typeof window === "undefined" ? MAX_HEIGHT_LIMIT : window.innerHeight - 48;
+
+const clampHeight = (nextHeight: number) =>
+  Math.min(Math.max(nextHeight, MIN_HEIGHT), getMaxHeight());
+
+const useResizableHeight = (
+  drawerRef: RefObject<HTMLDivElement | null>,
+  onOpen: () => void,
+) => {
+  const frameRef = useRef<number | undefined>(undefined);
+  const currentHeightRef = useRef(DEFAULT_HEIGHT);
+  const startRef = useRef<{ clientY: number; height: number } | undefined>(
+    undefined,
+  );
+  const [isResizing, setIsResizing] = useState(false);
+  const [height, setHeight] = useState(DEFAULT_HEIGHT);
+
+  const startResize = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      const startHeight = clampHeight(
+        drawerRef.current?.getBoundingClientRect().height ?? height,
+      );
+      startRef.current = { clientY: event.clientY, height: startHeight };
+      currentHeightRef.current = startHeight;
+      drawerRef.current?.style.setProperty("height", `${startHeight}px`);
+      onOpen();
+      setIsResizing(true);
+    },
+    [drawerRef, height, onOpen],
+  );
+
+  const resize = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      if (event.buttons !== 1 || !startRef.current) return;
+      const nextHeight = clampHeight(
+        startRef.current.height + startRef.current.clientY - event.clientY,
+      );
+      currentHeightRef.current = nextHeight;
+
+      if (frameRef.current !== undefined) return;
+      frameRef.current = window.requestAnimationFrame(() => {
+        drawerRef.current?.style.setProperty(
+          "height",
+          `${currentHeightRef.current}px`,
+        );
+        frameRef.current = undefined;
+      });
+    },
+    [drawerRef],
+  );
+
+  const stopResize = useCallback((event: PointerEvent<HTMLElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setHeight(currentHeightRef.current);
+    startRef.current = undefined;
+    setIsResizing(false);
+  }, []);
+
+  return { height, setHeight, isResizing, startResize, resize, stopResize };
+};
+
 const GraphQLWorkbenchDrawer = ({
   operation,
+  state,
+  onStateChange,
   updateWorkbenchOperation,
 }: {
   operation?: GraphQLPlaygroundOperation;
+  state: WorkbenchState;
+  onStateChange: (state: WorkbenchState) => void;
   updateWorkbenchOperation: GraphQLWorkbenchContextValue["updateWorkbenchOperation"];
 }) => {
   const { options, schema } = useGraphQLSchema();
-  const location = useLocation();
   const drawerRef = useRef<HTMLDivElement>(null);
-  const resizeFrameRef = useRef<number | undefined>(undefined);
-  const resizedHeightRef = useRef(DEFAULT_HEIGHT);
-  const resizeStartRef = useRef<
-    { clientY: number; height: number } | undefined
-  >(undefined);
-  const [isResizing, setIsResizing] = useState(false);
-  const [state, setState] = useState<WorkbenchState>("collapsed");
-  const [height, setHeight] = useState(DEFAULT_HEIGHT);
-  // Auto-open the drawer when openWorkbench is called (id bumps).
-  const [lastOpenedId, setLastOpenedId] = useState(operation?.id);
-  if (operation?.id !== undefined && operation.id !== lastOpenedId) {
-    setLastOpenedId(operation.id);
-    setState("open");
-  }
-  // Mount the playground lazily on first open and keep it alive thereafter.
-  const [hasOpened, setHasOpened] = useState(state !== "collapsed");
-  if (!hasOpened && state !== "collapsed") {
-    setHasOpened(true);
-  }
-  const isStandalonePlayground = location.pathname.endsWith("/playground");
-  const getMaxHeight = () =>
-    typeof window === "undefined" ? MAX_HEIGHT_LIMIT : window.innerHeight - 48;
-  const clampHeight = (nextHeight: number) =>
-    Math.min(Math.max(nextHeight, MIN_HEIGHT), getMaxHeight());
+  const hasOpened = useRef(false);
+  if (state !== "collapsed") hasOpened.current = true;
+
+  const { height, setHeight, isResizing, startResize, resize, stopResize } =
+    useResizableHeight(drawerRef, () => onStateChange("open"));
+
   const drawerHeight =
     state === "collapsed"
       ? "44px"
@@ -157,64 +212,12 @@ const GraphQLWorkbenchDrawer = ({
         ? "calc(100vh - 3rem)"
         : `${height}px`;
 
-  if (isStandalonePlayground) {
-    return null;
-  }
-
-  const startResize = (event: PointerEvent<HTMLElement>) => {
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    const startHeight = clampHeight(
-      drawerRef.current?.getBoundingClientRect().height ?? height,
-    );
-
-    resizeStartRef.current = {
-      clientY: event.clientY,
-      height: startHeight,
-    };
-    resizedHeightRef.current = startHeight;
-    drawerRef.current?.style.setProperty("height", `${startHeight}px`);
-    setState("open");
-    setIsResizing(true);
-  };
-
-  const resize = (event: PointerEvent<HTMLElement>) => {
-    if (event.buttons !== 1 || !resizeStartRef.current) return;
-    const nextHeight = clampHeight(
-      resizeStartRef.current.height +
-        resizeStartRef.current.clientY -
-        event.clientY,
-    );
-    resizedHeightRef.current = nextHeight;
-
-    if (resizeFrameRef.current !== undefined) return;
-
-    resizeFrameRef.current = window.requestAnimationFrame(() => {
-      drawerRef.current?.style.setProperty(
-        "height",
-        `${resizedHeightRef.current}px`,
-      );
-      resizeFrameRef.current = undefined;
-    });
-  };
-
-  const stopResize = (event: PointerEvent<HTMLElement>) => {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-
-    setHeight(resizedHeightRef.current);
-    resizeStartRef.current = undefined;
-    setIsResizing(false);
-  };
-
   return (
     <div
       ref={drawerRef}
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 px-3",
         !isResizing && "transition-[height] duration-200",
-        isStandalonePlayground && "pointer-events-none translate-y-full",
       )}
       style={{ height: drawerHeight }}
       data-pagefind-ignore="all"
@@ -231,12 +234,12 @@ const GraphQLWorkbenchDrawer = ({
         onKeyDown={(event) => {
           if (event.key === "ArrowUp") {
             event.preventDefault();
-            setState("open");
+            onStateChange("open");
             setHeight(clampHeight(height + 40));
           }
           if (event.key === "ArrowDown") {
             event.preventDefault();
-            setState("open");
+            onStateChange("open");
             setHeight(clampHeight(height - 40));
           }
         }}
@@ -262,31 +265,31 @@ const GraphQLWorkbenchDrawer = ({
               <DrawerToolbarButton
                 label="Open playground"
                 icon={ChevronsUpIcon}
-                onClick={() => setState("open")}
+                onClick={() => onStateChange("open")}
               />
             ) : (
               <DrawerToolbarButton
                 label="Collapse playground"
                 icon={ChevronsDownIcon}
-                onClick={() => setState("collapsed")}
+                onClick={() => onStateChange("collapsed")}
               />
             )}
             {state === "maximized" ? (
               <DrawerToolbarButton
                 label="Restore playground"
                 icon={Minimize2Icon}
-                onClick={() => setState("open")}
+                onClick={() => onStateChange("open")}
               />
             ) : (
               <DrawerToolbarButton
                 label="Maximize playground"
                 icon={Maximize2Icon}
-                onClick={() => setState("maximized")}
+                onClick={() => onStateChange("maximized")}
               />
             )}
           </div>
         </div>
-        {hasOpened && (
+        {hasOpened.current && (
           <GraphQLPlayground
             endpoint={options.playground?.endpoint}
             headers={options.playground?.headers}

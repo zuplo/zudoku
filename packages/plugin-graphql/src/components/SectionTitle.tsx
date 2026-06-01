@@ -1,18 +1,16 @@
 import type { ReactNode } from "react";
 import { cn } from "zudoku";
-import { Heading } from "zudoku/components";
+import { Anchor, Heading } from "zudoku/components";
 
 export const SectionTitle = ({
   id,
   label,
   suffix,
-  actions,
   className,
 }: {
   id?: string;
   label: ReactNode;
   suffix?: ReactNode;
-  actions?: ReactNode;
   className?: string;
 }) => (
   <div
@@ -21,8 +19,8 @@ export const SectionTitle = ({
       className,
     )}
   >
-    <div className="flex items-baseline gap-2">
-      <Heading level={3} id={id} className="leading-none">
+    <Anchor id={id} className="flex items-baseline gap-2">
+      <Heading level={2} className="leading-none">
         {label}
       </Heading>
       {suffix && (
@@ -31,7 +29,6 @@ export const SectionTitle = ({
           {suffix}
         </>
       )}
-    </div>
-    {actions}
+    </Anchor>
   </div>
 );

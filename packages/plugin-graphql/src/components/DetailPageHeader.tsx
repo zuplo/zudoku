@@ -21,7 +21,7 @@ export const DetailPageHeader = ({
   <div className="flex flex-col gap-4">
     {eyebrow && <CategoryHeading>{eyebrow}</CategoryHeading>}
     <div className="flex flex-wrap items-baseline gap-3">
-      <Heading level={1} className="break-all min-w-0">
+      <Heading level={1} className="wrap-break-word min-w-0">
         {name}
       </Heading>
       {label && <Badge variant="muted">{label}</Badge>}

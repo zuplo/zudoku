@@ -52,14 +52,6 @@ const createOverviewRoute = (): RouteObject => ({
   },
 });
 
-const createPlaygroundRoute = (): RouteObject => ({
-  path: "playground",
-  async lazy() {
-    const { PlaygroundPage } = await import("../pages/PlaygroundPage.js");
-    return { element: <PlaygroundPage /> };
-  },
-});
-
 const createTypeListRoute = (kind: string): RouteObject => ({
   path: kind,
   async lazy() {
@@ -102,10 +94,6 @@ const TYPE_ROOT_TYPES: RootType[] = [
 export const getRoutes = (config: RouteConfig): RouteObject[] => {
   const { manifest } = config;
   const routes: RouteObject[] = [createOverviewRoute()];
-
-  if (config.options.playground?.enabled !== false) {
-    routes.push(createPlaygroundRoute());
-  }
 
   for (const rootType of OPERATION_ROOT_TYPES) {
     const names = manifest[rootType];

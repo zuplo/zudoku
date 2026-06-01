@@ -8,29 +8,19 @@ import type {
 } from "graphql";
 import { useMemo } from "react";
 import { cn, joinUrl } from "zudoku";
-import { Head, Heading } from "zudoku/components";
+import { Head, Heading, Markdown } from "zudoku/components";
 import { ExternalLinkIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "zudoku/ui/Item.js";
 import * as SidecarBox from "zudoku/ui/SidecarBox.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { DetailPageHeader } from "../components/DetailPageHeader.js";
 import { EnumValueList } from "../components/EnumValueList.js";
 import { FieldList } from "../components/FieldList.js";
+import { PropertyGrid, PropertyRow } from "../components/PropertyGrid.js";
 import { useGraphQLSchema } from "../context.js";
 import { generateGraphQLTypeFragment } from "../util/generateOperation.js";
 import type { SchemaIndex } from "../util/schemaIndex.js";
-import {
-  kindToRootType,
-  ROOT_TYPES,
-  type RootType,
-  typeMetadata,
-} from "../util/types.js";
+import { kindToRootType, typeMetadata } from "../util/types.js";
 
 type TypeDetailPageProps = {
   kind: string;
@@ -143,18 +133,18 @@ const ObjectTypeDetail = ({
     <>
       {type.interfaces && type.interfaces.length > 0 && (
         <div className="flex flex-col gap-3">
-          <Heading level={3}>Implements</Heading>
-          <TypeCardGrid
-            types={type.interfaces}
-            basePath={basePath}
-            kind={ROOT_TYPES.INTERFACE}
-          />
+          <Heading level={3} id="implements">
+            Implements
+          </Heading>
+          <RelatedTypeList types={type.interfaces} basePath={basePath} />
         </div>
       )}
 
       {type.fields && type.fields.length > 0 && (
         <div className="flex flex-col gap-3">
-          <Heading level={3}>Fields</Heading>
+          <Heading level={3} id="fields">
+            Fields
+          </Heading>
           <FieldList fields={type.fields} />
         </div>
       )}
@@ -169,7 +159,9 @@ const InputObjectTypeDetail = ({
 }) =>
   type.inputFields && type.inputFields.length > 0 ? (
     <div className="flex flex-col gap-3">
-      <Heading level={3}>Fields</Heading>
+      <Heading level={3} id="fields">
+        Fields
+      </Heading>
       <FieldList fields={type.inputFields} />
     </div>
   ) : null;
@@ -177,7 +169,9 @@ const InputObjectTypeDetail = ({
 const EnumTypeDetail = ({ type }: { type: IntrospectionEnumType }) =>
   type.enumValues && type.enumValues.length > 0 ? (
     <div className="flex flex-col gap-3">
-      <Heading level={3}>Values</Heading>
+      <Heading level={3} id="values">
+        Values
+      </Heading>
       <EnumValueList values={type.enumValues} />
     </div>
   ) : null;
@@ -202,39 +196,50 @@ const ScalarTypeDetail = ({ type }: { type: IntrospectionScalarType }) => (
   </div>
 );
 
-const TypeCardGrid = ({
+const RelatedTypeList = ({
   types,
   basePath,
-  kind,
 }: {
   types: readonly { name: string }[];
   basePath: string;
-  kind: RootType;
 }) => {
   const { index } = useGraphQLSchema();
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <PropertyGrid>
       {types.map(({ name }) => {
-        const description = index.getType(name)?.description;
+        const type = index.getType(name);
+        const rootType = type ? kindToRootType[type.kind] : undefined;
+        const meta = rootType ? typeMetadata[rootType] : undefined;
         return (
-          <Item key={name} variant="outline" asChild>
-            <Link to={joinUrl(basePath, kind, name)}>
-              <ItemContent>
-                <ItemTitle>
-                  <code className="font-mono">{name}</code>
-                </ItemTitle>
-                {description && (
-                  <ItemDescription className="line-clamp-2">
-                    {description}
-                  </ItemDescription>
+          <PropertyRow
+            key={name}
+            id={`type-${name}`}
+            name={
+              <Link
+                to={rootType ? joinUrl(basePath, rootType, name) : "#"}
+                className={cn(
+                  "font-mono text-sm font-semibold wrap-break-word hover:underline",
+                  meta?.textColorClass ?? "text-foreground",
                 )}
-              </ItemContent>
-            </Link>
-          </Item>
+              >
+                {name}
+              </Link>
+            }
+            infos={
+              meta && (
+                <span className="text-muted-foreground text-xs">
+                  {meta.labelSingular.toLowerCase()}
+                </span>
+              )
+            }
+            description={
+              type?.description && <Markdown content={type.description} />
+            }
+          />
         );
       })}
-    </div>
+    </PropertyGrid>
   );
 };
 
@@ -253,19 +258,19 @@ const InterfaceTypeDetail = ({
     <>
       {type.fields && type.fields.length > 0 && (
         <div className="flex flex-col gap-3">
-          <Heading level={3}>Fields</Heading>
+          <Heading level={3} id="fields">
+            Fields
+          </Heading>
           <FieldList fields={type.fields} />
         </div>
       )}
 
       {implementingTypes.length > 0 && (
         <div className="flex flex-col gap-3">
-          <Heading level={3}>Implemented By</Heading>
-          <TypeCardGrid
-            types={implementingTypes}
-            basePath={basePath}
-            kind={ROOT_TYPES.OBJECT}
-          />
+          <Heading level={3} id="implemented-by">
+            Implemented By
+          </Heading>
+          <RelatedTypeList types={implementingTypes} basePath={basePath} />
         </div>
       )}
     </>
@@ -283,12 +288,10 @@ const UnionTypeDetail = ({
     <>
       {type.possibleTypes && type.possibleTypes.length > 0 && (
         <div className="flex flex-col gap-3">
-          <Heading level={3}>Possible Types</Heading>
-          <TypeCardGrid
-            types={type.possibleTypes}
-            basePath={basePath}
-            kind={ROOT_TYPES.OBJECT}
-          />
+          <Heading level={3} id="possible-types">
+            Possible Types
+          </Heading>
+          <RelatedTypeList types={type.possibleTypes} basePath={basePath} />
         </div>
       )}
     </>
@@ -320,7 +323,9 @@ const TypeReferences = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <Heading level={3}>Schema Context</Heading>
+      <Heading level={3} id="schema-context">
+        Schema Context
+      </Heading>
       <div className="grid gap-3 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))]">
         {sections.map((section) => (
           <div

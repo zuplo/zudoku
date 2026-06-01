@@ -3,7 +3,8 @@ import type {
   IntrospectionInputValue,
   IntrospectionTypeRef,
 } from "graphql";
-import { type ReactNode, useState } from "react";
+import type { ReactNode } from "react";
+import { Anchor, Heading } from "zudoku/components";
 import { useGraphQLSchema } from "../context.js";
 import { unwrapType } from "../util/unwrapType.js";
 import { FieldList } from "./FieldList.js";
@@ -13,11 +14,12 @@ import { TypeBadge } from "./TypeBadge.js";
 export const ExpandableType = ({
   type,
   label,
+  id,
 }: {
   type: IntrospectionTypeRef;
   label?: ReactNode;
+  id?: string;
 }) => {
-  const [open, setOpen] = useState(true);
   const { index } = useGraphQLSchema();
 
   const unwrapped = unwrapType(type, []);
@@ -34,39 +36,28 @@ export const ExpandableType = ({
 
   if (!hasFields) {
     return (
-      <div className="flex items-baseline gap-2">
-        {label && (
-          <h3 className="text-xl font-semibold leading-none">{label}</h3>
-        )}
-        {label && <span className="text-muted-foreground">·</span>}
-        <TypeBadge type={type} />
-      </div>
+      <Anchor id={id}>
+        <div className="flex items-baseline gap-2">
+          {label && (
+            <Heading level={3} className="leading-none">
+              {label}
+            </Heading>
+          )}
+          {label && <span className="text-muted-foreground">·</span>}
+          <TypeBadge type={type} />
+        </div>
+      </Anchor>
     );
   }
 
   return (
     <div className="flex flex-col">
-      <SectionTitle
-        label={label}
-        suffix={<TypeBadge type={type} />}
-        actions={
-          <button
-            type="button"
-            onClick={() => setOpen(!open)}
-            aria-expanded={open}
-            className="text-xs text-primary hover:underline"
-          >
-            {open ? "Hide fields" : "Show fields"}
-          </button>
-        }
-      />
-      {open ? (
-        isInputType ? (
-          <FieldList fields={inputFields} depth={1} />
-        ) : (
-          <FieldList fields={objectFields} showArguments={false} depth={1} />
-        )
-      ) : null}
+      <SectionTitle id={id} label={label} suffix={<TypeBadge type={type} />} />
+      {isInputType ? (
+        <FieldList fields={inputFields} depth={1} />
+      ) : (
+        <FieldList fields={objectFields} showArguments={false} depth={1} />
+      )}
     </div>
   );
 };

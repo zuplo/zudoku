@@ -93,8 +93,10 @@ export const TypeListPage = ({ kind }: TypeListPageProps) => {
               <Item key={item.name} variant="outline" asChild>
                 <Link to={`${basePath}/${rootType}/${item.name}`}>
                   <ItemContent>
-                    <ItemTitle>
-                      <code className="font-mono">{item.name}</code>
+                    <ItemTitle className="min-w-0">
+                      <code className="font-mono wrap-break-word">
+                        {item.name}
+                      </code>
                     </ItemTitle>
                     {item.description && (
                       <ItemDescription className="line-clamp-2">

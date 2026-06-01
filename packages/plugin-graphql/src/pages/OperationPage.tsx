@@ -70,12 +70,16 @@ export const OperationPage = ({ kind, name }: OperationPageProps) => {
           <div className="flex flex-col gap-6">
             {operation.args && operation.args.length > 0 && (
               <div className="flex flex-col">
-                <SectionTitle label="Arguments" />
+                <SectionTitle id="arguments" label="Arguments" />
                 <FieldList fields={operation.args} />
               </div>
             )}
 
-            <ExpandableType type={operation.type} label="Return Type" />
+            <ExpandableType
+              id="return-type"
+              type={operation.type}
+              label="Return Type"
+            />
           </div>
         </div>
 
@@ -133,6 +137,7 @@ const OperationSidecar = ({
       <SidecarBox.Body className="p-0">
         <SyntaxHighlight
           embedded
+          key={document}
           code={document}
           language="graphql"
           showLanguageIndicator={false}
@@ -155,7 +160,7 @@ const OperationSidecar = ({
                 language="json"
                 showCopy="never"
                 showLanguageIndicator={false}
-                className="mt-1 border rounded max-h-50 text-xs overflow-auto"
+                className="mt-1 border rounded-md max-h-50 text-xs overflow-auto"
               />
             </CollapsibleContent>
           </Collapsible>
