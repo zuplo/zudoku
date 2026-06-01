@@ -1,14 +1,17 @@
-import { Heading, Markdown } from "zudoku/components";
+import type { ReactNode } from "react";
+import { CategoryHeading, Heading, Markdown } from "zudoku/components";
 import { Badge } from "zudoku/ui/Badge.js";
 import { DeprecatedBadge } from "./Deprecation.js";
 
 export const DetailPageHeader = ({
+  eyebrow,
   name,
   label,
   description,
   isDeprecated,
   deprecationReason,
 }: {
+  eyebrow?: ReactNode;
   name: string;
   label?: string;
   description?: string | null;
@@ -16,6 +19,7 @@ export const DetailPageHeader = ({
   deprecationReason?: string | null;
 }) => (
   <div className="flex flex-col gap-4">
+    {eyebrow && <CategoryHeading>{eyebrow}</CategoryHeading>}
     <div className="flex flex-wrap items-baseline gap-3">
       <Heading level={1} className="break-all min-w-0">
         {name}

@@ -1,4 +1,4 @@
-import { Head, Heading } from "zudoku/components";
+import { CategoryHeading, Head, Heading } from "zudoku/components";
 import { ExternalLinkIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
 import {
@@ -49,10 +49,11 @@ const getItems = (
 };
 
 export const TypeListPage = ({ kind }: TypeListPageProps) => {
-  const { index, basePath } = useGraphQLSchema();
+  const { index, basePath, options } = useGraphQLSchema();
   const rootType = kind as RootType;
   const meta = typeMetadata[rootType];
   const items = getItems(rootType, index);
+  const apiTitle = options.title ?? "GraphQL API";
 
   return (
     <div className="pt-(--padding-content-top)">
@@ -61,6 +62,9 @@ export const TypeListPage = ({ kind }: TypeListPageProps) => {
       </Head>
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-4">
+          <CategoryHeading>
+            <Link to={basePath}>{apiTitle}</Link>
+          </CategoryHeading>
           <Heading level={1} className="text-balance">
             {meta.label}
           </Heading>

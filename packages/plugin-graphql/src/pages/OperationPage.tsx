@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Head } from "zudoku/components";
 import { PlayIcon } from "zudoku/icons";
+import { Link } from "zudoku/router";
 import { Button } from "zudoku/ui/Button.js";
 import {
   Collapsible,
@@ -26,7 +27,8 @@ type OperationPageProps = {
 };
 
 export const OperationPage = ({ kind, name }: OperationPageProps) => {
-  const { index, options } = useGraphQLSchema();
+  const { index, options, basePath } = useGraphQLSchema();
+  const apiTitle = options.title ?? "GraphQL API";
 
   const operationType = kind as OperationType;
   const meta = typeMetadata[operationType];
@@ -57,6 +59,7 @@ export const OperationPage = ({ kind, name }: OperationPageProps) => {
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0 flex flex-col gap-8">
           <DetailPageHeader
+            eyebrow={<Link to={basePath}>{apiTitle}</Link>}
             name={operation.name}
             label={meta?.labelSingular.toLowerCase()}
             description={operation.description}

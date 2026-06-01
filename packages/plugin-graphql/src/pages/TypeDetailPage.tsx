@@ -38,7 +38,8 @@ type TypeDetailPageProps = {
 };
 
 export const TypeDetailPage = ({ name }: TypeDetailPageProps) => {
-  const { index, basePath } = useGraphQLSchema();
+  const { index, basePath, options } = useGraphQLSchema();
+  const apiTitle = options.title ?? "GraphQL API";
 
   const type = index.getType(name);
   const references = getTypeReferences(name, index, basePath);
@@ -71,6 +72,7 @@ export const TypeDetailPage = ({ name }: TypeDetailPageProps) => {
       >
         <div className="min-w-0 flex flex-col gap-6">
           <DetailPageHeader
+            eyebrow={<Link to={basePath}>{apiTitle}</Link>}
             name={type.name}
             label={kindLabel}
             description={type.description}
