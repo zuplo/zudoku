@@ -149,14 +149,8 @@ export const NavigationItem = ({
           {item.icon && (
             <item.icon size={16} className="align-[-0.125em] shrink-0" />
           )}
-          {item.badge ? (
-            <>
-              {item.label && <TruncatedLabel label={item.label} />}
-              <NavigationBadge {...item.badge} />
-            </>
-          ) : (
-            <span className="break-all">{item.label}</span>
-          )}
+          {item.label && <TruncatedLabel label={item.label} />}
+          {item.badge && <NavigationBadge {...item.badge} />}
         </AnchorLink>
       ) : (
         <a
