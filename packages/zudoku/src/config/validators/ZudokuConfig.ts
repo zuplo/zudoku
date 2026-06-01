@@ -769,6 +769,8 @@ export type ZudokuConfig = Omit<
 };
 
 export function validateConfig(config: unknown, configPath?: string) {
+  warnUnstableConfigKeys(config);
+
   const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
@@ -785,4 +787,25 @@ export function validateConfig(config: unknown, configPath?: string) {
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log(colors.yellow(z.prettifyError(validationResult.error)));
   }
+}
+
+/**
+ * Warns when config keys use the `UNSTABLE_` prefix, signalling that they are
+ * experimental and will be removed soon.
+ */
+function warnUnstableConfigKeys(config: unknown) {
+  if (typeof config !== "object" || config === null) return;
+
+  const unstableKeys = Object.keys(config).filter((key) =>
+    key.startsWith("UNSTABLE_"),
+  );
+
+  if (unstableKeys.length === 0) return;
+
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
+  console.log(
+    colors.yellow(
+      `Warning: The following config ${unstableKeys.length === 1 ? "option uses" : "options use"} the \`UNSTABLE_\` prefix and will be removed soon: ${unstableKeys.join(", ")}`,
+    ),
+  );
 }

@@ -388,4 +388,41 @@ describe("validateConfig", () => {
 
     expect(() => validateConfig(config)).toThrow();
   });
+
+  it("should warn when a config option uses the UNSTABLE_ prefix", () => {
+    const config = {
+      UNSTABLE_experimentalFeature: true,
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "the `UNSTABLE_` prefix and will be removed soon: UNSTABLE_experimentalFeature",
+      ),
+    );
+  });
+
+  it("should list all config options that use the UNSTABLE_ prefix", () => {
+    const config = {
+      UNSTABLE_first: true,
+      UNSTABLE_second: "value",
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining("UNSTABLE_first, UNSTABLE_second"),
+    );
+  });
+
+  it("should not warn about UNSTABLE_ when no such option is used", () => {
+    const config = {
+      aiAssistants: ["claude"],
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
 });
