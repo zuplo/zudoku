@@ -126,6 +126,16 @@ export const CancelSubscriptionDialog = ({
             )}
           </Alert>
 
+          <Alert variant="warning">
+            <InfoIcon className="size-4" />
+            <AlertTitle>Any bonus top-ups will be canceled</AlertTitle>
+            <AlertDescription>
+              If you have received additional top-up entitlements on this
+              subscription, they are canceled when the subscription is canceled
+              and any unused balance is removed.
+            </AlertDescription>
+          </Alert>
+
           <div className="space-y-2">
             <label
               className="text-sm text-foreground"

@@ -44,10 +44,22 @@ export type Entitlement = {
   config?: string;
 };
 
+// A single balance source contributing to a metered entitlement: either the
+// plan's own allowance or a bonus top-up. Surfaced when the backend provides a
+// per-source breakdown so customers can see where their balance comes from and
+// which source is used first.
+export type BalanceSource = {
+  source: "manual" | "subscription";
+  remaining: number;
+  amount?: number;
+  expiresAt?: string;
+};
+
 export type MeteredEntitlement = Entitlement & {
   balance: number;
   usage: number;
   overage: number;
+  sources?: BalanceSource[];
 };
 
 const isMeteredEntitlement = (
@@ -152,6 +164,33 @@ const UsageItem = ({
         <p className="text-xs text-muted-foreground">
           {meter.balance.toLocaleString()} remaining this billing period
         </p>
+        {meter.sources && meter.sources.length > 0 && (
+          <div className="mt-3 border-t pt-3 space-y-1">
+            <p className="text-xs font-medium text-foreground">
+              Where this balance comes from
+            </p>
+            {meter.sources.map((source, index) => (
+              <div
+                key={`${source.source}-${index}`}
+                className="flex items-center justify-between text-xs text-muted-foreground"
+              >
+                <span>
+                  {source.source === "manual"
+                    ? "Bonus top-up"
+                    : "Plan allowance"}
+                  {source.expiresAt
+                    ? ` · expires ${new Date(source.expiresAt).toLocaleDateString()}`
+                    : ""}
+                </span>
+                <span>{source.remaining.toLocaleString()} remaining</span>
+              </div>
+            ))}
+            <p className="text-[11px] text-muted-foreground pt-1">
+              Balances are drawn down in priority order. A time-limited bonus
+              top-up is typically used before your plan allowance.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -631,6 +631,13 @@ export const SwitchPlanModal = ({
                 </AlertDescription>
               </Alert>
             )}
+            <Alert variant="warning">
+              <AlertDescription>
+                Changing your plan replaces your current subscription. Any
+                active bonus top-ups on your current plan are canceled when you
+                upgrade or downgrade.
+              </AlertDescription>
+            </Alert>
             <Item variant="outline">
               <ItemContent>
                 <ItemTitle>Current Plan</ItemTitle>
