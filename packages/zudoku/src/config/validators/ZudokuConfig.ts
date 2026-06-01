@@ -769,7 +769,7 @@ export type ZudokuConfig = Omit<
 };
 
 export function validateConfig(config: unknown, configPath?: string) {
-  warnUnstableConfigKeys(config);
+  warnUnsafeConfigKeys(config);
 
   const validationResult = ZudokuConfig.safeParse(config);
 
@@ -789,23 +789,24 @@ export function validateConfig(config: unknown, configPath?: string) {
   }
 }
 
+// `UNSAFE_` prefixed config options that are deprecated and will be removed soon.
+const DEPRECATED_UNSAFE_KEYS = ["UNSAFE_slotlets"] as const;
+
 /**
- * Warns when config keys use the `UNSTABLE_` prefix, signalling that they are
- * experimental and will be removed soon.
+ * Warns when config uses a deprecated `UNSAFE_` prefixed option, signalling
+ * that it will be removed soon.
  */
-function warnUnstableConfigKeys(config: unknown) {
+function warnUnsafeConfigKeys(config: unknown) {
   if (typeof config !== "object" || config === null) return;
 
-  const unstableKeys = Object.keys(config).filter((key) =>
-    key.startsWith("UNSTABLE_"),
-  );
+  const usedKeys = DEPRECATED_UNSAFE_KEYS.filter((key) => key in config);
 
-  if (unstableKeys.length === 0) return;
+  if (usedKeys.length === 0) return;
 
   // biome-ignore lint/suspicious/noConsole: Logging allowed here
   console.log(
     colors.yellow(
-      `Warning: The following config ${unstableKeys.length === 1 ? "option uses" : "options use"} the \`UNSTABLE_\` prefix and will be removed soon: ${unstableKeys.join(", ")}`,
+      `Warning: The following config ${usedKeys.length === 1 ? "option is" : "options are"} deprecated and will be removed soon: ${usedKeys.join(", ")}`,
     ),
   );
 }

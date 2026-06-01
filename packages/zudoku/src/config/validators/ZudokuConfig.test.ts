@@ -389,34 +389,31 @@ describe("validateConfig", () => {
     expect(() => validateConfig(config)).toThrow();
   });
 
-  it("should warn when a config option uses the UNSTABLE_ prefix", () => {
+  it("should warn when the deprecated UNSAFE_slotlets option is used", () => {
     const config = {
-      UNSTABLE_experimentalFeature: true,
+      UNSAFE_slotlets: {},
     };
 
     validateConfig(config);
 
     expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining(
-        "the `UNSTABLE_` prefix and will be removed soon: UNSTABLE_experimentalFeature",
+        "deprecated and will be removed soon: UNSAFE_slotlets",
       ),
     );
   });
 
-  it("should list all config options that use the UNSTABLE_ prefix", () => {
+  it("should not warn about UNSAFE_ options that are not whitelisted", () => {
     const config = {
-      UNSTABLE_first: true,
-      UNSTABLE_second: "value",
+      UNSAFE_somethingElse: true,
     };
 
     validateConfig(config);
 
-    expect(mockConsoleLog).toHaveBeenCalledWith(
-      expect.stringContaining("UNSTABLE_first, UNSTABLE_second"),
-    );
+    expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
-  it("should not warn about UNSTABLE_ when no such option is used", () => {
+  it("should not warn when no deprecated option is used", () => {
     const config = {
       aiAssistants: ["claude"],
     };
