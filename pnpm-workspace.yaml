@@ -20,7 +20,7 @@ catalog:
   react-is: 19.2.5
   tsdown: 0.22.0
   typescript: 6.0.3
-  graphql: 16.4.0
+  graphql: 16.14.0
   zod: 4.3.6
 
 minimumReleaseAge: 4320
