@@ -799,7 +799,9 @@ const DEPRECATED_UNSAFE_KEYS = ["UNSAFE_slotlets"] as const;
 function warnUnsafeConfigKeys(config: unknown) {
   if (typeof config !== "object" || config === null) return;
 
-  const usedKeys = DEPRECATED_UNSAFE_KEYS.filter((key) => key in config);
+  const usedKeys = DEPRECATED_UNSAFE_KEYS.filter((key) =>
+    Object.hasOwn(config, key),
+  );
 
   if (usedKeys.length === 0) return;
 

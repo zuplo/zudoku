@@ -390,6 +390,8 @@ describe("validateConfig", () => {
   });
 
   it("should warn when the deprecated UNSAFE_slotlets option is used", () => {
+    process.env.NODE_ENV = "development";
+
     const config = {
       UNSAFE_slotlets: {},
     };
@@ -404,6 +406,8 @@ describe("validateConfig", () => {
   });
 
   it("should not warn about UNSAFE_ options that are not whitelisted", () => {
+    process.env.NODE_ENV = "development";
+
     const config = {
       UNSAFE_somethingElse: true,
     };
@@ -414,6 +418,8 @@ describe("validateConfig", () => {
   });
 
   it("should not warn when no deprecated option is used", () => {
+    process.env.NODE_ENV = "development";
+
     const config = {
       aiAssistants: ["claude"],
     };
