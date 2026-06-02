@@ -94,7 +94,15 @@ export const setupCookieSync = (
 
   store.subscribe((next, prev) => {
     if (next.isAuthenticated && next.profile) {
-      if (!prev.isAuthenticated || next.providerData !== prev.providerData) {
+      // Compare tokens, not object identity: Supabase sets state both directly
+      // and via its listener with fresh objects but identical tokens.
+      const a = readTokens(next.providerData);
+      const b = readTokens(prev.providerData);
+      if (
+        !prev.isAuthenticated ||
+        a.accessToken !== b.accessToken ||
+        a.refreshToken !== b.refreshToken
+      ) {
         pendingSessionSync = postSession(next.providerData);
       }
     } else if (!next.isAuthenticated && prev.isAuthenticated) {

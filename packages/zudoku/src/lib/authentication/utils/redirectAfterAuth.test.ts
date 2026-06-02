@@ -24,7 +24,7 @@ describe("redirectAfterAuth", () => {
     originalLocation = window.location;
     Object.defineProperty(window, "location", {
       configurable: true,
-      value: { ...window.location, assign, replace },
+      value: { origin: window.location.origin, assign, replace },
     });
   });
 
@@ -72,6 +72,18 @@ describe("redirectAfterAuth", () => {
   it("prepends the app base so a hard nav stays inside basePath", async () => {
     vi.stubEnv("ZUDOKU_HAS_SERVER", "true");
     vi.stubEnv("BASE_URL", "/docs/");
+
+    await redirectAfterAuth(
+      vi.fn() as unknown as NavigateFunction,
+      "/protected",
+    );
+
+    expect(assign).toHaveBeenCalledWith("/docs/protected");
+  });
+
+  it("stays same-origin when BASE_URL is an absolute CDN url", async () => {
+    vi.stubEnv("ZUDOKU_HAS_SERVER", "true");
+    vi.stubEnv("BASE_URL", "https://cdn.example.com/docs/");
 
     await redirectAfterAuth(
       vi.fn() as unknown as NavigateFunction,
