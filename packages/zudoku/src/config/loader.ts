@@ -110,7 +110,10 @@ async function loadZudokuConfigWithMeta(
     );
   }
 
-  if (!module.default) {
+  // Only treat a genuinely absent default export as missing. A present-but-falsy
+  // export (e.g. `export default null`) falls through to validateConfig so it's
+  // reported as an invalid configuration rather than a missing one.
+  if (module.default === undefined) {
     throw new Error(
       `Invalid Zudoku configuration at ${colors.dim(configPath)}:\n\nConfig file must have a default export.`,
     );
@@ -239,11 +242,15 @@ export async function loadZudokuConfig(
       // Keep serving the last valid config (e.g. during dev reload), but log
       // the error instead of silently swallowing it so the user knows why
       // their latest changes haven't taken effect.
+      // Pass the error object via `options.error` so the logger prints the full
+      // stack/location of the import or syntax failure, not just the message.
       logger.error(
         colors.red("Failed to reload config, using last valid config."),
-        { timestamp: true },
+        {
+          timestamp: true,
+          error: error instanceof Error ? error : new Error(String(error)),
+        },
       );
-      logger.error(error instanceof Error ? error.message : String(error));
       return { config: lastValid, envPrefix, publicEnv };
     }
 

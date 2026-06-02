@@ -78,6 +78,20 @@ describe("loadZudokuConfig", () => {
     );
   });
 
+  it("does not treat a present-but-falsy default export as missing", async () => {
+    vi.mocked(fileExists).mockResolvedValue(true);
+    vi.mocked(runnerImport).mockResolvedValue({
+      module: { default: null },
+      dependencies: [],
+    } as never);
+
+    // `export default null` is a real (if invalid) export, so it must fall
+    // through to validateConfig rather than the "missing default export" path.
+    await expect(
+      loadZudokuConfig(configEnv, "/project"),
+    ).resolves.toBeDefined();
+  });
+
   it("still reports a genuinely missing config file", async () => {
     vi.mocked(fileExists).mockResolvedValue(false);
 
@@ -89,11 +103,13 @@ describe("loadZudokuConfig", () => {
   it("logs the error and keeps the last valid config on a failed reload", async () => {
     const cached = {
       __meta: {
-        rootDir: "/project",
+        rootDir: "/reload-project",
         moduleDir: "/zudoku-root",
         mode: undefined,
         dependencies: [],
-        configPath: "/project/zudoku.config.js",
+        // A path no other test has cached an mtime for, so change-detection
+        // reliably forces a reload regardless of test ordering.
+        configPath: "/reload-project/zudoku.config.js",
       },
     };
     configStore.__zudokuConfig = cached;
