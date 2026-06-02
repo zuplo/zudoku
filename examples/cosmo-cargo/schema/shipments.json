@@ -1000,13 +1000,14 @@
             "name": "status",
             "in": "query",
             "required": true,
-            "description": "Filter by shipment status",
+            "description": "Filter by shipment status. Array example demonstrates JSON-encoded pre-fill with `playgroundPrefillWith: \"example\"`.",
             "schema": {
               "type": "array",
               "items": {
                 "type": "string",
                 "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"]
-              }
+              },
+              "example": ["IN_TRANSIT", "EXCEPTION"]
             },
             "style": "form",
             "explode": true
@@ -1025,6 +1026,12 @@
                   "INTERNATIONAL",
                   "CUSTOMS_REQUIRED"
                 ]
+              }
+            },
+            "examples": {
+              "priority": {
+                "summary": "High-priority international cargo",
+                "value": ["EXPRESS", "INTERNATIONAL"]
               }
             }
           },
@@ -1143,27 +1150,34 @@
           {
             "name": "X-Cache-Control",
             "in": "header",
-            "description": "Caching behavior for the tracking response",
+            "description": "Caching behavior for the tracking response. Demonstrates `playgroundPrefillWith`: the schema default differs from the parameter example.",
             "schema": {
               "type": "string",
               "enum": ["no-cache", "max-age=60"],
               "default": "max-age=60"
+            },
+            "examples": {
+              "realtime": {
+                "summary": "Bypass cache for live tracking",
+                "value": "no-cache"
+              }
             }
           },
           {
             "name": "trackingNumber",
             "in": "path",
             "required": true,
+            "description": "Tracking number. The schema default is a placeholder while the schema example is a realistic value, so `playgroundPrefillWith: \"example\"` pre-fills a usable id.",
             "schema": {
-              "default": "SH123456789",
-              "type": "string"
-            },
-            "example": "SH123456789"
+              "type": "string",
+              "default": "SH000000000",
+              "example": "SH48291046-QX"
+            }
           },
           {
             "name": "includeHistory",
             "in": "query",
-            "description": "Include detailed tracking history and events in the response",
+            "description": "Include detailed tracking history and events in the response. The schema default is `false` while the example is `true`.",
             "schema": {
               "type": "boolean",
               "default": false

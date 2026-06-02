@@ -395,6 +395,11 @@ const config: ZudokuConfig = {
       ],
       options: {
         disableSecurity: false,
+        // Pre-fill the playground with schema/parameter examples instead of
+        // just `schema.default`. Try "default" or "none" to compare behavior.
+        // See the `trackShipment` and `filterShipments` operations for params
+        // where the default and example values intentionally differ.
+        playgroundPrefillWith: "example",
         transformExamples: ({ content, auth }) => {
           if (!auth.isAuthenticated) {
             return content;
