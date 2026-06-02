@@ -81,8 +81,8 @@ importers:
         specifier: 22.6.5
         version: 22.6.5(@babel/traverse@7.29.0)(nx@22.6.5)
       '@playwright/test':
-        specifier: ^1.59.1
-        version: 1.59.1
+        specifier: ^1.60.0
+        version: 1.60.0
       '@size-limit/file':
         specifier: ^12.1.0
         version: 12.1.0(size-limit@12.1.0(jiti@2.7.0))
@@ -4106,8 +4106,8 @@ packages:
     peerDependencies:
       typescript: ^3 || ^4 || ^5
 
-  '@playwright/test@1.59.1':
-    resolution: {integrity: sha512-PG6q63nQg5c9rIi4/Z5lR5IVF7yU5MqmKaPOe0HSc0O2cX1fPi96sUQu5j7eo4gKCkB2AnNGoWt7y4/Xx3Kcqg==}
+  '@playwright/test@1.60.0':
+    resolution: {integrity: sha512-O71yZIbAh/PxDMNGns37GHBIfrVkEVyn+AXyIa5dOTfb4/xNvRWV+Vv/NMbNCtODB/pO7vLlF2OTmMVLhmr7Ag==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -12825,9 +12825,9 @@ snapshots:
       esquery: 1.7.0
       typescript: 6.0.3
 
-  '@playwright/test@1.59.1':
+  '@playwright/test@1.60.0':
     dependencies:
-      playwright: 1.59.1
+      playwright: 1.60.0
 
   '@poppinss/colors@4.1.6':
     dependencies:

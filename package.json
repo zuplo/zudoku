@@ -30,7 +30,7 @@
     "@biomejs/biome": "2.4.15",
     "@nx/vite": "22.6.5",
     "@nx/web": "22.6.5",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.60.0",
     "@size-limit/file": "^12.1.0",
     "@vitest/coverage-v8": "4.0.18",
     "lefthook": "2.1.8",
