@@ -41,7 +41,7 @@ describe("validateConfig", () => {
 
     expect(() => validateConfig(configWithValidAuth0))
       .toThrowErrorMatchingInlineSnapshot(`
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
       ✖ Clerk public key invalid, must start with pk_test or pk_live
         → at authentication.clerkPubKey]
     `);
@@ -172,7 +172,7 @@ describe("validateConfig", () => {
       validateConfig(configWithInvalidAuth0Domain),
     ).toThrowErrorMatchingInlineSnapshot(
       `
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
       ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
         → at authentication.domain]
     `,
@@ -194,7 +194,29 @@ describe("validateConfig", () => {
       validateConfig(configWithInvalidAuth0Domain),
     ).toThrowErrorMatchingInlineSnapshot(
       `
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
+      ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
+        → at authentication.domain]
+    `,
+    );
+  });
+
+  it("should include the config path in the error when provided", () => {
+    process.env.NODE_ENV = "production";
+
+    const configWithInvalidAuth0Domain = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "https://example.auth0.com",
+      },
+    };
+
+    expect(() =>
+      validateConfig(configWithInvalidAuth0Domain, "zudoku.config.ts"),
+    ).toThrowErrorMatchingInlineSnapshot(
+      `
+      [Error: Invalid Zudoku configuration at zudoku.config.ts:
       ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
         → at authentication.domain]
     `,
