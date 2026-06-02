@@ -2,6 +2,7 @@ import { cva } from "class-variance-authority";
 import { useLocation } from "react-router";
 import type {
   NavigationCategory,
+  NavigationCategoryLink,
   NavigationItem,
 } from "../../../config/validators/NavigationSchema.js";
 import type { UseAuthReturn } from "../../authentication/hook.js";
@@ -43,6 +44,9 @@ export const traverseNavigationItem = <T>(
   }
 };
 
+export const getCategoryLinkHref = (link: NavigationCategoryLink): string =>
+  link.type === "doc" ? link.path : link.to;
+
 export const getItemPath = (item: NavigationItem): string | undefined => {
   switch (item.type) {
     case "doc":
@@ -51,7 +55,7 @@ export const getItemPath = (item: NavigationItem): string | undefined => {
     case "link":
       return item.to;
     case "category":
-      return item.link ? joinUrl(item.link.path) : undefined;
+      return item.link ? joinUrl(getCategoryLinkHref(item.link)) : undefined;
     default:
       return undefined;
   }
@@ -65,8 +69,8 @@ export const getFirstMatchingPath = (item: NavigationItem): string => {
     case "link":
       return item.to;
     case "category": {
-      if (item.link?.path) {
-        return joinUrl(item.link.path);
+      if (item.link) {
+        return joinUrl(getCategoryLinkHref(item.link));
       }
       return (
         traverseNavigationItem(item, (child) => {
@@ -106,10 +110,14 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
         if (!item.link) {
           return undefined;
         }
-        return joinUrl(item.link.path) === pathname ? true : undefined;
+        return joinUrl(getCategoryLinkHref(item.link)) === pathname
+          ? true
+          : undefined;
       case "custom-page":
       case "doc":
         return joinUrl(item.path) === pathname ? true : undefined;
+      case "link":
+        return joinUrl(item.to) === pathname ? true : undefined;
       default:
         return undefined;
     }
@@ -140,7 +148,7 @@ export const usePrevNext = (): {
       item.type === "doc"
         ? joinUrl(item.path)
         : item.type === "category" && item.link
-          ? joinUrl(item.link.path)
+          ? joinUrl(getCategoryLinkHref(item.link))
           : undefined;
 
     if (!itemId) return;

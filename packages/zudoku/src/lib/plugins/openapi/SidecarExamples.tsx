@@ -1,10 +1,10 @@
 import { ExternalLinkIcon } from "lucide-react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 import type { MediaTypeObject } from "./graphql/graphql.js";
-import * as SidecarBox from "./SidecarBox.js";
 import {
   formatRequestBodyForDisplay,
   getLanguageForMediaType,

@@ -13,8 +13,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "zudoku/ui/Tooltip.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
 import type { MediaTypeObject, ResponseItem } from "./graphql/graphql.js";
-import * as SidecarBox from "./SidecarBox.js";
 import { SidecarExamples } from "./SidecarExamples.js";
 
 type SidecarMediaTypeObject = MediaTypeObject & { isGenerated?: boolean };

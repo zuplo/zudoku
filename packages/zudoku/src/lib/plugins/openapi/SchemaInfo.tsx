@@ -294,7 +294,7 @@ export const SchemaInfo = () => {
       </Head>
 
       <div className="mb-8 flex flex-col gap-4">
-        <ApiHeader heading={title} headingId="description" />
+        <ApiHeader heading={title} />
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_minmax(250px,380px)] gap-8">
           {hasCardContent && (
