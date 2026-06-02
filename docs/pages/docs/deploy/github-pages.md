@@ -30,6 +30,18 @@ const config: ZudokuConfig = {
 };
 ```
 
+When `basePath` is set, Zudoku writes the site into `dist/<basePath>/`. Upload that nested directory
+as your Pages artifact, not `dist/` itself. For example in a GitHub Actions workflow:
+
+```yaml
+- uses: actions/upload-pages-artifact@v3
+  with:
+    path: dist/your-repo
+```
+
+Uploading the outer `dist/` would nest the site under `/your-repo/your-repo/` and every asset
+would 404.
+
 ## Accurate Last Modified Dates
 
 If you have enabled the [`showLastModified`](/docs/configuration/docs#showlastmodified) option,

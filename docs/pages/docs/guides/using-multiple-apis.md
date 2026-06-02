@@ -79,7 +79,7 @@ export default config;
 
 Make sure that:
 
-1. The `path` in each API config matches the `href` in the navigation
+1. The `path` in each API config matches the `to` in the navigation
 2. Your OpenAPI files are placed in the correct location as specified in the `input` field
 3. The `label` in navigation matches what you want to display in the sidebar
 

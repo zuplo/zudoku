@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Subscription } from "../../hooks/useSubscriptions.js";
+import type { Subscription } from "../../types/SubscriptionType.js";
 import { ManageSubscription } from "./ManageSubscription.js";
 
 vi.mock("zudoku/hooks", () => ({
@@ -79,7 +79,16 @@ const baseSubscription = (): Subscription => ({
       updatedAt: "2025-01-01T00:00:00.000Z",
     },
   ],
-  plan: { id: "plan-1", key: "pro", version: 1 },
+  plan: {
+    id: "plan-1",
+    key: "pro",
+    version: 1,
+    name: "Pro",
+    billingCadence: "P1M",
+    phases: [],
+    monthlyPrice: "10",
+    yearlyPrice: "100",
+  },
   proRatingConfig: { enabled: false, mode: "prorata" },
   status: "active",
   updatedAt: "2025-01-01T00:00:00.000Z",

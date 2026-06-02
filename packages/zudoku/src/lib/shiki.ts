@@ -144,9 +144,12 @@ export const highlight = (
   meta?: string,
 ) => {
   const resolved = highlighter.resolveLangAlias(lang);
-  const effectiveLang = highlighter.getLoadedLanguages().includes(resolved)
-    ? lang
-    : "text";
+  // "ansi" is a special built-in shiki language that does not appear in
+  // getLoadedLanguages() but is always available.
+  const effectiveLang =
+    resolved === "ansi" || highlighter.getLoadedLanguages().includes(resolved)
+      ? lang
+      : "text";
 
   if (effectiveLang !== lang) warnUnloadedLanguage(lang, highlighter);
 

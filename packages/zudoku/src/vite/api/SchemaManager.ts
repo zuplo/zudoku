@@ -8,7 +8,10 @@ import { upgrade, validate } from "@scalar/openapi-parser";
 import { deepEqual } from "fast-equals";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
-import type { VersionConfig } from "../../config/validators/ZudokuConfig.js";
+import type {
+  ApiOptionsConfig,
+  VersionConfig,
+} from "../../config/validators/ZudokuConfig.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { ensureArray } from "../../lib/util/ensureArray.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
@@ -201,6 +204,10 @@ export class SchemaManager {
         ? existingSchema.path
         : paramsPath(params) || schemaVersion;
 
+    const config = ensureArray(this.config.apis ?? []).find(
+      (c) => c.path === configuredPath,
+    );
+
     const processed = {
       schema: processedSchema,
       version: schemaVersion,
@@ -218,6 +225,7 @@ export class SchemaManager {
         versionPath,
         configuredPath,
         params,
+        config?.options,
       ),
       processedJsonPath,
       processedTime,
@@ -340,15 +348,21 @@ export class SchemaManager {
     versionPath: string,
     apiPath: string,
     params: Record<string, string>,
+    config: ApiOptionsConfig | undefined,
   ) => {
     const suffix = paramsSuffix(params);
     const extension = suffix ? ".json" : path.extname(inputPath);
+
+    const fileName =
+      config?.schemaDownload?.fileName ??
+      this.config.defaults?.apis?.schemaDownload?.fileName ??
+      "schema";
 
     return joinUrl(
       this.config.basePath,
       apiPath,
       versionPath,
-      `schema${suffix}${extension}`,
+      `${fileName}${suffix}${extension}`,
     );
   };
 

@@ -1,35 +1,14 @@
 import { ExternalLinkIcon } from "lucide-react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 import type { MediaTypeObject } from "./graphql/graphql.js";
-import * as SidecarBox from "./SidecarBox.js";
-
-const formatForDisplay = (value: unknown): string | undefined => {
-  if (value == null) return;
-  if (typeof value === "string") return value.trim();
-  return JSON.stringify(value, null, 2);
-};
-
-const getLanguage = (mediaType?: string): string => {
-  if (!mediaType) return "text";
-  if (mediaType.endsWith("+json")) return "json";
-  if (mediaType.endsWith("+xml")) return "xml";
-  if (mediaType.endsWith("+yaml")) return "yaml";
-
-  const languages: Record<string, string> = {
-    "text/html": "html",
-    "application/x-ndjson": "json",
-    "application/json": "json",
-    "application/xml": "xml",
-    "application/x-yaml": "yaml",
-    "text/csv": "csv",
-    "application/javascript": "javascript",
-    "application/graphql": "graphql",
-  };
-  return languages[mediaType] ?? "text";
-};
+import {
+  formatRequestBodyForDisplay,
+  getLanguageForMediaType,
+} from "./util/formatRequestBody.js";
 
 export type SidecarExamplesProps = {
   content: MediaTypeObject[];
@@ -61,8 +40,11 @@ export const SidecarExamples = ({
   const examples = selectedContent?.examples ?? [];
   const selectedExample = examples?.[selectedExampleIndex];
 
-  const formattedExample = formatForDisplay(selectedExample?.value);
-  const language = getLanguage(selectedContent?.mediaType);
+  const formattedExample = formatRequestBodyForDisplay(
+    selectedContent?.mediaType,
+    selectedExample?.value,
+  );
+  const language = getLanguageForMediaType(selectedContent?.mediaType);
 
   return (
     <>

@@ -34,8 +34,13 @@ export const Value = ({
           onCopy?.(value);
         }}
         size="icon"
+        aria-label="Copy to clipboard"
       >
-        {isCopied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+        {isCopied ? (
+          <CheckIcon size={16} aria-hidden="true" />
+        ) : (
+          <CopyIcon size={16} aria-hidden="true" />
+        )}
       </Button>
     </div>
   );

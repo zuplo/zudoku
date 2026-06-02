@@ -76,7 +76,8 @@
           "secret": {
             "type": "string",
             "writeOnly": true,
-            "description": "Secret used to sign webhook payloads"
+            "description": "Secret used to sign webhook payloads. Generated via quantum key distribution; rotate from the developer portal if compromised.",
+            "example": "whsec_quantum_3a8f2c5e9b1d4f7a6c0e2b8d5f1a4c7e9b2d6f0a3c5e8b1d4f7a2c0e6b9d3f5a8c1e4b7d0f2a5c8e3b6d9f1a4c7e0b2d5f8a3c6e9b1d4f7a0c2e5b8d3f6a9c1e4b7d0f2a5c8e3b6d9f1a4c7e0b2d5f8a3c6e9b1d4f7a0c2e5b8d3f6a9c1e4b7d0f2a5c8e_signed_with_QKD_protocol_v3_2026"
           }
         }
       },

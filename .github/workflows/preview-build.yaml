@@ -1,68 +1,18 @@
 name: Public Package Build
-
 on:
-  pull_request_target:
-    types: [opened, synchronize, labeled, reopened]
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  approval-reminder:
-    if: |
-      github.event_name == 'pull_request_target' &&
-      github.event.pull_request.head.repo.fork &&
-      !contains(github.event.pull_request.labels.*.name, 'approve public build')
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - uses: actions/github-script@v8
-        with:
-          script: |
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              per_page: 100
-            });
-
-            const exists = comments.some(c =>
-              c.user.login === "github-actions[bot]" &&
-              c.body.includes("Preview build of published Zudoku package")
-            );
-
-            if (!exists) {
-              const body = `Preview build of published Zudoku package
-
-              > [!WARNING]
-              > This PR is from an external contributor. To run the public package build workflow, a maintainer must add the \`approve public build\` label after reviewing the changes.`;
-
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
-
   run:
     runs-on: ubuntu-latest
-    # Run on internal PRs or external PRs with 'approve public build' label
-    if: |
-      (github.event_name == 'pull_request_target' && !github.event.pull_request.head.repo.fork) ||
-      (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'approve public build'))
     permissions:
       contents: read
-      id-token: write
-      deployments: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v6
-        with:
-          # Safe: Only runs after maintainer approval via 'approve public build' label
-          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || '' }}
       - uses: pnpm/action-setup@v5
         with:
           run_install: false
@@ -70,10 +20,9 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: ".tool-versions"
-          cache: "pnpm"
 
       - name: Install global dependencies
-        run: npm install -g verdaccio nx npm-auth-to-token wrangler
+        run: npm install -g --ignore-scripts verdaccio nx npm-auth-to-token
 
       - name: Start local NPM registry
         run: |
@@ -83,19 +32,20 @@ jobs:
           npm-auth-to-token -u test -p test -e test@test.com -r http://localhost:4873
 
       - name: Run first pnpm install
-        run: pnpm install
+        run: pnpm install --ignore-scripts
 
       - name: Build and publish package
         run: nx run zudoku:publish:local
 
       - name: Update package.json
         run: |
-          VERSION=$(node -p "require('./packages/zudoku/package.json').version")
+          VERSION=$(pnpm view zudoku@local version --registry http://localhost:4873)
+          echo "Using locally-published zudoku version: $VERSION"
           cd examples/cosmo-cargo
           pnpm pkg set "devDependencies.zudoku=$VERSION"
 
       - name: Run second pnpm install
-        run: pnpm install --no-frozen-lockfile --prefer-offline --registry http://localhost:4873
+        run: pnpm install --no-frozen-lockfile --prefer-offline --ignore-scripts --registry http://localhost:4873
 
       - name: Build Cosmo Cargo example
         run: nx run cosmo-cargo:build
@@ -104,13 +54,11 @@ jobs:
         run: |
           echo "Testing built files in examples/cosmo-cargo/dist"
 
-          # Check if index.html exists
           if [ ! -f "examples/cosmo-cargo/dist/index.html" ]; then
             echo "::error::index.html not found in build output"
             exit 1
           fi
 
-          # Check for expected content in index.html
           if ! grep -q "Cosmo Cargo" examples/cosmo-cargo/dist/index.html; then
             echo "::error::Could not find 'Cosmo Cargo' in index.html"
             echo "index.html content preview:"
@@ -118,7 +66,6 @@ jobs:
             exit 1
           fi
 
-          # Check if main JS bundle exists
           if [ ! -d "examples/cosmo-cargo/dist/assets" ]; then
             echo "::error::Assets directory not found in build output"
             exit 1
@@ -129,7 +76,6 @@ jobs:
             exit 1
           fi
 
-          # Check that plugin getHead content is injected into SSR output
           if ! grep -q "cosmo-cargo-head-test" examples/cosmo-cargo/dist/index.html; then
             echo "::error::Plugin getHead meta tag not found in index.html (head injection broken)"
             echo "Head section:"
@@ -142,62 +88,3 @@ jobs:
           fi
 
           echo "✅ Smoke test passed - build output contains expected files and content"
-      - name: Deploy to Cloudflare Pages
-        id: deploy
-        uses: cloudflare/wrangler-action@v3
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.COSMO_CARGO_CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
-        with:
-          apiToken: ${{ secrets.COSMO_CARGO_CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy examples/cosmo-cargo/dist --project-name=cosmocargo-public-package
-
-      - name: Comment PR
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const deploymentUrl = "${{ steps.deploy.outputs.deployment-url }}";
-            const sha = "${{ github.event.pull_request.head.sha }}" || "${{ github.sha }}";
-
-            const comment = `Preview build of published Zudoku package for commit ${sha}.
-
-            See the deployment at: **${deploymentUrl}**
-
-            > [!NOTE]
-            > This is a preview of the Cosmo Cargo example using the Zudoku package published to [a local registry](https://verdaccio.org) to ensure it'll be working when published to the public NPM registry.
-
-            _Last updated: ${new Date().toISOString()}_`;
-
-            try {
-              const { data: comments } = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                per_page: 100
-              });
-
-              const botComment = comments.find((c) =>
-                c.user.login === "github-actions[bot]" &&
-                c.body.includes("Preview build of published Zudoku package")
-              );
-
-              if (botComment) {
-                await github.rest.issues.updateComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  comment_id: botComment.id,
-                  body: comment
-                });
-              } else {
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.issue.number,
-                  body: comment
-                });
-              }
-            } catch (error) {
-              core.error(`Failed to comment on PR: ${error.message}`);
-              throw error;
-            }

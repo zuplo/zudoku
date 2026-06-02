@@ -9,7 +9,7 @@ import { Slot } from "./Slot.js";
 
 export const Main = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { navigation } = useCurrentNavigation();
+  const { navigation, topNavItem } = useCurrentNavigation();
   const hasNavigation = navigation.length > 0;
   const isNavigating = useNavigation().state === "loading";
   const { options } = useZudoku();
@@ -24,20 +24,24 @@ export const Main = ({ children }: PropsWithChildren) => {
         <Navigation
           onRequestClose={() => setDrawerOpen(false)}
           navigation={navigation}
+          topNavItem={topNavItem}
         />
       )}
       {hasNavigation && (
-        <div className="lg:hidden m-0 p-0 md:-mx-4 md:px-4 py-2 sticky bg-background/80 backdrop-blur-xs z-10 top-0 start-0 end-0 border-b">
+        <div className="lg:hidden m-0 p-0 md:-mx-4 md:px-4 py-2 sticky bg-background/80 backdrop-blur-xs z-10 top-0 inset-x-0 border-b flex items-center gap-2">
           <DrawerTrigger className="flex items-center gap-2 px-4">
             <PanelLeftIcon size={16} strokeWidth={1.5} />
             <span className="text-sm">Menu</span>
           </DrawerTrigger>
+          <div className="ms-auto empty:hidden pe-4">
+            <Slot.Target name="mobile-top-bar-end" />
+          </div>
         </div>
       )}
       <main
         data-pagefind-body
         className={cn(
-          "px-4 lg:pe-8 lg:px-8",
+          "min-w-0 px-4 lg:pe-8 lg:px-8",
           !hasNavigation && "col-span-full",
           isNavigating && "animate-pulse",
         )}

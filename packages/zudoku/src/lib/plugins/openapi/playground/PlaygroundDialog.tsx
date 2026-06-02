@@ -15,17 +15,23 @@ export type PlaygroundDialogProps = PropsWithChildren<PlaygroundContentProps>;
 
 const PlaygroundDialog = (props: PlaygroundDialogProps) => {
   const [open, setOpen] = useState(false);
-  const { isAuthEnabled, login, signup, isPending, isAuthenticated } =
-    useAuth();
+  const {
+    isAuthEnabled,
+    login,
+    signup,
+    isPending,
+    isAuthenticated,
+    disableSignUp,
+  } = useAuth();
 
   return (
     <Dialog onOpenChange={(open) => setOpen(open)}>
       <DialogTrigger asChild>
         {props.children ?? (
-          <Button variant="ghost" size="icon-xs" className="group">
+          <Button variant="outline" size="xs" className="group gap-1">
+            <span className="text-xs text-muted-foreground">Test</span>
             <PlayIcon
               className="fill-muted-foreground group-hover:fill-foreground transition"
-              size={16}
               strokeWidth={1.5}
             />
           </Button>
@@ -33,9 +39,9 @@ const PlaygroundDialog = (props: PlaygroundDialogProps) => {
       </DialogTrigger>
 
       <DialogContent
-        className="max-w-screen-xl! w-full overflow-hidden p-0"
+        className="max-w-7xl! w-full overflow-hidden p-0"
         aria-describedby={undefined}
-        showCloseButton={true}
+        showCloseButton
       >
         <VisuallyHidden>
           <DialogTitle>Playground</DialogTitle>
@@ -44,7 +50,7 @@ const PlaygroundDialog = (props: PlaygroundDialogProps) => {
           <Playground
             requiresLogin={isAuthEnabled && !isAuthenticated && !isPending}
             onLogin={() => login()}
-            onSignUp={() => signup()}
+            onSignUp={disableSignUp ? undefined : () => signup()}
             {...props}
           />
         )}

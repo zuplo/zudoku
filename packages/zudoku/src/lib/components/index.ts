@@ -1,8 +1,10 @@
-export { Helmet as Head } from "@zudoku/react-helmet-async";
+export { Head } from "@unhead/react";
 export { Link } from "react-router";
+export { Anchor } from "./Anchor.js";
 export { Button } from "../ui/Button.js";
 export { Callout } from "../ui/Callout.js";
 export { ZudokuError } from "../util/invariant.js";
+export { CategoryHeading } from "./CategoryHeading.js";
 export { ClientOnly } from "./ClientOnly.js";
 export { Heading } from "./Heading.js";
 export { Markdown } from "./Markdown.js";

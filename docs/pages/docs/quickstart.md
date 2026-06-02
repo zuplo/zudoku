@@ -10,7 +10,7 @@ have you up and running with a modern, customizable site that your developers wi
 
 ## Prerequisites
 
-- **Node.js** `22.7.0+` (or `20.19+`) - [Download here](https://nodejs.org/)
+- **Node.js** `22.12.0+` (or `20.19+`) - [Download here](https://nodejs.org/)
 - A terminal or command prompt
 - Your favorite code editor
 

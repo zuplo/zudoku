@@ -139,10 +139,12 @@ export const ZudokuSignInUi = ({
   onUsernamePasswordSignIn,
   enableUsernamePassword,
   enableEmailLink,
+  disableSignUp = false,
 }: {
   providers: string[];
   enableUsernamePassword: boolean;
   enableEmailLink?: boolean;
+  disableSignUp?: boolean;
   onOAuthSignIn: (providerId: string) => Promise<void>;
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
 }) => {
@@ -252,10 +254,37 @@ export const ZudokuSignInUi = ({
               Sign in with email link
             </Link>
           )}
-          <Link to="/signup" className="text-sm text-muted-foreground">
-            Don't have an account? Sign up.
-          </Link>
+          {!disableSignUp && (
+            <Link to="/signup" className="text-sm text-muted-foreground">
+              Don't have an account? Sign up.
+            </Link>
+          )}
         </div>
+      </CardContent>
+    </AuthCard>
+  );
+};
+
+export const ZudokuSignUpDisabledUi = () => {
+  return (
+    <AuthCard>
+      <CardHeader>
+        <CardTitle>Sign up</CardTitle>
+        <CardDescription>Sign ups are not currently available.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <Alert>
+          <AlertTitle>Invitation required</AlertTitle>
+          <AlertDescription>
+            New accounts are by invitation only. If you already have an account,
+            you can sign in below.
+          </AlertDescription>
+        </Alert>
+        <Link to="/signin">
+          <Button variant="outline" className="w-full">
+            Back to sign in
+          </Button>
+        </Link>
       </CardContent>
     </AuthCard>
   );

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type {
   ApiIdentity,
   ApiIdentityPlugin,
@@ -6,6 +7,9 @@ import type {
 } from "zudoku";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
+import { MembersOnly } from "./src/MembersOnly";
+import { NotFound } from "./src/NotFound";
+import { VipLounge } from "./src/VipLounge";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -32,7 +36,9 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 
 const config: ZudokuConfig = {
   metadata: {
-    title: "Cosmo Cargo Inc.",
+    title: "%s | Cosmo Cargo Inc.",
+    defaultTitle: "Cosmo Cargo Inc.",
+    description: "Interstellar shipping API documentation",
   },
   header: {
     navigation: [
@@ -110,6 +116,7 @@ const config: ZudokuConfig = {
     llms: { llmsTxt: true, llmsTxtFull: true },
   },
   site: {
+    notFoundPage: <NotFound />,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       width: 130,
@@ -209,6 +216,20 @@ const config: ZudokuConfig = {
   mdx: {
     components: {
       Trademark: () => "™",
+      SpaceWarning: ({
+        children,
+        sector,
+      }: {
+        children: ReactNode;
+        sector?: string;
+      }) => (
+        <div className="my-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
+          <div className="flex items-center gap-2 font-semibold text-yellow-600 dark:text-yellow-400">
+            ⚠️ {sector ? `Sector ${sector} Advisory` : "Space Advisory"}
+          </div>
+          <div className="mt-1 text-sm">{children}</div>
+        </div>
+      ),
     },
   },
   navigationRules: [
@@ -255,7 +276,12 @@ const config: ZudokuConfig = {
           icon: "telescope",
           collapsed: false,
           label: "Space Operations",
-          items: ["shipping-process", "tracking", "quantum-express"],
+          items: [
+            "shipping-process",
+            "tracking",
+            "quantum-express",
+            "ship-states",
+          ],
         },
         "global",
         { type: "separator" },
@@ -312,14 +338,14 @@ const config: ZudokuConfig = {
       path: "/only-members",
       label: "Only members",
       display: "auth",
-      element: <div>Only members are allowed in here.</div>,
+      element: <MembersOnly />,
     },
     {
       type: "custom-page",
       path: "/vip-lounge",
       label: "VIP Lounge",
       display: "auth",
-      element: <div>Welcome to the VIP Lounge, exclusive Zuplo member!</div>,
+      element: <VipLounge />,
     },
   ],
   redirects: [
@@ -351,6 +377,7 @@ const config: ZudokuConfig = {
       examplesLanguage: "js",
       schemaDownload: {
         enabled: true,
+        fileName: "openapi",
       },
     },
   },
@@ -362,8 +389,12 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/shipments.json",
       path: "api-shipments",
-      categories: [{ label: "General", tags: ["Shipments"] }],
+      categories: [
+        { label: "Core", tags: ["Shipments", "Logistics"] },
+        { label: "Logistics", tags: ["Shipments"] },
+      ],
       options: {
+        disableSecurity: false,
         transformExamples: ({ content, auth }) => {
           if (!auth.isAuthenticated) {
             return content;
@@ -398,13 +429,19 @@ const config: ZudokuConfig = {
         "./schema/label-v1.json",
       ],
       path: "/catalog/api-label",
-      categories: [{ label: "General", tags: ["Labels"] }],
+      categories: [
+        { label: "Core", tags: ["Labels"] },
+        { label: "Printing", tags: ["Labels"] },
+      ],
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
       path: "/catalog/api-webhooks",
-      categories: [{ label: "General", tags: ["Developer"] }],
+      categories: [
+        { label: "Platform", tags: ["Events", "Developer"] },
+        { label: "Integrations", tags: ["Developer"] },
+      ],
       options: {
         supportedLanguages: [
           { value: "js", label: "JavaScript" },
@@ -430,13 +467,16 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/interplanetary.json",
       path: "/catalog/api-interplanetary",
-      categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
+      categories: [{ label: "Interplanetary", tags: ["Routes", "Transit"] }],
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
       path: "/catalog/api-tracking",
-      categories: [{ label: "General", tags: ["Tracking"] }],
+      categories: [
+        { label: "Core", tags: ["Tracking", "Events"] },
+        { label: "Insights", tags: ["Tracking"] },
+      ],
     },
     {
       type: "file",
@@ -451,9 +491,23 @@ const config: ZudokuConfig = {
     },
     {
       type: "file",
+      input: "./schema/docs.json",
+      path: "/catalog/api-docs",
+      categories: [
+        {
+          label: "Platform",
+          tags: ["Documentation"],
+        },
+      ],
+    },
+    {
+      type: "file",
       input: "./schema/cargo-containers.json",
       path: "/catalog/api-cargo-containers",
-      categories: [{ label: "General", tags: ["Containers", "Booking"] }],
+      categories: [
+        { label: "Core", tags: ["Containers", "Booking"] },
+        { label: "Storage", tags: ["Containers"] },
+      ],
     },
     {
       type: "file",
@@ -475,14 +529,17 @@ const config: ZudokuConfig = {
         },
       ],
       path: "/catalog/api-fleet-ops",
-      categories: [{ label: "General", tags: ["Fleet Command"] }],
+      categories: [
+        { label: "Core", tags: ["Fleet Command"] },
+        { label: "Operations", tags: ["Fleet Command"] },
+      ],
     },
   ],
   theme: {
     light: {
-      background: "0 0% 100%",
-      foreground: "20 14.3% 4.1%",
-      card: "#fafafa",
+      background: "oklch(0.995 0.002 80)",
+      foreground: "#262626",
+      card: "#fff",
       cardForeground: "#262626",
       primary: "#f4bf32",
       primaryForeground: "#0f1719",
@@ -497,6 +554,7 @@ const config: ZudokuConfig = {
       border: "20 5.9% 90%",
       input: "20 5.9% 90%",
       ring: "oklch(0.708 0 0)",
+      radius: "0.4rem",
     },
     dark: {
       background: "#1a1a18",

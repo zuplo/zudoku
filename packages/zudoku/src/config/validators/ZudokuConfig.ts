@@ -94,7 +94,15 @@ const ApiOptionsSchema = z
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
-    schemaDownload: z.object({ enabled: z.boolean() }).partial(),
+    schemaDownload: z
+      .object({
+        enabled: z.boolean(),
+        fileName: z
+          .string()
+          .regex(/^[A-Za-z0-9_-]+$/)
+          .optional(),
+      })
+      .partial(),
     transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
     ),
@@ -103,6 +111,8 @@ const ApiOptionsSchema = z
     ),
   })
   .partial();
+
+export type ApiOptionsConfig = z.infer<typeof ApiOptionsSchema>;
 
 const ApiConfigSchema = z
   .object({
@@ -317,7 +327,7 @@ export const DocsConfigSchema = z.object({
     .default([DEFAULT_DOCS_FILES]),
   publishMarkdown: z
     .boolean()
-    .default(false)
+    .default(true)
     .describe(
       "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
     ),
@@ -327,6 +337,7 @@ export const DocsConfigSchema = z.object({
       copyPage: z.boolean().optional(),
       disablePager: z.boolean(),
       showLastModified: z.boolean(),
+      fullWidth: z.boolean().optional(),
       suggestEdit: z
         .object({
           url: z.string(),
@@ -382,6 +393,22 @@ const SearchSchema = z
   ])
   .optional();
 
+const SignUpUrlValueSchema = z
+  .string()
+  .min(1)
+  .refine((v) => v.startsWith("/") || URL.canParse(v), {
+    message: "signUp.url must be an absolute URL or a path starting with '/'",
+  });
+const SignUpUrlSchema = z.object({ url: SignUpUrlValueSchema }).strict();
+const SignUpOpenIdSchema = z.union([
+  SignUpUrlSchema,
+  z
+    .object({
+      authorizationParams: z.record(z.string(), z.string()),
+    })
+    .strict(),
+]);
+
 const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
@@ -394,6 +421,8 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpUrlSchema.optional(),
+    disableSignUp: z.boolean().optional(),
   }),
   z.object({
     type: z.literal("firebase"),
@@ -415,14 +444,15 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
           "apple",
           "yahoo",
           "password",
-          "phone",
           "emailLink",
         ]),
       )
       .optional(),
+    disableSignUp: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpUrlSchema.optional(),
   }),
   z.object({
     type: z.literal("openid"),
@@ -431,9 +461,14 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     issuer: z.string(),
     audience: z.string().optional(),
     scopes: z.array(z.string()).optional(),
+    allowInsecureRequests: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpOpenIdSchema.optional(),
+    disableSignUp: z.boolean().optional(),
+    authorizationParams: z.record(z.string(), z.string()).optional(),
+    forwardAuthorizationParams: z.array(z.string()).optional(),
   }),
   z.object({
     type: z.literal("azureb2c"),
@@ -446,6 +481,8 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpUrlSchema.optional(),
+    disableSignUp: z.boolean().optional(),
   }),
 
   z.object({
@@ -471,12 +508,16 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    authorizationParams: z.record(z.string(), z.string()).optional(),
+    forwardAuthorizationParams: z.array(z.string()).optional(),
     options: z
       .object({
         alwaysPromptLogin: z.boolean().optional(),
         prompt: z.string().optional(),
       })
       .optional(),
+    signUp: SignUpOpenIdSchema.optional(),
+    disableSignUp: z.boolean().optional(),
   }),
   z.object({
     type: z.literal("supabase"),
@@ -486,9 +527,11 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     provider: z.string().optional(),
     providers: z.array(z.string()).optional(),
     onlyThirdPartyProviders: z.boolean().optional(),
+    disableSignUp: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpUrlSchema.optional(),
   }),
 ]);
 
@@ -506,6 +549,11 @@ const MetadataSchema = z
     authors: z.array(z.string()),
     creator: z.string(),
     publisher: z.string(),
+    robots: z
+      .string()
+      .describe(
+        'Sets the contents of the `meta[name="robots"]` tag. For example: `noindex, nofollow`.',
+      ),
   })
   .partial();
 
@@ -554,6 +602,7 @@ const SiteSchema = z
     dir: z.enum(["ltr", "rtl"]).optional(),
     logo: LogoSchema,
     showPoweredBy: z.boolean().optional(),
+    notFoundPage: z.custom<NonNullable<ReactNode>>(),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z
@@ -572,6 +621,12 @@ const PlacementPosition = z.enum(["start", "center", "end"]);
 const HeaderConfigSchema = z
   .object({
     navigation: HeaderNavigationSchema,
+    themeSwitcher: z
+      .object({
+        enabled: z.boolean(),
+      })
+      .partial()
+      .optional(),
     placements: z
       .object({
         navigation: PlacementPosition,
@@ -700,6 +755,9 @@ export type ZudokuConfig = Omit<
 > & {
   header?: {
     navigation?: z.infer<typeof HeaderNavigationSchema>;
+    themeSwitcher?: {
+      enabled?: boolean;
+    };
     placements?: {
       navigation?: "start" | "center" | "end";
       search?: "start" | "center" | "end";

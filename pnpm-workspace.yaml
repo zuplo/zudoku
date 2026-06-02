@@ -14,38 +14,37 @@ catalog:
   "@types/react": 19.2.14
   "@types/react-dom": 19.2.3
   "@types/react-is": 19.2.0
-  happy-dom: 20.8.3
-  react: 19.2.4
-  react-dom: 19.2.4
-  react-is: 19.2.4
-  tsdown: 0.20.3
+  happy-dom: 20.9.0
+  react: 19.2.5
+  react-dom: 19.2.5
+  react-is: 19.2.5
+  tsdown: 0.22.0
+  typescript: 6.0.3
+  graphql: 16.14.0
+  zod: 4.3.6
 
 minimumReleaseAge: 4320
 
 minimumReleaseAgeExclude:
   - zudoku
-  - glob
-  - pagefind
-  - "@pagefind/*"
-  - oxfmt
-  - "@oxfmt/*"
-  - tailwind-merge
-  - tailwindcss
-  - "@tailwindcss/*"
-  - lucide-react
+  - unhead
+  - "@unhead/*"
 
 onlyBuiltDependencies:
   - esbuild
 
 overrides:
-  "@supabase/auth-ui-react>react": "catalog:"
-  "@supabase/auth-ui-react>react-dom": "catalog:"
   bs58: ">=6"
   immutable: ">=3.8.3 <4"
   js-yaml: ">=4.1.1"
   minimatch: ">=10.2.3 <11"
   qs: ">=6.14.1"
   tar: ">=7.5.11 <8"
+  axios: ">=1.15.0 <2"
+  lodash: ">=4.18.0 <5"
+  lodash-es: ">=4.18.0 <5"
+  defu: ">=6.1.5 <7"
+  picomatch: ">=4.0.4 <5"
 
 patchedDependencies:
   decode-named-character-reference@1.2.0: patches/decode-named-character-reference@1.2.0.patch

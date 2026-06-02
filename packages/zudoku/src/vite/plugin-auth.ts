@@ -25,9 +25,7 @@ const viteAuthPlugin = (): Plugin => {
             ...${JSON.stringify(config.authentication, null, 2)},
             basePath: ${config.basePath ? JSON.stringify(config.basePath) : "undefined"},
           };`,
-          config.__meta.mode === "internal"
-            ? `import authProvider from "${config.__meta.moduleDir}/src/lib/authentication/providers/${config.authentication.type}.tsx";`
-            : `import authProvider from "zudoku/auth/${config.authentication.type}";`,
+          `import authProvider from "zudoku/auth/${config.authentication.type}";`,
           `export const configuredAuthProvider = authProvider(config);`,
         ].join("\n");
       }

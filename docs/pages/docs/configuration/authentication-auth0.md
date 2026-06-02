@@ -34,7 +34,10 @@ If you don't have an Auth0 account, you can sign up for a
      - Production: `https://your-site.com/oauth/callback`
      - Preview (wildcard): `https://*.your-domain.com/oauth/callback`
      - Local Development: `http://localhost:3000/oauth/callback`
-   - **Allowed Logout URLs**: Same as callback URLs above
+   - **Allowed Logout URLs**:
+     - Production: `https://your-site.com/oauth/logout-callback`
+     - Preview (wildcard): `https://*.your-domain.com/oauth/logout-callback`
+     - Local Development: `http://localhost:3000/oauth/logout-callback`
 
    - **Allowed Web Origins**:
      - Production: `https://your-site.com`
@@ -112,8 +115,8 @@ To enable logout for your Auth0 application:
 
 1. Ensure your **Allowed Logout URLs** are configured in Auth0 (see
    [Configure Auth0 Application](#setup-steps) above)
-2. The logout URL should match your callback URL pattern (e.g., `https://your-site.com/` for
-   production)
+2. The logout URL must use the `/oauth/logout-callback` path (e.g.,
+   `https://your-site.com/oauth/logout-callback` for production)
 
 For older tenants, you may need to enable **RP-Initiated Logout** in your tenant settings. See the
 [Auth0 logout documentation](https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0)
@@ -151,6 +154,28 @@ When the prompt parameter is omitted (empty string), Auth0 will:
 - Silently authenticate the user if they have a valid session
 - Redirect to the login page if no valid session exists
 
+### Customizing Sign-up
+
+By default Auth0 already adds `screen_hint=signup` when a user clicks Register. To send users to a
+different page (or hide Register entirely):
+
+```typescript
+authentication: {
+  type: "auth0",
+  domain: "your-domain.us.auth0.com",
+  clientId: "<your-auth0-client-id>",
+
+  // Send Register to a separate URL (absolute → external, relative → in-app)
+  signUp: { url: "/register" },
+
+  // Or pass extra params to the Auth0 authorize URL on sign-up
+  signUp: { authorizationParams: { connection: "your-signup-connection" } },
+
+  // Hide Register UI entirely. Visual only — configure Auth0 to actually block sign-ups.
+  disableSignUp: true,
+}
+```
+
 ## Troubleshooting
 
 ### Common Issues
@@ -160,8 +185,8 @@ When the prompt parameter is omitted (empty string), Auth0 will:
 
 2. **CORS Errors**: Add your site's domain to the Allowed Web Origins in Auth0.
 
-3. **Authentication Loop**: Check that your Auth0 domain includes the protocol (`https://`) but no
-   trailing slash.
+3. **Authentication Loop**: Check that your Auth0 domain is a plain hostname only (e.g.,
+   `your-domain.us.auth0.com`) without a protocol prefix (`https://`) or trailing slash.
 
 4. **Token Validation Errors**: Ensure the audience in your Zudoku configuration matches the
    identifier of the Auth0 API you created.

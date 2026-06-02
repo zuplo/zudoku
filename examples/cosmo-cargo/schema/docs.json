@@ -1,0 +1,252 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cosmo Cargo Documentation API",
+    "description": "Public documentation endpoints for the Cosmo Cargo platform. Provides searchable access to shipping guides, regulatory information, and interstellar logistics knowledge base.\n\n## MCP Integration\nThis API includes an MCP endpoint that allows AI tools to search and retrieve Cosmo Cargo documentation for context-aware assistance.\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Cosmo Cargo Docs",
+      "email": "docs@cosmocargo.space",
+      "url": "https://docs.cosmocargo.space"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://docs.cosmocargo.space/api/v1",
+      "description": "Documentation API"
+    }
+  ],
+  "paths": {
+    "/mcp": {
+      "post": {
+        "tags": ["Documentation"],
+        "summary": "Documentation MCP Server",
+        "description": "MCP endpoint for AI tools to search and retrieve Cosmo Cargo documentation. No authentication required — all documentation is publicly available.",
+        "operationId": "mcpDocs",
+        "x-mcp-server": {
+          "name": "Cosmo Cargo Docs",
+          "version": "1.0.0"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "search_docs",
+                      "get_article",
+                      "list_categories",
+                      "get_shipping_guide"
+                    ],
+                    "description": "The documentation action to perform"
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Action-specific parameters"
+                  }
+                }
+              },
+              "example": {
+                "action": "search_docs",
+                "parameters": {
+                  "query": "hazardous materials shipping requirements",
+                  "limit": 5
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documentation response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocsResponse"
+                },
+                "example": {
+                  "results": [
+                    {
+                      "title": "Hazardous Materials Shipping Guide",
+                      "slug": "hazmat-shipping-guide",
+                      "excerpt": "Regulations and procedures for shipping hazardous materials across interstellar routes...",
+                      "category": "Compliance"
+                    }
+                  ],
+                  "totalResults": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "Search documentation",
+        "description": "Full-text search across all Cosmo Cargo documentation including shipping guides, regulatory information, and FAQ.",
+        "operationId": "searchDocs",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search query"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Shipping Guides",
+                "Compliance",
+                "FAQ",
+                "Route Information",
+                "Vessel Specifications"
+              ]
+            },
+            "description": "Filter by documentation category"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "maximum": 50
+            },
+            "description": "Maximum results to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/articles/{slug}": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "Get article by slug",
+        "description": "Retrieve a specific documentation article by its URL slug.",
+        "operationId": "getArticle",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Article URL slug",
+            "example": "hazmat-shipping-guide"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Article content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DocsResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          },
+          "totalResults": {
+            "type": "integer"
+          }
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      },
+      "Article": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string",
+            "description": "Article content in Markdown format"
+          },
+          "category": {
+            "type": "string"
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "relatedArticles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Slugs of related articles"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Documentation",
+      "description": "Public documentation search and retrieval endpoints"
+    }
+  ]
+}

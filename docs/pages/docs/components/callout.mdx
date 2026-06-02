@@ -5,8 +5,12 @@ sidebar_icon: circle-alert
 
 import { Callout } from "zudoku/ui/Callout";
 import { ReactComponentDoc } from "zudoku/ui/ReactComponentDoc";
+import { FileHeartIcon } from "zudoku/icons";
 
-This is a callout component that can be used to draw attention to important information.
+A callout component to draw attention to important information.
+
+Writing Markdown? Use the [admonitions](../markdown/admonitions) shorthand (`:::tip`) instead of the
+component directly.
 
 ## Import
 
@@ -15,13 +19,6 @@ import { Callout } from "zudoku/ui/Callout";
 ```
 
 <ReactComponentDoc component={Callout} />
-
-:::tip{title="Hot tip"}
-
-There's a shortcut to use callout components in Markdown files:
-[Admonitions](../markdown/admonitions).
-
-:::
 
 ## Note
 
@@ -83,6 +80,78 @@ There's a shortcut to use callout components in Markdown files:
 </Callout>
 ```
 
+## Sparkles
+
+<Callout type="sparkles" title="What's new">
+  Highlight new features or AI-powered functionality.
+</Callout>
+
+```tsx
+<Callout type="sparkles" title="What's new">
+  Highlight new features or AI-powered functionality.
+</Callout>
+```
+
+## Rocket
+
+<Callout type="rocket" title="Getting started">
+  Spin up your first project in minutes.
+</Callout>
+
+```tsx
+<Callout type="rocket" title="Getting started">
+  Spin up your first project in minutes.
+</Callout>
+```
+
+## Settings
+
+<Callout type="settings" title="Configuration">
+  Tweak these options to match your workflow.
+</Callout>
+
+```tsx
+<Callout type="settings" title="Configuration">
+  Tweak these options to match your workflow.
+</Callout>
+```
+
+## Zap
+
+<Callout type="zap" title="Performance">
+  Use this pattern when latency matters.
+</Callout>
+
+```tsx
+<Callout type="zap" title="Performance">
+  Use this pattern when latency matters.
+</Callout>
+```
+
+## Lock
+
+<Callout type="lock" title="Authentication required">
+  This endpoint needs a valid API key.
+</Callout>
+
+```tsx
+<Callout type="lock" title="Authentication required">
+  This endpoint needs a valid API key.
+</Callout>
+```
+
+## Megaphone
+
+<Callout type="megaphone" title="Announcement">
+  We've just shipped a breaking change to the v2 API.
+</Callout>
+
+```tsx
+<Callout type="megaphone" title="Announcement">
+  We've just shipped a breaking change to the v2 API.
+</Callout>
+```
+
 ## Variations
 
 Callouts can be customized by omitting the title or icon:
@@ -97,6 +166,12 @@ Callouts can be customized by omitting the title or icon:
   Or have neither title nor icon
 </Callout>
 
+Or pass any React node as the `icon` to override the default for the chosen `type`:
+
+<Callout type="tip" icon={<FileHeartIcon />} title="Made with love">
+  The icon inherits the type's accent color.
+</Callout>
+
 ```tsx
 <Callout type="note">
   Without a title
@@ -109,4 +184,47 @@ Callouts can be customized by omitting the title or icon:
 <Callout type="note" icon={false}>
   Or have neither title nor icon
 </Callout>
+
+<Callout type="tip" icon={<FileHeartIcon />} title="Made with love">
+  The icon inherits the type's accent color.
+</Callout>
+```
+
+## Customize colors
+
+Each callout type is driven by a single CSS variable that determines the icon, border tint, and
+background tint via `color-mix`. Override any of them in your theme's `customCss` to recolor a type
+globally:
+
+```ts title="zudoku.config.ts"
+export default {
+  theme: {
+    customCss: `
+      :root {
+        --callout-tip: oklch(0.65 0.18 160);
+        --callout-sparkles: oklch(0.6 0.22 320);
+      }
+      .dark {
+        --callout-tip: oklch(0.78 0.18 160);
+        --callout-sparkles: oklch(0.75 0.2 320);
+      }
+    `,
+  },
+};
+```
+
+All available variables:
+
+```css
+--callout-note
+--callout-tip
+--callout-info
+--callout-caution
+--callout-danger
+--callout-sparkles
+--callout-rocket
+--callout-settings
+--callout-zap
+--callout-lock
+--callout-megaphone
 ```

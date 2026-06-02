@@ -1,29 +1,28 @@
-import { Head, Heading, Slot } from "zudoku/components";
+import { Button, Head, Heading, Slot } from "zudoku/components";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { useQuery } from "zudoku/react-query";
-import { useDeploymentName } from "../hooks/useDeploymentName";
+import { Link } from "zudoku/router";
 import { usePlans } from "../hooks/usePlans";
-import type { SubscriptionsResponse } from "../hooks/useSubscriptions";
 import { useMonetizationConfig } from "../MonetizationContext";
-import { PricingCard } from "./pricing/PricingCard";
+import { PricingTable } from "../pricing-ui/PricingTable.js";
+import { subscriptionsQuery } from "../queries.js";
 
 const PricingPage = () => {
   const { pricing } = useMonetizationConfig();
 
   const zudoku = useZudoku();
-  const deploymentName = useDeploymentName();
   const auth = useAuth();
 
   const { data: pricingTable } = usePlans();
 
-  const { data: subscriptions = { items: [] } } =
-    useQuery<SubscriptionsResponse>({
-      meta: {
-        context: zudoku,
-      },
-      queryKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
-      enabled: auth.isAuthenticated,
-    });
+  const { data: subscriptions = { items: [] } } = useQuery({
+    ...subscriptionsQuery(zudoku),
+    enabled: auth.isAuthenticated,
+  });
+
+  const isSubscribed = subscriptions.items.some((subscription) =>
+    ["active", "canceled"].includes(subscription.status),
+  );
 
   return (
     <div className="w-full px-4 pt-(--padding-content-top) pb-(--padding-content-bottom)">
@@ -46,18 +45,24 @@ const PricingPage = () => {
             "See our pricing options and choose the one that best suits your needs."}
         </p>
       </div>
-      <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
-        {pricingTable.items.map((plan) => (
-          <PricingCard
-            key={plan.id}
-            plan={plan}
-            isPopular={plan.metadata?.zuplo_most_popular === "true"}
-            isSubscribed={subscriptions.items.some((subscription) =>
-              ["active", "canceled"].includes(subscription.status),
-            )}
-          />
-        ))}
-      </div>
+      <PricingTable
+        plans={pricingTable.items}
+        showYearlyPrice={pricing?.showYearlyPrice !== false}
+        units={pricing?.units}
+        renderAction={(plan, isPopular) =>
+          isSubscribed ? (
+            <Button variant={isPopular ? "default" : "outline"} asChild>
+              <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
+            </Button>
+          ) : (
+            <Button variant={isPopular ? "default" : "outline"} asChild>
+              <Link to={`/checkout?planId=${encodeURIComponent(plan.id)}`}>
+                Subscribe
+              </Link>
+            </Button>
+          )
+        }
+      />
       <Slot.Target name="pricing-page-after" />
     </div>
   );

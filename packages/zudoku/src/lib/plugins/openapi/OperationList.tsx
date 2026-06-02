@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import { Navigate, useParams } from "react-router";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { Markdown } from "../../components/Markdown.js";
@@ -47,6 +47,52 @@ export const OperationsFragment = graphql(/* GraphQL */ `
         externalValue
         value
         summary
+      }
+    }
+    security {
+      schemes {
+        scopes
+        scheme {
+          name
+          type
+          description
+          in
+          paramName
+          scheme
+          bearerFormat
+          openIdConnectUrl
+          flows {
+            implicit {
+              authorizationUrl
+              scopes {
+                name
+                description
+              }
+            }
+            password {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            clientCredentials {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            authorizationCode {
+              authorizationUrl
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+          }
+        }
       }
     }
     requestBody {
@@ -232,20 +278,15 @@ export const OperationList = ({
       data-pagefind-meta="section:openapi"
     >
       <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
-      <Helmet>
+      <Head>
         {helmetTitle && <title>{helmetTitle}</title>}
         {metaDescription && (
           <meta name="description" content={metaDescription} />
         )}
-      </Helmet>
+      </Head>
 
       <div className="mb-8">
-        <ApiHeader
-          title={title}
-          heading={tagTitle}
-          headingId="description"
-          tag={tag ?? tagFromParams}
-        >
+        <ApiHeader title={title} heading={tagTitle} tag={tag ?? tagFromParams}>
           <Endpoint />
         </ApiHeader>
         {tagDescription && (

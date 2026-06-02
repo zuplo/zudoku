@@ -1,6 +1,6 @@
 {
   "name": "@zuplo/zudoku-plugin-monetization",
-  "version": "0.0.27",
+  "version": "0.0.41",
   "repository": {
     "type": "git",
     "url": "https://github.com/zuplo/zudoku",
@@ -10,7 +10,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./pricing-ui": "./src/pricing-ui/index.ts"
   },
   "files": [
     "dist"
@@ -26,12 +27,18 @@
     "types": "./dist/index.d.mts",
     "exports": {
       ".": {
-        "import": "./dist/index.mjs",
-        "types": "./dist/index.d.mts"
+        "types": "./dist/index.d.mts",
+        "import": "./dist/index.mjs"
+      },
+      "./pricing-ui": {
+        "types": "./dist/pricing-ui.d.mts",
+        "import": "./dist/pricing-ui.mjs"
       }
     }
   },
   "dependencies": {
+    "clsx": "2.1.1",
+    "tailwind-merge": "3.6.0",
     "tinyduration": "3.4.1"
   },
   "devDependencies": {
@@ -50,5 +57,10 @@
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0",
     "zudoku": "*"
+  },
+  "peerDependenciesMeta": {
+    "zudoku": {
+      "optional": true
+    }
   }
 }

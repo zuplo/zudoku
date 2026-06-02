@@ -67,6 +67,7 @@ export const EmbeddedCodeBlock = ({
           type="button"
           variant="outline"
           size="icon-xs"
+          aria-label="Copy code"
           className={cn(
             "absolute top-2 end-2 p-2",
             showCopy === "hover" && "opacity-0 group-hover:opacity-100",
@@ -87,9 +88,10 @@ export const EmbeddedCodeBlock = ({
               size={13}
               strokeWidth={2.5}
               absoluteStrokeWidth
+              aria-hidden="true"
             />
           ) : (
-            <CopyIcon className="shrink-0" size={13} />
+            <CopyIcon className="shrink-0" size={13} aria-hidden="true" />
           )}
           {showCopyText && "Copy"}
         </Button>

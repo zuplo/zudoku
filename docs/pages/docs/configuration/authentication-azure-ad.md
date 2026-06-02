@@ -44,9 +44,8 @@ to integrate Azure AD with your Zudoku documentation site.
      - Production: `https://your-site.com/oauth/callback`
      - Preview (wildcard): `https://*.your-domain.com/oauth/callback`
      - Local Development: `http://localhost:3000/oauth/callback`
-   - Under **Implicit grant and hybrid flows**:
-     - Enable **ID tokens**
-     - Enable **Access tokens**
+   - **Implicit grant and hybrid flows** should remain **disabled** — Zudoku uses the more secure
+     Authorization Code flow with PKCE
    - Configure **Supported account types** if needed
    - Save your changes
 
@@ -80,14 +79,6 @@ to integrate Azure AD with your Zudoku documentation site.
      },
      // ... other configuration
    };
-   ```
-
-5. **Install Azure AD Dependencies**
-
-   Add `@azure/msal-browser` to your project dependencies:
-
-   ```bash
-   npm install @azure/msal-browser
    ```
 
 </Stepper>
@@ -187,6 +178,24 @@ To allow external partners access:
 3. Invite guest users to your directory
 4. Grant appropriate permissions to your application
 
+### Customizing Sign-up
+
+Azure AD B2C usually handles sign-up via a separate user flow. To send users there, point Register
+at the URL of that flow (or any other page):
+
+```typescript
+authentication: {
+  type: "azureb2c",
+  // ...
+
+  // Absolute URL → external redirect, relative path → in-app navigate
+  signUp: { url: "https://your-tenant.b2clogin.com/your-tenant.onmicrosoft.com/B2C_1_SignUp/oauth2/v2.0/authorize?..." },
+
+  // Hide Register entirely. Visual only — sign-ups are still controlled by your B2C policy.
+  disableSignUp: true,
+}
+```
+
 ## User Data
 
 Azure AD provides rich user profile data through OpenID Connect:
@@ -217,8 +226,8 @@ Azure AD provides rich user profile data through OpenID Connect:
 5. **Token Validation Errors**: Ensure your issuer URL is correct and includes the `/v2.0` endpoint
    for the Microsoft identity platform.
 
-6. **Authentication Not Working**: Make sure you have installed `@azure/msal-browser` to your
-   project.
+6. **Authentication Not Working**: Verify your issuer URL and client ID are correct, and that your
+   app registration is configured as a Single-page application (SPA) with the correct redirect URIs.
 
 ## Security Best Practices
 

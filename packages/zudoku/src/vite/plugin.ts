@@ -5,7 +5,6 @@ import { vitePluginSsrCss } from "./css/plugin.js";
 import viteApiKeysPlugin from "./plugin-api-keys.js";
 import viteApiPlugin from "./plugin-api.js";
 import viteAuthPlugin from "./plugin-auth.js";
-import viteAliasPlugin from "./plugin-component.js";
 import { viteConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteConfigPlugin from "./plugin-config.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
@@ -15,12 +14,12 @@ import viteMarkdownExportPlugin from "./plugin-markdown-export.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import { viteNavigationPlugin } from "./plugin-navigation.js";
 import { viteSearchPlugin } from "./plugin-search.js";
-import { viteShikiRegisterPlugin } from "./plugin-shiki-register.js";
+import { viteShikiPlugin } from "./plugin-shiki.js";
 import { viteThemePlugin } from "./plugin-theme.js";
 
 export default function vitePlugin(): PluginOption {
   return [
-    viteShikiRegisterPlugin(),
+    viteShikiPlugin(),
     viteConfigReloadPlugin(),
     viteMdxPlugin(),
     react({ include: /\.(mdx?|jsx?|tsx?)$/ }),
@@ -33,7 +32,6 @@ export default function vitePlugin(): PluginOption {
     viteNavigationPlugin(),
     viteApiPlugin(),
     viteSearchPlugin(),
-    viteAliasPlugin(),
     viteMarkdownExportPlugin(),
     vitePluginSsrCss({ entries: ["zudoku/app/entry.server.tsx"] }),
     viteThemePlugin(),

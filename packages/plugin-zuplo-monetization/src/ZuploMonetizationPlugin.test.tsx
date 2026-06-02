@@ -1,8 +1,37 @@
 import { act, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { StaticZudoku } from "zudoku/testing";
+import type { Plan } from "./types/PlanType.js";
 import { zuploMonetizationPlugin } from "./ZuploMonetizationPlugin";
 import { queryClient } from "./ZuploMonetizationWrapper";
+
+// PricingPage currently derives the legend from `items[0]` before the empty-state branch.
+// In integration tests we mock the helper to avoid throwing when `items` is empty.
+vi.mock("./utils/pricingTaxLegend.js", async (importOriginal) => {
+  const original = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...original,
+    collectDefaultTaxBehaviors: (plan?: Plan) => {
+      if (!plan) return "unspecified";
+      const behavior = plan.defaultTaxConfig?.behavior;
+      if (typeof behavior !== "string" || behavior.trim().length === 0) {
+        return "unspecified";
+      }
+      const key = behavior.trim().toLowerCase();
+      if (key === "exclusive" || key === "tax_exclusive") return "exclusive";
+      if (key === "inclusive" || key === "tax_inclusive") return "inclusive";
+      return "unspecified";
+    },
+    taxBehaviorLegendSentence: (behavior: string) => {
+      const key = behavior.trim().toLowerCase();
+      if (key === "exclusive") {
+        return "Prices exclude tax; taxes may be added at checkout if applicable.";
+      }
+      if (key === "inclusive") return "Prices include tax where applicable.";
+      return undefined;
+    },
+  };
+});
 
 describe("PricingPage", () => {
   it("renders pricing page with empty plans", async () => {

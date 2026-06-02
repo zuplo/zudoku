@@ -106,7 +106,7 @@ export const installTemplate = async ({
       "@types/node": "^22",
       "@types/react": "^19",
       "@types/react-dom": "^19",
-      typescript: "^5",
+      typescript: "^6",
     };
   }
 

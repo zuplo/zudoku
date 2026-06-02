@@ -14,6 +14,10 @@ import { traverse, traverseAsync } from "../lib/util/traverse.js";
 import type { RecordAny } from "../lib/util/types.js";
 import { operations } from "./enrich-with-zuplo.js";
 
+const MCP_TAG_NAME = "MCP";
+const MCP_TAG_DESCRIPTION =
+  "Model Context Protocol (MCP) server endpoints for AI tool integration";
+
 // extracts x-mcp-server metadata from the operation using x-zuplo-mcp-tool
 // as a first class citizen.
 const extractOperationSchema = (
@@ -84,26 +88,77 @@ const buildOperationLookup = (
   return operationMap;
 };
 
-// Takes an OpenAPI document and returns the x-mcp-server tools list defined
-// by an MCP server's options.files[x].operationIds array.
-const findOperationsInDocument = (
+// Extracts tool metadata from a disk file for the given operation IDs
+const extractToolsFromDocument = (
   document: OpenAPIV3_1.Document,
   operationIds: string[],
 ): ExtensionMcpServerTool[] => {
-  const tools: ExtensionMcpServerTool[] = [];
   const operationLookup = buildOperationLookup(document);
 
-  operationIds.forEach((operationId) => {
+  return operationIds.flatMap((operationId) => {
     const operation = operationLookup.get(operationId);
-    if (operation) {
-      const tool = extractOperationSchema(operation);
-      if (tool) {
-        tools.push(tool);
+    if (!operation) return [];
+
+    const tool = extractOperationSchema(operation);
+    return tool ? [tool] : [];
+  });
+};
+
+interface SecurityExtractionResult {
+  security: OpenAPIV3_1.SecurityRequirementObject[];
+  securitySchemes: Record<string, OpenAPIV3_1.SecuritySchemeObject>;
+}
+
+// Extracts security from the in-memory schema (already enriched by enrichWithZuploData)
+const extractSecurityFromSchema = (
+  schema: OpenAPIV3_1.Document,
+  operationIds: string[],
+): SecurityExtractionResult => {
+  const operationLookup = buildOperationLookup(schema);
+  const securityReqs: OpenAPIV3_1.SecurityRequirementObject[] = [];
+  const referencedSchemeNames = new Set<string>();
+
+  for (const operationId of operationIds) {
+    const operation = operationLookup.get(operationId);
+    if (!operation) continue;
+
+    // operation-level security takes precedence, fall back to doc-level
+    const opSecurity = operation.security ?? schema.security;
+    if (opSecurity) {
+      for (const req of opSecurity) {
+        securityReqs.push(req);
+        for (const name of Object.keys(req)) {
+          referencedSchemeNames.add(name);
+        }
       }
     }
-  });
+  }
 
-  return tools;
+  const securitySchemes: Record<string, OpenAPIV3_1.SecuritySchemeObject> = {};
+  const docSchemes = schema.components?.securitySchemes;
+  if (docSchemes) {
+    for (const name of referencedSchemeNames) {
+      const scheme = docSchemes[name];
+      if (scheme && !("$ref" in scheme)) {
+        securitySchemes[name] = scheme;
+      }
+    }
+  }
+
+  return { security: securityReqs, securitySchemes };
+};
+
+// Deduplicates security requirements by stringified key
+const deduplicateSecurity = (
+  reqs: OpenAPIV3_1.SecurityRequirementObject[],
+): OpenAPIV3_1.SecurityRequirementObject[] => {
+  const seen = new Set<string>();
+  return reqs.filter((req) => {
+    const key = JSON.stringify(req);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 };
 
 // Enriches an OpenAPI schema with x-mcp-server data based on the Zuplo MCP server handler
@@ -117,6 +172,8 @@ export const enrichWithZuploMcpServerData = ({
     const modifiedSchema = { ...schema };
     if (!modifiedSchema?.paths) return modifiedSchema;
 
+    let assignedDefaultMcpTag = false;
+
     await traverseAsync(modifiedSchema, async (node, nodePath) => {
       // Check if we're at a "post" operation (paths -> /some/path -> "post").
       // HTTP MCP servers are only allow post operations.
@@ -128,40 +185,81 @@ export const enrichWithZuploMcpServerData = ({
       if (!operation?.["x-zuplo-route"]) return node;
 
       const handler = operation["x-zuplo-route"]?.handler;
-      if (handler?.export !== "mcpServerHandler" || !handler.options?.files)
+      if (
+        handler?.export !== "mcpServerHandler" ||
+        !Array.isArray(handler.options?.operations)
+      )
         return node;
 
-      const tools: ExtensionMcpServerTool[] = [];
+      // Group operations by file to avoid reading the same file multiple times
+      const operationsByFile = new Map<string, string[]>();
+      for (const op of handler.options.operations) {
+        if (!op.file || !op.id) continue;
+        const ids = operationsByFile.get(op.file) ?? [];
+        ids.push(op.id);
+        operationsByFile.set(op.file, ids);
+      }
 
-      for (const fileConfig of handler.options.files) {
-        if (!fileConfig.path || !fileConfig.operationIds) continue;
+      if (operationsByFile.size === 0) return node;
 
-        const resolvedPath = path.resolve(rootDir, "../", fileConfig.path);
+      // Extract tools from disk files (source of truth for tool metadata)
+      const allTools: ExtensionMcpServerTool[] = [];
+      for (const [filePath, operationIds] of operationsByFile) {
+        const resolvedPath = path.resolve(rootDir, "../", filePath);
         const fileContent = await fs.readFile(resolvedPath, "utf-8");
         const document = JSON.parse(fileContent);
 
         if (document) {
-          const fileTools = findOperationsInDocument(
-            document,
-            fileConfig.operationIds,
-          );
-
-          tools.push(...fileTools);
+          allTools.push(...extractToolsFromDocument(document, operationIds));
         }
       }
+
+      // Extract security from the in-memory schema (already enriched by enrichWithZuploData)
+      const allOperationIds = [...operationsByFile.values()].flat();
+      const { security: allSecurity, securitySchemes } =
+        extractSecurityFromSchema(
+          modifiedSchema as OpenAPIV3_1.Document,
+          allOperationIds,
+        );
 
       const mcpExtension: ExtensionMcpServer = {
         name: DEFAULT_MCP_SERVER_NAME,
         version: DEFAULT_MCP_SERVER_VERSION,
       };
 
-      if (tools.length > 0) {
-        mcpExtension.tools = tools;
+      if (allTools.length > 0) {
+        mcpExtension.tools = allTools;
       }
 
       node["x-mcp-server"] = mcpExtension;
+
+      // Add security from referenced operations to x-mcp-server
+      const dedupedSecurity = deduplicateSecurity(allSecurity);
+      if (dedupedSecurity.length > 0) {
+        const ext = node["x-mcp-server"] as RecordAny;
+        ext.security = dedupedSecurity;
+        ext.securitySchemes = { ...securitySchemes };
+      }
+
+      // Assign default MCP tag if the operation has no tags
+      if (!operation.tags || operation.tags.length === 0) {
+        assignedDefaultMcpTag = true;
+        operation.tags = [MCP_TAG_NAME];
+      }
+
       return node;
     });
+
+    // Add MCP tag definition to top-level tags if we assigned it
+    if (assignedDefaultMcpTag) {
+      if (!modifiedSchema.tags) modifiedSchema.tags = [];
+      if (!modifiedSchema.tags.some((tag) => tag.name === MCP_TAG_NAME)) {
+        modifiedSchema.tags.push({
+          name: MCP_TAG_NAME,
+          description: MCP_TAG_DESCRIPTION,
+        });
+      }
+    }
 
     return modifiedSchema;
   };

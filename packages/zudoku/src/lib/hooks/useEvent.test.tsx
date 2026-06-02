@@ -29,7 +29,7 @@ const locationData = {
   search: "",
   key: "",
   state: {},
-} satisfies Location;
+} as Location;
 
 describe("useEvent", () => {
   it("returns latest event data without callback", async () => {

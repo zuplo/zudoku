@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "firebase": "^12.10.0"
+    "firebase": "^12.13.0"
   },
   "devDependencies": {
     "react": "catalog:",

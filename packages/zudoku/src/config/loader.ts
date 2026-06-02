@@ -1,7 +1,6 @@
 import { stat } from "node:fs/promises";
 import path from "node:path";
 import colors from "picocolors";
-import type { RollupOutput, RollupWatcher } from "rollup";
 import {
   type ConfigEnv,
   runnerImport,
@@ -26,7 +25,16 @@ export type ConfigWithMeta = ZudokuConfig & {
   };
 };
 
-let config: ConfigWithMeta | undefined;
+// The resolved config lives on globalThis so that external plugins (whose Vite
+// plugins import a *different* instance of this module than the CLI's bundled
+// one) can read it. A plain module-level `let` is not shared across that
+// package boundary; globalThis is, since it's one process.
+const configStore = globalThis as { __zudokuConfig?: ConfigWithMeta };
+const getConfig = () => configStore.__zudokuConfig;
+const setConfig = (next: ConfigWithMeta | undefined) => {
+  configStore.__zudokuConfig = next;
+};
+
 let envPrefix: string[] | undefined;
 let publicEnv: Record<string, string> | undefined;
 let modifiedTimes: Map<string, number> | undefined;
@@ -106,23 +114,6 @@ async function loadZudokuConfigWithMeta(
   return configWithMetadata;
 }
 
-export function findOutputPathOfServerConfig(
-  output: RollupOutput | RollupOutput[] | RollupWatcher,
-) {
-  if (Array.isArray(output)) {
-    throw new Error("Expected a single output, but got an array");
-  }
-  if ("output" in output) {
-    const result = output.output.find(
-      (o) => "isEntry" in o && o.isEntry && o.fileName === "zudoku.config.js",
-    );
-    if (result) {
-      return result.fileName;
-    }
-  }
-  throw new Error("Could not find server config output file");
-}
-
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
   const envPrefix = ["ZUPLO_PUBLIC_", "ZUDOKU_PUBLIC_"];
   const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
@@ -138,10 +129,17 @@ function loadEnv(configEnv: ConfigEnv, rootDir: string) {
   return { publicEnv, envPrefix };
 }
 
+const isFileSystemPath = (p: string) =>
+  !p.startsWith("\0") && !p.includes("virtual:");
+
 async function hasConfigChanged() {
+  const config = getConfig();
   if (!config || !modifiedTimes) return true;
 
-  const files = [config.__meta.configPath, ...config.__meta.dependencies];
+  const files = [
+    config.__meta.configPath,
+    ...config.__meta.dependencies.filter(isFileSystemPath),
+  ];
 
   try {
     const hasChanged = await Promise.all(
@@ -159,9 +157,13 @@ async function hasConfigChanged() {
 }
 
 async function updateModifiedTimes() {
+  const config = getConfig();
   if (!config) return;
 
-  const files = [config.__meta.configPath, ...config.__meta.dependencies];
+  const files = [
+    config.__meta.configPath,
+    ...config.__meta.dependencies.filter(isFileSystemPath),
+  ];
 
   modifiedTimes = new Map();
 
@@ -174,12 +176,13 @@ async function updateModifiedTimes() {
 }
 
 export const getCurrentConfig = () => {
+  const config = getConfig();
   invariant(config, "Config not loaded");
   return config;
 };
 
 export const setCurrentConfig = (newConfig: ConfigWithMeta) => {
-  config = newConfig;
+  setConfig(newConfig);
 };
 
 export async function loadZudokuConfig(
@@ -192,15 +195,17 @@ export async function loadZudokuConfig(
 }> {
   const shouldReload = await hasConfigChanged();
 
-  if (!shouldReload && config && envPrefix && publicEnv) {
-    return { config, envPrefix, publicEnv };
+  const existing = getConfig();
+  if (!shouldReload && existing && envPrefix && publicEnv) {
+    return { config: existing, envPrefix, publicEnv };
   }
 
   ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
 
   try {
     const loadedConfig = await loadZudokuConfigWithMeta(rootDir);
-    config = await runPluginTransformConfig(loadedConfig);
+    const config = await runPluginTransformConfig(loadedConfig);
+    setConfig(config);
 
     logger.info(
       colors.cyan(`loaded config file `) + colors.dim(config.__meta.configPath),
@@ -211,9 +216,10 @@ export async function loadZudokuConfig(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    if (config) {
+    const lastValid = getConfig();
+    if (lastValid) {
       // return the last valid config if it exists
-      return { config, envPrefix, publicEnv };
+      return { config: lastValid, envPrefix, publicEnv };
     }
 
     throw new Error(errorMessage, { cause: error });
@@ -223,7 +229,7 @@ export async function loadZudokuConfig(
 }
 
 export const setStandaloneConfig = (rootDir: string) => {
-  config = {
+  setConfig({
     __meta: {
       rootDir,
       moduleDir: getZudokuRootDir(),
@@ -231,5 +237,5 @@ export const setStandaloneConfig = (rootDir: string) => {
       dependencies: [],
       configPath: "",
     },
-  };
+  });
 };

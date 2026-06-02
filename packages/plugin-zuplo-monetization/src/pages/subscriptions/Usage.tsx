@@ -14,7 +14,7 @@ import {
 } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
-import type { Item, Subscription } from "../../hooks/useSubscriptions";
+import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDurationAdjective } from "../../utils/formatDuration.js";
 import { SwitchPlanModal } from "./SwitchPlanModal";
 
@@ -60,10 +60,12 @@ const UsageItem = ({
   meter,
   item,
   subscription,
+  featureKey,
 }: {
   meter: MeteredEntitlement;
   item?: Item;
   subscription?: Subscription;
+  featureKey: string;
 }) => {
   const cadence = item?.billingCadence ?? subscription?.billingCadence;
   const billingPeriod = cadence ? formatDurationAdjective(cadence) : "monthly";
@@ -124,7 +126,7 @@ const UsageItem = ({
           </Alert>
         )}
         <CardTitle>
-          {item?.name ?? "Limit"} {item?.price?.amount}
+          {item?.name ?? featureKey} {item?.price?.amount}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -212,6 +214,7 @@ export const Usage = ({
           isMeteredEntitlement(value) ? (
             <UsageItem
               key={key}
+              featureKey={key}
               meter={{ ...value }}
               subscription={subscription}
               item={currentItems?.find((item) => item.featureKey === key)}

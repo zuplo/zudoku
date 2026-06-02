@@ -9,15 +9,28 @@ import type {
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  VerifyAccessTokenResult,
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
+import { LogoutCallbackHandler } from "../components/LogoutCallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
+import { redirectToSignUpUrl } from "./util.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
+
+const decodeJwtExp = async (token: string): Promise<number | undefined> => {
+  try {
+    const { decodeJwt } = await import("jose");
+    const payload = decodeJwt(token);
+    return typeof payload.exp === "number" ? payload.exp : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 export interface OpenIdProviderData {
   // just for easy migration we also allow for undefined type. can be removed in the future.
@@ -37,6 +50,7 @@ declare module "../state.js" {
 }
 
 export const OPENID_CALLBACK_PATH = "/oauth/callback";
+export const OPENID_LOGOUT_CALLBACK_PATH = "/oauth/logout-callback";
 
 export class OpenIDAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -58,6 +72,17 @@ export class OpenIDAuthenticationProvider
   protected readonly redirectToAfterSignOut: string;
   private readonly audience?: string;
   private readonly scopes: string[];
+  private readonly signUpConfig?: OpenIDAuthenticationConfig["signUp"];
+  public readonly disableSignUp: boolean;
+  protected readonly authorizationParams?: Record<string, string>;
+  protected readonly forwardAuthorizationParams: string[];
+  protected static readonly DEFAULT_FORWARD_AUTHORIZATION_PARAMS = [
+    "login_hint",
+    "domain_hint",
+    "ui_locales",
+    "acr_values",
+  ];
+  private readonly allowInsecureRequests: boolean;
 
   constructor({
     issuer,
@@ -68,6 +93,11 @@ export class OpenIDAuthenticationProvider
     redirectToAfterSignOut = "/",
     basePath,
     scopes,
+    signUp,
+    disableSignUp,
+    authorizationParams,
+    forwardAuthorizationParams,
+    allowInsecureRequests,
   }: OpenIDAuthenticationConfig) {
     super();
     this.client = {
@@ -79,16 +109,35 @@ export class OpenIDAuthenticationProvider
     // This is the callback URL for the OAuth provider. So it needs the base path.
     this.callbackUrlPath = joinUrl(basePath, OPENID_CALLBACK_PATH);
     this.scopes = scopes ?? ["openid", "profile", "email"];
+    this.allowInsecureRequests = allowInsecureRequests ?? false;
 
     this.redirectToAfterSignUp = redirectToAfterSignUp;
     this.redirectToAfterSignIn = redirectToAfterSignIn;
     this.redirectToAfterSignOut = redirectToAfterSignOut;
+    this.signUpConfig = signUp;
+    this.disableSignUp = disableSignUp ?? false;
+    this.authorizationParams = authorizationParams;
+    this.forwardAuthorizationParams = Array.from(
+      new Set([
+        ...OpenIDAuthenticationProvider.DEFAULT_FORWARD_AUTHORIZATION_PARAMS,
+        ...(forwardAuthorizationParams ?? []),
+      ]),
+    );
+  }
+
+  protected get oauthOptions() {
+    return this.allowInsecureRequests
+      ? { [oauth.allowInsecureRequests]: true }
+      : {};
   }
 
   protected async getAuthServer() {
     if (!this.authorizationServer) {
       const issuerUrl = new URL(this.issuer);
-      const response = await oauth.discoveryRequest(issuerUrl);
+      const response = await oauth.discoveryRequest(
+        issuerUrl,
+        this.oauthOptions,
+      );
       this.authorizationServer = await oauth.processDiscoveryResponse(
         issuerUrl,
         response,
@@ -155,7 +204,7 @@ export class OpenIDAuthenticationProvider
   }
 
   async signUp(
-    _: { navigate: NavigateFunction },
+    { navigate }: { navigate: NavigateFunction },
     {
       redirectTo,
       replace = false,
@@ -164,6 +213,10 @@ export class OpenIDAuthenticationProvider
       replace?: boolean;
     } = {},
   ) {
+    if (this.signUpConfig && "url" in this.signUpConfig) {
+      redirectToSignUpUrl(this.signUpConfig.url, navigate, replace);
+      return;
+    }
     return this.authorize({
       redirectTo: this.redirectToAfterSignUp ?? redirectTo ?? "/",
       replace,
@@ -181,7 +234,58 @@ export class OpenIDAuthenticationProvider
     });
   }
 
+  private buildUserProfile(
+    userInfo: oauth.UserInfoResponse,
+    fallbackEmailVerified: oauth.JsonValue | undefined,
+  ): UserProfile {
+    const emailVerified =
+      userInfo.email_verified ?? fallbackEmailVerified ?? false;
+    return {
+      ...userInfo,
+      sub: userInfo.sub,
+      email: userInfo.email,
+      name: userInfo.name,
+      emailVerified: Boolean(emailVerified),
+      pictureUrl: userInfo.picture,
+    };
+  }
+
+  public async verifyAccessToken(
+    token: string,
+  ): Promise<VerifyAccessTokenResult> {
+    const authServer = await this.getAuthServer();
+    const response = await oauth.userInfoRequest(
+      authServer,
+      this.client,
+      token,
+    );
+    if (!response.ok) return undefined;
+    const userInfo = (await response.json()) as Record<string, unknown>;
+    if (!userInfo.sub) return undefined;
+
+    // userInfoRequest authenticated the token upstream; parsing `exp` here
+    // lets us bound the cookie lifetime to the token's. Opaque tokens just
+    // yield undefined and fall back to the handler's default.
+    const expiresAt = await decodeJwtExp(token);
+
+    return {
+      profile: {
+        sub: String(userInfo.sub),
+        email: userInfo.email as string | undefined,
+        name: userInfo.name as string | undefined,
+        emailVerified: Boolean(userInfo.email_verified),
+        pictureUrl: userInfo.picture as string | undefined,
+      },
+      expiresAt,
+    };
+  }
+
   public async refreshUserProfile(): Promise<boolean> {
+    // SSR mode doesn't persist `providerData`; tokens live only in the
+    // httpOnly cookie. Without client-side tokens we can't call userInfo —
+    // the SSR-supplied profile stays authoritative.
+    if (!useAuthState.getState().providerData) return false;
+
     const accessToken = await this.getAccessToken();
     const authServer = await this.getAuthServer();
 
@@ -189,6 +293,7 @@ export class OpenIDAuthenticationProvider
       authServer,
       this.client,
       accessToken,
+      this.oauthOptions,
     );
     const userInfo = await userInfoResponse.json();
 
@@ -198,13 +303,7 @@ export class OpenIDAuthenticationProvider
         ? providerData.claims?.email_verified
         : undefined;
 
-    const profile: UserProfile = {
-      sub: userInfo.sub,
-      email: userInfo.email,
-      name: userInfo.name,
-      emailVerified: userInfo.email_verified ?? emailVerified ?? false,
-      pictureUrl: userInfo.picture,
-    };
+    const profile = this.buildUserProfile(userInfo, emailVerified);
 
     useAuthState.setState({
       isAuthenticated: true,
@@ -252,6 +351,35 @@ export class OpenIDAuthenticationProvider
     redirectUrl.pathname = this.callbackUrlPath;
     redirectUrl.search = "";
     redirectUrl.hash = "";
+
+    // Apply user-supplied params first so core OIDC params below cannot be overridden (client_id, etc.)
+    if (this.authorizationParams) {
+      for (const [key, value] of Object.entries(this.authorizationParams)) {
+        authorizationUrl.searchParams.set(key, value);
+      }
+    }
+
+    if (
+      isSignUp &&
+      this.signUpConfig &&
+      "authorizationParams" in this.signUpConfig
+    ) {
+      for (const [key, value] of Object.entries(
+        this.signUpConfig.authorizationParams,
+      )) {
+        authorizationUrl.searchParams.set(key, value);
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      const incoming = new URLSearchParams(window.location.search);
+      for (const name of this.forwardAuthorizationParams) {
+        const value = incoming.get(name);
+        if (value !== null) {
+          authorizationUrl.searchParams.set(name, value);
+        }
+      }
+    }
 
     authorizationUrl.searchParams.set("client_id", this.client.client_id);
     authorizationUrl.searchParams.set("redirect_uri", redirectUrl.toString());
@@ -311,7 +439,9 @@ export class OpenIDAuthenticationProvider
         this.client,
         oauth.None(),
         tokenState.refreshToken,
+        this.oauthOptions,
       );
+
       const result = await oauth.processRefreshTokenResponse(
         as,
         this.client,
@@ -344,33 +474,38 @@ export class OpenIDAuthenticationProvider
         ? providerData?.idToken
         : undefined;
 
-    useAuthState.getState().setLoggedOut();
-
     const as = await this.getAuthServer();
 
-    const redirectUrl = new URL(window.location.origin);
-    redirectUrl.pathname = joinUrl(
-      import.meta.env.BASE_URL,
-      this.redirectToAfterSignOut,
-    );
-
-    let logoutUrl: URL;
-    // The endSessionEndpoint is set, the IdP supports some form of logout,
-    // so we use the IdP logout. Otherwise, just redirect the user to home
     if (as.end_session_endpoint) {
-      logoutUrl = new URL(as.end_session_endpoint);
+      // IdP supports external logout — redirect without clearing local state.
+      // State will be cleared in the logout callback after the IdP confirms.
+      const callbackUrl = new URL(window.location.origin);
+      callbackUrl.pathname = joinUrl(
+        import.meta.env.BASE_URL,
+        OPENID_LOGOUT_CALLBACK_PATH,
+      );
+
+      const logoutUrl = new URL(as.end_session_endpoint);
       if (idToken) {
         logoutUrl.searchParams.set("id_token_hint", idToken);
       }
       logoutUrl.searchParams.set(
         "post_logout_redirect_uri",
-        redirectUrl.toString(),
+        callbackUrl.toString(),
       );
-    } else {
-      logoutUrl = redirectUrl;
-    }
 
-    window.location.href = logoutUrl.toString();
+      window.location.href = logoutUrl.toString();
+    } else {
+      // No external logout endpoint — clear state immediately and redirect
+      useAuthState.getState().setLoggedOut();
+
+      const redirectUrl = new URL(window.location.origin);
+      redirectUrl.pathname = joinUrl(
+        import.meta.env.BASE_URL,
+        this.redirectToAfterSignOut,
+      );
+      window.location.href = redirectUrl.toString();
+    }
   };
 
   onPageLoad = async () => {
@@ -399,6 +534,7 @@ export class OpenIDAuthenticationProvider
           this.client,
           oauth.None(),
           tokenState.refreshToken,
+          this.oauthOptions,
         );
         const result = await oauth.processRefreshTokenResponse(
           as,
@@ -418,6 +554,11 @@ export class OpenIDAuthenticationProvider
     }
 
     useAuthState.setState({ isPending: false });
+  };
+
+  handleLogoutCallback = () => {
+    useAuthState.getState().setLoggedOut();
+    return this.redirectToAfterSignOut;
   };
 
   handleCallback = async () => {
@@ -459,6 +600,7 @@ export class OpenIDAuthenticationProvider
       params,
       redirectUrl.toString(),
       codeVerifier,
+      this.oauthOptions,
     );
 
     const oauthResult = await oauth.processAuthorizationCodeResponse(
@@ -479,17 +621,11 @@ export class OpenIDAuthenticationProvider
       authServer,
       this.client,
       accessToken,
+      this.oauthOptions,
     );
     const userInfo = await userInfoResponse.json();
 
-    const profile: UserProfile = {
-      ...userInfo,
-      sub: userInfo.sub,
-      email: userInfo.email,
-      name: userInfo.name,
-      emailVerified: userInfo.email_verified ?? claims?.email_verified ?? false,
-      pictureUrl: userInfo.picture,
-    };
+    const profile = this.buildUserProfile(userInfo, claims?.email_verified);
 
     useAuthState.setState({
       isAuthenticated: true,
@@ -515,6 +651,16 @@ export class OpenIDAuthenticationProvider
             >
               <CallbackHandler handleCallback={this.handleCallback} />
             </ErrorBoundary>
+          </ClientOnly>
+        ),
+      },
+      {
+        path: OPENID_LOGOUT_CALLBACK_PATH,
+        element: (
+          <ClientOnly>
+            <LogoutCallbackHandler
+              handleLogoutCallback={this.handleLogoutCallback}
+            />
           </ClientOnly>
         ),
       },

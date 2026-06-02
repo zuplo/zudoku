@@ -15,8 +15,15 @@ import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
+import { SchemaRefLink } from "./SchemaRefLink.js";
 import { UnionView } from "./UnionView.js";
-import { isArrayType, isBasicType } from "./utils.js";
+import { getSchemaRefName, isArrayType, isBasicType } from "./utils.js";
+
+const RootRefLabel = ({ name }: { name: string }) => (
+  <div className="text-xs font-semibold flex items-center gap-1.5 px-4 py-2 border-b bg-muted/40">
+    <SchemaRefLink name={name} />
+  </div>
+);
 
 const renderMarkdown = (content?: string) =>
   content && (
@@ -108,11 +115,13 @@ const ObjectSchemaView = ({
   defaultOpen,
   cardHeader,
   embedded,
+  rootRefName,
 }: {
   schema: SchemaObject;
   defaultOpen: boolean;
   cardHeader?: React.ReactNode;
   embedded?: boolean;
+  rootRefName?: string;
 }) => {
   const [showDeprecated, setShowDeprecated] = useState(false);
   const deprecatedRef = useRef<HTMLDivElement>(null);
@@ -158,6 +167,9 @@ const ObjectSchemaView = ({
   const additionalObjectProperties = typeof schema.additionalProperties ===
     "object" && <SchemaView schema={schema.additionalProperties} embedded />;
 
+  const hasUnion = Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf);
+  const unionSection = hasUnion && <UnionView schema={schema} embedded />;
+
   const itemsList = nonDeprecatedGroups.map(({ group, properties }, index) => (
     <Fragment key={group}>
       {index > 0 && <ItemSeparator />}
@@ -185,9 +197,20 @@ const ObjectSchemaView = ({
       <>
         {itemsList}
         {deprecatedList}
+        {unionSection &&
+          (nonDeprecatedGroups.length > 0 || deprecatedProperties) && (
+            <ItemSeparator />
+          )}
+        {unionSection}
       </>
     );
   }
+
+  const hasPanelContent =
+    nonDeprecatedGroups.length > 0 ||
+    deprecatedProperties ||
+    additionalObjectProperties ||
+    unionSection;
 
   return (
     <Frame>
@@ -197,10 +220,9 @@ const ObjectSchemaView = ({
           <FrameDescription>{schema.description}</FrameDescription>
         </FrameHeader>
       )}
-      {(nonDeprecatedGroups.length > 0 ||
-        deprecatedProperties ||
-        additionalObjectProperties) && (
+      {(hasPanelContent || rootRefName) && (
         <FramePanel className="p-0!">
+          {rootRefName && <RootRefLabel name={rootRefName} />}
           {itemsList}
           {deprecatedProperties && (
             <div ref={deprecatedRef} id={deprecatedId} hidden={!showDeprecated}>
@@ -208,6 +230,10 @@ const ObjectSchemaView = ({
             </div>
           )}
           {additionalObjectProperties}
+          {unionSection &&
+            (nonDeprecatedGroups.length > 0 ||
+              (showDeprecated && deprecatedProperties)) && <ItemSeparator />}
+          {unionSection}
         </FramePanel>
       )}
       {(schema.additionalProperties === true || deprecatedProperties) && (
@@ -244,11 +270,13 @@ export const SchemaView = ({
   defaultOpen = false,
   cardHeader,
   embedded,
+  hideRootRef,
 }: {
   schema?: SchemaObject | null;
   defaultOpen?: boolean;
   cardHeader?: React.ReactNode;
   embedded?: boolean;
+  hideRootRef?: boolean;
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
@@ -267,8 +295,12 @@ export const SchemaView = ({
     return <ConstValue schema={schema} />;
   }
 
-  if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
-    return <UnionView schema={schema} cardHeader={cardHeader} />;
+  const hasUnion = Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf);
+
+  if (hasUnion && !schema.properties) {
+    return (
+      <UnionView schema={schema} cardHeader={cardHeader} embedded={embedded} />
+    );
   }
 
   if (isBasicType(schema.type)) {
@@ -286,13 +318,16 @@ export const SchemaView = ({
     );
   }
 
-  if (schema.type === "object") {
+  if (schema.type === "object" || schema.properties || hasUnion) {
+    const rootRefName =
+      !embedded && !hideRootRef ? getSchemaRefName(schema) : undefined;
     return (
       <ObjectSchemaView
         schema={schema}
         defaultOpen={defaultOpen}
         cardHeader={cardHeader}
         embedded={embedded}
+        rootRefName={rootRefName}
       />
     );
   }

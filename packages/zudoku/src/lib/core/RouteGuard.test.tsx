@@ -10,10 +10,9 @@ import {
   screen,
   render as testRender,
   waitFor,
-  within,
 } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { HelmetProvider } from "@zudoku/react-helmet-async";
+import { createHead, UnheadProvider } from "@unhead/react/client";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
@@ -55,11 +54,13 @@ type CreateWrapperOptions = {
   shouldBypass?: boolean;
   initialPath?: string;
   wrapRouteGuard?: boolean;
+  basePath?: string;
 };
 
 const createWrapper = ({
   auth = {},
   protectedRoutes,
+  basePath,
 }: CreateWrapperOptions = {}) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -69,6 +70,7 @@ const createWrapper = ({
     isAuthenticated: false,
     isPending: false,
     isAuthEnabled: false,
+    disableSignUp: false,
     profile: null,
     providerData: null,
     setAuthenticationPending: vi.fn(),
@@ -91,7 +93,7 @@ const createWrapper = ({
   };
 
   const context = new ZudokuContext(
-    { protectedRoutes, plugins: [] },
+    { protectedRoutes, plugins: [], basePath },
     queryClient,
     {},
   );
@@ -110,12 +112,13 @@ const render = async (
     wrapRouteGuard = true,
     shouldBypass = false,
     initialPath = "/",
+    basePath,
   } = options;
   const { context, queryClient, mockAuth, mockAuthentication } =
     createWrapper(options);
 
   const Providers = () => (
-    <HelmetProvider>
+    <UnheadProvider head={createHead()}>
       <QueryClientProvider client={queryClient}>
         <ZudokuProvider context={context}>
           <RenderContext
@@ -125,7 +128,7 @@ const render = async (
           </RenderContext>
         </ZudokuProvider>
       </QueryClientProvider>
-    </HelmetProvider>
+    </UnheadProvider>
   );
 
   const routes = ensureArray(routeObject);
@@ -138,7 +141,10 @@ const render = async (
           : routes,
       },
     ],
-    { initialEntries: [initialPath] },
+    {
+      initialEntries: [(basePath ?? "") + initialPath],
+      basename: basePath,
+    },
   );
 
   let renderResult: unknown;
@@ -158,6 +164,10 @@ const render = async (
 describe("RouteGuard", () => {
   beforeEach(() => {
     cleanup();
+    // Clean up meta elements injected by unhead into the DOM
+    document
+      .querySelectorAll('head meta[name="pagefind"]')
+      .forEach((el) => el.remove());
     vi.clearAllMocks();
     useAuthState.setState({
       isAuthenticated: false,
@@ -180,7 +190,7 @@ describe("RouteGuard", () => {
 
       expect(screen.getByText("Protected")).toBeInTheDocument();
 
-      // Check for Helmet meta tag
+      // Check for unhead meta tag
       await waitFor(() => {
         const metaTags = document.querySelectorAll('meta[name="pagefind"]');
         expect(metaTags.length).toBeGreaterThan(0);
@@ -208,7 +218,7 @@ describe("RouteGuard", () => {
       });
 
       const Wrapper = ({ children }: PropsWithChildren) => (
-        <HelmetProvider>
+        <UnheadProvider head={createHead()}>
           <QueryClientProvider client={queryClient}>
             <ZudokuProvider context={context}>
               <RenderContext value={{ status: 200, bypassProtection: false }}>
@@ -216,7 +226,7 @@ describe("RouteGuard", () => {
               </RenderContext>
             </ZudokuProvider>
           </QueryClientProvider>
-        </HelmetProvider>
+        </UnheadProvider>
       );
 
       const TestComponent = () => (
@@ -278,7 +288,29 @@ describe("RouteGuard", () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it("shows login dialog when user needs to sign in", async () => {
+    it("treats an undefined check result as UNAUTHORIZED (fail-closed)", async () => {
+      await render(
+        { path: "/protected", element: <div>Protected</div> },
+        {
+          initialPath: "/protected",
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: true,
+          },
+          protectedRoutes: {
+            "/protected": (() => undefined) as unknown as (
+              c: CallbackContext,
+            ) => ProtectedRouteResult,
+          },
+        },
+      );
+
+      expect(screen.getByText("Sign in to continue")).toBeInTheDocument();
+      expect(screen.queryByText("Protected")).not.toBeInTheDocument();
+    });
+
+    it("shows sign-in prompt when user needs to sign in", async () => {
       await render(
         { path: "/protected", element: <div>Protected</div> },
         {
@@ -292,23 +324,19 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      expect(within(dialog).getByText("Login to continue")).toBeInTheDocument();
+      expect(screen.getByText("Sign in to continue")).toBeInTheDocument();
       expect(
-        within(dialog).getByText("Please login to access this page."),
+        screen.getByText("Please sign in to access this page."),
       ).toBeInTheDocument();
       expect(
-        within(dialog).getByRole("button", { name: "Login" }),
+        screen.getByRole("button", { name: "Sign in" }),
       ).toBeInTheDocument();
       expect(
-        within(dialog).getByRole("button", { name: "Register" }),
-      ).toBeInTheDocument();
-      expect(
-        within(dialog).getByRole("button", { name: "Cancel" }),
+        screen.getByRole("button", { name: "Register" }),
       ).toBeInTheDocument();
     });
 
-    it("calls login when login button clicked", async () => {
+    it("calls login when sign-in button clicked", async () => {
       const { mockAuth } = await render(
         { path: "/protected", element: <div>Protected</div> },
         {
@@ -322,13 +350,34 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      const loginButton = within(dialog).getByRole("button", { name: "Login" });
-      await userEvent.click(loginButton);
+      await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       expect(mockAuth.login).toHaveBeenCalledWith(
         expect.objectContaining({ redirectTo: "/protected" }),
       );
+    });
+
+    it("hides Register button when disableSignUp is true", async () => {
+      await render(
+        { path: "/protected", element: <div>Protected</div> },
+        {
+          initialPath: "/protected",
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: false,
+            disableSignUp: true,
+          },
+          protectedRoutes: { "/protected": () => false },
+        },
+      );
+
+      expect(
+        screen.queryByRole("button", { name: "Register" }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Sign in" }),
+      ).toBeInTheDocument();
     });
 
     it("calls signup when register button clicked", async () => {
@@ -345,11 +394,7 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      const registerButton = within(dialog).getByRole("button", {
-        name: "Register",
-      });
-      await userEvent.click(registerButton);
+      await userEvent.click(screen.getByRole("button", { name: "Register" }));
 
       expect(mockAuth.signup).toHaveBeenCalledWith(
         expect.objectContaining({ redirectTo: "/protected" }),
@@ -445,8 +490,7 @@ describe("RouteGuard", () => {
         },
       );
 
-      const dialog = screen.getByRole("dialog");
-      expect(within(dialog).getByText("Login to continue")).toBeInTheDocument();
+      expect(screen.getByText("Sign in to continue")).toBeInTheDocument();
     });
 
     it("does not match partial paths", async () => {
@@ -573,6 +617,51 @@ describe("RouteGuard", () => {
 
       await userEvent.click(screen.getByRole("button", { name: "Login" }));
       expect(mockAuth.login).toHaveBeenCalledWith({ redirectTo: "/protected" });
+    });
+
+    it("strips basePath from redirectTo when blocked target equals basePath", async () => {
+      const { mockAuth } = await render(
+        [
+          {
+            path: "/other",
+            element: (
+              <div>
+                Other <Link to="/">Go</Link>
+              </div>
+            ),
+          },
+          { path: "/", element: <div>Protected</div> },
+        ],
+        {
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: false,
+          },
+          protectedRoutes: { "/": () => false },
+          initialPath: "/other",
+          basePath: "/docs",
+        },
+      );
+
+      await userEvent.click(screen.getByText("Go"));
+      await userEvent.click(screen.getByRole("button", { name: "Login" }));
+
+      expect(mockAuth.login).toHaveBeenCalledWith({ redirectTo: "/" });
+    });
+
+    it("strips basePath from redirectTo when blocked", async () => {
+      const { mockAuth } = await render(navRoutes, {
+        ...navBlockingOptions,
+        basePath: "/docs",
+      });
+
+      await userEvent.click(screen.getByText("Go"));
+      await userEvent.click(screen.getByRole("button", { name: "Login" }));
+
+      expect(mockAuth.login).toHaveBeenCalledWith({
+        redirectTo: "/protected",
+      });
     });
 
     it("resets blocker when cancel clicked", async () => {

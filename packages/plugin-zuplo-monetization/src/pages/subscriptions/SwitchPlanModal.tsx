@@ -9,17 +9,8 @@ import {
   XIcon,
 } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
-import { ActionButton } from "zudoku/ui/ActionButton";
 import { Alert, AlertDescription } from "zudoku/ui/Alert";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "zudoku/ui/AlertDialog";
+import { Badge } from "zudoku/ui/Badge";
 import { Button } from "zudoku/ui/Button";
 import {
   Dialog,
@@ -31,10 +22,10 @@ import {
 import { Item, ItemContent, ItemDescription, ItemTitle } from "zudoku/ui/Item";
 import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import { usePlans } from "../../hooks/usePlans.js";
-import type { Subscription } from "../../hooks/useSubscriptions.js";
 import { useUrlUtils } from "../../hooks/useUrlUtils.js";
 import { useMonetizationConfig } from "../../MonetizationContext";
 import type { Plan } from "../../types/PlanType.js";
+import type { Subscription } from "../../types/SubscriptionType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPrice } from "../../utils/formatPrice.js";
@@ -43,6 +34,7 @@ import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 type PlanComparison = {
   plan: Plan;
   isUpgrade: boolean;
+  isNewerVersion: boolean;
   quotaChanges: QuotaChange[];
   featureChanges: FeatureChange[];
 };
@@ -64,6 +56,28 @@ type FeatureChange = {
   change: "added" | "removed" | "upgraded" | "downgraded" | "same";
 };
 
+// Collect all feature keys across ALL phases to detect cross-category matches
+// (e.g. a key that's a boolean feature in one plan but a metered quota in another)
+const getAllKeysAcrossPhases = (
+  plan: Plan,
+  units?: Record<string, string>,
+): { quotaKeys: Set<string>; featureKeys: Set<string> } => {
+  const quotaKeys = new Set<string>();
+  const featureKeys = new Set<string>();
+
+  for (const phase of plan.phases) {
+    const { quotas, features } = categorizeRateCards(phase.rateCards, {
+      currency: plan.currency,
+      units,
+      planBillingCadence: plan.billingCadence,
+    });
+    for (const q of quotas) quotaKeys.add(q.key);
+    for (const f of features) featureKeys.add(f.key);
+  }
+
+  return { quotaKeys, featureKeys };
+};
+
 const comparePlans = (
   currentPlan: Plan | undefined,
   targetPlan: Plan,
@@ -73,6 +87,7 @@ const comparePlans = (
 ): PlanComparison => {
   const isUpgrade = targetIndex > currentIndex;
 
+  // Use the last phase (permanent steady state) for comparison values
   const currentPhase = currentPlan?.phases.at(-1);
   const targetPhase = targetPlan.phases.at(-1);
 
@@ -91,6 +106,12 @@ const comparePlans = (
         planBillingCadence: targetPlan.billingCadence,
       })
     : { quotas: [], features: [] };
+
+  // Look across ALL phases to detect cross-category keys
+  const currentAllKeys = currentPlan
+    ? getAllKeysAcrossPhases(currentPlan, units)
+    : { quotaKeys: new Set<string>(), featureKeys: new Set<string>() };
+  const targetAllKeys = getAllKeysAcrossPhases(targetPlan, units);
 
   const quotaChanges: QuotaChange[] = [];
   const allQuotaKeys = new Set([
@@ -116,6 +137,18 @@ const comparePlans = (
         change,
       });
     } else if (target && !current) {
+      // Cross-category: feature in current plan becomes quota in target, show value
+      if (currentAllKeys.featureKeys.has(key)) {
+        quotaChanges.push({
+          key: key ?? "",
+          name: target.name,
+          currentValue: null,
+          newValue: target.limit,
+          period: target.period,
+          change: "same",
+        });
+        continue;
+      }
       quotaChanges.push({
         key: key ?? "",
         name: target.name,
@@ -125,6 +158,8 @@ const comparePlans = (
         change: "added",
       });
     } else if (current && !target) {
+      // Cross-category: quota in current becomes feature in target, show as feature
+      if (targetAllKeys.featureKeys.has(key)) continue;
       quotaChanges.push({
         key: key ?? "",
         name: current.name,
@@ -148,7 +183,11 @@ const comparePlans = (
 
     if (current && target) {
       let change: FeatureChange["change"] = "same";
-      if (current.value && target.value && current.value !== target.value) {
+      if (
+        current.value !== undefined &&
+        target.value !== undefined &&
+        current.value !== target.value
+      ) {
         change = isUpgrade ? "upgraded" : "downgraded";
       }
       featureChanges.push({
@@ -159,6 +198,17 @@ const comparePlans = (
         change,
       });
     } else if (target && !current) {
+      // Cross-category: quota in current becomes feature in target, show as "same"
+      if (currentAllKeys.quotaKeys.has(key)) {
+        featureChanges.push({
+          key: key ?? "",
+          name: target.name,
+          currentValue: true,
+          newValue: target.value ?? true,
+          change: "same",
+        });
+        continue;
+      }
       featureChanges.push({
         key: key ?? "",
         name: target.name,
@@ -167,6 +217,8 @@ const comparePlans = (
         change: "added",
       });
     } else if (current && !target) {
+      // Cross-category: feature in current becomes quota in target, handled in quota loop
+      if (targetAllKeys.quotaKeys.has(key)) continue;
       featureChanges.push({
         key: key ?? "",
         name: current.name,
@@ -177,7 +229,13 @@ const comparePlans = (
     }
   }
 
-  return { plan: targetPlan, isUpgrade, quotaChanges, featureChanges };
+  return {
+    plan: targetPlan,
+    isUpgrade,
+    isNewerVersion: false,
+    quotaChanges,
+    featureChanges,
+  };
 };
 
 const ChangeIndicator = ({
@@ -198,10 +256,59 @@ const ChangeIndicator = ({
   return <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />;
 };
 
+const isPrivatePlan = (plan: Plan) =>
+  plan.metadata?.zuplo_private_plan === "true";
+
+const planVersion = (plan: Pick<Plan, "version">) => plan.version ?? 1;
+
+const isNewerPlanVersion = (subscribedPlan: Plan, target: Plan): boolean =>
+  target.key === subscribedPlan.key &&
+  planVersion(target) > planVersion(subscribedPlan);
+
+/** Baseline for comparisons: catalog entry when present, else subscription plan. */
+const resolvePlanForComparison = (
+  subscribedPlan: Plan,
+  catalogItems: Plan[] | undefined,
+): Plan =>
+  catalogItems?.find((p) => p.id === subscribedPlan.id) ?? subscribedPlan;
+
+const resolveIsUpgrade = ({
+  target,
+  targetIndex,
+  subscribedPlan,
+  currentIndex,
+}: {
+  target: Plan;
+  targetIndex: number;
+  subscribedPlan: Plan;
+  currentIndex: number;
+}): boolean => {
+  if (target.key === subscribedPlan.key) {
+    return planVersion(target) > planVersion(subscribedPlan);
+  }
+  return targetIndex > currentIndex;
+};
+
 const modeLabelMap: Record<SwitchPlanTarget["mode"], string> = {
   upgrade: "Upgrade",
   downgrade: "Downgrade",
   private: "Switch",
+};
+
+const isSwitchPlanTarget = (value: unknown): value is SwitchPlanTarget => {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  if (
+    !("subscriptionId" in value) ||
+    !("plan" in value) ||
+    !("mode" in value)
+  ) {
+    return false;
+  }
+
+  return true;
 };
 
 const PlanComparisonItem = ({
@@ -209,27 +316,38 @@ const PlanComparisonItem = ({
   subscriptionId,
   mode,
   onRequestChange,
+  isSwitching,
 }: {
   comparison: PlanComparison;
   subscriptionId: string;
   mode: SwitchPlanTarget["mode"];
   onRequestChange: (switchTo: SwitchPlanTarget) => void;
+  isSwitching: boolean;
 }) => {
   const price = getPriceFromPlan(comparison.plan);
   const isCustom = comparison.plan.key === "enterprise";
   const displayPrice = price.monthly;
 
   const hasChanges =
-    comparison.quotaChanges.some((q) => q.change !== "same") ||
-    comparison.featureChanges.some((f) => f.change !== "same");
+    comparison.quotaChanges.length > 0 || comparison.featureChanges.length > 0;
 
   return (
     <div className="border rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-baseline gap-2">
-          <h4 className="font-semibold text-foreground">
-            {comparison.plan.name}
-          </h4>
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <h4 className="font-semibold text-foreground">
+              {comparison.plan.name}
+            </h4>
+            {comparison.isNewerVersion && (
+              <Badge
+                variant="outline"
+                className="rounded-full border-primary/30 bg-primary/10 text-primary font-medium"
+              >
+                New version
+              </Badge>
+            )}
+          </div>
           {isCustom ? (
             <span className="text-primary font-medium">Custom</span>
           ) : displayPrice === 0 ? (
@@ -256,6 +374,7 @@ const PlanComparisonItem = ({
               })
             }
             size="sm"
+            disabled={isSwitching}
           >
             {modeLabelMap[mode]}
           </Button>
@@ -264,85 +383,95 @@ const PlanComparisonItem = ({
 
       {hasChanges && (
         <div className="space-y-1.5">
-          {comparison.quotaChanges
-            .filter((q) => q.change !== "same")
-            .map((quota) => (
-              <div key={quota.key} className="flex items-center gap-2 text-sm">
-                <ChangeIndicator change={quota.change} />
-                <span className="font-medium">{quota.name}:</span>
-                {quota.change === "added" ? (
-                  <span className="text-green-600">Now included</span>
-                ) : quota.change === "removed" ? (
-                  <span className="text-destructive">No longer included</span>
-                ) : (
-                  <>
-                    <span className="text-muted-foreground">
-                      {quota.currentValue?.toLocaleString()}/{quota.period}
-                    </span>
-                    <span className="text-muted-foreground">→</span>
-                    <span
-                      className={cn(
-                        "font-medium",
-                        quota.change === "increase"
-                          ? "text-primary"
-                          : "text-amber-600",
-                      )}
-                    >
-                      {quota.newValue?.toLocaleString()}/{quota.period}
-                    </span>
-                  </>
-                )}
-              </div>
-            ))}
+          {comparison.quotaChanges.map((quota) => (
+            <div key={quota.key} className="flex items-center gap-2 text-sm">
+              <ChangeIndicator change={quota.change} />
+              <span className="font-medium">{quota.name}:</span>
+              {quota.change === "same" ? (
+                <span className="text-muted-foreground">
+                  {(quota.newValue ?? quota.currentValue)?.toLocaleString()}/
+                  {quota.period}
+                </span>
+              ) : quota.change === "added" ? (
+                <span className="text-green-600">Now included</span>
+              ) : quota.change === "removed" ? (
+                <span className="text-destructive">No longer included</span>
+              ) : (
+                <>
+                  <span className="text-muted-foreground">
+                    {quota.currentValue?.toLocaleString()}/{quota.period}
+                  </span>
+                  <span className="text-muted-foreground">→</span>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      quota.change === "increase"
+                        ? "text-primary"
+                        : "text-amber-600",
+                    )}
+                  >
+                    {quota.newValue?.toLocaleString()}/{quota.period}
+                  </span>
+                </>
+              )}
+            </div>
+          ))}
 
-          {comparison.featureChanges
-            .filter((f) => f.change !== "same")
-            .map((feature) => (
-              <div
-                key={feature.key}
-                className="flex items-center gap-2 text-sm"
-              >
-                {feature.change === "added" ? (
-                  <>
-                    <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
-                    <span className="text-muted-foreground font-medium">
-                      {feature.name}
-                    </span>
-                    <span className="text-green-600">—</span>
-                    <span className="text-green-600">Now included</span>
-                  </>
-                ) : feature.change === "removed" ? (
-                  <>
-                    <XIcon className="w-4 h-4 text-destructive shrink-0" />
-                    <span className="font-medium">{feature.name}</span>
-                    <span className="text-destructive">—</span>
-                    <span className="text-destructive">No longer included</span>
-                  </>
-                ) : (
-                  <>
-                    <ChangeIndicator change={feature.change} />
-                    <span className="">{feature.name}:</span>
-                    <span className="text-muted-foreground">
-                      {typeof feature.currentValue === "string"
-                        ? feature.currentValue
-                        : "Included"}
-                    </span>
-                    <span className="text-muted-foreground">→</span>
-                    <span
-                      className={cn(
-                        feature.change === "upgraded"
-                          ? "text-green-600"
-                          : "text-destructive",
-                      )}
-                    >
-                      {typeof feature.newValue === "string"
-                        ? feature.newValue
-                        : "Included"}
-                    </span>
-                  </>
-                )}
-              </div>
-            ))}
+          {comparison.featureChanges.map((feature) => (
+            <div key={feature.key} className="flex items-center gap-2 text-sm">
+              {feature.change === "same" ? (
+                <>
+                  <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                  <span className="text-muted-foreground">
+                    {feature.name}
+                    {typeof feature.newValue === "string"
+                      ? `: ${feature.newValue}`
+                      : typeof feature.currentValue === "string"
+                        ? `: ${feature.currentValue}`
+                        : ""}
+                  </span>
+                </>
+              ) : feature.change === "added" ? (
+                <>
+                  <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                  <span className="text-muted-foreground font-medium">
+                    {feature.name}
+                  </span>
+                  <span className="text-green-600">—</span>
+                  <span className="text-green-600">Now included</span>
+                </>
+              ) : feature.change === "removed" ? (
+                <>
+                  <XIcon className="w-4 h-4 text-destructive shrink-0" />
+                  <span className="font-medium">{feature.name}</span>
+                  <span className="text-destructive">—</span>
+                  <span className="text-destructive">No longer included</span>
+                </>
+              ) : (
+                <>
+                  <ChangeIndicator change={feature.change} />
+                  <span className="">{feature.name}:</span>
+                  <span className="text-muted-foreground">
+                    {typeof feature.currentValue === "string"
+                      ? feature.currentValue
+                      : "Included"}
+                  </span>
+                  <span className="text-muted-foreground">→</span>
+                  <span
+                    className={cn(
+                      feature.change === "upgraded"
+                        ? "text-green-600"
+                        : "text-destructive",
+                    )}
+                  >
+                    {typeof feature.newValue === "string"
+                      ? feature.newValue
+                      : "Included"}
+                  </span>
+                </>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -355,86 +484,6 @@ export type SwitchPlanTarget = {
   mode: "upgrade" | "downgrade" | "private";
 };
 
-const ConfirmSwitchAlert = ({
-  switchTo,
-  onRequestClose,
-}: {
-  switchTo: SwitchPlanTarget;
-  onRequestClose: () => void;
-}) => {
-  const deploymentName = useDeploymentName();
-  const context = useZudoku();
-  const { generateUrl } = useUrlUtils();
-
-  const mutation = useMutation<{ url: string }>({
-    mutationKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
-    meta: {
-      context,
-      request: {
-        method: "POST",
-        body: JSON.stringify({
-          planId: switchTo.plan.id,
-          successURL: generateUrl(`/subscription-change-confirm`, {
-            searchParams: {
-              planId: switchTo.plan.id,
-              subscriptionId: switchTo.subscriptionId,
-            },
-          }),
-          cancelURL: generateUrl("/subscriptions", {
-            searchParams: { subscriptionId: switchTo.subscriptionId },
-          }),
-        }),
-      },
-    },
-    retry: false,
-    onSuccess: (data) => {
-      window.location.href = data.url;
-    },
-  });
-
-  return (
-    <AlertDialog open={true} onOpenChange={onRequestClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            Confirm{" "}
-            {switchTo.mode === "private"
-              ? "plan change"
-              : switchTo.mode === "upgrade"
-                ? "upgrade"
-                : "downgrade"}
-          </AlertDialogTitle>
-          {mutation.isError && (
-            <Alert variant="destructive">
-              <AlertDescription className="first-letter:uppercase">
-                {mutation.error.message}
-              </AlertDescription>
-            </Alert>
-          )}
-          <AlertDialogDescription>
-            {switchTo.mode === "private"
-              ? `Are you sure you want to switch to ${switchTo.plan.name}? This will take effect immediately.`
-              : switchTo.mode === "upgrade"
-                ? `Are you sure you want to upgrade to ${switchTo.plan.name}? This will take effect immediately.`
-                : `Are you sure you want to downgrade to ${switchTo.plan.name}? This will take effect at the start of your next billing cycle.`}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={mutation.isPending}>
-            Cancel
-          </AlertDialogCancel>
-          <ActionButton
-            isPending={mutation.isPending}
-            onClick={() => mutation.mutate()}
-          >
-            {modeLabelMap[switchTo.mode]}
-          </ActionButton>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-};
-
 export const SwitchPlanModal = ({
   subscription,
   children,
@@ -443,36 +492,109 @@ export const SwitchPlanModal = ({
 }>) => {
   const [open, setOpen] = useState(false);
   const { data: plansData } = usePlans();
-  const [switchTo, setSwitchTo] = useState<SwitchPlanTarget | null>(null);
   const { pricing } = useMonetizationConfig();
+  const deploymentName = useDeploymentName();
+  const context = useZudoku();
+  const { generateUrl } = useUrlUtils();
 
-  const currentPlan = plansData?.items.find(
-    (p) => p.id === subscription.plan.id,
-  );
+  const switchPlanMutation = useMutation<
+    { url: string },
+    Error,
+    SwitchPlanTarget
+  >({
+    mutationKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
+    meta: {
+      context,
+      request: (variables) => {
+        if (!isSwitchPlanTarget(variables)) {
+          throw new Error(
+            "Couldn't start the plan change. Please refresh and try again.",
+          );
+        }
+
+        const switchTo = variables;
+        return {
+          method: "POST",
+          body: JSON.stringify({
+            planId: switchTo.plan.id,
+            successURL: generateUrl(`/subscription-change-confirm`, {
+              searchParams: {
+                planId: switchTo.plan.id,
+                subscriptionId: switchTo.subscriptionId,
+                mode: switchTo.mode,
+              },
+            }),
+            cancelURL: generateUrl("/subscriptions", {
+              searchParams: { subscriptionId: switchTo.subscriptionId },
+            }),
+          }),
+        };
+      },
+    },
+    retry: false,
+    onSuccess: (data) => {
+      window.location.href = data.url;
+    },
+  });
+
+  const subscribedPlan = subscription.plan;
 
   const { upgrades, downgrades, privatePlans } = useMemo(() => {
-    if (!plansData?.items || !currentPlan) {
-      return { upgrades: [], downgrades: [], privatePlans: [] };
+    const catalogItems = plansData?.items;
+    if (!catalogItems?.length) {
+      return {
+        upgrades: [],
+        downgrades: [],
+        privatePlans: [],
+      };
     }
 
-    const isPrivatePlan = (plan: Plan) =>
-      plan.metadata?.zuplo_private_plan === "true";
-
-    const currentIndex = plansData.items.findIndex(
-      (p) => p.id === currentPlan.id,
+    const planForComparison = resolvePlanForComparison(
+      subscribedPlan,
+      catalogItems,
     );
-    const allComparisons = plansData.items
-      .filter((p) => p.id !== currentPlan.id)
-      .map((plan) => {
-        const targetIndex = plansData.items.indexOf(plan);
-        return comparePlans(
-          currentPlan,
-          plan,
-          currentIndex,
-          targetIndex,
-          pricing?.units,
-        );
-      });
+    const subscribedOnCatalog = catalogItems.some(
+      (p) => p.id === subscribedPlan.id,
+    );
+    const currentIndex = subscribedOnCatalog
+      ? catalogItems.findIndex((p) => p.id === subscribedPlan.id)
+      : -1;
+    const subscribedIsPrivate = isPrivatePlan(subscribedPlan);
+
+    const allComparisons = catalogItems.flatMap((plan, targetIndex) => {
+      if (plan.id === subscribedPlan.id) {
+        return [];
+      }
+
+      const comparison = comparePlans(
+        planForComparison,
+        plan,
+        currentIndex,
+        targetIndex,
+        pricing?.units,
+      );
+      return [
+        {
+          ...comparison,
+          isUpgrade: resolveIsUpgrade({
+            target: plan,
+            targetIndex,
+            subscribedPlan,
+            currentIndex,
+          }),
+          isNewerVersion: isNewerPlanVersion(subscribedPlan, plan),
+        },
+      ];
+    });
+
+    // Private subscriptions: public targets upgrade, private targets switch.
+    if (subscribedIsPrivate) {
+      return {
+        upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
+        downgrades: [],
+        privatePlans: allComparisons.filter((c) => isPrivatePlan(c.plan)),
+      };
+    }
 
     return {
       upgrades: allComparisons.filter(
@@ -483,129 +605,133 @@ export const SwitchPlanModal = ({
       ),
       privatePlans: allComparisons.filter((c) => isPrivatePlan(c.plan)),
     };
-  }, [plansData?.items, currentPlan, pricing?.units]);
-
-  const switching = switchTo !== null;
+  }, [plansData?.items, subscribedPlan, pricing?.units]);
 
   return (
-    <>
-      {switching && (
-        <ConfirmSwitchAlert
-          switchTo={switchTo}
-          onRequestClose={() => setSwitchTo(null)}
-        />
-      )}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          {children ?? (
-            <Button variant="outline" size="sm">
-              <ArrowLeftRightIcon /> Switch Plan
-            </Button>
-          )}
-        </DialogTrigger>
-        <DialogContent>
-          <div className="sm:max-w-2xl max-h-[70vh] overflow-y-auto ">
-            <DialogHeader className="text-center">
-              <DialogTitle className="text-xl font-semibold">
-                Change Your Plan
-              </DialogTitle>
-            </DialogHeader>
-            <div className="mt-4 space-y-6">
-              {currentPlan && (
-                <Item variant="outline">
-                  <ItemContent>
-                    <ItemTitle>Current Plan</ItemTitle>
-                    <ItemDescription className="text-lg font-bold">
-                      {currentPlan.name}
-                    </ItemDescription>
-                  </ItemContent>
-                </Item>
-              )}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children ?? (
+          <Button variant="outline" size="sm">
+            <ArrowLeftRightIcon /> Switch Plan
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent>
+        <div className="sm:max-w-2xl max-h-[70vh] overflow-y-auto ">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-xl font-semibold">
+              Change Your Plan
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 space-y-6">
+            {switchPlanMutation.isError && (
+              <Alert variant="destructive">
+                <AlertDescription className="first-letter:uppercase">
+                  {switchPlanMutation.error.message}
+                </AlertDescription>
+              </Alert>
+            )}
+            <Item variant="outline">
+              <ItemContent>
+                <ItemTitle>Current Plan</ItemTitle>
+                <ItemDescription className="text-lg font-bold">
+                  {subscribedPlan.name}
+                </ItemDescription>
+              </ItemContent>
+            </Item>
 
-              {upgrades.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <ArrowUpIcon className="size-5 text-muted-foreground" />
-                      <span className="font-medium text-primary">
-                        Upgrade Options
-                      </span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Takes effect immediately
+            {upgrades.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpIcon className="size-5 text-muted-foreground" />
+                    <span className="font-medium text-primary">
+                      Upgrade Options
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    {upgrades.map((comparison) => (
-                      <PlanComparisonItem
-                        key={comparison.plan.id}
-                        comparison={comparison}
-                        subscriptionId={subscription.id}
-                        mode="upgrade"
-                        onRequestChange={setSwitchTo}
-                      />
-                    ))}
-                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    Takes effect immediately
+                  </span>
                 </div>
-              )}
+                <div className="space-y-3">
+                  {upgrades.map((comparison) => (
+                    <PlanComparisonItem
+                      key={comparison.plan.id}
+                      comparison={comparison}
+                      subscriptionId={subscription.id}
+                      mode="upgrade"
+                      onRequestChange={(target) =>
+                        switchPlanMutation.mutate(target)
+                      }
+                      isSwitching={switchPlanMutation.isPending}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-              {downgrades.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <ArrowDownIcon className="size-5 text-primary" />
-                      <span className="font-medium text-foreground">
-                        Downgrade Options
-                      </span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Takes effect next billing cycle
+            {downgrades.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ArrowDownIcon className="size-5 text-primary" />
+                    <span className="font-medium text-foreground">
+                      Downgrade Options
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    {downgrades.map((comparison) => (
-                      <PlanComparisonItem
-                        key={comparison.plan.id}
-                        comparison={comparison}
-                        subscriptionId={subscription.id}
-                        mode="downgrade"
-                        onRequestChange={setSwitchTo}
-                      />
-                    ))}
-                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    Takes effect next billing cycle
+                  </span>
                 </div>
-              )}
+                <div className="space-y-3">
+                  {downgrades.map((comparison) => (
+                    <PlanComparisonItem
+                      key={comparison.plan.id}
+                      comparison={comparison}
+                      subscriptionId={subscription.id}
+                      mode="downgrade"
+                      onRequestChange={(target) =>
+                        switchPlanMutation.mutate(target)
+                      }
+                      isSwitching={switchPlanMutation.isPending}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-              {privatePlans.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <ArrowLeftRightIcon className="size-5 text-muted-foreground" />
-                      <span className="font-medium text-foreground">
-                        Private Plan Option
-                      </span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Takes effect immediately
+            {privatePlans.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ArrowLeftRightIcon className="size-5 text-muted-foreground" />
+                    <span className="font-medium text-foreground">
+                      Private Plan Option
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    {privatePlans.map((comparison) => (
-                      <PlanComparisonItem
-                        key={comparison.plan.id}
-                        comparison={comparison}
-                        subscriptionId={subscription.id}
-                        mode="private"
-                        onRequestChange={setSwitchTo}
-                      />
-                    ))}
-                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    Takes effect immediately
+                  </span>
                 </div>
-              )}
-            </div>
+                <div className="space-y-3">
+                  {privatePlans.map((comparison) => (
+                    <PlanComparisonItem
+                      key={comparison.plan.id}
+                      comparison={comparison}
+                      subscriptionId={subscription.id}
+                      mode="private"
+                      onRequestChange={(target) =>
+                        switchPlanMutation.mutate(target)
+                      }
+                      isSwitching={switchPlanMutation.isPending}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -12,6 +12,7 @@ import type {
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  VerifyAccessTokenResult,
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { SignOut } from "../components/SignOut.js";
@@ -22,12 +23,16 @@ import {
   ZudokuPasswordResetUi,
   ZudokuPasswordUpdateUi,
   ZudokuSignInUi,
+  ZudokuSignUpDisabledUi,
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
+import { redirectToSignUpUrl } from "./util.js";
 
 export type SupabaseProviderData = {
   type: "supabase";
   session: Session;
+  accessToken: string;
+  refreshToken?: string;
 };
 
 declare module "../state.js" {
@@ -44,6 +49,8 @@ class SupabaseAuthenticationProvider
   private readonly config: SupabaseAuthenticationConfig;
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
+  public readonly disableSignUp: boolean;
+  private readonly signUpConfig?: SupabaseAuthenticationConfig["signUp"];
 
   constructor(config: SupabaseAuthenticationConfig) {
     const { supabaseUrl, supabaseKey } = config;
@@ -63,6 +70,8 @@ class SupabaseAuthenticationProvider
       : (config.providers ?? []);
     this.providers = configuredProviders;
     this.enableUsernamePassword = !config.onlyThirdPartyProviders;
+    this.disableSignUp = config.disableSignUp ?? false;
+    this.signUpConfig = config.signUp;
 
     this.client.auth.onAuthStateChange(async (event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
@@ -86,7 +95,12 @@ class SupabaseAuthenticationProvider
 
     useAuthState.getState().setLoggedIn({
       profile,
-      providerData: { type: "supabase", session },
+      providerData: {
+        type: "supabase",
+        session,
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+      },
     });
   }
 
@@ -100,6 +114,21 @@ class SupabaseAuthenticationProvider
     return data.session.access_token;
   }
 
+  async verifyAccessToken(token: string): Promise<VerifyAccessTokenResult> {
+    const { data, error } = await this.client.auth.getUser(token);
+    if (error || !data.user) return undefined;
+    const user = data.user;
+    return {
+      profile: {
+        sub: user.id,
+        email: user.email,
+        name: user.user_metadata.full_name || user.user_metadata.name,
+        emailVerified: user.email_confirmed_at != null,
+        pictureUrl: user.user_metadata.avatar_url,
+      },
+    };
+  }
+
   async signRequest(request: Request): Promise<Request> {
     const accessToken = await this.getAccessToken();
     request.headers.set("Authorization", `Bearer ${accessToken}`);
@@ -108,8 +137,12 @@ class SupabaseAuthenticationProvider
 
   signUp = async (
     { navigate }: AuthActionContext,
-    { redirectTo }: AuthActionOptions,
+    { redirectTo, replace = false }: AuthActionOptions = {},
   ) => {
+    if (this.signUpConfig) {
+      redirectToSignUpUrl(this.signUpConfig.url, navigate, replace);
+      return;
+    }
     void navigate(
       redirectTo
         ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`
@@ -204,7 +237,12 @@ class SupabaseAuthenticationProvider
 
       useAuthState.getState().setLoggedIn({
         profile,
-        providerData: { type: "supabase", session: data.session },
+        providerData: {
+          type: "supabase",
+          session: data.session,
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+        },
       });
     }
   };
@@ -313,6 +351,7 @@ class SupabaseAuthenticationProvider
           <ZudokuSignInUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
+            disableSignUp={this.disableSignUp}
             onOAuthSignIn={this.onOAuthSignIn}
             onUsernamePasswordSignIn={this.onUsernamePasswordSignIn}
           />
@@ -320,7 +359,9 @@ class SupabaseAuthenticationProvider
       },
       {
         path: "/signup",
-        element: (
+        element: this.disableSignUp ? (
+          <ZudokuSignUpDisabledUi />
+        ) : (
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
@@ -336,13 +377,15 @@ class SupabaseAuthenticationProvider
     ];
   };
 
-  signOut = async () => {
+  signOut = async ({ navigate }: AuthActionContext) => {
     const { error } = await this.client.auth.signOut({ scope: "local" });
     if (error) {
       // biome-ignore lint/suspicious: Logging is better than not doing anything
       console.error("Error signing out", error);
     }
     useAuthState.getState().setLoggedOut();
+
+    void navigate(this.config.redirectToAfterSignOut ?? "/", { replace: true });
   };
 
   onPageLoad = async () => {
@@ -376,12 +419,6 @@ const getSupabaseErrorMessage = (error: unknown): string => {
   }
   if (errorMessage.includes("User already registered")) {
     return "The email address is already used by another account.";
-  }
-  if (
-    errorMessage.includes("Password should be at least") ||
-    errorMessage.includes("Password must be at least")
-  ) {
-    return "The password must be at least 6 characters long.";
   }
   if (errorMessage.includes("Invalid email")) {
     return "That email address isn't correct.";

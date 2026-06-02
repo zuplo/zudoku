@@ -201,16 +201,18 @@ const config = {
     options: {
       examplesLanguage: "shell", // Default language for code examples
       supportedLanguages: [
-        { label: "cURL", language: "shell" },
-        { label: "JavaScript", language: "javascript" },
+        { value: "shell", label: "cURL" },
+        { value: "javascript", label: "JavaScript" },
       ],
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
+      disableSecurity: true, // Disable security scheme display and playground auth (default)
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
       showInfoPage: true, // Show API information page as the index route
       schemaDownload: {
         enabled: true, // Enable schema download button
+        fileName: "schema", // Set name of the schema file when downloaded
       },
     },
   },
@@ -220,10 +222,13 @@ const config = {
 Available options:
 
 - `examplesLanguage`: Set default language for code examples
-- `supportedLanguages`: Array of language options for code examples. Each option has `label`
-  (display name) and `language` (code identifier)
+- `supportedLanguages`: Array of language options for code examples. Each option has `value` (code
+  identifier) and `label` (display name)
 - `disablePlayground`: Disable the interactive API playground globally
 - `disableSidecar`: Disable the sidecar panel completely
+- `disableSecurity`: Disable OpenAPI security scheme display (auth badges on operations, security
+  schemes section on the info page, and the Authorize dialog in the playground). Disabled by default
+  (`true`). Set to `false` to enable security scheme support
 - `showVersionSelect`: Control version selector visibility
   - `"if-available"`: Show version selector only when multiple versions exist (default)
   - `"always"`: Always show version selector (disabled if only one version)
@@ -234,6 +239,8 @@ Available options:
 - `schemaDownload`: Enable schema download functionality. When enabled, displays a button allowing
   users to download the OpenAPI schema, copy it to clipboard, or open in a new tab.
   - `enabled`: Enable or disable the schema download button
+  - `fileName`: Set name of the schema file when downloaded (default: `schema`). Note: Do not
+    include a file extension, as that is added automatically based on the input file type.
 - `transformExamples`: Function to transform request/response examples before rendering. See
   [Transforming Examples](../guides/transforming-examples.md) for detailed usage
 - `generateCodeSnippet`: Function to generate custom code snippets for the API playground. See
@@ -251,11 +258,13 @@ const config = {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
+      disableSecurity: true, // Disable security scheme display and playground auth (default)
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
       showInfoPage: true, // Show API information page as the index route
       schemaDownload: {
         enabled: true, // Enable schema download button
+        fileName: "schema", // Set name of the schema file when downloaded
       },
     },
   },

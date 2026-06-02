@@ -1,29 +1,85 @@
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as esbuild } from "esbuild";
-import type { Rollup } from "vite";
-import { build as viteBuild } from "vite";
+import { createBuilder, type Rolldown } from "vite";
 import { ZuploEnv } from "../app/env.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
-import {
-  findOutputPathOfServerConfig,
-  loadZudokuConfig,
-} from "../config/loader.js";
+import { type ConfigWithMeta, loadZudokuConfig } from "../config/loader.js";
 import { getIssuer } from "../lib/auth/issuer.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
+import { writeManifest } from "./manifest.js";
 import { writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
+import {
+  assertCloudflareWranglerGatesProtected,
+  assertNoProtectedLeaks,
+  moveProtectedChunks,
+  assertProtectedPatternsCovered,
+} from "./protected/build.js";
 
 const DIST_DIR = "dist";
 
-const extractAssets = (result: Rollup.RollupOutput) => {
-  const jsEntry = result.output.find(
+export type SSRAdapter = "node" | "cloudflare" | "vercel" | "lambda";
+
+export type BuildOptions = {
+  dir: string;
+  ssr?: boolean;
+  adapter?: SSRAdapter;
+};
+
+export async function runBuild(options: BuildOptions) {
+  const { dir, ssr, adapter = "node" } = options;
+
+  const viteConfig = await getViteConfig(
+    dir,
+    { mode: "production", command: "build" },
+    { adapter, ssr },
+  );
+
+  const builder = await createBuilder(viteConfig);
+
+  invariant(builder.environments.client, "Client environment is missing");
+  invariant(builder.environments.ssr, "SSR environment is missing");
+
+  const distDir = path.resolve(path.join(dir, "dist"));
+  await rm(distDir, { recursive: true, force: true });
+
+  const [clientResult, serverResult] = await Promise.all([
+    builder.build(builder.environments.client),
+    builder.build(builder.environments.ssr),
+  ]);
+
+  invariant(
+    clientResult && !Array.isArray(clientResult) && "output" in clientResult,
+    "Client build failed to produce valid output",
+  );
+
+  invariant(
+    serverResult && !Array.isArray(serverResult) && "output" in serverResult,
+    "SSR build failed to produce valid output",
+  );
+
+  const { config } = await loadZudokuConfig(
+    { mode: "production", command: "build" },
+    dir,
+  );
+
+  const base = viteConfig.base ?? "/";
+  const clientOutDir = viteConfig.environments?.client?.build?.outDir;
+  const serverOutDir = viteConfig.environments?.ssr?.build?.outDir;
+
+  invariant(clientOutDir, "Client build outDir is missing");
+  invariant(serverOutDir, "Server build outDir is missing");
+
+  const jsEntry = clientResult.output.find(
     (o) => "isEntry" in o && o.isEntry,
   )?.fileName;
-  const cssEntries = result.output
+
+  const cssEntries = clientResult.output
     .filter((o) => o.fileName.endsWith(".css"))
     .map((o) => o.fileName);
 
@@ -31,60 +87,11 @@ const extractAssets = (result: Rollup.RollupOutput) => {
     throw new Error("Build failed. No js or css assets found");
   }
 
-  return { jsEntry, cssEntries };
-};
-
-export type BuildOptions = {
-  dir: string;
-  ssr?: boolean;
-  adapter?: "node" | "cloudflare" | "vercel";
-};
-
-export async function runBuild(options: BuildOptions) {
-  const { dir, ssr, adapter = "node" } = options;
-
-  // Build client and server bundles
-  const viteClientConfig = await getViteConfig(dir, {
-    mode: "production",
-    command: "build",
-  });
-  const viteServerConfig = await getViteConfig(dir, {
-    mode: "production",
-    command: "build",
-    isSsrBuild: true,
-  });
-
-  const clientResult = await viteBuild(viteClientConfig);
-  const serverResult = await viteBuild({
-    ...viteServerConfig,
-    logLevel: "silent",
-  });
-
-  if (Array.isArray(clientResult) || !("output" in clientResult)) {
-    throw new Error("Client build failed");
-  }
-  if (Array.isArray(serverResult) || !("output" in serverResult)) {
-    throw new Error("Server build failed");
-  }
-
-  const { config } = await loadZudokuConfig(
-    { mode: "production", command: "build" },
-    dir,
-  );
-
-  const { jsEntry, cssEntries } = extractAssets(clientResult);
-
   const html = getBuildHtml({
-    jsEntry: joinUrl(viteClientConfig.base, jsEntry),
-    cssEntries: cssEntries.map((css) => joinUrl(viteClientConfig.base, css)),
+    jsEntry: joinUrl(base, jsEntry),
+    cssEntries: cssEntries.map((css) => joinUrl(base, css)),
     dir: config.site?.dir,
   });
-
-  invariant(viteClientConfig.build?.outDir, "Client build outDir is missing");
-  invariant(viteServerConfig.build?.outDir, "Server build outDir is missing");
-
-  const clientOutDir = viteClientConfig.build.outDir;
-  const serverOutDir = viteServerConfig.build.outDir;
 
   if (ssr) {
     // SSR: bundle entry.js and remove index.html
@@ -93,8 +100,25 @@ export async function runBuild(options: BuildOptions) {
       adapter,
       serverOutDir,
       html,
-      basePath: config.basePath,
     });
+    assertProtectedPatternsCovered(config);
+    assertNoProtectedLeaks(clientResult.output);
+    // On Cloudflare, protected chunks stay public (gate uses env.ASSETS.fetch).
+    // wrangler.toml must set run_worker_first for /_protected/*.
+    if (adapter !== "cloudflare") {
+      await moveProtectedChunks(clientOutDir, serverOutDir);
+    } else {
+      await assertCloudflareWranglerGatesProtected(dir, config);
+    }
+
+    // Mark the output as ESM so runtimes without a surrounding package.json
+    // (e.g. unzipped Lambda at /var/task) don't fall back to CommonJS.
+    await writeFile(
+      path.join(distDir, "package.json"),
+      `${JSON.stringify({ type: "module" }, null, 2)}\n`,
+      "utf-8",
+    );
+    await writeManifest(distDir, config);
     await rm(path.join(clientOutDir, "index.html"), { force: true });
   } else {
     // SSG: prerender and clean up server
@@ -111,18 +135,27 @@ export async function runBuild(options: BuildOptions) {
 
 type PrerenderOptions = {
   dir: string;
-  config: Awaited<ReturnType<typeof loadZudokuConfig>>["config"];
+  config: ConfigWithMeta;
   html: string;
   clientOutDir: string;
   serverOutDir: string;
-  serverResult: Rollup.RollupOutput;
+  serverResult: Rolldown.RolldownOutput;
+};
+
+const findServerConfigFilename = (result: Rolldown.RolldownOutput) => {
+  const entry = result.output.find(
+    (o) => o.type === "chunk" && o.isEntry && o.fileName === "zudoku.config.js",
+  );
+  invariant(entry, "Could not find zudoku.config entry in server build output");
+
+  return entry.fileName;
 };
 
 const runPrerender = async (options: PrerenderOptions) => {
   const { dir, config, html, clientOutDir, serverOutDir, serverResult } =
     options;
   const issuer = await getIssuer(config);
-  const serverConfigFilename = findOutputPathOfServerConfig(serverResult);
+  const serverConfigFilename = findServerConfigFilename(serverResult);
 
   try {
     const { workerResults, rewrites } = await prerender({
@@ -140,7 +173,9 @@ const runPrerender = async (options: PrerenderOptions) => {
 
     // Move status pages (400, 404, 500) to root path
     const statusPages = workerResults.flatMap((r) =>
-      /400|404|500\.html$/.test(r.outputPath) ? r.outputPath : [],
+      /^(400|404|500)\.html$/.test(path.basename(r.outputPath))
+        ? r.outputPath
+        : [],
     );
     for (const statusPage of statusPages) {
       await rename(
@@ -167,9 +202,11 @@ const runPrerender = async (options: PrerenderOptions) => {
     });
 
     if (ZuploEnv.isZuplo && issuer) {
+      const provider = config.authentication?.type;
+
       await writeFile(
         path.join(dir, DIST_DIR, ".output/zuplo.json"),
-        JSON.stringify({ issuer }, null, 2),
+        JSON.stringify({ issuer, provider }, null, 2),
         "utf-8",
       );
     }
@@ -182,45 +219,76 @@ const runPrerender = async (options: PrerenderOptions) => {
 
 type SSREntryOptions = {
   dir: string;
-  adapter: "node" | "cloudflare" | "vercel";
+  adapter: SSRAdapter;
   serverOutDir: string;
   html: string;
-  basePath?: string;
+};
+
+const findUserEntry = (dir: string) => {
+  for (const ext of ["ts", "tsx", "js", "mjs"]) {
+    const candidate = path.join(dir, `zudoku.server.${ext}`);
+    if (existsSync(candidate)) return candidate;
+  }
 };
 
 const bundleSSREntry = async (options: SSREntryOptions) => {
-  const { dir, adapter, serverOutDir, html, basePath } = options;
-  const tempEntryPath = path.join(dir, "__ssr-entry.ts");
+  const { dir, adapter, serverOutDir, html } = options;
 
   const packageRoot = getZudokuRootDir();
+  const userEntry = findUserEntry(dir);
 
-  const templateContent = await readFile(
-    path.join(packageRoot, "src/vite/ssr-templates", `${adapter}.ts`),
-    "utf-8",
-  );
+  let entryPoint = userEntry;
+  let tempEntryPath: string | undefined;
 
-  const entryContent = templateContent
-    .replace('"__TEMPLATE__"', JSON.stringify(html))
-    .replace(
-      '"__BASE_PATH__"',
-      basePath ? JSON.stringify(basePath) : "undefined",
+  if (!entryPoint) {
+    tempEntryPath = path.join(dir, "__ssr-entry.ts");
+    const templateContent = await readFile(
+      path.join(packageRoot, "src/vite/ssr-templates", `${adapter}.ts`),
+      "utf-8",
     );
+    await writeFile(tempEntryPath, templateContent, "utf-8");
+    entryPoint = tempEntryPath;
+  }
 
-  await writeFile(tempEntryPath, entryContent, "utf-8");
+  const frameworkPath = path.join(serverOutDir, "entry.server.js");
 
   try {
     await esbuild({
-      entryPoints: [tempEntryPath],
+      entryPoints: [entryPoint],
       bundle: true,
-      platform: adapter === "node" ? "node" : "neutral",
+      platform: ["node", "lambda"].includes(adapter) ? "node" : "neutral",
       target: "es2022",
       format: "esm",
       outfile: path.join(serverOutDir, "entry.js"),
-      external: ["./entry.server.js", "./zudoku.config.js"],
+      external: ["./zudoku.config.js"],
       nodePaths: [path.join(packageRoot, "node_modules")],
       banner: { js: "// Bundled SSR entry" },
+      define: {
+        __ZUDOKU_TEMPLATE__: JSON.stringify(html),
+      },
+      plugins: [
+        {
+          name: "zudoku-ssr-entry",
+          setup(build) {
+            // Point at the Vite-pre-built framework (virtual modules
+            // already resolved) so esbuild's `define` can reach into it.
+            build.onResolve({ filter: /^zudoku\/server$/ }, () => ({
+              path: frameworkPath,
+            }));
+          },
+        },
+      ],
     });
+    // Framework is inlined into entry.js; drop the standalone Vite SSR output.
+    await Promise.all([
+      rm(frameworkPath, { force: true }),
+      rm(`${frameworkPath}.map`, { force: true }),
+      rm(path.join(serverOutDir, "assets"), {
+        recursive: true,
+        force: true,
+      }),
+    ]);
   } finally {
-    await rm(tempEntryPath, { force: true });
+    if (tempEntryPath) await rm(tempEntryPath, { force: true });
   }
 };

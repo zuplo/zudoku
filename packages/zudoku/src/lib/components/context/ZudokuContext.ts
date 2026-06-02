@@ -69,9 +69,13 @@ export const useCurrentNavigation = () => {
     }
   });
 
+  const { isAuthenticated } = useAuthState();
   const { data } = useSuspenseQuery({
     queryFn: () => getPluginNavigation(pathname),
-    queryKey: ["plugin-navigation", pathname],
+    queryKey: ["plugin-navigation", pathname, isAuthenticated],
+    // Navigation comes from static build-time sources, so it never changes at
+    // runtime in production. In dev, recompute on mount so an HMR schema swap doesn't leave a stale sidebar.
+    staleTime: import.meta.env.DEV ? 0 : undefined,
   });
 
   let topNavItem = navItem;

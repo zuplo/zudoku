@@ -53,6 +53,17 @@ export const handleCircularRefs = (
         Object.entries(obj).map(([k, v]) => [k, recurse(v, k)]),
       );
 
+  // __$ref is defined non-enumerable at build-time codegen (schema-codegen.ts)
+  // to keep it out of snapshots and deep equality. Copy it enumerably onto
+  // the serialized result so the client receives it.
+  if (
+    !Array.isArray(result) &&
+    typeof refPath === "string" &&
+    !("__$ref" in result)
+  ) {
+    (result as Record<string, unknown>).__$ref = refPath;
+  }
+
   refs.set(obj, result);
   currentPath.delete(obj);
   if (typeof refPath === "string") currentRefPaths.delete(refPath);

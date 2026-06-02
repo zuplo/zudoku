@@ -46,9 +46,7 @@ category: Getting Started
 ---
 ```
 
-### `navigation_label`
-
-_Deprecated (`sidebar_label`)_
+### `sidebar_label`
 
 Sets a custom label for the page in the sidebar navigation, allowing you to use a shorter or
 different title than the main page title.
@@ -56,22 +54,24 @@ different title than the main page title.
 ```md
 ---
 title: My Very Long Documentation Page Title
-navigation_label: Short Title
+sidebar_label: Short Title
 ---
 ```
 
-### `navigation_icon`
+The legacy name `navigation_label` is also supported but `sidebar_label` is preferred.
 
-_Deprecated (`sidebar_icon`)_
+### `sidebar_icon`
 
 Specifies a [Lucide icon](https://lucide.dev/icons) to display next to the page in the sidebar
 navigation.
 
 ```md
 ---
-navigation_icon: compass
+sidebar_icon: compass
 ---
 ```
+
+The legacy name `navigation_icon` is also supported but `sidebar_icon` is preferred.
 
 ### `navigation_display`
 
@@ -95,6 +95,25 @@ toc: false
 ---
 ```
 
+### `fullWidth`
+
+Removes the table of contents sidebar and lets the page content span the full available width. When
+enabled, the table of contents is still accessible via an "On this page" toggle in the page header
+(unless `toc: false` is also set, in which case it is hidden entirely).
+
+```md
+---
+fullWidth: true
+---
+```
+
+| `fullWidth` | `toc`   | Result                                                          |
+| ----------- | ------- | --------------------------------------------------------------- |
+| `false`     | `true`  | TOC shown in the sidebar (default).                             |
+| `false`     | `false` | TOC hidden; content keeps its standard width.                   |
+| `true`      | `true`  | Content spans full width; TOC is available via a toggle button. |
+| `true`      | `false` | Content spans full width; TOC is not available at all.          |
+
 ### `disable_pager`
 
 Controls whether the previous/next page navigation is displayed at the bottom of the page. Set to
@@ -103,6 +122,17 @@ Controls whether the previous/next page navigation is displayed at the bottom of
 ```md
 ---
 disable_pager: true
+---
+```
+
+### `showLastModified`
+
+Controls whether the last modified date is displayed for this page. Can be used to override the
+[default option](/docs/configuration/docs#showlastmodified).
+
+```md
+---
+showLastModified: false
 ---
 ```
 
@@ -162,8 +192,8 @@ Here's an example showing multiple frontmatter properties used together:
 title: Advanced Configuration Guide
 description: Learn how to configure advanced features in Zudoku
 category: Configuration
-navigation_label: Advanced Config
-navigation_icon: settings
+sidebar_label: Advanced Config
+sidebar_icon: settings
 toc: true
 disable_pager: false
 draft: false

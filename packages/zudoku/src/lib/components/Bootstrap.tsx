@@ -3,7 +3,8 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { type HelmetData, HelmetProvider } from "@zudoku/react-helmet-async";
+import { type Unhead, UnheadProvider } from "@unhead/react/client";
+import { UnheadProvider as UnheadServerProvider } from "@unhead/react/server";
 import { StrictMode } from "react";
 import {
   type createBrowserRouter,
@@ -25,20 +26,23 @@ const queryClient = new QueryClient({
   },
 });
 
-const Bootstrap = ({
+export const BootstrapClient = ({
   router,
+  head,
   hydrate = false,
 }: {
   hydrate?: boolean;
+  head: Unhead;
   router: ReturnType<typeof createBrowserRouter>;
 }) => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      {/* biome-ignore lint/suspicious/noExplicitAny: Allow any type */}
-      <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
-        <HelmetProvider>
-          <RouterProvider router={router} />
-        </HelmetProvider>
+      <HydrationBoundary state={hydrate ? window.ZUDOKU_DATA : undefined}>
+        <UnheadProvider head={head}>
+          <RenderContext value={{ status: 200, bypassProtection: false }}>
+            <RouterProvider router={router} />
+          </RenderContext>
+        </UnheadProvider>
       </HydrationBoundary>
     </QueryClientProvider>
   </StrictMode>
@@ -48,11 +52,11 @@ const BootstrapStatic = ({
   router,
   context,
   queryClient,
-  helmetContext,
+  head,
   bypassProtection = false,
   renderContext,
 }: {
-  helmetContext: HelmetData["context"];
+  head: Unhead;
   context: StaticHandlerContext;
   queryClient: QueryClient;
   router: ReturnType<typeof createStaticRouter>;
@@ -61,17 +65,22 @@ const BootstrapStatic = ({
 }) => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <HelmetProvider context={helmetContext}>
-        <RenderContext
-          value={
-            renderContext ?? { status: 200, bypassProtection: bypassProtection }
-          }
-        >
-          <StaticRouterProvider router={router} context={context} />
-        </RenderContext>
-      </HelmetProvider>
+      <HydrationBoundary state={undefined}>
+        <UnheadServerProvider value={head}>
+          <RenderContext
+            value={
+              renderContext ?? {
+                status: 200,
+                bypassProtection: bypassProtection,
+              }
+            }
+          >
+            <StaticRouterProvider router={router} context={context} />
+          </RenderContext>
+        </UnheadServerProvider>
+      </HydrationBoundary>
     </QueryClientProvider>
   </StrictMode>
 );
 
-export { Bootstrap, BootstrapStatic };
+export { BootstrapStatic };

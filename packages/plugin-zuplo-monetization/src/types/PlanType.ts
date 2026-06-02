@@ -14,7 +14,7 @@ export interface MeteredEntitlementTemplate {
 
 export interface StaticEntitlementTemplate {
   type: "static";
-  config: string; // JSON parsable config object
+  config: string; // JSON parsable config
 }
 
 export interface BooleanEntitlementTemplate {
@@ -100,7 +100,11 @@ export interface Quota {
   name: string;
   limit: number;
   period: string;
-  overagePrice?: string;
+  tierPrices?: string[];
+  // Pay-as-you-go: usage-based with no included quota. `limit` is 0 and the
+  // body displays `unitPrice` (or `tierPrices`) without a "X / period" line.
+  isPayg?: boolean;
+  unitPrice?: string;
 }
 
 export interface Feature {
@@ -115,13 +119,18 @@ export interface Alignment {
 
 export interface ProRatingConfig {
   enabled: boolean; // defaults to true
-  mode: "prorate_prices" | "prorate_quantities"; // defaults to "prorate_prices"
+  mode: "max_consumption_based"; // currently the only supported mode
 }
 
 export interface ValidationError {
   message: string;
   path?: string;
   code?: string;
+}
+
+export interface PlanDefaultTaxConfig {
+  /** When set (e.g. Stripe-style `exclusive` / `inclusive`), pricing may include or exclude tax. */
+  behavior?: string;
 }
 
 export interface Plan {
@@ -134,6 +143,7 @@ export interface Plan {
   version?: number; // defaults to 1
   currency?: string;
   billingCadence: string;
+  defaultTaxConfig?: PlanDefaultTaxConfig;
   status?: "draft" | "active" | "archived" | "scheduled";
   effectiveFrom?: string;
   effectiveTo?: string;

@@ -8,6 +8,7 @@ export const SimpleSelect = ({
   className,
   options,
   showChevrons = true,
+  "aria-label": ariaLabel,
 }: {
   value: string;
   onChange: ChangeEventHandler<HTMLSelectElement>;
@@ -17,6 +18,7 @@ export const SimpleSelect = ({
     label: string;
   }[];
   showChevrons?: boolean;
+  "aria-label"?: string;
 }) => (
   <div className="grid">
     <select
@@ -27,6 +29,7 @@ export const SimpleSelect = ({
       )}
       value={value}
       onChange={onChange}
+      aria-label={ariaLabel}
     >
       {options.map((option) => (
         <option value={option.value} key={option.value}>
@@ -40,7 +43,7 @@ export const SimpleSelect = ({
         "row-start-1 col-start-1 self-center justify-self-end relative end-2 pointer-events-none",
       )}
     >
-      <ChevronsUpDownIcon size={14} />
+      <ChevronsUpDownIcon size={14} aria-hidden="true" />
     </div>
   </div>
 );

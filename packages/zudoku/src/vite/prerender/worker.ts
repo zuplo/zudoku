@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import Piscina from "piscina";
-import { matchPath } from "react-router";
 import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
 import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
+import { matchesAnyProtectedPattern } from "../../lib/util/url.js";
 import type { WorkerResult } from "./prerender.js";
 
 type EntryServer = typeof import("../../app/entry.server.js");
@@ -42,9 +42,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
 
   const protectedRoutes = ProtectedRoutesSchema.parse(config.protectedRoutes);
   const isProtectedRoute = protectedRoutes
-    ? Object.keys(protectedRoutes).some((route) =>
-        matchPath({ path: route, end: true }, urlPath),
-      )
+    ? matchesAnyProtectedPattern(Object.keys(protectedRoutes), urlPath)
     : false;
 
   // Get the main response

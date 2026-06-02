@@ -179,6 +179,49 @@ below.
 }
 ```
 
+### `header`
+
+Configures the header navigation and placement of header elements (navigation, search, auth).
+
+```ts
+{
+  header: {
+    navigation: [
+      { label: "Docs", id: "docs" },
+      { label: "API", id: "api" },
+    ],
+    placements: {
+      navigation: "start",    // "start" | "center" | "end"
+      search: "end",          // "start" | "center" | "end"
+      auth: "end",            // "start" | "center" | "end" | "navigation"
+    },
+    themeSwitcher: {
+      enabled: false, // optional, defaults to true
+    },
+  }
+}
+```
+
+Use `header.themeSwitcher.enabled: false` to hide the light/dark theme switch from the desktop
+header and mobile navigation drawer.
+
+### `defaults`
+
+Sets global default options for APIs that apply to all API configurations. Individual API options
+will override these defaults when specified.
+
+```ts
+{
+  defaults: {
+    apis: {
+      examplesLanguage: "shell",
+      disablePlayground: false,
+      showVersionSelect: "if-available",
+    },
+  }
+}
+```
+
 ### `docs`
 
 Configures where your non API reference documentation can be found in your folder structure. The

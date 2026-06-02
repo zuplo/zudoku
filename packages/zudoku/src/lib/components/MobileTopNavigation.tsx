@@ -28,12 +28,10 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "../ui/Drawer.js";
-import { ClientOnly } from "./ClientOnly.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
 import { getFirstMatchingPath, shouldShowItem } from "./navigation/utils.js";
 import { PageProgress } from "./PageProgress.js";
-import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
 
 const MobileHeaderNavLink = ({
@@ -130,7 +128,8 @@ export const MobileTopNavigation = () => {
     getProfileMenuItems,
   } = context;
   const headerNavigation = header?.navigation ?? [];
-  const { isAuthenticated, profile, isAuthEnabled } = authState;
+  const themeSwitcherEnabled = header?.themeSwitcher?.enabled ?? true;
+  const { isAuthenticated, isPending, profile, isAuthEnabled } = authState;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const accountItems = getProfileMenuItems();
@@ -145,8 +144,8 @@ export const MobileTopNavigation = () => {
       onOpenChange={setDrawerOpen}
     >
       <div className="flex lg:hidden justify-self-end">
-        <DrawerTrigger className="lg:hidden">
-          <MenuIcon size={22} />
+        <DrawerTrigger className="lg:hidden" aria-label="Open navigation menu">
+          <MenuIcon size={22} aria-hidden="true" />
         </DrawerTrigger>
         <PageProgress />
       </div>
@@ -168,9 +167,6 @@ export const MobileTopNavigation = () => {
                 />
               ))}
               {headerNavigation.length > 0 && <Separator className="my-2" />}
-              <li className="empty:hidden">
-                <Slot.Target name="top-navigation-side" />
-              </li>
 
               {filteredItems.map((item) => {
                 if (item.type === "separator") {
@@ -194,76 +190,76 @@ export const MobileTopNavigation = () => {
                   </li>
                 );
               })}
-              {isAuthEnabled && isAuthenticated && (
-                <ClientOnly
-                  fallback={<Skeleton className="rounded-sm h-5 w-24" />}
-                >
-                  <Separator className="my-2" />
-                  <li className="py-2">
-                    <div className="text-base font-medium">
-                      {profile?.name ?? "My Account"}
-                    </div>
-                    {profile?.email && profile.email !== profile?.name && (
-                      <div className="text-sm text-muted-foreground">
-                        {profile.email}
-                      </div>
-                    )}
-                  </li>
-                  {accountItems.map((i) => (
-                    <li key={i.label}>
-                      <Link
-                        to={i.path ?? ""}
-                        target={i.target}
-                        rel={
-                          i.target === "_blank"
-                            ? "noopener noreferrer"
-                            : undefined
-                        }
-                        onClick={() => setDrawerOpen(false)}
-                        className="flex items-center py-2 text-base font-medium text-foreground/75 hover:text-foreground"
-                      >
-                        {i.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ClientOnly>
-              )}
+              {isAuthEnabled &&
+                (isPending ? (
+                  <Skeleton className="rounded-sm h-5 w-24" />
+                ) : (
+                  isAuthenticated && (
+                    <>
+                      <Separator className="my-2" />
+                      <li className="py-2">
+                        <div className="text-base font-medium">
+                          {profile?.name ?? "My Account"}
+                        </div>
+                        {profile?.email && profile.email !== profile?.name && (
+                          <div className="text-sm text-muted-foreground">
+                            {profile.email}
+                          </div>
+                        )}
+                      </li>
+                      {accountItems.map((i) => (
+                        <li key={i.label}>
+                          <Link
+                            to={i.path ?? ""}
+                            target={i.target}
+                            rel={
+                              i.target === "_blank"
+                                ? "noopener noreferrer"
+                                : undefined
+                            }
+                            onClick={() => setDrawerOpen(false)}
+                            className="flex items-center py-2 text-base font-medium text-foreground/75 hover:text-foreground"
+                          >
+                            {i.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </>
+                  )
+                ))}
             </ul>
           </div>
           <div className="border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-4 pt-3 flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              {isAuthEnabled && (
-                <ClientOnly
-                  fallback={<Skeleton className="rounded-sm h-8 w-16" />}
-                >
-                  {isAuthenticated ? (
-                    <Button asChild variant="outline">
-                      <Link
-                        to="/signout"
-                        onClick={() => setDrawerOpen(false)}
-                        className="flex items-center gap-2"
-                      >
-                        <LogOutIcon
-                          size={16}
-                          strokeWidth={1}
-                          absoluteStrokeWidth
-                        />
-                        Logout
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button asChild variant="outline">
-                      <Link
-                        to={`/signin?redirect=${encodeURIComponent(location.pathname)}`}
-                        onClick={() => setDrawerOpen(false)}
-                      >
-                        Login
-                      </Link>
-                    </Button>
-                  )}
-                </ClientOnly>
-              )}
-              <ThemeSwitch />
+              {isAuthEnabled &&
+                (isPending ? (
+                  <Skeleton className="rounded-sm h-8 w-16" />
+                ) : isAuthenticated ? (
+                  <Button asChild variant="outline">
+                    <Link
+                      to="/signout"
+                      onClick={() => setDrawerOpen(false)}
+                      className="flex items-center gap-2"
+                    >
+                      <LogOutIcon
+                        size={16}
+                        strokeWidth={1}
+                        absoluteStrokeWidth
+                      />
+                      Logout
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button asChild variant="outline">
+                    <Link
+                      to={`/signin?redirect=${encodeURIComponent(location.pathname)}`}
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      Login
+                    </Link>
+                  </Button>
+                ))}
+              {themeSwitcherEnabled && <ThemeSwitch />}
             </div>
             {site?.showPoweredBy !== false && (
               <PoweredByZudoku className="grow-0 justify-center gap-1" />

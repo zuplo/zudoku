@@ -7,6 +7,31 @@ import {
 import type { Plan } from "../types/PlanType.js";
 import PricingPage from "./PricingPage.js";
 
+vi.mock("../utils/pricingTaxLegend.js", async (importOriginal) => {
+  const original = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...original,
+    collectDefaultTaxBehaviors: (plan: Plan) => {
+      const behavior = plan.defaultTaxConfig?.behavior;
+      if (typeof behavior !== "string" || behavior.trim().length === 0) {
+        return "unspecified";
+      }
+      const key = behavior.trim().toLowerCase();
+      if (key === "exclusive" || key === "tax_exclusive") return "exclusive";
+      if (key === "inclusive" || key === "tax_inclusive") return "inclusive";
+      return "unspecified";
+    },
+    taxBehaviorLegendSentence: (behavior: string) => {
+      const key = behavior.trim().toLowerCase();
+      if (key === "exclusive") {
+        return "Prices exclude tax; taxes may be added at checkout if applicable.";
+      }
+      if (key === "inclusive") return "Prices include tax where applicable.";
+      return undefined;
+    },
+  };
+});
+
 vi.mock("zudoku/components", async (importOriginal) => ({
   ...(await importOriginal()),
   Head: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -33,7 +58,10 @@ vi.mock("zudoku/router", () => ({
 
 vi.mock("zudoku/hooks", () => ({
   useAuth: () => ({ isAuthenticated: false }),
-  useZudoku: () => ({ env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test-env" } }),
+  useZudoku: () => ({
+    env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test-env" },
+    getAuthState: () => ({ isAuthenticated: false }),
+  }),
 }));
 
 const mockPricingData: { items: Plan[] } = { items: [] };
@@ -44,6 +72,7 @@ const mockSubscriptionData: {
 vi.mock("zudoku/react-query", () => ({
   useSuspenseQuery: () => ({ data: mockPricingData }),
   useQuery: () => ({ data: mockSubscriptionData }),
+  queryOptions: <T,>(opts: T) => opts,
 }));
 
 vi.mock("../hooks/useDeploymentName", () => ({
@@ -83,6 +112,28 @@ const renderWithConfig = (config: MonetizationConfig = {}) =>
   );
 
 describe("PricingPage", () => {
+  it("Shows a helpful message when no plans are available", () => {
+    mockPricingData.items = [];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(
+      screen.getByText("No plans are currently available."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Make sure your plans are set up and published."),
+    ).toBeInTheDocument();
+  });
+
+  it("Renders without crashing and omits the tax legend when no plans are published", () => {
+    mockPricingData.items = [];
+    mockSubscriptionData.items = [];
+
+    expect(() => renderWithConfig()).not.toThrow();
+    expect(screen.queryByText("Tax & Pricing")).not.toBeInTheDocument();
+  });
+
   it("Shows 'Manage Subscriptions' if the user has any active subscriptions", () => {
     mockPricingData.items = [
       makePlan("1", "starter", "Starter"),
@@ -191,7 +242,7 @@ describe("PricingPage", () => {
     expect(screen.getByText("Most Popular")).toBeInTheDocument();
   });
 
-  it("Shows custom unit label in overage price when units config is provided", () => {
+  it("Shows custom unit label in tier breakdown when units config is provided", () => {
     mockPricingData.items = [
       {
         ...makePlan("1", "pro", "Pro"),
@@ -233,7 +284,9 @@ describe("PricingPage", () => {
       pricing: { units: { "api-requests": "request" } },
     });
 
-    expect(screen.getByText(/\/request after quota/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Over 1,000: \$0\.001\/request/),
+    ).toBeInTheDocument();
   });
 
   it("Shows yearly price by default", () => {
@@ -283,5 +336,56 @@ describe("PricingPage", () => {
     renderWithConfig();
 
     expect(screen.queryByText("Most Popular")).not.toBeInTheDocument();
+  });
+
+  it("Shows a tax legend when the first plan has defaultTaxConfig.behavior set", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        defaultTaxConfig: { behavior: "exclusive" },
+      },
+      makePlan("2", "pro", "Pro"),
+    ];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.getByText("Tax & Pricing")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Prices exclude tax; taxes may be added at checkout if applicable.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("Normalizes defaultTaxConfig.behavior case for legend copy", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        defaultTaxConfig: { behavior: "Inclusive" },
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.getByText("Tax & Pricing")).toBeInTheDocument();
+    expect(
+      screen.getByText("Prices include tax where applicable."),
+    ).toBeInTheDocument();
+  });
+
+  it("Does not show a tax legend for unsupported behavior values", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        defaultTaxConfig: { behavior: "no_tax" },
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.queryByText("Tax & Pricing")).not.toBeInTheDocument();
   });
 });

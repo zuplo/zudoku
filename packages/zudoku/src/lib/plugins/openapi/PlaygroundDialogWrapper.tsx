@@ -1,8 +1,10 @@
+import { useOasConfig } from "./context.js";
 import type {
   MediaTypeObject,
   OperationsFragmentFragment,
 } from "./graphql/graphql.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
+import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 
 export const PlaygroundDialogWrapper = ({
   server,
@@ -17,7 +19,7 @@ export const PlaygroundDialogWrapper = ({
 }) => {
   const headers = operation.parameters
     ?.filter((p) => p.in === "header")
-    .sort((a, b) => (a.required && !b.required ? -1 : 1))
+    .sort((a, b) => Number(b.required ?? false) - Number(a.required ?? false))
     .map((p) => ({
       name: p.name,
       defaultValue:
@@ -30,7 +32,7 @@ export const PlaygroundDialogWrapper = ({
 
   const queryParams = operation.parameters
     ?.filter((p) => p.in === "query")
-    .sort((a, b) => (a.required && !b.required ? -1 : 1))
+    .sort((a, b) => Number(b.required ?? false) - Number(a.required ?? false))
     .map((p) => ({
       name: p.name,
       defaultActive: p.required ?? false,
@@ -52,6 +54,12 @@ export const PlaygroundDialogWrapper = ({
       defaultValue: p.schema?.default,
     }));
 
+  const { options } = useOasConfig();
+
+  const securitySchemes = options?.disableSecurity
+    ? []
+    : extractOperationSecuritySchemes(operation);
+
   return (
     <PlaygroundDialog
       server={server}
@@ -62,6 +70,12 @@ export const PlaygroundDialogWrapper = ({
       queryParams={queryParams}
       pathParams={pathParams}
       examples={examples}
+      security={
+        !options?.disableSecurity
+          ? (operation.security ?? undefined)
+          : undefined
+      }
+      securitySchemes={securitySchemes}
     />
   );
 };

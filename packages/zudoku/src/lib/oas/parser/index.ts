@@ -53,7 +53,7 @@ const parseSchemaInput = async (
       let response: Response;
       try {
         response = await fetch(schemaInput, {
-          cache: "force-cache",
+          cache: typeof window !== "undefined" ? "force-cache" : undefined,
         });
       } catch (err) {
         throw new GraphQLError("Failed to fetch schema", {

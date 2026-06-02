@@ -39,7 +39,7 @@
     },
     {
       "name": "International Shipping",
-      "description": "Operations for managing customs documentation, duties, and international shipment processes."
+      "description": "Operations for managing customs documentation, duties, and international shipment processes.\n\n<SpaceWarning sector=\"7G\">\nInterstellar customs regulations were updated in Stardate 2025.3. All shipments crossing the Outer Rim must include a Quantum Manifest.\n</SpaceWarning>"
     },
     {
       "name": "Documentation",
@@ -53,6 +53,10 @@
     {
       "name": "System",
       "description": "Endpoints for system health checks and retrieving API version information."
+    },
+    {
+      "name": "Authentication",
+      "description": "Endpoints for obtaining warp-grade OAuth tokens used to authorize cargo operations."
     },
     {
       "name": "Schemas",
@@ -79,6 +83,9 @@
     }
   ],
   "security": [
+    {
+      "BearerAuth": []
+    },
     {
       "ApiKeyAuth": []
     }
@@ -121,7 +128,14 @@
       "ApiKeyAuth": {
         "type": "apiKey",
         "in": "header",
-        "name": "X-API-Key"
+        "name": "X-API-Key",
+        "description": "API key passed via the `X-API-Key` header. Get your key from the [developer portal](https://developers.sh.example.com)."
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT bearer token obtained from the authentication service."
       }
     },
     "schemas": {
@@ -181,8 +195,7 @@
             "items": {
               "$ref": "#/components/schemas/Comment"
             },
-            "maxItems": 100,
-            "enum": ["PENDING", "APPROVED", "REJECTED"]
+            "maxItems": 100
           },
           "tags": {
             "type": "array",
@@ -713,6 +726,24 @@
         "summary": "Create a new shipment",
         "description": "Creates a new shipment with the provided details.\n\nThis endpoint allows you to **create and register** a new shipment in the Cosmo Cargo platform. The shipment will be assigned a unique `trackingNumber` and will enter the `CREATED` status.\n\n### How to use with SDK\n\nHere's how to create a shipment using `@cosmo-cargo/sdk{:sh}`:\n\n```ts\nimport { CosmoCargoClient } from '@cosmo-cargo/sdk';\n\nconst client = new CosmoCargoClient({ key: process.env.COSMO_API_KEY });\n\nconst shipment = await client.shipments.create(config);\nconsole.log(`Shipment created: ${shipment.trackingNumber}`);\n```\n\n**Note:** Use the `X-Request-Priority` header to expedite processing for urgent shipments.",
         "operationId": "createShipment",
+        "x-code-samples": [
+          {
+            "lang": "shell",
+            "label": "cURL",
+            "source": "curl -X POST https://api.cosmocargo.com/v1/shipments \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: YOUR_API_KEY' \\\n  -d '{\n    \"recipientAddress\": {\n      \"name\": \"Zara Nebula\",\n      \"planet\": \"Mars\",\n      \"station\": \"Olympus Mons Hub\"\n    },\n    \"packages\": [{ \"weight\": 2.5, \"dimensions\": \"30x20x15\" }]\n  }'"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const response = await fetch(\n  'https://api.cosmocargo.com/v1/shipments',\n  {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'X-API-Key': 'YOUR_API_KEY',\n    },\n    body: JSON.stringify({\n      recipientAddress: {\n        name: 'Zara Nebula',\n        planet: 'Mars',\n        station: 'Olympus Mons Hub',\n      },\n      packages: [{ weight: 2.5, dimensions: '30x20x15' }],\n    }),\n  },\n);\n\nconst shipment = await response.json();"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nresponse = requests.post(\n    'https://api.cosmocargo.com/v1/shipments',\n    headers={\n        'Content-Type': 'application/json',\n        'X-API-Key': 'YOUR_API_KEY',\n    },\n    json={\n        'recipientAddress': {\n            'name': 'Zara Nebula',\n            'planet': 'Mars',\n            'station': 'Olympus Mons Hub',\n        },\n        'packages': [{'weight': 2.5, 'dimensions': '30x20x15'}],\n    },\n)\n\nshipment = response.json()"
+          }
+        ],
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/CorrelationId"
@@ -1201,8 +1232,9 @@
       "delete": {
         "tags": ["Shipment Management"],
         "summary": "Cancel shipment",
-        "description": "Cancel a shipment that hasn't been picked up yet",
+        "description": "Cancel a shipment that hasn't been picked up yet.",
         "operationId": "cancelShipment",
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
         "parameters": [
           {
             "name": "trackingNumber",
@@ -1903,8 +1935,9 @@
       "post": {
         "tags": ["International Shipping"],
         "summary": "Pay import duties",
-        "description": "Pay import duties and taxes for an international shipment",
+        "description": "Pay import duties and taxes for an international shipment. Requires both an API key **and** a bearer token.",
         "operationId": "payDuties",
+        "security": [{ "ApiKeyAuth": [], "BearerAuth": [] }],
         "parameters": [
           {
             "name": "shipmentId",
@@ -3628,11 +3661,122 @@
         }
       }
     },
+    "/oauth/token": {
+      "post": {
+        "summary": "Issue OAuth access token",
+        "description": "Exchange client credentials for a short-lived warp-grade access token. The request body must be sent as `application/x-www-form-urlencoded` per RFC 6749.",
+        "operationId": "issueOAuthToken",
+        "tags": ["Authentication"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["grant_type", "client_id", "client_secret"],
+                "properties": {
+                  "grant_type": {
+                    "type": "string",
+                    "enum": ["client_credentials"],
+                    "description": "OAuth 2.0 grant type. Only `client_credentials` is supported for fleet integrations."
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "Identifier issued when registering your fleet integration."
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "Secret issued alongside the client_id. Treat as sensitive."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "description": "Space-separated list of requested scopes (e.g. `shipments:read shipments:write`)."
+                  }
+                }
+              },
+              "example": {
+                "grant_type": "client_credentials",
+                "client_id": "cosmo-fleet-7421",
+                "client_secret": "warp-secret-xyz",
+                "scope": "shipments:read shipments:write"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access token issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["access_token", "token_type", "expires_in"],
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "description": "Bearer token to send in the `Authorization` header."
+                    },
+                    "token_type": {
+                      "type": "string",
+                      "enum": ["Bearer"]
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "description": "Token lifetime in seconds."
+                    },
+                    "scope": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "access_token": "warp.eyJhbGciOiJIUzI1NiJ9.cargo",
+                  "token_type": "Bearer",
+                  "expires_in": 3600,
+                  "scope": "shipments:read shipments:write"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request",
+                        "invalid_client",
+                        "invalid_grant",
+                        "unsupported_grant_type"
+                      ]
+                    },
+                    "error_description": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "invalid_client",
+                  "error_description": "Unknown client_id or bad credentials."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health check",
-        "description": "Check if the API is up and running",
+        "description": "Check if the API is up and running. This endpoint is public and requires no authentication.",
         "operationId": "healthCheck",
+        "security": [],
         "responses": {
           "200": {
             "description": "API is healthy",
@@ -3661,11 +3805,51 @@
         }
       }
     },
+    "/graphql": {
+      "post": {
+        "tags": ["Shipment Management"],
+        "operationId": "graphqlShipmentQuery",
+        "summary": "GraphQL endpoint",
+        "description": "Query the Cosmo Cargo registry via GraphQL. Test live against the public Rick and Morty universe schema.",
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
+        "x-graphql": {
+          "endpoint": "https://rickandmortyapi.com/graphql"
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "list-characters": {
+                  "summary": "List characters",
+                  "value": {
+                    "query": "query ListCharacters($page: Int) {\n  characters(page: $page) {\n    info { count pages }\n    results { id name species }\n  }\n}",
+                    "variables": { "page": 1 }
+                  }
+                },
+                "get-character": {
+                  "summary": "Get a character",
+                  "value": {
+                    "query": "query GetCharacter($id: ID!) {\n  character(id: $id) {\n    id\n    name\n    status\n    origin { name }\n  }\n}",
+                    "variables": { "id": "1" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "GraphQL response"
+          }
+        }
+      }
+    },
     "/version": {
       "get": {
         "summary": "Get API version",
-        "description": "Get information about the current API version",
+        "description": "Get information about the current API version. This endpoint is public.",
         "operationId": "getVersion",
+        "security": [],
         "responses": {
           "200": {
             "description": "Version information",

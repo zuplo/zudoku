@@ -4,21 +4,8 @@ import { Button } from "zudoku/components";
 import { Link } from "zudoku/router";
 import { Badge } from "zudoku/ui/Badge";
 import { Item, ItemContent, ItemDescription, ItemTitle } from "zudoku/ui/Item";
+import type { Subscription } from "../../types/SubscriptionType.js";
 import { formatDurationInterval } from "../../utils/formatDuration";
-
-interface Subscription {
-  id: string;
-  name: string;
-  status: string;
-  activeFrom: string;
-  activeTo?: string;
-  billingCadence: string;
-  plan: {
-    key: string;
-    version: number;
-  };
-}
-
 interface SubscriptionsListProps {
   subscriptions: Subscription[];
   activeSubscriptionId?: string;

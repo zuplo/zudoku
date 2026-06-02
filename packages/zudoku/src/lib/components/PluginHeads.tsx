@@ -1,6 +1,14 @@
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
+import { Children, Fragment, isValidElement, type ReactNode } from "react";
 import type { Location } from "react-router";
 import { hasHead, type ZudokuPlugin } from "../core/plugins.js";
+
+const flattenFragments = (node: ReactNode): ReactNode[] =>
+  Children.toArray(node).flatMap((child) =>
+    isValidElement(child) && child.type === Fragment
+      ? flattenFragments((child.props as { children?: ReactNode }).children)
+      : [child],
+  );
 
 export const PluginHeads = ({
   plugins,
@@ -8,10 +16,10 @@ export const PluginHeads = ({
 }: {
   plugins: ZudokuPlugin[];
   location: Location;
-}) =>
-  plugins
-    .flatMap((plugin) =>
-      hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
-    )
-    // biome-ignore lint/suspicious/noArrayIndexKey: No stable key available
-    .map((entry, i) => <Helmet key={i}>{entry}</Helmet>);
+}) => {
+  const entries = plugins.flatMap((plugin) =>
+    hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
+  );
+
+  return <Head>{flattenFragments(entries)}</Head>;
+};

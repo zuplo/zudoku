@@ -65,11 +65,13 @@ function DialogContent({
               className="h-2 w-2 transition-all border border-transparent  group-hover:border-white/20 rounded-full group-hover:scale-180 group-hover:text-red-400"
               strokeWidth={2}
               fill="currentColor"
+              aria-hidden="true"
             />
             <XIcon
               className="h-2 w-2 absolute top-3 left-3 text-transparent group-hover:text-red-800 transition-colors"
               strokeWidth={2}
               fill="currentColor"
+              aria-hidden="true"
             />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>

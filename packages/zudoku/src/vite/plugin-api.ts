@@ -20,6 +20,8 @@ import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
+const PROCESSED_STORE_SUBPATH = "node_modules/.zudoku/processed";
+
 const viteApiPlugin = async (): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = `\0${virtualModuleId}`;
@@ -38,7 +40,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
   const tmpStoreDir = path.posix.join(
     initialConfig.__meta.rootDir,
-    "node_modules/.zudoku/processed",
+    PROCESSED_STORE_SUBPATH,
   );
 
   const processors = [...buildProcessors, ...zuploProcessors];
@@ -48,14 +50,13 @@ const viteApiPlugin = async (): Promise<Plugin> => {
     processors,
   });
 
+  await fs.rm(tmpStoreDir, { recursive: true, force: true });
+  await fs.mkdir(tmpStoreDir, { recursive: true });
+  await schemaManager.processAllSchemas();
+
   return {
     name: "zudoku-api-plugins",
     async buildStart() {
-      await fs.rm(tmpStoreDir, { recursive: true, force: true });
-      await fs.mkdir(tmpStoreDir, { recursive: true });
-
-      await schemaManager.processAllSchemas();
-
       schemaManager
         .getAllTrackedFiles()
         .forEach((file) => this.addWatchFile(file));
@@ -93,8 +94,24 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.log(`Re-processing schema ${id}`);
 
-        for (const inputConfig of mainFiles) {
-          await schemaManager.processSchema(inputConfig);
+        try {
+          for (const inputConfig of mainFiles) {
+            await schemaManager.processSchema(inputConfig);
+          }
+        } catch (error) {
+          const err = error instanceof Error ? error : new Error(String(error));
+          server.config.logger.error(
+            `Failed to re-process schema ${id}. Fix the error and save again.`,
+            { error: err },
+          );
+          server.ws.send({
+            type: "error",
+            err: {
+              message: `Failed to re-process schema ${id}: ${err.message}`,
+              stack: err.stack ?? "",
+            },
+          });
+          return;
         }
         schemaManager
           .getAllTrackedFiles()
@@ -143,16 +160,48 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         const apis = ensureArray(config.apis);
         const apiMetadata: ApiCatalogItem[] = [];
 
+        const httpMethods = new Set([
+          "get",
+          "post",
+          "put",
+          "patch",
+          "delete",
+          "options",
+          "head",
+          "trace",
+        ]);
+
         for (const apiConfig of apis) {
           if (apiConfig.type === "file" && apiConfig.path) {
             const latestSchema = schemaManager.getLatestSchema(apiConfig.path);
             if (!latestSchema?.schema.info) continue;
+
+            const operationCount = Object.values(
+              latestSchema.schema.paths ?? {},
+            ).reduce<number>((sum, pathItem) => {
+              if (!pathItem || typeof pathItem !== "object") return sum;
+              return (
+                sum +
+                Object.keys(pathItem).filter((m) =>
+                  httpMethods.has(m.toLowerCase()),
+                ).length
+              );
+            }, 0);
+
+            const rawVersion = latestSchema.schema.info.version;
+            const version = rawVersion
+              ? rawVersion.startsWith("v") || rawVersion.startsWith("V")
+                ? rawVersion
+                : `v${rawVersion}`
+              : undefined;
 
             apiMetadata.push({
               path: apiConfig.path,
               label: latestSchema.schema.info.title,
               description: latestSchema.schema.info.description ?? "",
               categories: apiConfig.categories ?? [],
+              version,
+              operationCount,
             });
           }
         }
@@ -203,6 +252,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
+              `    disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
               `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,
@@ -228,6 +278,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
+              `    disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? false,`,
               `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,

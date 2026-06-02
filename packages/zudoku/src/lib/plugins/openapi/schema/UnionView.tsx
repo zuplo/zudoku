@@ -70,9 +70,11 @@ const DecisionTable = ({
 export const UnionView = ({
   schema,
   cardHeader,
+  embedded,
 }: {
   schema: SchemaObject;
   cardHeader?: React.ReactNode;
+  embedded?: boolean;
 }) => {
   const mode = Array.isArray(schema.oneOf)
     ? "oneOf"
@@ -107,26 +109,32 @@ export const UnionView = ({
   const currentVariant =
     currentVariantIndex >= 0 ? variants[currentVariantIndex] : null;
 
+  const body = (
+    <div className="text-sm flex flex-col gap-4 p-4">
+      <div className="flex items-center gap-2">
+        <Badge variant="outline">{mode}</Badge>
+        <div className="flex-1">
+          <span className="text-sm">{semanticsMessage}</span>
+        </div>
+      </div>
+
+      <DecisionTable
+        variants={variants}
+        schema={schema}
+        selectedVariant={selectedVariant}
+        onSelectVariant={setSelectedVariant}
+      />
+      <strong>Properties for {selectedVariant}:</strong>
+      {currentVariant && <SchemaView schema={currentVariant} />}
+    </div>
+  );
+
+  if (embedded) return body;
+
   return (
     <Frame>
       {cardHeader}
-      <FramePanel className="text-sm flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">{mode}</Badge>
-          <div className="flex-1 p-2">
-            <span className="text-sm">{semanticsMessage}</span>
-          </div>
-        </div>
-
-        <DecisionTable
-          variants={variants}
-          schema={schema}
-          selectedVariant={selectedVariant}
-          onSelectVariant={setSelectedVariant}
-        />
-        <strong>Properties for {selectedVariant}:</strong>
-        {currentVariant && <SchemaView schema={currentVariant} />}
-      </FramePanel>
+      <FramePanel className="p-0!">{body}</FramePanel>
     </Frame>
   );
 };

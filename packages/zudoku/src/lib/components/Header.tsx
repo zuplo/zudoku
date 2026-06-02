@@ -1,5 +1,6 @@
+import { Head } from "@unhead/react";
 import { LogOutIcon } from "lucide-react";
-import { lazy, memo, Suspense } from "react";
+import { memo } from "react";
 import { Link } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
@@ -20,26 +21,14 @@ import {
 import { cn } from "../util/cn.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
-import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
+import { HeaderNavigation } from "./HeaderNavigation.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
 import { PageProgress } from "./PageProgress.js";
 import { Search } from "./Search.js";
 import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
 import { TopNavigation } from "./TopNavigation.js";
-
-const HeaderNavigation = lazy(() =>
-  import("./HeaderNavigation.js").then((m) => ({
-    default: m.HeaderNavigation,
-  })),
-);
-
-const SuspendedHeaderNavigation = () => (
-  <Suspense>
-    <HeaderNavigation />
-  </Suspense>
-);
 
 const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
   return item.children ? (
@@ -73,66 +62,66 @@ const ProfileMenu = () => {
   const context = useZudoku();
   const profileItems = context.getProfileMenuItems();
   const auth = useAuth();
-  const { isAuthEnabled, isAuthenticated, profile } = auth;
+  const { isAuthEnabled, isPending, isAuthenticated, profile } = auth;
 
   if (!isAuthEnabled) return null;
 
-  return (
-    <ClientOnly fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}>
-      {!isAuthenticated ? (
-        <Button size="lg" variant="ghost" onClick={() => auth.login()}>
-          Login
+  if (isPending) {
+    return <Skeleton className="rounded-sm h-8 w-16" />;
+  }
+
+  return !isAuthenticated ? (
+    <Button size="lg" variant="ghost" onClick={() => auth.login()}>
+      Login
+    </Button>
+  ) : (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button size="lg" variant="ghost">
+          {profile?.name ?? "My Account"}
         </Button>
-      ) : (
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button size="lg" variant="ghost">
-              {profile?.name ?? "My Account"}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>
-              {profile?.name ?? "My Account"}
-              {profile?.email && profile.email !== profile?.name && (
-                <div className="font-normal text-muted-foreground">
-                  {profile.email}
-                </div>
-              )}
-            </DropdownMenuLabel>
-            {profileItems.filter((i) => i.category === "top").length > 0 && (
-              <DropdownMenuSeparator />
-            )}
-            {profileItems
-              .filter((i) => i.category === "top")
-              .map((i) => (
-                <RecursiveMenu key={i.label} item={i} />
-              ))}
-            {profileItems.filter((i) => !i.category || i.category === "middle")
-              .length > 0 && <DropdownMenuSeparator />}
-            {profileItems
-              .filter((i) => !i.category || i.category === "middle")
-              .map((i) => (
-                <RecursiveMenu key={i.label} item={i} />
-              ))}
-            {profileItems.filter((i) => i.category === "bottom").length > 0 && (
-              <DropdownMenuSeparator />
-            )}
-            {profileItems
-              .filter((i) => i.category === "bottom")
-              .map((i) => (
-                <RecursiveMenu key={i.label} item={i} />
-              ))}
-            <DropdownMenuSeparator />
-            <Link to="/signout">
-              <DropdownMenuItem className="flex gap-2">
-                <LogOutIcon size={16} strokeWidth={1} absoluteStrokeWidth />
-                Logout
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </ClientOnly>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>
+          {profile?.name ?? "My Account"}
+          {profile?.email && profile.email !== profile?.name && (
+            <div className="font-normal text-muted-foreground">
+              {profile.email}
+            </div>
+          )}
+        </DropdownMenuLabel>
+        {profileItems.filter((i) => i.category === "top").length > 0 && (
+          <DropdownMenuSeparator />
+        )}
+        {profileItems
+          .filter((i) => i.category === "top")
+          .map((i) => (
+            <RecursiveMenu key={i.label} item={i} />
+          ))}
+        {profileItems.filter((i) => !i.category || i.category === "middle")
+          .length > 0 && <DropdownMenuSeparator />}
+        {profileItems
+          .filter((i) => !i.category || i.category === "middle")
+          .map((i) => (
+            <RecursiveMenu key={i.label} item={i} />
+          ))}
+        {profileItems.filter((i) => i.category === "bottom").length > 0 && (
+          <DropdownMenuSeparator />
+        )}
+        {profileItems
+          .filter((i) => i.category === "bottom")
+          .map((i) => (
+            <RecursiveMenu key={i.label} item={i} />
+          ))}
+        <DropdownMenuSeparator />
+        <Link to="/signout">
+          <DropdownMenuItem className="flex gap-2">
+            <LogOutIcon size={16} strokeWidth={1} absoluteStrokeWidth />
+            Logout
+          </DropdownMenuItem>
+        </Link>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 export const Header = memo(function HeaderInner() {
@@ -144,6 +133,7 @@ export const Header = memo(function HeaderInner() {
   const searchPosition = header?.placements?.search ?? "center";
   const navPosition = header?.placements?.navigation ?? "end";
   const authPlacement = header?.placements?.auth ?? "navigation";
+  const themeSwitcherEnabled = header?.themeSwitcher?.enabled ?? true;
   const authPosition =
     authPlacement === "navigation" ? navPosition : authPlacement;
 
@@ -178,19 +168,21 @@ export const Header = memo(function HeaderInner() {
               <div className="flex items-center gap-3.5">
                 {site?.logo ? (
                   <>
+                    <Head>
+                      <link rel="preload" as="image" href={logoLightSrc} />
+                      <link rel="preload" as="image" href={logoDarkSrc} />
+                    </Head>
                     <img
                       src={logoLightSrc}
                       alt={site.logo.alt ?? site.title}
                       style={{ width: site.logo.width }}
                       className="max-h-(--top-header-height) dark:hidden"
-                      loading="lazy"
                     />
                     <img
                       src={logoDarkSrc}
                       alt={site.logo.alt ?? site.title}
                       style={{ width: site.logo.width }}
                       className="max-h-(--top-header-height) hidden dark:block"
-                      loading="lazy"
                     />
                   </>
                 ) : (
@@ -209,7 +201,7 @@ export const Header = memo(function HeaderInner() {
             )}
             {navPosition === "start" && (
               <div className="hidden lg:block min-w-0">
-                <SuspendedHeaderNavigation />
+                <HeaderNavigation />
               </div>
             )}
           </div>
@@ -222,7 +214,7 @@ export const Header = memo(function HeaderInner() {
             />
             {navPosition === "center" && (
               <div className="hidden lg:block min-w-0">
-                <SuspendedHeaderNavigation />
+                <HeaderNavigation />
               </div>
             )}
             {authPosition === "center" && (
@@ -237,13 +229,13 @@ export const Header = memo(function HeaderInner() {
             <div className="hidden lg:flex items-center text-sm gap-2">
               {navPosition === "end" && (
                 <div className="min-w-0">
-                  <SuspendedHeaderNavigation />
+                  <HeaderNavigation />
                 </div>
               )}
               {authPosition === "end" && <ProfileMenu />}
               {searchPosition === "end" && <Search />}
               <Slot.Target name="head-navigation-end" />
-              <ThemeSwitch />
+              {themeSwitcherEnabled && <ThemeSwitch />}
             </div>
           </div>
         </div>

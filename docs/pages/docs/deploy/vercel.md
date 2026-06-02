@@ -74,7 +74,7 @@ information.
 
 :::caution{title="Redirects"}
 
-If you have redirects configured in your Zuplo configuration, you will need to also add those to
+If you have redirects configured in your Zudoku configuration, you will need to also add those to
 your `vercel.json` file. See the
 [Vercel Configuration](https://vercel.com/docs/projects/project-configuration#redirects) for more
 information.

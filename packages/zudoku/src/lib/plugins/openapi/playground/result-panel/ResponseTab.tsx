@@ -124,9 +124,17 @@ const RowValue = ({ value, header }: { value: string; header: string }) => {
         <>
           <SecretText secret={value} previewChars={0} revealed={revealed} />
           {revealed ? (
-            <EyeOffIcon size={14} className={cn("hidden group-hover:block")} />
+            <EyeOffIcon
+              size={14}
+              className={cn("hidden group-hover:block")}
+              aria-hidden="true"
+            />
           ) : (
-            <EyeIcon size={14} className={cn("hidden group-hover:block")} />
+            <EyeIcon
+              size={14}
+              className={cn("hidden group-hover:block")}
+              aria-hidden="true"
+            />
           )}
         </>
       )}
@@ -190,7 +198,7 @@ export const ResponseTab = ({
     <>
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownRightIcon size={14} />
+          <CornerDownRightIcon size={14} aria-hidden="true" />
           <CollapsibleHeader>Request Headers</CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
@@ -208,7 +216,11 @@ export const ResponseTab = ({
                 <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
                   Show {request.headers.length - MAX_HEADERS_TO_SHOW} more
                   headers
-                  <PlusCircleIcon size={12} className="text-muted-foreground" />
+                  <PlusCircleIcon
+                    size={12}
+                    className="text-muted-foreground"
+                    aria-hidden="true"
+                  />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
                   {request.headers
@@ -224,6 +236,7 @@ export const ResponseTab = ({
                     <MinusCircleIcon
                       size={12}
                       className="text-muted-foreground"
+                      aria-hidden="true"
                     />
                   </CollapsibleTrigger>
                 </CollapsibleContent>
@@ -235,7 +248,7 @@ export const ResponseTab = ({
 
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownLeftIcon size={14} />
+          <CornerDownLeftIcon size={14} aria-hidden="true" />
           <CollapsibleHeader>Response Headers</CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
@@ -250,7 +263,11 @@ export const ResponseTab = ({
               <Collapsible className="col-span-full grid-cols-subgrid grid group">
                 <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
                   Show {sortedHeaders.length - MAX_HEADERS_TO_SHOW} more headers
-                  <PlusCircleIcon size={12} className="text-muted-foreground" />
+                  <PlusCircleIcon
+                    size={12}
+                    className="text-muted-foreground"
+                    aria-hidden="true"
+                  />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
                   {sortedHeaders
@@ -266,6 +283,7 @@ export const ResponseTab = ({
                     <MinusCircleIcon
                       size={12}
                       className="text-muted-foreground"
+                      aria-hidden="true"
                     />
                   </CollapsibleTrigger>
                 </CollapsibleContent>
@@ -277,7 +295,7 @@ export const ResponseTab = ({
 
       <div className="flex gap-2 justify-between items-center border-b px-2 flex-0">
         <CollapsibleHeader className="flex items-center gap-2">
-          <SquareCodeIcon size={14} />
+          <SquareCodeIcon size={14} aria-hidden="true" />
           Response body
         </CollapsibleHeader>
         {jsonContent && !isBinary && (
@@ -320,7 +338,7 @@ export const ResponseTab = ({
                   className="flex items-center gap-2"
                   disabled={!blob}
                 >
-                  <DownloadIcon className="h-4 w-4" />
+                  <DownloadIcon className="h-4 w-4" aria-hidden="true" />
                   Download {fileName || "file"} ({humanFileSize(size)})
                 </Button>
               </div>

@@ -1,25 +1,10 @@
-// @ts-nocheck
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
-import { Hono } from "hono";
-import { getRoutesByConfig, handleRequest } from "./entry.server.js";
-import config from "./zudoku.config.js";
+import { createServer } from "zudoku/server";
+import { node } from "zudoku/server/adapters/node";
 
-const template = "__TEMPLATE__";
-const basePath = "__BASE_PATH__";
-const routes = getRoutesByConfig(config.default ?? config);
+const app = createServer({ adapter: node() });
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const staticDir = join(__dirname, "..");
-
-const app = new Hono();
-
-app.use("/server/*", (c) => c.notFound());
-app.use("*", serveStatic({ root: staticDir }));
-app.get("*", (c) =>
-  handleRequest({ template, request: c.req.raw, routes, basePath }),
-);
-
-serve({ fetch: app.fetch, port: Number(process.env.PORT || 3000) });
+serve({ fetch: app.fetch, port: Number(process.env.PORT || 3000) }, (info) => {
+  // biome-ignore lint/suspicious/noConsole: Log server info
+  console.info(`Server is running on ${info.address}:${info.port}`);
+});

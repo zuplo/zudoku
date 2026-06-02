@@ -91,6 +91,20 @@
       }
     },
     {
+      "includes": [
+        "packages/**/*.test.{ts,tsx}",
+        "packages/**/*.test-d.{ts,tsx}",
+        "packages/**/*.spec.{ts,tsx}"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/zudoku/src/cli/**"],
       "linter": {
         "rules": {
@@ -101,12 +115,39 @@
       }
     },
     {
-      // main.css:
       "includes": ["packages/zudoku/src/app/main.css"],
       "linter": {
         "rules": {
           "complexity": {
             "noImportantStyles": "off"
+          }
+        }
+      }
+    },
+    {
+      // Anything reachable from the pure /pricing-ui subpath export of
+      // @zuplo/zudoku-plugin-monetization MUST stay zudoku-free so it can be
+      // consumed in projects that don't have zudoku installed. This applies
+      // to pricing-ui itself plus the shared utils/types it pulls in.
+      "includes": [
+        "packages/plugin-zuplo-monetization/src/pricing-ui/**",
+        "packages/plugin-zuplo-monetization/src/utils/**",
+        "packages/plugin-zuplo-monetization/src/types/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["zudoku", "zudoku/**"],
+                    "message": "pricing-ui (and its transitive utils/types) must remain zudoku-free — it ships as a standalone subpath consumed by external projects."
+                  }
+                ]
+              }
+            }
           }
         }
       }

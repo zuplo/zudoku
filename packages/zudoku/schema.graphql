@@ -4,6 +4,7 @@ schema {
 
 type Components {
   schemas: [SchemaItem!]
+  securitySchemes: [SecuritySchemeItem!]
 }
 
 type EncodingItem {
@@ -45,6 +46,25 @@ type MediaTypeObject {
   schema: JSONSchema
 }
 
+type OAuthFlowItem {
+  authorizationUrl: String
+  refreshUrl: String
+  scopes: [OAuthScopeItem!]!
+  tokenUrl: String
+}
+
+type OAuthFlowsItem {
+  authorizationCode: OAuthFlowItem
+  clientCredentials: OAuthFlowItem
+  implicit: OAuthFlowItem
+  password: OAuthFlowItem
+}
+
+type OAuthScopeItem {
+  description: String!
+  name: String!
+}
+
 type OperationItem {
   contentTypes: [String!]!
   deprecated: Boolean
@@ -56,6 +76,7 @@ type OperationItem {
   path: String!
   requestBody: RequestBodyObject
   responses: [ResponseItem!]!
+  security: [SecurityRequirementItem!]
   servers: [Server!]!
   slug: String!
   summary: String
@@ -124,6 +145,7 @@ type Schema {
     untagged: Boolean
   ): [OperationItem!]!
   paths: [PathItem!]!
+  security: [SecurityRequirementItem!]
   servers: [Server!]!
   summary: String
   tag(name: String, slug: String, untagged: Boolean): SchemaTag
@@ -173,6 +195,42 @@ enum SchemaType {
   file
   raw
   url
+}
+
+type SecurityRequirementItem {
+  schemes: [SecurityRequirementScheme!]!
+}
+
+type SecurityRequirementScheme {
+  scheme: SecuritySchemeItem!
+  scopes: [String!]!
+}
+
+enum SecuritySchemeIn {
+  cookie
+  header
+  query
+}
+
+type SecuritySchemeItem {
+  bearerFormat: String
+  description: String
+  extensions: JSONObject
+  flows: OAuthFlowsItem
+  in: SecuritySchemeIn
+  name: String!
+  openIdConnectUrl: String
+  paramName: String
+  scheme: String
+  type: SecuritySchemeType!
+}
+
+enum SecuritySchemeType {
+  apiKey
+  http
+  mutualTLS
+  oauth2
+  openIdConnect
 }
 
 type Server {

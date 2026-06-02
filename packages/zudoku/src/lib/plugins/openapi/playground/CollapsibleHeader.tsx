@@ -18,6 +18,7 @@ export const CollapsibleHeaderTrigger = ({
     >
       {children}
       <CollapsibleTrigger
+        aria-label="Toggle section"
         className={cn(
           "flex items-center gap-4 group bg-muted w-full p-2 hover:bg-accent hover:brightness-95 opacity-75 rounded-md",
           className,
@@ -26,10 +27,12 @@ export const CollapsibleHeaderTrigger = ({
         <ChevronsDownUpIcon
           className="group-data-[state=closed]:hidden shrink-0"
           size={14}
+          aria-hidden="true"
         />
         <ChevronsUpDownIcon
           className="group-data-[state=open]:hidden shrink-0"
           size={14}
+          aria-hidden="true"
         />
       </CollapsibleTrigger>
     </div>

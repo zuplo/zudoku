@@ -93,7 +93,7 @@ const config = {
     label: "API Catalog",
     filterItems: (items, { auth }) => {
       return items.filter((item) =>
-        item.categories.some((category) => category.tags.includes("public")),
+        item.categories?.some((category) => category.tags?.includes("public")),
       );
     },
   },

@@ -35,7 +35,17 @@ export const useHotkey = (hotkey: string, callback: () => void) => {
   }, [callback]);
 
   useEffect(() => {
+    const hasModifier = meta || shift || alt || ctrl;
     const handler = (event: KeyboardEvent) => {
+      if (
+        !hasModifier &&
+        event.target instanceof HTMLElement &&
+        (event.target.tagName === "INPUT" ||
+          event.target.tagName === "TEXTAREA" ||
+          event.target.isContentEditable)
+      ) {
+        return;
+      }
       if (
         (event.code === `Key${key?.toUpperCase()}` ||
           event.code.toLowerCase() === key?.toLowerCase()) &&

@@ -7,9 +7,11 @@ import {
   DismissibleAlert,
   DismissibleAlertAction,
 } from "zudoku/ui/DismissibleAlert";
-import type { Subscription } from "../../hooks/useSubscriptions";
+import type { Subscription } from "../../types/SubscriptionType.js";
+import { getActivePhase } from "../../utils/billables.js";
 import { ApiKeysList } from "./ApiKeysList";
 import { ManageSubscription } from "./ManageSubscription";
+import { SubscriptionPlanDetails } from "./SubscriptionPlanDetails";
 import { Usage, type UsageResult } from "./Usage";
 
 type LocationState = {
@@ -44,11 +46,7 @@ const ActiveSubscription = ({
     usageQuery.data.paymentStatus.status !== "paid" &&
     usageQuery.data.paymentStatus.status !== "not_required";
 
-  const activePhase = subscription?.phases.find(
-    (p) =>
-      new Date(p.activeFrom) <= new Date() &&
-      (!p.activeTo || new Date(p.activeTo) >= new Date()),
-  );
+  const activePhase = getActivePhase(subscription);
 
   return (
     <>
@@ -64,6 +62,8 @@ const ActiveSubscription = ({
           <DismissibleAlertAction />
         </DismissibleAlert>
       )}
+
+      <SubscriptionPlanDetails subscription={subscription} />
 
       <Usage
         currentItems={activePhase?.items}

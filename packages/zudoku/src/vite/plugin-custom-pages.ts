@@ -21,9 +21,7 @@ const viteCustomPagesPlugin = (): Plugin => {
 
         const code = [
           `import config from "virtual:zudoku-config";`,
-          config.__meta.mode === "internal"
-            ? `import { customPagesPlugin } from "${config.__meta.moduleDir}/src/lib/plugins/custom-pages/index.tsx";`
-            : `import { customPagesPlugin } from "zudoku/plugins/custom-pages";`,
+          `import { customPagesPlugin } from "zudoku/plugins/custom-pages";`,
           `export const configuredCustomPagesPlugin = customPagesPlugin(config.navigation);`,
         ];
 

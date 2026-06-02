@@ -149,8 +149,7 @@ docs: {
 
 #### `showLastModified`
 
-**Type:** `boolean`  
-**Default:** `false`
+**Type:** `boolean` **Default:** `true`
 
 Whether to show the last modified date by default.
 
@@ -184,6 +183,22 @@ The `url` should be a template where the file path will be appended. For example
 in a `docs/pages/` directory, the URL might be
 `https://github.com/your-org/your-repo/edit/main/docs/pages`.
 
+#### `fullWidth`
+
+**Type:** `boolean` **Default:** `false`
+
+Whether pages should use the full available width (hiding the table of contents sidebar) by default.
+When enabled, the table of contents is accessible via an "On this page" toggle in the page header.
+Combine with `toc: false` to hide the table of contents entirely.
+
+```tsx title="zudoku.config.tsx"
+docs: {
+  defaultOptions: {
+    fullWidth: true, // Use full-width layout for all pages by default
+  }
+}
+```
+
 #### `copyPage`
 
 **Type:** `boolean` **Default:** `undefined`
@@ -213,7 +228,7 @@ The copy button provides:
 
 ### `publishMarkdown`
 
-**Type:** `boolean` **Default:** `false`
+**Type:** `boolean` **Default:** `true`
 
 When enabled, generates `.md` files for each documentation page during build. Pages can then be
 accessed at their URL path with the `.md` extension appended (e.g., `/docs/quickstart.md`).

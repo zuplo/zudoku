@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { Item } from "../../hooks/useSubscriptions.js";
+import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import type { MeteredEntitlement } from "./Usage.js";
 import { Usage } from "./Usage.js";
 
@@ -215,7 +215,7 @@ describe("Usage - UsageItem", () => {
     const itemNoCadence = { ...softLimitItem } as Item;
     const subscription = {
       billingCadence: "P1W",
-    } as import("../../hooks/useSubscriptions.js").Subscription;
+    } as Subscription;
 
     render(
       <Usage
@@ -243,5 +243,17 @@ describe("Usage - UsageItem", () => {
     expect(
       screen.getByText("You've exceeded your monthly quota"),
     ).toBeInTheDocument();
+  });
+
+  it("shows feature key as title when item is not found", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 500, usage: 500, overage: 0 })}
+        isFetching={false}
+        currentItems={[]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(screen.getByText("requests")).toBeInTheDocument();
   });
 });

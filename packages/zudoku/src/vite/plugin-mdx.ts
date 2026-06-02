@@ -133,10 +133,7 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
   return {
     enforce: "pre",
     ...mdx({
-      providerImportSource:
-        config.__meta.mode === "internal" || config.__meta.mode === "standalone"
-          ? "@mdx-js/react"
-          : "zudoku/components",
+      providerImportSource: "@mdx-js/react",
       mdxExtensions: [".mdx"],
       format: "detect",
       remarkPlugins,

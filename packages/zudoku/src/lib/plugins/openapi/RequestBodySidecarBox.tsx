@@ -5,8 +5,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
 import type { MediaTypeObject } from "./graphql/graphql.js";
-import * as SidecarBox from "./SidecarBox.js";
 import { SidecarExamples } from "./SidecarExamples.js";
 
 export const RequestBodySidecarBox = ({

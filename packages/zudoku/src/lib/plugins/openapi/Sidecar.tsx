@@ -1,12 +1,18 @@
+import { ShieldCheckIcon, ShieldCogCornerIcon } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
+import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
 import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
+import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { useAuthState } from "../../authentication/state.js";
+import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
 import { cn } from "../../util/cn.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
@@ -14,13 +20,25 @@ import { useOasConfig } from "./context.js";
 import { GeneratedExampleSidecarBox } from "./GeneratedExampleSidecarBox.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
+import { AuthorizeDialog } from "./playground/AuthorizeDialog.js";
+import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./playground/constants.js";
+import { GraphiQLDialog } from "./playground/GraphiQLDialog.js";
+import IdentitySelector from "./playground/IdentitySelector.js";
+import { useIdentityStore } from "./playground/rememberedIdentity.js";
+import { useSecurityCredentialsStore } from "./playground/securityCredentialsStore.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
-import * as SidecarBox from "./SidecarBox.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
+import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
+import {
+  formatRequestBodyForDisplay,
+  getLanguageForMediaType,
+} from "./util/formatRequestBody.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
+import { getGraphQLEndpoint } from "./util/graphqlEndpoint.js";
 import { methodForColor } from "./util/methodToColor.js";
+import { useResolvedAuth } from "./util/useResolvedAuth.js";
 
 export const GetServerQuery = graphql(/* GraphQL */ `
   query getServerQuery($input: JSON!, $type: SchemaType!) {
@@ -47,6 +65,39 @@ const EXAMPLE_LANGUAGES = [
   { value: "swift", label: "Swift" },
 ];
 
+type CodeSample = {
+  lang: string;
+  label?: string;
+  source: string;
+};
+
+const isCodeSample = (sample: unknown): sample is CodeSample => {
+  if (typeof sample !== "object" || sample === null) return false;
+
+  const { lang, label, source } = sample as {
+    lang?: unknown;
+    label?: unknown;
+    source?: unknown;
+  };
+
+  return (
+    typeof lang === "string" &&
+    typeof source === "string" &&
+    (label === undefined || typeof label === "string")
+  );
+};
+
+const getCodeSamples = (
+  extensions: Record<string, unknown> | null | undefined,
+): CodeSample[] | undefined => {
+  const samples =
+    extensions?.["x-code-samples"] ?? extensions?.["x-codeSamples"];
+  if (!Array.isArray(samples) || samples.length === 0) return undefined;
+
+  const validSamples = samples.filter(isCodeSample);
+  return validSamples.length > 0 ? validSamples : undefined;
+};
+
 export const Sidecar = ({
   operation,
   selectedResponse,
@@ -67,7 +118,14 @@ export const Sidecar = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
 
-  const supportedLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
+  const codeSamples = getCodeSamples(operation.extensions);
+
+  const supportedLanguages = codeSamples
+    ? codeSamples.map((sample) => ({
+        value: sample.lang,
+        label: sample.label ?? sample.lang,
+      }))
+    : (options?.supportedLanguages ?? EXAMPLE_LANGUAGES);
 
   const preferredLang =
     searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
@@ -132,7 +190,54 @@ export const Sidecar = ({
   const selectedServer =
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
+  const securitySchemes = useMemo(
+    () =>
+      options?.disableSecurity
+        ? []
+        : extractOperationSecuritySchemes(operation),
+    [operation, options?.disableSecurity],
+  );
+
+  const identities = useApiIdentities();
+  const rememberedIdentity = useIdentityStore((s) => s.rememberedIdentity);
+  const setRememberedIdentity = useIdentityStore(
+    (s) => s.setRememberedIdentity,
+  );
+  const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
+
+  const identityList = useMemo(() => identities.data ?? [], [identities.data]);
+
+  const resolvedAuth = useResolvedAuth({
+    operation,
+    identityId: rememberedIdentity,
+    identities: identityList,
+    url: joinUrl(selectedServer, operation.path),
+  });
+
+  const inapplicableSchemeName = useMemo(() => {
+    if (!rememberedIdentity?.startsWith(SECURITY_SCHEME_PREFIX)) return;
+    const name = rememberedIdentity.slice(SECURITY_SCHEME_PREFIX.length);
+    return securitySchemes.some((s) => s.name === name) ? undefined : name;
+  }, [rememberedIdentity, securitySchemes]);
+
+  const hasAuthOptions = securitySchemes.length > 0 || identityList.length > 0;
+  const [authPopoverOpen, setAuthPopoverOpen] = useState(false);
+  const [authorizeSchemeName, setAuthorizeSchemeName] = useState<
+    string | undefined
+  >();
+
+  const hasResolvedAuth =
+    resolvedAuth.headers.length > 0 || resolvedAuth.queryString.length > 0;
+
+  const graphQLEndpoint = getGraphQLEndpoint(operation);
+  const isGraphQLEndpoint = graphQLEndpoint !== undefined;
+
   const httpSnippetCode = useMemo<string | undefined>(() => {
+    if (codeSamples && !hasResolvedAuth) {
+      const match = codeSamples.find((s) => s.lang === selectedLang);
+      return match?.source;
+    }
+
     const converted = options?.generateCodeSnippet?.({
       selectedLang,
       selectedServer,
@@ -140,6 +245,7 @@ export const Sidecar = ({
       operation,
       example: currentExampleCode,
       auth,
+      resolvedAuth,
     });
 
     if (converted) return converted;
@@ -147,16 +253,23 @@ export const Sidecar = ({
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
-      exampleBody: currentExampleCode
-        ? {
-            mimeType: selectedContent?.mediaType ?? "application/json",
-            text: JSON.stringify(currentExampleCode, null, 2),
-          }
-        : { mimeType: selectedContent?.mediaType ?? "application/json" },
+      exampleBody:
+        isGraphQLEndpoint || !currentExampleCode
+          ? { mimeType: selectedContent?.mediaType ?? "application/json" }
+          : {
+              mimeType: selectedContent?.mediaType ?? "application/json",
+              text:
+                formatRequestBodyForDisplay(
+                  selectedContent?.mediaType,
+                  currentExampleCode,
+                ) ?? "",
+            },
+      resolvedAuth,
     });
 
     return getConverted(snippet, selectedLang);
   }, [
+    codeSamples,
     currentExampleCode,
     operation,
     selectedServer,
@@ -165,6 +278,9 @@ export const Sidecar = ({
     options,
     auth,
     context,
+    resolvedAuth,
+    hasResolvedAuth,
+    isGraphQLEndpoint,
   ]);
 
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
@@ -180,6 +296,45 @@ export const Sidecar = ({
   const hasResponseExamples = operation.responses.some((response) =>
     response.content?.some((content) => (content.examples?.length ?? 0) > 0),
   );
+
+  const displayRequestBodyContent =
+    isGraphQLEndpoint && transformedRequestBodyContent
+      ? transformedRequestBodyContent.map((c) => ({
+          ...c,
+          mediaType: "application/graphql",
+          examples: c.examples?.map((ex) => {
+            const value = ex.value as { query?: unknown } | null | undefined;
+            return {
+              ...ex,
+              value:
+                value && typeof value.query === "string"
+                  ? value.query
+                  : ex.value,
+            };
+          }),
+        }))
+      : undefined;
+
+  const graphQLTabs = isGraphQLEndpoint
+    ? transformedRequestBodyContent
+        ?.flatMap((c) => c.examples ?? [])
+        .flatMap((example) => {
+          const value = example.value as
+            | { query?: unknown; variables?: unknown }
+            | null
+            | undefined;
+          if (!value || typeof value.query !== "string") return [];
+          return [
+            {
+              query: value.query,
+              variables:
+                value.variables !== undefined
+                  ? JSON.stringify(value.variables, null, 2)
+                  : undefined,
+            },
+          ];
+        })
+    : undefined;
 
   return (
     <aside
@@ -202,36 +357,40 @@ export const Sidecar = ({
               </Badge>
               {path}
             </span>
-            <div className="flex items-center gap-1">
-              <NativeSelect
-                className="py-0.5 h-fit max-w-32 truncate bg-background"
-                value={selectedLang}
-                onChange={(e) => {
-                  startTransition(() => {
-                    setSearchParams((prev) => {
-                      prev.set("lang", e.target.value);
-                      return prev;
-                    });
-                  });
-                }}
-              >
-                {supportedLanguages.map((language) => (
-                  <NativeSelectOption
-                    key={language.value}
-                    value={language.value}
-                  >
-                    {language.label}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-              {showPlayground && (
+            {showPlayground &&
+              (isGraphQLEndpoint ? (
+                <GraphiQLDialog
+                  endpoint={
+                    graphQLEndpoint?.endpoint ??
+                    joinUrl(selectedServer, operation.path)
+                  }
+                  defaultTabs={
+                    graphQLTabs && graphQLTabs.length > 0
+                      ? graphQLTabs
+                      : undefined
+                  }
+                  defaultHeaders={
+                    resolvedAuth.headers.length > 0
+                      ? JSON.stringify(
+                          Object.fromEntries(
+                            resolvedAuth.headers.map(({ name, value }) => [
+                              name,
+                              value,
+                            ]),
+                          ),
+                          null,
+                          2,
+                        )
+                      : undefined
+                  }
+                />
+              ) : (
                 <PlaygroundDialogWrapper
                   servers={operation.servers.map((server) => server.url)}
                   operation={operation}
                   examples={requestBodyContent ?? undefined}
                 />
-              )}
-            </div>
+              ))}
           </div>
         </SidecarBox.Head>
         <SidecarBox.Body>
@@ -241,17 +400,105 @@ export const Sidecar = ({
             <SyntaxHighlight
               embedded
               language={selectedLang}
-              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
+              showLanguageIndicator={false}
+              className="[--scrollbar-color:gray] rounded-none text-xs max-h-50"
               // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
               code={httpSnippetCode!}
             />
           )}
         </SidecarBox.Body>
+        <SidecarBox.Footer className="text-xs self-end flex justify-between items-center gap-2">
+          <NativeSelect
+            className="text-xs h-fit py-1 max-w-32 truncate bg-background"
+            value={selectedLang}
+            onChange={(e) => {
+              startTransition(() => {
+                setSearchParams((prev) => {
+                  prev.set("lang", e.target.value);
+                  return prev;
+                });
+              });
+            }}
+          >
+            {supportedLanguages.map((language) => (
+              <NativeSelectOption key={language.value} value={language.value}>
+                {language.label}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+          {hasAuthOptions && (
+            <Popover open={authPopoverOpen} onOpenChange={setAuthPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Select authentication"
+                >
+                  {hasResolvedAuth ? (
+                    <ShieldCheckIcon className="size-4 text-green-600" />
+                  ) : (
+                    <ShieldCogCornerIcon className="size-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="p-0 w-76 overflow-hidden">
+                <div className="px-4 py-2.5 text-xs text-muted-foreground border-b bg-muted/40">
+                  Selection syncs across endpoints that support it.
+                </div>
+                {inapplicableSchemeName && (
+                  <div className="px-4 py-2.5 text-xs text-muted-foreground border-b bg-amber-500/10">
+                    Selected <code>{inapplicableSchemeName}</code> isn't
+                    supported for this endpoint.
+                  </div>
+                )}
+                <IdentitySelector
+                  value={
+                    inapplicableSchemeName
+                      ? NO_IDENTITY
+                      : (rememberedIdentity ?? NO_IDENTITY)
+                  }
+                  identities={identityList}
+                  setValue={(value) => {
+                    setRememberedIdentity(value);
+                    if (value.startsWith(SECURITY_SCHEME_PREFIX)) {
+                      const schemeName = value.slice(
+                        SECURITY_SCHEME_PREFIX.length,
+                      );
+                      if (!securityCredentials[schemeName]?.isAuthorized) {
+                        setAuthPopoverOpen(false);
+                        setAuthorizeSchemeName(schemeName);
+                      }
+                    }
+                  }}
+                  securitySchemes={
+                    securitySchemes.length > 0 ? securitySchemes : undefined
+                  }
+                  securityCredentials={securityCredentials}
+                  onConfigureScheme={(name) => {
+                    setAuthPopoverOpen(false);
+                    setAuthorizeSchemeName(name);
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
+          {authorizeSchemeName && (
+            <AuthorizeDialog
+              securitySchemes={securitySchemes.filter(
+                (s) => s.name === authorizeSchemeName,
+              )}
+              open={Boolean(authorizeSchemeName)}
+              onOpenChange={(open) => {
+                if (!open) setAuthorizeSchemeName(undefined);
+              }}
+            />
+          )}
+        </SidecarBox.Footer>
       </SidecarBox.Root>
 
       {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox
-          content={transformedRequestBodyContent}
+          content={displayRequestBodyContent ?? transformedRequestBodyContent}
           onExampleChange={(selected) => {
             setSelectedRequestExample(selected);
           }}
@@ -260,22 +507,29 @@ export const Sidecar = ({
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
         />
-      ) : transformedRequestBodyContent && currentExampleCode ? (
+      ) : !isGraphQLEndpoint &&
+        transformedRequestBodyContent &&
+        currentExampleCode ? (
         <GeneratedExampleSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
-          code={JSON.stringify(currentExampleCode, null, 2)}
+          language={getLanguageForMediaType(selectedContent?.mediaType)}
+          code={
+            formatRequestBodyForDisplay(
+              selectedContent?.mediaType,
+              currentExampleCode,
+            ) ?? ""
+          }
         />
       ) : null}
 
-      {hasResponseExamples ? (
+      {(hasResponseExamples || !isGraphQLEndpoint) && (
         <ResponsesSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
           selectedResponse={selectedResponse}
-          responses={operation.responses.map((response) => ({
-            ...response,
-            content:
+          responses={operation.responses.map((response) => {
+            const content =
               response.content && options?.transformExamples
                 ? options.transformExamples({
                     auth,
@@ -284,24 +538,25 @@ export const Sidecar = ({
                     operation,
                     content: response.content,
                   })
-                : response.content,
-          }))}
-        />
-      ) : (
-        <ResponsesSidecarBox
-          isGenerated
-          isOnScreen={isOnScreen}
-          shouldLazyHighlight={shouldLazyHighlight}
-          selectedResponse={selectedResponse}
-          responses={operation.responses.map((response) => ({
-            ...response,
-            content: response.content?.map((content) => ({
-              ...content,
-              examples: content.schema
-                ? [{ name: "", value: generateSchemaExample(content.schema) }]
-                : content.examples,
-            })),
-          }))}
+                : response.content;
+
+            return {
+              ...response,
+              // Generate an example per status only when none is provided, so
+              // an example on one status doesn't suppress generation on others.
+              content: content?.map((c) => {
+                if ((c.examples?.length ?? 0) > 0) return c;
+                if (isGraphQLEndpoint || !c.schema) return c;
+                return {
+                  ...c,
+                  examples: [
+                    { name: "", value: generateSchemaExample(c.schema) },
+                  ],
+                  isGenerated: true,
+                };
+              }),
+            };
+          })}
         />
       )}
     </aside>
