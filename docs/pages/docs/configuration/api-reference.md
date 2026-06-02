@@ -214,6 +214,7 @@ const config = {
         enabled: true, // Enable schema download button
         fileName: "schema", // Set name of the schema file when downloaded
       },
+      playgroundPrefillWith: "default", // Which values pre-fill the playground
     },
   },
 };
@@ -241,6 +242,15 @@ Available options:
   - `enabled`: Enable or disable the schema download button
   - `fileName`: Set name of the schema file when downloaded (default: `schema`). Note: Do not
     include a file extension, as that is added automatically based on the input file type.
+- `playgroundPrefillWith`: Control which values are used to pre-fill the API playground fields
+  (headers, query, and path parameters). Both `"default"` and `"example"` fall back to the other
+  source so as many fields as possible are pre-filled — they only differ in which value wins when a
+  parameter has both.
+  - `"default"`: Prefer `schema.default`, then parameter-level examples, then `schema.example` /
+    `schema.examples` (default)
+  - `"example"`: Prefer `schema.example` / `schema.examples`, then parameter-level examples, then
+    `schema.default`. Useful when you maintain realistic example values for one-click testing
+  - `"none"`: Leave all fields empty
 - `transformExamples`: Function to transform request/response examples before rendering. See
   [Transforming Examples](../guides/transforming-examples.md) for detailed usage
 - `generateCodeSnippet`: Function to generate custom code snippets for the API playground. See

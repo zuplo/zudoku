@@ -103,6 +103,7 @@ const ApiOptionsSchema = z
           .optional(),
       })
       .partial(),
+    playgroundPrefillWith: z.enum(["example", "default", "none"]),
     transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
     ),
