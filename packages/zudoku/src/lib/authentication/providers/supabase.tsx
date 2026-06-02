@@ -194,13 +194,19 @@ class SupabaseAuthenticationProvider
     password: string,
   ) => {
     useAuthState.setState({ isPending: true });
-    const { error } = await this.client.auth.signInWithPassword({
+    const { data, error } = await this.client.auth.signInWithPassword({
       email,
       password,
     });
     useAuthState.setState({ isPending: false });
     if (error) {
       throw Error(getSupabaseErrorMessage(error), { cause: error });
+    }
+    // Set state synchronously (triggering the cookie sync) instead of waiting on
+    // the async onAuthStateChange listener, so a post-login redirect can await
+    // it. Mirrors sign-up below.
+    if (data.session) {
+      await this.updateUserState(data.session);
     }
   };
 

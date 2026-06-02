@@ -3,6 +3,23 @@ import type { AuthState } from "./state.js";
 
 type TokenBearer = { accessToken?: string; refreshToken?: string };
 
+// Latest in-flight cookie sync, so a post-login redirect can await the cookie
+// write before navigating. Resolved by default. See redirectAfterAuth.
+let pendingSessionSync: Promise<unknown> = Promise.resolve();
+
+// Cap a single sync so a stalled endpoint can't make waitForSessionSync hang.
+const SESSION_SYNC_TIMEOUT_MS = 10_000;
+
+// Resolve once the sync settles and none newer started meanwhile (a refresh can
+// supersede a login's POST mid-flight). Never rejects.
+export const waitForSessionSync = async (): Promise<void> => {
+  let awaited: Promise<unknown>;
+  do {
+    awaited = pendingSessionSync;
+    await awaited;
+  } while (awaited !== pendingSessionSync);
+};
+
 const readTokens = (providerData: unknown): TokenBearer => {
   if (!providerData || typeof providerData !== "object") return {};
   const data = providerData as Record<string, unknown>;
@@ -31,8 +48,16 @@ export const setupCookieSync = (
 
   const send = (init: RequestInit) => {
     inflight?.abort();
-    inflight = new AbortController();
-    return fetch(sessionEndpoint, { ...init, signal: inflight.signal });
+    const controller = new AbortController();
+    inflight = controller;
+    const timeout = setTimeout(
+      () => controller.abort(),
+      SESSION_SYNC_TIMEOUT_MS,
+    );
+    return fetch(sessionEndpoint, {
+      ...init,
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeout));
   };
 
   const postSession = async (providerData: unknown) => {
@@ -70,10 +95,10 @@ export const setupCookieSync = (
   store.subscribe((next, prev) => {
     if (next.isAuthenticated && next.profile) {
       if (!prev.isAuthenticated || next.providerData !== prev.providerData) {
-        void postSession(next.providerData);
+        pendingSessionSync = postSession(next.providerData);
       }
     } else if (!next.isAuthenticated && prev.isAuthenticated) {
-      void clearSession();
+      pendingSessionSync = clearSession();
     }
   });
 
@@ -85,6 +110,6 @@ export const setupCookieSync = (
     state.profile &&
     !window.ZUDOKU_SSR_AUTH?.profile
   ) {
-    void postSession(state.providerData);
+    pendingSessionSync = postSession(state.providerData);
   }
 };

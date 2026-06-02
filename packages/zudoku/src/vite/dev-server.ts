@@ -69,7 +69,9 @@ export class DevServer {
       mode: "development",
       command: "serve",
     };
-    const viteConfig = await getViteConfig(this.#options.dir, configEnv);
+    const viteConfig = await getViteConfig(this.#options.dir, configEnv, {
+      ssr: this.#options.ssr,
+    });
     const { config } = await loadZudokuConfig(configEnv, this.#options.dir);
 
     this.resolvedPort = await findAvailablePort(
