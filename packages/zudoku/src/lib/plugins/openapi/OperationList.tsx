@@ -286,12 +286,7 @@ export const OperationList = ({
       </Head>
 
       <div className="mb-8">
-        <ApiHeader
-          title={title}
-          heading={tagTitle}
-          headingId="description"
-          tag={tag ?? tagFromParams}
-        >
+        <ApiHeader title={title} heading={tagTitle} tag={tag ?? tagFromParams}>
           <Endpoint />
         </ApiHeader>
         {tagDescription && (

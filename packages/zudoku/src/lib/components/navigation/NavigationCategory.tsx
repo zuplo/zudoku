@@ -29,7 +29,12 @@ const NavigationCategoryInner = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const match = useMatch(category.link?.path ?? "");
+  const linkHref = category.link
+    ? category.link.type === "doc"
+      ? category.link.path
+      : category.link.to
+    : "";
+  const match = useMatch(linkHref);
   const isActive = category.link ? match : false;
 
   useEffect(() => {
@@ -95,10 +100,10 @@ const NavigationCategoryInner = ({
       onOpenChange={() => setOpen(true)}
     >
       <Collapsible.Trigger className="group" asChild disabled={!isCollapsible}>
-        {category.link?.type === "doc" ? (
+        {category.link ? (
           <NavLink
             to={{
-              pathname: joinUrl(category.link.path),
+              pathname: joinUrl(linkHref),
               search: location.search,
             }}
             className={styles}
@@ -110,11 +115,20 @@ const NavigationCategoryInner = ({
               }
             }}
           >
-            {icon}
-            <div className="flex items-center gap-2 justify-between w-full text-foreground/80 group-aria-[current='page']:text-primary">
-              <div className="truncate">{category.label}</div>
-              {ToggleButton}
-            </div>
+            {({ isActive: linkActive, isPending }) => (
+              <>
+                {icon}
+                <div
+                  className={cn(
+                    "flex items-center gap-2 justify-between w-full text-foreground/80",
+                    (linkActive || isPending) && "text-primary",
+                  )}
+                >
+                  <div className="truncate">{category.label}</div>
+                  {ToggleButton}
+                </div>
+              </>
+            )}
           </NavLink>
         ) : (
           <div className={styles}>
