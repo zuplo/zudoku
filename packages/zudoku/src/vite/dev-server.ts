@@ -3,6 +3,7 @@ import type { Server } from "node:http";
 import http from "node:http";
 import https from "node:https";
 import path from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import {
   createServer as createViteServer,
@@ -316,11 +317,15 @@ export class DevServer {
         const html = `<!DOCTYPE html><html><body><script type="module">
           import { ErrorOverlay } from '/@vite/client';
           document.body.appendChild(new ErrorOverlay(${JSON.stringify({
-            message: e instanceof Error ? e.message : String(e),
-            stack: e instanceof Error ? e.stack : "",
+            message: stripVTControlCharacters(
+              e instanceof Error ? e.message : String(e),
+            ),
+            stack: stripVTControlCharacters(
+              e instanceof Error ? (e.stack ?? "") : "",
+            ),
           })}));
         </script></body></html>`;
-        res.writeHead(500, { "Content-Type": "text/html" });
+        res.writeHead(500, { "Content-Type": "text/html; charset=utf-8" });
         res.end(html);
       }
     });
