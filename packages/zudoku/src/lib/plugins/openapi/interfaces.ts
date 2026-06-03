@@ -26,7 +26,7 @@ export type ContextOasSource = {
   input: string | DynamicInput;
 };
 
-type Example = {
+export type Example = {
   name: string;
   description?: string | null;
   externalValue?: string | null;
@@ -35,7 +35,7 @@ type Example = {
   summary?: string | null;
 };
 
-type Content = {
+export type Content = {
   mediaType: string;
   // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   schema?: any | null;
