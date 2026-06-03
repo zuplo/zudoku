@@ -84,7 +84,14 @@ export const ConfirmationScreen = ({
               disabled={isPending}
               asChild={!isPending}
             >
-              <Link to={cancelTo}>{cancelLabel}</Link>
+              {/* While pending the Button renders a real <button>, so render
+                  plain text rather than a nested <Link> (<a>) — that would be
+                  invalid interactive nesting and stay navigable when disabled. */}
+              {isPending ? (
+                cancelLabel
+              ) : (
+                <Link to={cancelTo}>{cancelLabel}</Link>
+              )}
             </Button>
           </div>
 

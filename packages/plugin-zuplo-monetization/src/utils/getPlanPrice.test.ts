@@ -116,4 +116,28 @@ describe("getPlanPrice", () => {
       getPlanPrice(plan({ phases: [phase({ rateCards: [flatFee("0")] })] })),
     ).toBe(0);
   });
+
+  it("excludes one-time (null billingCadence) flat fees from the recurring price", () => {
+    expect(
+      getPlanPrice(
+        plan({
+          phases: [
+            phase({
+              rateCards: [
+                flatFee("20"),
+                {
+                  type: "flat_fee",
+                  key: "setup",
+                  name: "Setup fee",
+                  // null billingCadence => one-time charge, not recurring
+                  billingCadence: null,
+                  price: { type: "flat", amount: "100" },
+                },
+              ],
+            }),
+          ],
+        }),
+      ),
+    ).toBe(20);
+  });
 });

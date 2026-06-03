@@ -245,5 +245,9 @@ describe("CheckoutConfirmPage", () => {
     expect(
       screen.getByRole("button", { name: /Processing Payment.../ }),
     ).toBeDisabled();
+    // Cancel must not be a navigable link while the mutation is pending.
+    expect(
+      screen.queryByRole("link", { name: "Cancel" }),
+    ).not.toBeInTheDocument();
   });
 });
