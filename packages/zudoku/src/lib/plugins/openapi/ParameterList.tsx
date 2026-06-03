@@ -3,9 +3,13 @@ import { Fragment } from "react";
 import { Heading } from "../../components/Heading.js";
 import { Frame, FramePanel } from "../../ui/Frame.js";
 import { ItemGroup, ItemSeparator } from "../../ui/Item.js";
-import type { ParameterItem } from "./graphql/graphql.js";
+import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import type { ParameterGroup } from "./OperationListItem.js";
 import { ParameterListItem } from "./ParameterListItem.js";
+
+export type ParameterItem = NonNullable<
+  OperationsFragmentFragment["parameters"]
+>[number];
 
 export const ParameterList = ({
   summary,

@@ -6,7 +6,7 @@ import {
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
 import * as SidecarBox from "../../ui/SidecarBox.js";
-import type { MediaTypeObject } from "./graphql/graphql.js";
+import type { Content } from "./interfaces.js";
 import { SidecarExamples } from "./SidecarExamples.js";
 
 export const RequestBodySidecarBox = ({
@@ -17,7 +17,7 @@ export const RequestBodySidecarBox = ({
   selectedContentIndex,
   selectedExampleIndex,
 }: {
-  content: MediaTypeObject[];
+  content: Content[];
   onExampleChange?: (selected: {
     contentTypeIndex: number;
     exampleIndex: number;
