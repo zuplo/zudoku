@@ -20,11 +20,11 @@ const makePlan = (
   ...overrides,
 });
 
-const flatFee = (amount: string): RateCard => ({
+const flatFee = (amount: string, billingCadence = "P1M"): RateCard => ({
   type: "flat_fee",
   key: "base",
   name: "Base Fee",
-  billingCadence: "P1M",
+  billingCadence,
   price: { type: "flat", amount },
 });
 
@@ -56,7 +56,9 @@ describe("formatPlanPrice", () => {
   });
 
   it("surfaces the flat fee for a sub-day (hourly) cadence rather than Free", () => {
-    const plan = makePlan([flatFee("2.99")], { billingCadence: "PT1H" });
+    const plan = makePlan([flatFee("2.99", "PT1H")], {
+      billingCadence: "PT1H",
+    });
     expect(formatPlanPrice(plan)).toEqual({ type: "priced", amount: 2.99 });
   });
 

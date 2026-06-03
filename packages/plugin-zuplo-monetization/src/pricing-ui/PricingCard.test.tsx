@@ -20,16 +20,27 @@ const plan = (overrides: Partial<Plan> = {}): Plan => ({
   ...overrides,
 });
 
-const flatFee = (amount: string): PlanPhase["rateCards"][number] => ({
+const flatFee = (
+  amount: string,
+  billingCadence = "P1M",
+): PlanPhase["rateCards"][number] => ({
   type: "flat_fee",
   key: "base",
   name: "Base",
-  billingCadence: "P1M",
+  billingCadence,
   price: { type: "flat", amount },
 });
 
-const pricedPlan = (amount: string, overrides: Partial<Plan> = {}): Plan =>
-  plan({ phases: [phase({ rateCards: [flatFee(amount)] })], ...overrides });
+const pricedPlan = (amount: string, overrides: Partial<Plan> = {}): Plan => {
+  // Keep the flat-fee rate card's cadence aligned with the plan's so the
+  // fixture mirrors real data (e.g. an hourly plan carries an hourly card).
+  const billingCadence = overrides.billingCadence ?? "P1M";
+  return plan({
+    ...overrides,
+    billingCadence,
+    phases: [phase({ rateCards: [flatFee(amount, billingCadence)] })],
+  });
+};
 
 describe("PricingCard", () => {
   it("renders nothing when the plan has no phases", () => {

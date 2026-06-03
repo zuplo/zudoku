@@ -18,11 +18,14 @@ const plan = (overrides: Partial<Plan> = {}): Plan => ({
   ...overrides,
 });
 
-const flatFee = (amount: string): PlanPhase["rateCards"][number] => ({
+const flatFee = (
+  amount: string,
+  billingCadence = "P1M",
+): PlanPhase["rateCards"][number] => ({
   type: "flat_fee",
   key: "base",
   name: "Base",
-  billingCadence: "P1M",
+  billingCadence,
   price: { type: "flat", amount },
 });
 
@@ -47,7 +50,7 @@ describe("getPlanPrice", () => {
       getPlanPrice(
         plan({
           billingCadence: "P1Y",
-          phases: [phase({ rateCards: [flatFee("120")] })],
+          phases: [phase({ rateCards: [flatFee("120", "P1Y")] })],
         }),
       ),
     ).toBe(120);
@@ -61,7 +64,7 @@ describe("getPlanPrice", () => {
       getPlanPrice(
         plan({
           billingCadence: "PT1H",
-          phases: [phase({ rateCards: [flatFee("2.99")] })],
+          phases: [phase({ rateCards: [flatFee("2.99", "PT1H")] })],
         }),
       ),
     ).toBe(2.99);
