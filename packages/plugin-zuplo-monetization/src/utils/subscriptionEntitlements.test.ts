@@ -206,6 +206,35 @@ describe("getSubscriptionPlanView", () => {
     ]);
   });
 
+  // Regression: "Fixed Quota Hourly" — a metered item priced with a flat
+  // recurring fee ($2.99/hour bundling 10 requests/hour). The flat fee is the
+  // headline price, NOT "Pay as you go"; the catalog authors this as a
+  // `flat_fee` rate card carrying a metered entitlement template, and the
+  // subscription view must agree (it previously rendered "Pay as you go"
+  // because every metered item was forced to `usage_based`).
+  it("treats a flat recurring price on a metered item as the headline price, not PAYG", () => {
+    const view = getSubscriptionPlanView(
+      makeSubscription({
+        items: [
+          item({
+            key: "api_requests",
+            name: "API Requests",
+            entitlement: meteredEntitlement(10, "PT1H"),
+            price: { type: "flat", amount: "2.99", paymentTerm: "in_advance" },
+            billingCadence: "PT1H",
+          }),
+        ],
+      }),
+      { units: { api_requests: "request" } },
+    );
+
+    expect(view.priceLabel).toEqual({ type: "priced", amount: 2.99 });
+    expect(view.entitlements.quotas).toEqual([
+      expect.objectContaining({ limit: 10, period: "hour" }),
+    ]);
+    expect(view.entitlements.quotas[0].isPayg).toBeFalsy();
+  });
+
   it("falls back to the catalog plan when there are no provisioned items", () => {
     const view = getSubscriptionPlanView(
       makeSubscription({

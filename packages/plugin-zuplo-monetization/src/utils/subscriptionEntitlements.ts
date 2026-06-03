@@ -1,6 +1,7 @@
 import type {
   Feature,
   FlatPrice,
+  MeteredEntitlementTemplate,
   PlanPhase,
   Price,
   Quota,
@@ -62,17 +63,35 @@ const itemToRateCard = (item: Item): RateCard => {
     item.billingCadence ?? ent?.usagePeriod?.intervalISO ?? null;
 
   if (ent?.type === "metered") {
+    const entitlementTemplate: MeteredEntitlementTemplate = {
+      type: "metered",
+      isSoftLimit: ent.isSoftLimit,
+      issueAfterReset: ent.issueAfterReset,
+      usagePeriod: ent.usagePeriod?.intervalISO,
+    };
+    // A flat recurring price on a metered item is a fixed subscription fee
+    // that bundles an included quota (e.g. "$2.99/hour for 10 requests/hour"),
+    // not pay-as-you-go. Mirror how the catalog plan authors this — a
+    // `flat_fee` rate card carrying a metered entitlement template — so the fee
+    // counts toward the headline price (`getPlanPrice` only sums `flat_fee`
+    // cards) instead of flipping the plan to "Pay as you go". Tiered/unit (or
+    // absent) prices stay `usage_based`: that's true metered billing, which
+    // `formatPlanPrice`/`categorizeRateCards` already render correctly.
+    if (price?.type === "flat") {
+      return {
+        ...base,
+        type: "flat_fee",
+        billingCadence,
+        price,
+        entitlementTemplate,
+      };
+    }
     return {
       ...base,
       type: "usage_based",
       billingCadence: billingCadence ?? "P1M",
       price,
-      entitlementTemplate: {
-        type: "metered",
-        isSoftLimit: ent.isSoftLimit,
-        issueAfterReset: ent.issueAfterReset,
-        usagePeriod: ent.usagePeriod?.intervalISO,
-      },
+      entitlementTemplate,
     };
   }
   if (ent?.type === "boolean") {
