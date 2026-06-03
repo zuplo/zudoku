@@ -4,13 +4,13 @@ import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { cn } from "zudoku/ui/util.js";
 import { Markdown } from "../../../components/Markdown.js";
-import type { MediaTypeObject } from "../graphql/graphql.js";
+import type { Content } from "../interfaces.js";
 import { SchemaView } from "../schema/SchemaView.js";
 
 type Response = {
   statusCode: string;
   description?: string | null;
-  content?: MediaTypeObject[] | null;
+  content?: Content[] | null;
 };
 
 export const ResponseContent = ({

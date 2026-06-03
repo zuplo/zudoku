@@ -1,8 +1,6 @@
 import { useOasConfig } from "./context.js";
-import type {
-  MediaTypeObject,
-  OperationsFragmentFragment,
-} from "./graphql/graphql.js";
+import type { OperationsFragmentFragment } from "./graphql/graphql.js";
+import type { Content } from "./interfaces.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 
@@ -15,7 +13,7 @@ export const PlaygroundDialogWrapper = ({
   server?: string;
   servers?: string[];
   operation: OperationsFragmentFragment;
-  examples?: MediaTypeObject[];
+  examples?: Content[];
 }) => {
   const headers = operation.parameters
     ?.filter((p) => p.in === "header")

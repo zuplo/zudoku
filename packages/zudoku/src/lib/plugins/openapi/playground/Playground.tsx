@@ -24,10 +24,10 @@ import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
 import type {
-  MediaTypeObject,
   SecuritySchemeIn,
   SecuritySchemeType,
 } from "../graphql/graphql.js";
+import type { Content } from "../interfaces.js";
 import { useSelectedServer } from "../state.js";
 import { AuthorizeDialog } from "./AuthorizeDialog.js";
 import BodyPanel from "./BodyPanel.js";
@@ -181,7 +181,7 @@ export type PlaygroundContentProps = {
   queryParams?: QueryParam[];
   pathParams?: PathParam[];
   defaultBody?: string;
-  examples?: MediaTypeObject[];
+  examples?: Content[];
   security?: SecurityRequirementProp[];
   securitySchemes?: Array<{
     name: string;
