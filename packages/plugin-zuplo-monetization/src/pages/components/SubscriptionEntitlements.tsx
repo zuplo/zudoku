@@ -53,6 +53,7 @@ export const SubscriptionEntitlements = ({
       currency={currency}
       billingCadence={billingCadence}
       units={units}
+      itemClassName={itemClassName}
     />
   );
 };
