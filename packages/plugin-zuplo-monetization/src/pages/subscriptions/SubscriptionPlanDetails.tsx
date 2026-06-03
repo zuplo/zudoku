@@ -7,13 +7,9 @@ import {
   CardTitle,
 } from "zudoku/ui/Card";
 import { useMonetizationConfig } from "../../MonetizationContext.js";
-import { FeatureItem } from "../../pricing-ui/FeatureItem.js";
-import { PlanEntitlements } from "../../pricing-ui/PlanEntitlements.js";
-import { QuotaItem } from "../../pricing-ui/QuotaItem.js";
+import { PlanPriceTag } from "../../pricing-ui/PlanPriceTag.js";
 import type { Subscription } from "../../types/SubscriptionType.js";
 import { formatDateTime } from "../../utils/formatDateTime.js";
-import { formatDuration } from "../../utils/formatDuration.js";
-import { formatPrice } from "../../utils/formatPrice.js";
 import {
   planHasDefaultTaxBehavior,
   subscriptionTaxLegendSentence,
@@ -22,6 +18,7 @@ import {
   getSubscriptionPlanView,
   hasSubscriptionEntitlements,
 } from "../../utils/subscriptionEntitlements.js";
+import { SubscriptionEntitlements } from "../components/SubscriptionEntitlements.js";
 
 const detailLabelClassName = "text-sm font-semibold tracking-wide mb-1";
 const sectionLabelClassName = "text-base font-semibold tracking-wide mb-3 mt-2";
@@ -42,30 +39,6 @@ export const SubscriptionPlanDetails = ({
   const taxLegendSentence = planHasDefaultTaxBehavior(plan)
     ? subscriptionTaxLegendSentence(plan.defaultTaxConfig?.behavior ?? "")
     : undefined;
-
-  // The headline mirrors the pricing card. For usage-based plans the concrete
-  // per-unit / tier prices live in the entitlements list below (rendered with
-  // the same logic as the pricing table), so "Pay as you go" stays a summary
-  // rather than the only thing the customer sees.
-  const primaryPrice =
-    priceLabel.type === "priced" ? (
-      <>
-        <span className="text-primary font-medium text-lg">
-          {formatPrice(priceLabel.amount, currency)}
-        </span>
-        <span className="text-muted-foreground">
-          {" / "}
-          {formatDuration(plan.billingCadence)}
-        </span>
-      </>
-    ) : priceLabel.type === "payg" ? (
-      <div>
-        <div className="text-primary font-medium">{priceLabel.main}</div>
-        <div className="text-xs text-muted-foreground">{priceLabel.sub}</div>
-      </div>
-    ) : (
-      <span className="text-primary font-medium">Free</span>
-    );
 
   const hasEntitlements = hasSubscriptionEntitlements(view);
 
@@ -99,8 +72,16 @@ export const SubscriptionPlanDetails = ({
             <div>
               <dt className={detailLabelClassName}>Price</dt>
               <dd>
+                {/* For usage-based plans the concrete per-unit / tier prices
+                    live in the entitlements list below, so the "Pay as you go"
+                    headline stays a summary rather than the whole story. */}
                 <div className="flex flex-wrap items-baseline gap-1">
-                  {primaryPrice}
+                  <PlanPriceTag
+                    label={priceLabel}
+                    currency={currency}
+                    billingCadence={plan.billingCadence}
+                    description
+                  />
                 </div>
                 {taxLegendSentence ? (
                   <p className="text-xs text-muted-foreground mt-1">
@@ -125,23 +106,12 @@ export const SubscriptionPlanDetails = ({
           {hasEntitlements ? (
             <div className="space-y-2 pt-2 border-t border-border">
               <p className={sectionLabelClassName}>What's included</p>
-              {view.usingItems ? (
-                <div className="space-y-3">
-                  {view.entitlements.quotas.map((quota) => (
-                    <QuotaItem key={quota.key} quota={quota} />
-                  ))}
-                  {view.entitlements.features.map((feature) => (
-                    <FeatureItem key={feature.key} feature={feature} />
-                  ))}
-                </div>
-              ) : (
-                <PlanEntitlements
-                  phases={view.fallbackPhases}
-                  currency={currency}
-                  billingCadence={plan.billingCadence}
-                  units={pricing?.units}
-                />
-              )}
+              <SubscriptionEntitlements
+                view={view}
+                currency={currency}
+                billingCadence={plan.billingCadence}
+                units={pricing?.units}
+              />
             </div>
           ) : null}
         </CardContent>

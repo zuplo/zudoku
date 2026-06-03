@@ -149,7 +149,7 @@ describe("SubscriptionPlanDetails", () => {
     );
 
     expect(screen.getByText("$49")).toBeInTheDocument();
-    expect(screen.getByText("/ month")).toBeInTheDocument();
+    expect(screen.getByText("/month")).toBeInTheDocument();
   });
 
   it("renders 'Free' for a zero flat fee", () => {
@@ -339,7 +339,7 @@ describe("SubscriptionPlanDetails", () => {
     render(<SubscriptionPlanDetails subscription={subscription} />);
 
     expect(screen.getByText("$49")).toBeInTheDocument();
-    expect(screen.getByText("/ month")).toBeInTheDocument();
+    expect(screen.getByText("/month")).toBeInTheDocument();
     expect(screen.getByText("API Requests:")).toBeInTheDocument();
     expect(screen.getByText(/500 \/ month/)).toBeInTheDocument();
   });

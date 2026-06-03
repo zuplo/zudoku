@@ -11,6 +11,7 @@ import {
 import { Badge } from "zudoku/ui/Badge";
 import { Button } from "zudoku/ui/Button";
 import { PlanEntitlements } from "../../pricing-ui/PlanEntitlements.js";
+import { PlanPriceTag } from "../../pricing-ui/PlanPriceTag.js";
 import type { Plan } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import {
@@ -18,10 +19,8 @@ import {
   type EntitlementChange,
   type EntitlementSet,
 } from "../../utils/comparePlanEntitlements.js";
-import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPhaseRampSummary } from "../../utils/formatPhaseRampSummary.js";
 import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
-import { formatPrice } from "../../utils/formatPrice.js";
 import { isCustomPlan } from "../../utils/isCustomPlan.js";
 
 export type PlanChangeMode = "upgrade" | "downgrade" | "private";
@@ -168,15 +167,12 @@ export const PlanChangeCard = ({
           </div>
           {isCustom ? (
             <span className="text-primary font-medium">Custom</span>
-          ) : priceLabel.type === "priced" ? (
-            <span className="text-primary font-medium text-lg">
-              {formatPrice(priceLabel.amount, plan.currency)}/
-              {formatDuration(plan.billingCadence)}
-            </span>
-          ) : priceLabel.type === "payg" ? (
-            <span className="text-primary font-medium">Pay as you go</span>
           ) : (
-            <span className="text-primary font-medium">Free</span>
+            <PlanPriceTag
+              label={priceLabel}
+              currency={plan.currency}
+              billingCadence={plan.billingCadence}
+            />
           )}
         </div>
         {isCustom ? (

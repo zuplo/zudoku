@@ -24,6 +24,7 @@
 //     grid.
 export { FeatureItem } from "./FeatureItem.js";
 export { PlanEntitlements } from "./PlanEntitlements.js";
+export { PlanPriceTag } from "./PlanPriceTag.js";
 export { PricingCard, type PricingCardProps } from "./PricingCard.js";
 export { PricingTable, type PricingTableProps } from "./PricingTable.js";
 export { QuotaItem } from "./QuotaItem.js";
