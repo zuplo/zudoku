@@ -769,6 +769,8 @@ export type ZudokuConfig = Omit<
 };
 
 export function validateConfig(config: unknown, configPath?: string) {
+  warnUnsafeConfigKeys(config);
+
   const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
@@ -785,4 +787,28 @@ export function validateConfig(config: unknown, configPath?: string) {
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log(colors.yellow(z.prettifyError(validationResult.error)));
   }
+}
+
+// `UNSAFE_` prefixed config options that are deprecated and will be removed soon.
+const DEPRECATED_UNSAFE_KEYS = ["UNSAFE_slotlets"] as const;
+
+/**
+ * Warns when config uses a deprecated `UNSAFE_` prefixed option, signalling
+ * that it will be removed soon.
+ */
+function warnUnsafeConfigKeys(config: unknown) {
+  if (typeof config !== "object" || config === null) return;
+
+  const usedKeys = DEPRECATED_UNSAFE_KEYS.filter((key) =>
+    Object.hasOwn(config, key),
+  );
+
+  if (usedKeys.length === 0) return;
+
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
+  console.log(
+    colors.yellow(
+      `Warning: The following config ${usedKeys.length === 1 ? "option is" : "options are"} deprecated and will be removed soon: ${usedKeys.join(", ")}`,
+    ),
+  );
 }
