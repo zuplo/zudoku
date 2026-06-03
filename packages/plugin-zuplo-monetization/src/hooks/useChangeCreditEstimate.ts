@@ -10,8 +10,9 @@ import { useDeploymentName } from "./useDeploymentName";
 export type ChangeTiming = "immediate" | "next_billing_cycle";
 
 /**
- * OpenMeter's `SubscriptionChangeCreditEstimate`. Numeric fields serialize as
- * strings (OpenMeter's `Numeric` type); other fields exist but aren't used here.
+ * The Zuplo metering `SubscriptionChangeCreditEstimate`. Numeric fields
+ * serialize as strings (a `Numeric` type); other fields exist but aren't used
+ * here.
  */
 export type ChangeCreditEstimate = {
   creditAmount?: string;
@@ -19,8 +20,8 @@ export type ChangeCreditEstimate = {
 };
 
 /**
- * Preview the proration credit for changing a subscription's plan, via
- * gateway-service's `.../change/estimate-credit`. Failures are swallowed
+ * Preview the proration credit for changing a subscription's plan, via the
+ * Zuplo metering `.../change/estimate-credit` endpoint. Failures are swallowed
  * (`retry: false`, `throwOnError: false`) so the confirmation page never breaks
  * when the preview is unavailable.
  */
