@@ -25,6 +25,7 @@ import { highlighterPromise } from "../lib/shiki.js";
 import type { Adapter } from "./adapter.js";
 import { getRoutesByConfig } from "./main.js";
 import { protectChunks as rawProtectChunks } from "./protectChunks.js";
+import { getSsrCacheControl } from "./ssrCacheControl.js";
 import { wrapProtectedRoutes } from "./wrapProtectedRoutes.js";
 
 export { getRoutesByConfig };
@@ -217,14 +218,15 @@ export const handleRequest = async ({
     const headers: HeadersInit = {
       "Content-Type": "text/html; charset=utf-8",
     };
-    // Only suppress caching for pages that embed a per-user profile.
-    // Anonymous renders (auth configured but no session) stay cacheable.
-    if (ssrAuth?.profile) {
-      headers["Cache-Control"] = "private, no-store";
+    const finalStatus =
+      renderContext.status !== 200 ? renderContext.status : status;
+    const cacheControl = getSsrCacheControl(finalStatus, !!ssrAuth?.profile);
+    if (cacheControl) {
+      headers["Cache-Control"] = cacheControl;
     }
 
     return new Response(stream, {
-      status: renderContext.status !== 200 ? renderContext.status : status,
+      status: finalStatus,
       headers,
     });
   } catch (error) {
