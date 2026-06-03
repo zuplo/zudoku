@@ -2,18 +2,17 @@ import { FeatureItem } from "../../pricing-ui/FeatureItem.js";
 import { PlanEntitlements } from "../../pricing-ui/PlanEntitlements.js";
 import { QuotaItem } from "../../pricing-ui/QuotaItem.js";
 import type { Subscription } from "../../types/SubscriptionType.js";
-import { getActivePhase } from "../../utils/billables.js";
 import { formatDuration } from "../../utils/formatDuration.js";
-import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
 import { formatPrice } from "../../utils/formatPrice.js";
-import { categorizeSubscriptionItems } from "../../utils/subscriptionEntitlements.js";
+import { getSubscriptionPlanView } from "../../utils/subscriptionEntitlements.js";
 
 /**
  * Baseline shown at the top of the Switch Plan modal: the current plan's price
  * and what it actually includes, so users have a concrete reference to compare
- * targets against. Entitlements come from the subscription's *provisioned*
- * items (real included quotas), falling back to the plan's rate cards when
- * items aren't present.
+ * targets against. Both the price and the entitlements come from the
+ * subscription's *provisioned* items (real included quotas + recurring fees),
+ * falling back to the plan's rate cards only when items aren't present — see
+ * {@link getSubscriptionPlanView}.
  */
 export const CurrentPlanBaseline = ({
   subscription,
@@ -24,14 +23,12 @@ export const CurrentPlanBaseline = ({
 }) => {
   const plan = subscription.plan;
   const currency = subscription.currency ?? plan.currency;
-  const priceLabel = formatPlanPrice(plan);
+  const { priceLabel, entitlements, fallbackPhases, usingItems } =
+    getSubscriptionPlanView(subscription, { units });
 
-  const activePhase = getActivePhase(subscription);
-  const { quotas, features } = activePhase
-    ? categorizeSubscriptionItems(activePhase.items ?? [], { currency, units })
-    : { quotas: [], features: [] };
-  const hasItems = quotas.length > 0 || features.length > 0;
-  const hasPlanPhases = (plan.phases?.length ?? 0) > 0;
+  const hasItems =
+    usingItems &&
+    (entitlements.quotas.length > 0 || entitlements.features.length > 0);
 
   return (
     <div className="border rounded-lg p-4">
@@ -56,17 +53,17 @@ export const CurrentPlanBaseline = ({
 
       {hasItems ? (
         <div className="mt-3 pt-3 border-t space-y-2">
-          {quotas.map((quota) => (
+          {entitlements.quotas.map((quota) => (
             <QuotaItem key={quota.key} quota={quota} />
           ))}
-          {features.map((feature) => (
+          {entitlements.features.map((feature) => (
             <FeatureItem key={feature.key} feature={feature} />
           ))}
         </div>
-      ) : hasPlanPhases ? (
+      ) : !usingItems && fallbackPhases.length > 0 ? (
         <div className="mt-3 pt-3 border-t">
           <PlanEntitlements
-            phases={plan.phases}
+            phases={fallbackPhases}
             currency={currency}
             billingCadence={plan.billingCadence}
             units={units}

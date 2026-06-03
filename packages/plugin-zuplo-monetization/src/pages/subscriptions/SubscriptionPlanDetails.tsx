@@ -7,16 +7,21 @@ import {
   CardTitle,
 } from "zudoku/ui/Card";
 import { useMonetizationConfig } from "../../MonetizationContext.js";
+import { FeatureItem } from "../../pricing-ui/FeatureItem.js";
 import { PlanEntitlements } from "../../pricing-ui/PlanEntitlements.js";
+import { QuotaItem } from "../../pricing-ui/QuotaItem.js";
 import type { Subscription } from "../../types/SubscriptionType.js";
 import { formatDateTime } from "../../utils/formatDateTime.js";
 import { formatDuration } from "../../utils/formatDuration.js";
-import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import {
   planHasDefaultTaxBehavior,
   subscriptionTaxLegendSentence,
 } from "../../utils/pricingTaxLegend.js";
+import {
+  getSubscriptionPlanView,
+  hasSubscriptionEntitlements,
+} from "../../utils/subscriptionEntitlements.js";
 
 const detailLabelClassName = "text-sm font-semibold tracking-wide mb-1";
 const sectionLabelClassName = "text-base font-semibold tracking-wide mb-3 mt-2";
@@ -32,7 +37,8 @@ export const SubscriptionPlanDetails = ({
   const { pricing } = useMonetizationConfig();
   const plan = subscription.plan;
   const currency = subscription.currency ?? plan.currency;
-  const priceLabel = formatPlanPrice(plan);
+  const view = getSubscriptionPlanView(subscription, { units: pricing?.units });
+  const { priceLabel } = view;
   const taxLegendSentence = planHasDefaultTaxBehavior(plan)
     ? subscriptionTaxLegendSentence(plan.defaultTaxConfig?.behavior ?? "")
     : undefined;
@@ -61,10 +67,7 @@ export const SubscriptionPlanDetails = ({
       <span className="text-primary font-medium">Free</span>
     );
 
-  const hasEntitlements =
-    plan.phases?.some((p) =>
-      p.rateCards?.some((rc) => rc.entitlementTemplate),
-    ) ?? false;
+  const hasEntitlements = hasSubscriptionEntitlements(view);
 
   return (
     <div className="space-y-4">
@@ -122,12 +125,23 @@ export const SubscriptionPlanDetails = ({
           {hasEntitlements ? (
             <div className="space-y-2 pt-2 border-t border-border">
               <p className={sectionLabelClassName}>What's included</p>
-              <PlanEntitlements
-                phases={plan.phases}
-                currency={currency}
-                billingCadence={plan.billingCadence}
-                units={pricing?.units}
-              />
+              {view.usingItems ? (
+                <div className="space-y-3">
+                  {view.entitlements.quotas.map((quota) => (
+                    <QuotaItem key={quota.key} quota={quota} />
+                  ))}
+                  {view.entitlements.features.map((feature) => (
+                    <FeatureItem key={feature.key} feature={feature} />
+                  ))}
+                </div>
+              ) : (
+                <PlanEntitlements
+                  phases={view.fallbackPhases}
+                  currency={currency}
+                  billingCadence={plan.billingCadence}
+                  units={pricing?.units}
+                />
+              )}
             </div>
           ) : null}
         </CardContent>

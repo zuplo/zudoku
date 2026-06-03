@@ -256,4 +256,91 @@ describe("SubscriptionPlanDetails", () => {
     expect(screen.queryByText(/Price excludes tax;/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Price includes tax/i)).not.toBeInTheDocument();
   });
+
+  // Prefer the subscription's actual provisioned items for BOTH price and
+  // entitlements, so a paid plan never reads as "Free" and the real quota
+  // shows even if the embedded plan snapshot is thin.
+  it("derives price and entitlements from the active phase's items when present", () => {
+    const subscription = makeSubscription(makePlan({ phases: [] }), {
+      phases: [
+        {
+          activeFrom: "2026-04-01T12:00:00.000Z",
+          createdAt: "2026-04-01T12:00:00.000Z",
+          id: "phase-1",
+          itemTimelines: {},
+          items: [
+            {
+              activeFrom: "2026-04-01T12:00:00.000Z",
+              billingCadence: "P1M",
+              createdAt: "2026-04-01T12:00:00.000Z",
+              featureKey: "monthly_fee",
+              id: "fee",
+              included: {
+                feature: {
+                  createdAt: "x",
+                  id: "mf",
+                  key: "monthly_fee",
+                  name: "Monthly Fee",
+                  updatedAt: "x",
+                },
+              },
+              key: "monthly_fee",
+              metadata: {},
+              name: "Monthly Fee",
+              price: { type: "flat", amount: "49", paymentTerm: "in_advance" },
+              updatedAt: "2026-04-01T12:00:00.000Z",
+            },
+            {
+              activeFrom: "2026-04-01T12:00:00.000Z",
+              billingCadence: "P1M",
+              createdAt: "2026-04-01T12:00:00.000Z",
+              featureKey: "api_requests",
+              id: "api",
+              included: {
+                entitlement: {
+                  activeFrom: "2026-04-01T12:00:00.000Z",
+                  annotations: { "subscription.id": "sub-1" },
+                  createdAt: "2026-04-01T12:00:00.000Z",
+                  featureId: "f",
+                  featureKey: "api_requests",
+                  id: "ent",
+                  issueAfterReset: 500,
+                  subjectKey: "s",
+                  type: "metered",
+                  updatedAt: "2026-04-01T12:00:00.000Z",
+                  usagePeriod: {
+                    anchor: "x",
+                    interval: "P1M",
+                    intervalISO: "P1M",
+                  },
+                },
+                feature: {
+                  createdAt: "x",
+                  id: "f",
+                  key: "api_requests",
+                  name: "API Requests",
+                  updatedAt: "x",
+                },
+              },
+              key: "api_requests",
+              metadata: {},
+              name: "API Requests",
+              updatedAt: "2026-04-01T12:00:00.000Z",
+            },
+          ],
+          key: "default",
+          metadata: {},
+          name: "Default",
+          updatedAt: "2026-04-01T12:00:00.000Z",
+        },
+      ],
+    });
+
+    render(<SubscriptionPlanDetails subscription={subscription} />);
+
+    expect(screen.getByText("$49")).toBeInTheDocument();
+    expect(screen.getByText("/ month")).toBeInTheDocument();
+    expect(screen.getByText("API Requests:")).toBeInTheDocument();
+    expect(screen.getByText(/500 \/ month/)).toBeInTheDocument();
+  });
 });

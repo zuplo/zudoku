@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Item } from "../types/SubscriptionType.js";
-import { categorizeSubscriptionItems } from "./subscriptionEntitlements.js";
+import type { Item, Subscription } from "../types/SubscriptionType.js";
+import {
+  categorizeSubscriptionItems,
+  getSubscriptionPlanView,
+  hasSubscriptionEntitlements,
+} from "./subscriptionEntitlements.js";
 
 type Entitlement = NonNullable<Item["included"]["entitlement"]>;
 
@@ -33,7 +37,10 @@ const item = (o: {
   updatedAt: "2026-05-27T12:55:22.000Z",
 });
 
-const meteredEntitlement = (issueAfterReset?: number): Entitlement => ({
+const meteredEntitlement = (
+  issueAfterReset?: number,
+  intervalISO = "PT1H",
+): Entitlement => ({
   activeFrom: "2026-05-27T12:55:22.000Z",
   annotations: { "subscription.id": "sub-1" },
   createdAt: "2026-05-27T12:55:22.000Z",
@@ -44,8 +51,42 @@ const meteredEntitlement = (issueAfterReset?: number): Entitlement => ({
   type: "metered",
   updatedAt: "2026-05-27T12:55:22.000Z",
   ...(issueAfterReset != null ? { issueAfterReset } : {}),
-  usagePeriod: { anchor: "x", interval: "PT1H", intervalISO: "PT1H" },
+  usagePeriod: { anchor: "x", interval: intervalISO, intervalISO },
 });
+
+const makeSubscription = (opts: {
+  items?: Item[];
+  planPhases?: Subscription["plan"]["phases"];
+}): Subscription =>
+  ({
+    id: "sub-1",
+    currency: "USD",
+    billingCadence: "P1M",
+    activeFrom: "2026-01-01T00:00:00.000Z",
+    plan: {
+      id: "plan-1",
+      key: "plan",
+      name: "Plan",
+      billingCadence: "P1M",
+      currency: "USD",
+      phases: opts.planPhases ?? [],
+    },
+    phases: opts.items
+      ? [
+          {
+            activeFrom: "2026-01-01T00:00:00.000Z",
+            createdAt: "2026-01-01T00:00:00.000Z",
+            id: "ph",
+            itemTimelines: {},
+            items: opts.items,
+            key: "default",
+            metadata: {},
+            name: "Default",
+            updatedAt: "2026-01-01T00:00:00.000Z",
+          },
+        ]
+      : [],
+  }) as unknown as Subscription;
 
 describe("categorizeSubscriptionItems", () => {
   it("reports the REAL included quota from a free metered item (not 0)", () => {
@@ -130,5 +171,109 @@ describe("categorizeSubscriptionItems", () => {
       quotas: [],
       features: [],
     });
+  });
+});
+
+describe("getSubscriptionPlanView", () => {
+  it("derives price + entitlements from the active phase's items", () => {
+    const view = getSubscriptionPlanView(
+      makeSubscription({
+        items: [
+          item({
+            key: "monthly_fee",
+            name: "Monthly Fee",
+            price: { type: "flat", amount: "99", paymentTerm: "in_advance" },
+            billingCadence: "P1M",
+          }),
+          item({
+            key: "api_requests",
+            name: "API Calls",
+            entitlement: meteredEntitlement(1000, "P1M"),
+          }),
+        ],
+      }),
+      { units: { api_requests: "request" } },
+    );
+
+    expect(view.usingItems).toBe(true);
+    expect(view.priceLabel).toEqual({ type: "priced", amount: 99 });
+    expect(view.entitlements.quotas).toEqual([
+      expect.objectContaining({
+        key: "api_requests",
+        limit: 1000,
+        period: "month",
+      }),
+    ]);
+  });
+
+  it("falls back to the catalog plan when there are no provisioned items", () => {
+    const view = getSubscriptionPlanView(
+      makeSubscription({
+        planPhases: [
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "base",
+                name: "Base",
+                billingCadence: "P1M",
+                price: { type: "flat", amount: "49" },
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    expect(view.usingItems).toBe(false);
+    expect(view.priceLabel).toEqual({ type: "priced", amount: 49 });
+    expect(view.fallbackPhases).toHaveLength(1);
+  });
+
+  // Regression for the reviewer's concern: a paid active phase must not read as
+  // "Free" just because the embedded plan snapshot has no phases.
+  it("does not show Free for a paid active phase when plan.phases is empty", () => {
+    const view = getSubscriptionPlanView(
+      makeSubscription({
+        items: [
+          item({
+            key: "monthly_fee",
+            name: "Monthly Fee",
+            price: { type: "flat", amount: "99", paymentTerm: "in_advance" },
+            billingCadence: "P1M",
+          }),
+        ],
+        planPhases: [],
+      }),
+    );
+
+    expect(view.priceLabel).toEqual({ type: "priced", amount: 99 });
+  });
+});
+
+describe("hasSubscriptionEntitlements", () => {
+  it("is true when the active items carry entitlements", () => {
+    const view = getSubscriptionPlanView(
+      makeSubscription({
+        items: [
+          item({
+            key: "api_requests",
+            name: "API",
+            entitlement: meteredEntitlement(10),
+          }),
+        ],
+      }),
+    );
+    expect(hasSubscriptionEntitlements(view)).toBe(true);
+  });
+
+  it("is false when nothing is included", () => {
+    expect(
+      hasSubscriptionEntitlements(
+        getSubscriptionPlanView(makeSubscription({ planPhases: [] })),
+      ),
+    ).toBe(false);
   });
 });
