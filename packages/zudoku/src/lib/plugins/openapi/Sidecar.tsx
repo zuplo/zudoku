@@ -10,6 +10,7 @@ import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { useAuthState } from "../../authentication/state.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
@@ -28,7 +29,6 @@ import { useSecurityCredentialsStore } from "./playground/securityCredentialsSto
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
-import * as SidecarBox from "./SidecarBox.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 import {
@@ -401,7 +401,7 @@ export const Sidecar = ({
               embedded
               language={selectedLang}
               showLanguageIndicator={false}
-              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
+              className="[--scrollbar-color:gray] rounded-none text-xs max-h-50"
               // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
               code={httpSnippetCode!}
             />
@@ -523,43 +523,42 @@ export const Sidecar = ({
         />
       ) : null}
 
-      {(hasResponseExamples || !isGraphQLEndpoint) &&
-        (hasResponseExamples ? (
-          <ResponsesSidecarBox
-            isOnScreen={isOnScreen}
-            shouldLazyHighlight={shouldLazyHighlight}
-            selectedResponse={selectedResponse}
-            responses={operation.responses.map((response) => ({
+      {(hasResponseExamples || !isGraphQLEndpoint) && (
+        <ResponsesSidecarBox
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
+          selectedResponse={selectedResponse}
+          responses={operation.responses.map((response) => {
+            const content =
+              response.content && options?.transformExamples
+                ? options.transformExamples({
+                    auth,
+                    type: "response",
+                    context,
+                    operation,
+                    content: response.content,
+                  })
+                : response.content;
+
+            return {
               ...response,
-              content:
-                response.content && options?.transformExamples
-                  ? options.transformExamples({
-                      auth,
-                      type: "response",
-                      context,
-                      operation,
-                      content: response.content,
-                    })
-                  : response.content,
-            }))}
-          />
-        ) : (
-          <ResponsesSidecarBox
-            isGenerated
-            isOnScreen={isOnScreen}
-            shouldLazyHighlight={shouldLazyHighlight}
-            selectedResponse={selectedResponse}
-            responses={operation.responses.map((response) => ({
-              ...response,
-              content: response.content?.map((content) => ({
-                ...content,
-                examples: content.schema
-                  ? [{ name: "", value: generateSchemaExample(content.schema) }]
-                  : content.examples,
-              })),
-            }))}
-          />
-        ))}
+              // Generate an example per status only when none is provided, so
+              // an example on one status doesn't suppress generation on others.
+              content: content?.map((c) => {
+                if ((c.examples?.length ?? 0) > 0) return c;
+                if (isGraphQLEndpoint || !c.schema) return c;
+                return {
+                  ...c,
+                  examples: [
+                    { name: "", value: generateSchemaExample(c.schema) },
+                  ],
+                  isGenerated: true,
+                };
+              }),
+            };
+          })}
+        />
+      )}
     </aside>
   );
 };

@@ -178,6 +178,7 @@ export const components: Navigation = [
       "docs/components/mermaid",
       "docs/components/playground",
       "docs/components/secret",
+      "docs/components/sidecar-box",
       "docs/components/stepper",
       "docs/components/syntax-highlight",
     ],

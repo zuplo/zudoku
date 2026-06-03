@@ -1,0 +1,131 @@
+---
+title: Sidecar Box
+sidebar_icon: panel-right
+---
+
+import * as SidecarBox from "zudoku/ui/SidecarBox";
+import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight";
+import { Badge } from "zudoku/ui/Badge";
+
+A framed panel with an optional head, body, and footer. The OpenAPI plugin builds its sidecar with
+it (the request body, response, and example boxes), so reaching for it in custom plugin pages or MDX
+gives you content that matches that look.
+
+## Import
+
+```tsx
+import * as SidecarBox from "zudoku/ui/SidecarBox";
+import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight";
+```
+
+## Components
+
+- `SidecarBox.Root` - The outer framed container
+- `SidecarBox.Head` - Header row, typically a title or controls
+- `SidecarBox.Body` - Main content area with its own inner border
+- `SidecarBox.Footer` - Footer row for notes or actions
+
+`Head`, `Body`, and `Footer` are all optional. Use just `Root` and `Body` for a plain framed panel.
+
+## With a status badge
+
+The head is a plain flex row, so `justify-between` aligns a title on the left and a status badge (or
+any control) on the right, above an embedded code body.
+
+<SidecarBox.Root className="not-prose max-w-sm">
+  <SidecarBox.Head className="text-xs flex justify-between items-center">
+    <span className="font-medium">GET /users/{`{id}`}</span>
+    <Badge variant="muted">200</Badge>
+  </SidecarBox.Head>
+  <SidecarBox.Body className="p-0">
+    <SyntaxHighlight
+      embedded
+      language="bash"
+      className="rounded-none text-xs"
+      code={`curl https://api.example.com/users/usr_123 \\
+  -H "Authorization: Bearer $TOKEN"`}
+    />
+  </SidecarBox.Body>
+</SidecarBox.Root>
+
+```tsx
+<SidecarBox.Root>
+  <SidecarBox.Head className="text-xs flex justify-between items-center">
+    <span className="font-medium">GET /users/{id}</span>
+    <Badge variant="muted">200</Badge>
+  </SidecarBox.Head>
+  <SidecarBox.Body className="p-0">
+    <SyntaxHighlight embedded language="bash" className="rounded-none text-xs" code={curlExample} />
+  </SidecarBox.Body>
+</SidecarBox.Root>
+```
+
+## Anatomy
+
+All four parts together. The head and footer sit flush against the framed body in the middle.
+
+<SidecarBox.Root className="not-prose max-w-sm">
+  <SidecarBox.Head className="font-medium">Response</SidecarBox.Head>
+  <SidecarBox.Body className="p-3">A 200 response returns the user object.</SidecarBox.Body>
+  <SidecarBox.Footer className="text-muted-foreground text-xs">application/json</SidecarBox.Footer>
+</SidecarBox.Root>
+
+```tsx
+<SidecarBox.Root>
+  <SidecarBox.Head className="font-medium">Response</SidecarBox.Head>
+  <SidecarBox.Body className="p-3">A 200 response returns the user object.</SidecarBox.Body>
+  <SidecarBox.Footer className="text-muted-foreground text-xs">application/json</SidecarBox.Footer>
+</SidecarBox.Root>
+```
+
+## With a code block
+
+For code or JSON, drop the body padding with `className="p-0"` and let an embedded `SyntaxHighlight`
+own the spacing. This is the pattern the OpenAPI plugin uses for its example boxes.
+
+<SidecarBox.Root className="not-prose max-w-sm">
+  <SidecarBox.Head className="text-xs font-medium">Example response</SidecarBox.Head>
+  <SidecarBox.Body className="p-0">
+    <SyntaxHighlight
+      embedded
+      language="json"
+      className="rounded-none text-xs"
+      code={`{
+  "id": "usr_123",
+  "name": "Ada Lovelace",
+  "active": true
+}`}
+    />
+  </SidecarBox.Body>
+  <SidecarBox.Footer className="text-muted-foreground text-xs">200 OK</SidecarBox.Footer>
+</SidecarBox.Root>
+
+```tsx
+<SidecarBox.Root>
+  <SidecarBox.Head className="text-xs font-medium">Example response</SidecarBox.Head>
+  <SidecarBox.Body className="p-0">
+    <SyntaxHighlight
+      embedded
+      language="json"
+      className="rounded-none text-xs"
+      code={`{
+  "id": "usr_123",
+  "name": "Ada Lovelace",
+  "active": true
+}`}
+    />
+  </SidecarBox.Body>
+  <SidecarBox.Footer className="text-muted-foreground text-xs">200 OK</SidecarBox.Footer>
+</SidecarBox.Root>
+```
+
+## Props
+
+Each part accepts `children` and an optional `className` to extend or override its styling.
+
+| Component           | Description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
+| `SidecarBox.Root`   | Outer frame. Sets the rounded border, background, and shadow.      |
+| `SidecarBox.Head`   | Top row. A flex container, so layout utilities apply directly.     |
+| `SidecarBox.Body`   | Content area with its own inner border. Use `p-0` for code blocks. |
+| `SidecarBox.Footer` | Bottom row for notes or actions.                                   |

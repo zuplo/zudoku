@@ -22,6 +22,11 @@ const InputNavigationCategoryLinkDocSchema = z.union([
     label: z.string().optional(),
     path: z.string().optional(),
   }),
+  z.object({
+    type: z.literal("link"),
+    to: z.string(),
+    label: z.string().optional(),
+  }),
 ]);
 
 export const DisplaySchema = z
