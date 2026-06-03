@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { bold, cyan } from "picocolors";
 import { copy } from "../helpers/copy";
+import { getLatestVersion } from "../helpers/get-latest-version";
 import { install } from "../helpers/install";
 import type { GetTemplateFileArgs, InstallTemplateArgs } from "./types";
 
@@ -98,10 +99,18 @@ export const installTemplate = async ({
   };
 
   /**
-   * The Zuplo template ships with the monetization plugin.
+   * The Zuplo template ships with the monetization plugin. Resolve its latest
+   * published version from the npm registry, falling back to a known-good
+   * version when offline.
    */
   if (template === "zuplo") {
-    packageJson.dependencies["@zuplo/zudoku-plugin-monetization"] = "^0.0.41";
+    const monetizationVersion = await getLatestVersion(
+      "@zuplo/zudoku-plugin-monetization",
+      "0.0.41",
+      isOnline,
+    );
+    packageJson.dependencies["@zuplo/zudoku-plugin-monetization"] =
+      `^${monetizationVersion}`;
   }
 
   /**
