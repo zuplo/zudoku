@@ -51,10 +51,13 @@ const SubscriptionChangeConfirmPage = () => {
     (s) => s.id === subscriptionId,
   );
 
-  const creditEstimate = useChangeCreditEstimate(subscriptionId, planId);
+  const isDowngrade = mode === "downgrade";
+  const creditEstimate = useChangeCreditEstimate(
+    subscriptionId,
+    isDowngrade ? "next_billing_cycle" : "immediate",
+  );
   const credit = getEstimatedCreditAmount(creditEstimate.data);
 
-  const isDowngrade = mode === "downgrade";
   const nextCycleEnd =
     currentSubscription?.alignment?.currentAlignedBillingPeriod?.to;
   const effectiveText = isDowngrade

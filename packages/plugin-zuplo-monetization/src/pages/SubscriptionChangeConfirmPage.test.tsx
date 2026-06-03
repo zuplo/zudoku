@@ -20,6 +20,7 @@ vi.mock("../hooks/useDeploymentName", () => ({
 const testState = vi.hoisted(() => ({
   purchaseData: { data: null as unknown },
   subscriptions: { items: [] as unknown[] },
+  creditEstimate: undefined as unknown,
   mutation: {
     mutate: vi.fn(),
     isPending: false,
@@ -38,7 +39,9 @@ vi.mock("zudoku/react-query", async (importOriginal) => {
       const key = Array.isArray(options?.queryKey)
         ? String(options.queryKey[0])
         : "";
-      if (key.includes("estimate-credit")) return { data: undefined };
+      if (key.includes("estimate-credit")) {
+        return { data: testState.creditEstimate };
+      }
       if (key.includes("/subscriptions")) {
         return { data: testState.subscriptions };
       }
@@ -170,6 +173,7 @@ describe("SubscriptionChangeConfirmPage", () => {
       },
     };
     testState.subscriptions = { items: [currentSubscription()] };
+    testState.creditEstimate = undefined;
     testState.mutation.mutate = vi.fn();
     testState.mutation.isPending = false;
     testState.mutation.isError = false;
@@ -199,6 +203,22 @@ describe("SubscriptionChangeConfirmPage", () => {
     expect(note).toBeInTheDocument();
     // The concrete date includes a time of day.
     expect(note.textContent).toMatch(/\d{1,2}:\d{2}/);
+  });
+
+  it("shows the proration credit when the estimate returns one", () => {
+    testState.creditEstimate = { creditAmount: "5", currency: "USD" };
+
+    renderPage("/?planId=plan-1&subscriptionId=sub-1");
+
+    expect(
+      screen.getByText(/You'll be credited \$5 for unused time/),
+    ).toBeInTheDocument();
+  });
+
+  it("omits the proration credit line when there is no estimate", () => {
+    renderPage("/?planId=plan-1&subscriptionId=sub-1");
+
+    expect(screen.queryByText(/You'll be credited/)).not.toBeInTheDocument();
   });
 
   it("shows VAT tax line when taxType is vat and tax is exclusive", () => {

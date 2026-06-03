@@ -3,22 +3,30 @@ import { useQuery } from "zudoku/react-query";
 import { useDeploymentName } from "./useDeploymentName";
 
 /**
- * Proration/credit preview for a pending plan change, via gateway-service's
- * `.../change/estimate-credit` (an OpenMeter pass-through). The response shape
- * is NOT typed by the gateway — these fields are best-effort and MUST be
- * verified against a live response before relying on the rendered amount.
- * Failures are swallowed (`retry: false`, `throwOnError: false`) so the
- * confirmation page never breaks when the preview is unavailable.
+ * Timing for the change-credit estimate. Mirrors the backend's rule
+ * (upgrade → immediate, downgrade → next billing cycle) so the previewed
+ * credit matches what the change will actually do.
+ */
+export type ChangeTiming = "immediate" | "next_billing_cycle";
+
+/**
+ * OpenMeter's `SubscriptionChangeCreditEstimate`. Numeric fields serialize as
+ * strings (OpenMeter's `Numeric` type); other fields exist but aren't used here.
  */
 export type ChangeCreditEstimate = {
-  credit?: { amount?: string | number; currency?: string };
-  amount?: string | number;
+  creditAmount?: string;
   currency?: string;
 };
 
+/**
+ * Preview the proration credit for changing a subscription's plan, via
+ * gateway-service's `.../change/estimate-credit`. Failures are swallowed
+ * (`retry: false`, `throwOnError: false`) so the confirmation page never breaks
+ * when the preview is unavailable.
+ */
 export const useChangeCreditEstimate = (
   subscriptionId: string,
-  planId: string,
+  timing: ChangeTiming,
 ) => {
   const zudoku = useZudoku();
   const deploymentName = useDeploymentName();
@@ -26,11 +34,11 @@ export const useChangeCreditEstimate = (
   return useQuery<ChangeCreditEstimate>({
     queryKey: [
       `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/change/estimate-credit`,
-      planId,
+      timing,
     ],
     meta: {
       context: zudoku,
-      request: { method: "POST", body: JSON.stringify({ planId }) },
+      request: { method: "POST", body: JSON.stringify({ timing }) },
     },
     retry: false,
     throwOnError: false,
@@ -38,18 +46,14 @@ export const useChangeCreditEstimate = (
 };
 
 /**
- * Extract a positive credit amount (major currency units) from the best-effort
- * estimate shape. Returns `undefined` when nothing recognizable is present, so
- * the UI shows the credit only when we actually have one.
+ * Extract a positive credit amount from the estimate, or `undefined` when there
+ * isn't a usable one (so the UI only shows a credit when there actually is one).
  */
 export const getEstimatedCreditAmount = (
   estimate: ChangeCreditEstimate | undefined,
 ): { amount: number; currency?: string } | undefined => {
   if (!estimate) return undefined;
-  const raw = estimate.credit?.amount ?? estimate.amount;
-  const amount = typeof raw === "string" ? Number.parseFloat(raw) : raw;
-  if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) {
-    return undefined;
-  }
-  return { amount, currency: estimate.credit?.currency ?? estimate.currency };
+  const amount = Number.parseFloat(estimate.creditAmount ?? "");
+  if (!Number.isFinite(amount) || amount <= 0) return undefined;
+  return { amount, currency: estimate.currency };
 };
