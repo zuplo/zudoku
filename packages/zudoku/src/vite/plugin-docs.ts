@@ -101,7 +101,8 @@ export const resolveCustomNavigationPaths = async (
 
     const customPath = ensureLeadingSlash(doc.path);
     mapping[customPath] = filePath;
-    delete mapping[fileRoutePath];
+
+    if (customPath !== fileRoutePath) delete mapping[fileRoutePath];
   };
 
   if (config.navigation) {
