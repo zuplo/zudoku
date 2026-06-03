@@ -98,6 +98,13 @@ export const installTemplate = async ({
   };
 
   /**
+   * The Zuplo template ships with the monetization plugin.
+   */
+  if (template === "zuplo") {
+    packageJson.dependencies["@zuplo/zudoku-plugin-monetization"] = "latest";
+  }
+
+  /**
    * TypeScript projects will have type definitions and other devDependencies.
    */
   if (mode === "ts") {

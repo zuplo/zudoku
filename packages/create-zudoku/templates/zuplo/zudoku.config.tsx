@@ -1,6 +1,5 @@
 // Uncomment the import below to enable Zuplo monetization (pricing, checkout,
-// subscriptions). Requires installing the `@zuplo/zudoku-plugin-monetization`
-// package. See: https://zuplo.com/docs/dev-portal/zudoku/monetization
+// subscriptions). See: https://zuplo.com/docs/dev-portal/zudoku/monetization
 // import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
 import type { ZudokuConfig } from "zudoku";
 
