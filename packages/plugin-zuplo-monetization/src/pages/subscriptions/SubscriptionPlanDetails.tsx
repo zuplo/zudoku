@@ -33,7 +33,6 @@ export const SubscriptionPlanDetails = ({
 }) => {
   const { pricing } = useMonetizationConfig();
   const plan = subscription.plan;
-  const currency = subscription.currency ?? plan.currency;
   const view = getSubscriptionPlanView(subscription, { units: pricing?.units });
   const { priceLabel } = view;
   const taxLegendSentence = planHasDefaultTaxBehavior(plan)
@@ -78,8 +77,8 @@ export const SubscriptionPlanDetails = ({
                 <div className="flex flex-wrap items-baseline gap-1">
                   <PlanPriceTag
                     label={priceLabel}
-                    currency={currency}
-                    billingCadence={plan.billingCadence}
+                    currency={view.currency}
+                    billingCadence={view.billingCadence}
                     description
                   />
                 </div>
@@ -108,8 +107,8 @@ export const SubscriptionPlanDetails = ({
               <p className={sectionLabelClassName}>What's included</p>
               <SubscriptionEntitlements
                 view={view}
-                currency={currency}
-                billingCadence={plan.billingCadence}
+                currency={view.currency}
+                billingCadence={view.billingCadence}
                 units={pricing?.units}
               />
             </div>

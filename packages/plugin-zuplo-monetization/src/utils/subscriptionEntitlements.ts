@@ -128,6 +128,16 @@ export type SubscriptionPlanView = {
   fallbackPhases: PlanPhase[];
   /** Whether the view is sourced from the subscription's actual items. */
   usingItems: boolean;
+  /**
+   * The cadence the price/entitlements were resolved against
+   * (`subscription.billingCadence`, falling back to the plan's). Render the
+   * price suffix and any cadence-dependent period with this — not the embedded
+   * `plan.billingCadence`, which can disagree with the subscription — so the
+   * amount and its `/interval` always come from the same source.
+   */
+  billingCadence?: string;
+  /** The currency the price/entitlements were resolved against. */
+  currency?: string;
 };
 
 /**
@@ -162,6 +172,8 @@ export const getSubscriptionPlanView = (
       }),
       fallbackPhases: [],
       usingItems: true,
+      billingCadence,
+      currency,
     };
   }
 
@@ -170,6 +182,8 @@ export const getSubscriptionPlanView = (
     entitlements: { quotas: [], features: [] },
     fallbackPhases: plan.phases ?? [],
     usingItems: false,
+    billingCadence,
+    currency,
   };
 };
 

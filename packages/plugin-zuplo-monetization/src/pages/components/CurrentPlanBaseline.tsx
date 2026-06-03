@@ -22,7 +22,6 @@ export const CurrentPlanBaseline = ({
   units?: Record<string, string>;
 }) => {
   const plan = subscription.plan;
-  const currency = subscription.currency ?? plan.currency;
   const view = getSubscriptionPlanView(subscription, { units });
 
   return (
@@ -36,8 +35,8 @@ export const CurrentPlanBaseline = ({
         </div>
         <PlanPriceTag
           label={view.priceLabel}
-          currency={currency}
-          billingCadence={plan.billingCadence}
+          currency={view.currency}
+          billingCadence={view.billingCadence}
         />
       </div>
 
@@ -45,8 +44,8 @@ export const CurrentPlanBaseline = ({
         <div className="mt-3 pt-3 border-t">
           <SubscriptionEntitlements
             view={view}
-            currency={currency}
-            billingCadence={plan.billingCadence}
+            currency={view.currency}
+            billingCadence={view.billingCadence}
             units={units}
           />
         </div>
