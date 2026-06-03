@@ -388,4 +388,44 @@ describe("validateConfig", () => {
 
     expect(() => validateConfig(config)).toThrow();
   });
+
+  it("should warn when the deprecated UNSAFE_slotlets option is used", () => {
+    process.env.NODE_ENV = "development";
+
+    const config = {
+      UNSAFE_slotlets: {},
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "deprecated and will be removed soon: UNSAFE_slotlets",
+      ),
+    );
+  });
+
+  it("should not warn about UNSAFE_ options that are not whitelisted", () => {
+    process.env.NODE_ENV = "development";
+
+    const config = {
+      UNSAFE_somethingElse: true,
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should not warn when no deprecated option is used", () => {
+    process.env.NODE_ENV = "development";
+
+    const config = {
+      aiAssistants: ["claude"],
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
 });
