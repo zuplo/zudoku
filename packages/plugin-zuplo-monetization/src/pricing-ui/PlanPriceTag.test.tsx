@@ -61,4 +61,45 @@ describe("PlanPriceTag", () => {
 
     expect(screen.getByText("Free")).toBeInTheDocument();
   });
+
+  it("renders a large headline amount in lg size", () => {
+    render(
+      <PlanPriceTag
+        label={{ type: "priced", amount: 45 }}
+        currency="USD"
+        size="lg"
+      />,
+    );
+
+    const amount = screen.getByText("$45");
+    expect(amount).toBeInTheDocument();
+    expect(amount).toHaveClass("text-2xl", "font-bold");
+  });
+
+  it("shows the payg subline in lg size only when `description` is set", () => {
+    const { rerender } = render(
+      <PlanPriceTag
+        label={{
+          type: "payg",
+          main: "Pay as you go",
+          sub: "Usage-based pricing",
+        }}
+        size="lg"
+      />,
+    );
+    expect(screen.queryByText("Usage-based pricing")).not.toBeInTheDocument();
+
+    rerender(
+      <PlanPriceTag
+        label={{
+          type: "payg",
+          main: "Pay as you go",
+          sub: "Usage-based pricing",
+        }}
+        size="lg"
+        description
+      />,
+    );
+    expect(screen.getByText("Usage-based pricing")).toBeInTheDocument();
+  });
 });

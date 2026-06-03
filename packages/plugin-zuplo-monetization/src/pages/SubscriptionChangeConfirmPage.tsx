@@ -1,25 +1,17 @@
 import { useZudoku } from "zudoku/hooks";
 import { ArrowDownIcon } from "zudoku/icons";
-import { useMutation, useQuery } from "zudoku/react-query";
-import { useNavigate, useSearchParams } from "zudoku/router";
+import { useQuery } from "zudoku/react-query";
+import { useSearchParams } from "zudoku/router";
 import {
   getEstimatedCreditAmount,
   useChangeCreditEstimate,
 } from "../hooks/useChangeCreditEstimate";
-import { useDeploymentName } from "../hooks/useDeploymentName";
-import { usePurchaseDetails } from "../hooks/usePurchaseDetails";
+import { usePurchaseSummary } from "../hooks/usePurchaseSummary";
+import { useSubscriptionConfirmMutation } from "../hooks/useSubscriptionConfirmMutation";
 import { useMonetizationConfig } from "../MonetizationContext";
 import { subscriptionsQuery } from "../queries.js";
-import type { Subscription } from "../types/SubscriptionType.js";
 import { formatDateTime } from "../utils/formatDateTime.js";
 import { formatPrice } from "../utils/formatPrice.js";
-import {
-  getPlanFromPurchaseDetails,
-  getTaxAmountFromPurchaseDetails,
-  getTaxLabelFromPurchaseDetails,
-  isTaxInclusiveFromPurchaseDetails,
-} from "../utils/purchaseDetails";
-import { queryClient } from "../ZuploMonetizationWrapper";
 import { ConfirmationScreen } from "./components/ConfirmationScreen.js";
 import { CurrentPlanBaseline } from "./components/CurrentPlanBaseline.js";
 import { PlanSummaryCard } from "./components/PlanSummaryCard.js";
@@ -30,18 +22,13 @@ const SubscriptionChangeConfirmPage = () => {
   const subscriptionId = search.get("subscriptionId");
   const mode = search.get("mode");
   const zudoku = useZudoku();
-  const deploymentName = useDeploymentName();
-  const navigate = useNavigate();
   const { pricing } = useMonetizationConfig();
 
   if (!planId) throw new Error("Parameter `planId` missing");
   if (!subscriptionId) throw new Error("Parameter `subscriptionId` missing");
 
-  const purchaseDetails = usePurchaseDetails(planId);
-  const selectedPlan = getPlanFromPurchaseDetails(purchaseDetails.data);
-  const taxAmount = getTaxAmountFromPurchaseDetails(purchaseDetails.data);
-  const taxLabel = getTaxLabelFromPurchaseDetails(purchaseDetails.data);
-  const taxInclusive = isTaxInclusiveFromPurchaseDetails(purchaseDetails.data);
+  const { selectedPlan, taxAmount, taxLabel, taxInclusive } =
+    usePurchaseSummary(planId);
 
   // The current (pre-change) subscription, for the from→to comparison and the
   // concrete next-billing-cycle date. Best-effort: the confirm action does not
@@ -66,24 +53,10 @@ const SubscriptionChangeConfirmPage = () => {
       : "Takes effect at the start of your next billing cycle"
     : "Takes effect immediately";
 
-  const changeMutation = useMutation<Subscription>({
-    mutationKey: [
-      `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/change`,
-    ],
-    meta: {
-      context: zudoku,
-      request: {
-        method: "POST",
-        body: JSON.stringify({ planId }),
-      },
-    },
-    onSuccess: async (subscription) => {
-      await queryClient.invalidateQueries();
-      navigate(
-        `/subscriptions?subscriptionId=${encodeURIComponent(subscription.id)}`,
-        { state: { planSwitched: { newPlanName: selectedPlan?.name } } },
-      );
-    },
+  const changeMutation = useSubscriptionConfirmMutation({
+    endpoint: `subscriptions/${subscriptionId}/change`,
+    planId,
+    navigateState: { planSwitched: { newPlanName: selectedPlan?.name } },
   });
 
   return (

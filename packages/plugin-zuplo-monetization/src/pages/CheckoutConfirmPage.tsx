@@ -1,53 +1,24 @@
-import { useZudoku } from "zudoku/hooks";
 import { LockIcon } from "zudoku/icons";
-import { useMutation } from "zudoku/react-query";
-import { useNavigate, useSearchParams } from "zudoku/router";
-import { useDeploymentName } from "../hooks/useDeploymentName";
-import { usePurchaseDetails } from "../hooks/usePurchaseDetails";
+import { useSearchParams } from "zudoku/router";
+import { usePurchaseSummary } from "../hooks/usePurchaseSummary";
+import { useSubscriptionConfirmMutation } from "../hooks/useSubscriptionConfirmMutation";
 import { useMonetizationConfig } from "../MonetizationContext";
-import type { Subscription } from "../types/SubscriptionType.js";
-import {
-  getPlanFromPurchaseDetails,
-  getTaxAmountFromPurchaseDetails,
-  getTaxLabelFromPurchaseDetails,
-  isTaxInclusiveFromPurchaseDetails,
-} from "../utils/purchaseDetails";
-import { queryClient } from "../ZuploMonetizationWrapper";
 import { ConfirmationScreen } from "./components/ConfirmationScreen.js";
 import { PlanSummaryCard } from "./components/PlanSummaryCard.js";
 
 const CheckoutConfirmPage = () => {
   const [search] = useSearchParams();
   const planId = search.get("planId");
-  const zudoku = useZudoku();
-  const deploymentName = useDeploymentName();
-  const navigate = useNavigate();
   const { pricing } = useMonetizationConfig();
 
   if (!planId) throw new Error("Parameter `planId` missing");
 
-  const purchaseDetails = usePurchaseDetails(planId);
+  const { selectedPlan, taxAmount, taxLabel, taxInclusive } =
+    usePurchaseSummary(planId);
 
-  const selectedPlan = getPlanFromPurchaseDetails(purchaseDetails.data);
-  const taxAmount = getTaxAmountFromPurchaseDetails(purchaseDetails.data);
-  const taxLabel = getTaxLabelFromPurchaseDetails(purchaseDetails.data);
-  const taxInclusive = isTaxInclusiveFromPurchaseDetails(purchaseDetails.data);
-
-  const createSubscriptionMutation = useMutation<Subscription>({
-    mutationKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
-    meta: {
-      context: zudoku,
-      request: {
-        method: "POST",
-        body: JSON.stringify({ planId }),
-      },
-    },
-    onSuccess: async (subscription) => {
-      await queryClient.invalidateQueries();
-      navigate(
-        `/subscriptions?subscriptionId=${encodeURIComponent(subscription.id)}`,
-      );
-    },
+  const createSubscriptionMutation = useSubscriptionConfirmMutation({
+    endpoint: "subscriptions",
+    planId,
   });
 
   return (

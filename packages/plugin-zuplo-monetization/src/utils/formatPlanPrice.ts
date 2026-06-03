@@ -1,5 +1,6 @@
 import type { Plan, RateCard } from "../types/PlanType.js";
 import { getPlanPrice } from "./getPlanPrice.js";
+import { tierHasPositivePrice } from "./tierHasPositivePrice.js";
 
 export type PlanPriceLabel =
   | { type: "free" }
@@ -17,11 +18,7 @@ const isPricedUsageRateCard = (rc: RateCard): boolean => {
   const p = rc.price;
   if (p.type === "unit") return parseFloat(p.amount) > 0;
   if (p.type === "tiered") {
-    return p.tiers.some(
-      (t) =>
-        parseFloat(t.flatPrice?.amount ?? "0") > 0 ||
-        parseFloat(t.unitPrice?.amount ?? "0") > 0,
-    );
+    return p.tiers.some(tierHasPositivePrice);
   }
   // Other shapes (flat / dynamic / package) on usage_based are uncommon
   // but imply some form of billing — treat as priced.

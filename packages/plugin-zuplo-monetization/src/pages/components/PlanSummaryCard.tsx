@@ -1,14 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
 import { PlanEntitlements } from "../../pricing-ui/PlanEntitlements.js";
+import { PlanPriceTag } from "../../pricing-ui/PlanPriceTag.js";
 import type { Plan } from "../../types/PlanType.js";
 import { formatBillingCycle } from "../../utils/formatBillingCycle.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
-import {
-  formatMinorCurrencyAmount,
-  formatPrice,
-} from "../../utils/formatPrice.js";
+import { formatMinorCurrencyAmount } from "../../utils/formatPrice.js";
 
 /**
  * Plan summary shown on the checkout and plan-change confirmation pages: an
@@ -57,36 +55,30 @@ export const PlanSummaryCard = ({
               </span>
             </div>
           </div>
-          {priceLabel.type === "priced" ? (
-            <div className="text-right">
-              <div className="text-2xl font-bold">
-                {formatPrice(priceLabel.amount, plan.currency)}
-              </div>
-              {taxAmount != null && (
-                <div className="text-sm font-normal mt-1">
-                  {taxInclusive
-                    ? `${formatMinorCurrencyAmount(taxAmount, plan.currency)} ${taxLabel} included`
-                    : `+ ${formatMinorCurrencyAmount(taxAmount, plan.currency)} ${taxLabel}`}
-                </div>
-              )}
-              {billingCycle && (
-                <div className="text-sm text-muted-foreground font-normal">
-                  Billed {formatBillingCycle(billingCycle)}
-                </div>
-              )}
-            </div>
-          ) : priceLabel.type === "payg" ? (
-            <div className="text-right">
-              <div className="text-2xl font-bold text-balance">
-                {priceLabel.main}
-              </div>
-              <div className="text-sm text-muted-foreground font-normal mt-1">
-                {priceLabel.sub}
-              </div>
-            </div>
-          ) : (
-            <div className="text-2xl text-muted-foreground font-bold">Free</div>
-          )}
+          <div className="text-right">
+            <PlanPriceTag
+              label={priceLabel}
+              currency={plan.currency}
+              size="lg"
+              description
+            />
+            {priceLabel.type === "priced" && (
+              <>
+                {taxAmount != null && (
+                  <div className="text-sm font-normal mt-1">
+                    {taxInclusive
+                      ? `${formatMinorCurrencyAmount(taxAmount, plan.currency)} ${taxLabel} included`
+                      : `+ ${formatMinorCurrencyAmount(taxAmount, plan.currency)} ${taxLabel}`}
+                  </div>
+                )}
+                {billingCycle && (
+                  <div className="text-sm text-muted-foreground font-normal">
+                    Billed {formatBillingCycle(billingCycle)}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
