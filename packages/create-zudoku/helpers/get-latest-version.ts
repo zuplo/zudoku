@@ -12,9 +12,7 @@ export async function getLatestVersion(
   if (!isOnline) return fallback;
 
   try {
-    const res = await fetch(
-      `https://registry.npmjs.org/${packageName}/latest`,
-    );
+    const res = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
     if (!res.ok) return fallback;
 
     const data = (await res.json()) as { version?: string };
