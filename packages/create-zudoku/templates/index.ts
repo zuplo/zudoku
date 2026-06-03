@@ -100,17 +100,17 @@ export const installTemplate = async ({
 
   /**
    * The Zuplo template ships with the monetization plugin. Resolve its latest
-   * published version from the npm registry, falling back to a known-good
-   * version when offline.
+   * published version from the npm registry, falling back to the "latest" tag
+   * when offline.
    */
   if (template === "zuplo") {
     const monetizationVersion = await getLatestVersion(
       "@zuplo/zudoku-plugin-monetization",
-      "0.0.41",
+      "latest",
       isOnline,
     );
     packageJson.dependencies["@zuplo/zudoku-plugin-monetization"] =
-      `^${monetizationVersion}`;
+      monetizationVersion === "latest" ? "latest" : `^${monetizationVersion}`;
   }
 
   /**
