@@ -63,20 +63,18 @@ export const derivePriceFromPlan = (
 };
 
 /**
- * Returns the monthly and yearly headline price for a plan. Prefers the
- * server-provided `monthlyPrice` / `yearlyPrice` strings when present;
- * otherwise falls back to {@link derivePriceFromPlan}. Values that can't
- * be resolved are reported as `0`, which the pricing card renders as
- * "Free".
+ * Returns the monthly and yearly headline price for a plan, always derived
+ * from the plan's rate cards via {@link derivePriceFromPlan}.
+ *
+ * The server may also send pre-computed `monthlyPrice` / `yearlyPrice` on the
+ * plan, but we deliberately ignore them and derive client-side so the headline
+ * is computed the same way everywhere it's shown. In particular the admin
+ * preview (Zuplo portal) builds plans from an API that carries no aggregate,
+ * so it can only derive — deriving here too keeps the two surfaces identical
+ * and avoids drift when the server aggregate disagrees with the rate cards.
+ * Values that can't be resolved are reported as `0`, which renders as "Free".
  */
 export const getPriceFromPlan = (plan: Plan) => {
-  if (plan.monthlyPrice != null || plan.yearlyPrice != null) {
-    return {
-      monthly: plan.monthlyPrice != null ? parseFloat(plan.monthlyPrice) : 0,
-      yearly: plan.yearlyPrice != null ? parseFloat(plan.yearlyPrice) : 0,
-    };
-  }
-
   const derived = derivePriceFromPlan(plan);
   return {
     monthly: derived.monthly ?? 0,

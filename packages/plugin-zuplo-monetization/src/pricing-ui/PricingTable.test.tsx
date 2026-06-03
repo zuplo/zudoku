@@ -165,13 +165,20 @@ describe("PricingTable", () => {
   });
 
   it("passes showYearlyPrice and units through to each card", () => {
+    // $29 P1M flat fee → derived $29/mo headline and $348 (29 * 12) yearly;
+    // the usage card supplies the per-unit entitlement for the units check.
     const planWithUsage: Plan = plan({
       id: "a",
-      monthlyPrice: "29",
-      yearlyPrice: "348",
       phases: [
         phase({
           rateCards: [
+            {
+              type: "flat_fee",
+              key: "base",
+              name: "Monthly Fee",
+              billingCadence: "P1M",
+              price: { type: "flat", amount: "29" },
+            },
             {
               type: "usage_based",
               key: "api",
