@@ -578,4 +578,174 @@ describe("SwitchPlanModal", () => {
       }),
     );
   });
+
+  it("shows the current plan's real included quota in the baseline", () => {
+    plansItems.current = [
+      makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
+    ];
+
+    const base = baseSubscription({
+      id: "plan-current",
+      key: "current",
+      name: "My Current Plan",
+      billingCadence: "PT1H",
+      phases: [],
+    });
+    const subscription: Subscription = {
+      ...base,
+      currency: "USD",
+      phases: [
+        {
+          ...base.phases[0],
+          items: [
+            {
+              activeFrom: "2025-01-01T00:00:00.000Z",
+              billingCadence: "PT1H",
+              createdAt: "2025-01-01T00:00:00.000Z",
+              featureKey: "api_requests",
+              id: "item-1",
+              included: {
+                entitlement: {
+                  activeFrom: "2025-01-01T00:00:00.000Z",
+                  annotations: { "subscription.id": "sub-1" },
+                  createdAt: "2025-01-01T00:00:00.000Z",
+                  featureId: "f",
+                  featureKey: "api_requests",
+                  id: "ent-1",
+                  issueAfterReset: 10,
+                  subjectKey: "s",
+                  type: "metered",
+                  updatedAt: "2025-01-01T00:00:00.000Z",
+                  usagePeriod: {
+                    anchor: "x",
+                    interval: "PT1H",
+                    intervalISO: "PT1H",
+                  },
+                },
+                feature: {
+                  createdAt: "x",
+                  id: "f",
+                  key: "api_requests",
+                  name: "API Requests",
+                  updatedAt: "x",
+                },
+              },
+              key: "api_requests",
+              metadata: {},
+              name: "API Requests",
+              updatedAt: "2025-01-01T00:00:00.000Z",
+            },
+          ],
+        },
+      ],
+    };
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Current Plan")).toBeInTheDocument();
+    expect(within(dialog).getByText("My Current Plan")).toBeInTheDocument();
+    expect(within(dialog).getByText("API Requests:")).toBeInTheDocument();
+    expect(within(dialog).getByText(/10 \/ hour/)).toBeInTheDocument();
+  });
+
+  it("renders a custom plan as Contact Sales with no price or switch action", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-custom",
+        key: "enterprise_custom",
+        name: "Enterprise Plus",
+        metadata: { isCustom: "true" },
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Enterprise Plus");
+    expect(within(card).getByText("Contact Sales")).toBeInTheDocument();
+    expect(within(card).getByText("Custom")).toBeInTheDocument();
+    expect(
+      within(card).queryByRole("button", { name: /Upgrade|Downgrade|Switch/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows a phase ramp summary for a multi-phase target", () => {
+    plansItems.current = [
+      {
+        ...makePublicPlan({
+          id: "plan-trial",
+          key: "trialplan",
+          name: "Trial Plan",
+        }),
+        billingCadence: "P1M",
+        phases: [
+          { key: "trial", name: "Free Trial", duration: "P1W", rateCards: [] },
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "fee",
+                name: "Fee",
+                billingCadence: "P1M",
+                price: { type: "flat", amount: "49" },
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    expect(
+      screen.getByText("Free Trial (1 week), then $49 / month"),
+    ).toBeInTheDocument();
+  });
+
+  it("expands a plan card to reveal full details", () => {
+    plansItems.current = [
+      makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Team");
+    fireEvent.click(within(card).getByRole("button", { name: /details/i }));
+    expect(
+      within(card).getByRole("button", { name: /Hide details/i }),
+    ).toBeInTheDocument();
+  });
 });

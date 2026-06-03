@@ -1,10 +1,18 @@
 import { useZudoku } from "zudoku/hooks";
-import { useMutation } from "zudoku/react-query";
+import { ArrowDownIcon } from "zudoku/icons";
+import { useMutation, useQuery } from "zudoku/react-query";
 import { useNavigate, useSearchParams } from "zudoku/router";
+import {
+  getEstimatedCreditAmount,
+  useChangeCreditEstimate,
+} from "../hooks/useChangeCreditEstimate";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePurchaseDetails } from "../hooks/usePurchaseDetails";
 import { useMonetizationConfig } from "../MonetizationContext";
+import { subscriptionsQuery } from "../queries.js";
 import type { Subscription } from "../types/SubscriptionType.js";
+import { formatDateTime } from "../utils/formatDateTime.js";
+import { formatPrice } from "../utils/formatPrice.js";
 import {
   getPlanFromPurchaseDetails,
   getTaxAmountFromPurchaseDetails,
@@ -13,6 +21,7 @@ import {
 } from "../utils/purchaseDetails";
 import { queryClient } from "../ZuploMonetizationWrapper";
 import { ConfirmationScreen } from "./components/ConfirmationScreen.js";
+import { CurrentPlanBaseline } from "./components/CurrentPlanBaseline.js";
 import { PlanSummaryCard } from "./components/PlanSummaryCard.js";
 
 const SubscriptionChangeConfirmPage = () => {
@@ -29,15 +38,30 @@ const SubscriptionChangeConfirmPage = () => {
   if (!subscriptionId) throw new Error("Parameter `subscriptionId` missing");
 
   const purchaseDetails = usePurchaseDetails(planId);
-
   const selectedPlan = getPlanFromPurchaseDetails(purchaseDetails.data);
   const taxAmount = getTaxAmountFromPurchaseDetails(purchaseDetails.data);
   const taxLabel = getTaxLabelFromPurchaseDetails(purchaseDetails.data);
   const taxInclusive = isTaxInclusiveFromPurchaseDetails(purchaseDetails.data);
-  const effectiveChangeMessage =
-    mode === "downgrade"
-      ? "This change will take effect at the start of your next billing cycle."
-      : "This change will take effect immediately.";
+
+  // The current (pre-change) subscription, for the from→to comparison and the
+  // concrete next-billing-cycle date. Best-effort: the confirm action does not
+  // depend on it.
+  const { data: subscriptionsData } = useQuery(subscriptionsQuery(zudoku));
+  const currentSubscription = subscriptionsData?.items.find(
+    (s) => s.id === subscriptionId,
+  );
+
+  const creditEstimate = useChangeCreditEstimate(subscriptionId, planId);
+  const credit = getEstimatedCreditAmount(creditEstimate.data);
+
+  const isDowngrade = mode === "downgrade";
+  const nextCycleEnd =
+    currentSubscription?.alignment?.currentAlignedBillingPeriod?.to;
+  const effectiveText = isDowngrade
+    ? nextCycleEnd
+      ? `Takes effect ${formatDateTime(nextCycleEnd)}, at the start of your next billing cycle`
+      : "Takes effect at the start of your next billing cycle"
+    : "Takes effect immediately";
 
   const changeMutation = useMutation<Subscription>({
     mutationKey: [
@@ -63,14 +87,9 @@ const SubscriptionChangeConfirmPage = () => {
     <ConfirmationScreen
       title="Confirm plan change"
       message={
-        <>
-          <p className="text-muted-foreground text-base">
-            {effectiveChangeMessage}
-          </p>
-          <p className="text-muted-foreground text-base">
-            Please confirm the details below to change your subscription.
-          </p>
-        </>
+        <p className="text-muted-foreground text-base">
+          Review the change below before confirming.
+        </p>
       }
       errorMessage={
         changeMutation.isError ? changeMutation.error.message : undefined
@@ -82,16 +101,42 @@ const SubscriptionChangeConfirmPage = () => {
       cancelTo={`/subscriptions?${new URLSearchParams({ subscriptionId })}`}
       termsNote="By confirming, you agree to our Terms of Service and Privacy Policy."
     >
-      {selectedPlan && (
-        <PlanSummaryCard
-          plan={selectedPlan}
-          descriptionFallback="New plan"
-          taxAmount={taxAmount}
-          taxLabel={taxLabel}
-          taxInclusive={taxInclusive}
-          units={pricing?.units}
-        />
-      )}
+      <div className="space-y-3">
+        {currentSubscription && (
+          <>
+            <CurrentPlanBaseline
+              subscription={currentSubscription}
+              units={pricing?.units}
+            />
+            <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+              <ArrowDownIcon className="size-4" /> Changing to
+            </div>
+          </>
+        )}
+
+        {selectedPlan && (
+          <PlanSummaryCard
+            plan={selectedPlan}
+            descriptionFallback="New plan"
+            taxAmount={taxAmount}
+            taxLabel={taxLabel}
+            taxInclusive={taxInclusive}
+            units={pricing?.units}
+          />
+        )}
+
+        <div className="rounded-lg bg-muted/50 p-3 text-sm space-y-1">
+          <div className="font-medium text-card-foreground">
+            {effectiveText}
+          </div>
+          {credit && (
+            <div className="text-muted-foreground">
+              You'll be credited {formatPrice(credit.amount, credit.currency)}{" "}
+              for unused time on your current plan.
+            </div>
+          )}
+        </div>
+      </div>
     </ConfirmationScreen>
   );
 };

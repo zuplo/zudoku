@@ -3,6 +3,7 @@ import type { Plan } from "../types/PlanType.js";
 import { formatDuration } from "../utils/formatDuration.js";
 import { formatPlanPrice } from "../utils/formatPlanPrice.js";
 import { formatPrice } from "../utils/formatPrice.js";
+import { isCustomPlan } from "../utils/isCustomPlan.js";
 import { cn } from "./cn.js";
 import { PlanEntitlements } from "./PlanEntitlements.js";
 
@@ -26,7 +27,7 @@ export const PricingCard = ({
 
   const priceLabel = formatPlanPrice(plan);
 
-  const isCustom = plan.metadata?.isCustom === true;
+  const isCustom = isCustomPlan(plan);
   const billingInterval = formatDuration(plan.billingCadence);
 
   return (

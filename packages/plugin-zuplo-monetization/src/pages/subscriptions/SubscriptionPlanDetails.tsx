@@ -9,6 +9,7 @@ import {
 import { useMonetizationConfig } from "../../MonetizationContext.js";
 import { PlanEntitlements } from "../../pricing-ui/PlanEntitlements.js";
 import type { Subscription } from "../../types/SubscriptionType.js";
+import { formatDateTime } from "../../utils/formatDateTime.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
 import { formatPrice } from "../../utils/formatPrice.js";
@@ -19,18 +20,6 @@ import {
 
 const detailLabelClassName = "text-sm font-semibold tracking-wide mb-1";
 const sectionLabelClassName = "text-base font-semibold tracking-wide mb-3 mt-2";
-
-// Subscriptions can bill on sub-day cadences (e.g. hourly), so a period's
-// boundaries — and therefore when the next renewal is due — are only
-// meaningful with the time of day, not just the calendar date.
-const formatDateTime = (dateString: string) =>
-  new Date(dateString).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
 
 const formatDateTimeRange = (from: string, to: string) =>
   `${formatDateTime(from)} – ${formatDateTime(to)}`;
