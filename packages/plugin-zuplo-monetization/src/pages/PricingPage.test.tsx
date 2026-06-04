@@ -99,8 +99,6 @@ const makePlan = (id: string, key: string, name: string): Plan => ({
       ],
     },
   ],
-  monthlyPrice: "49",
-  yearlyPrice: "49",
   currency: "USD",
 });
 
@@ -166,9 +164,7 @@ describe("PricingPage", () => {
     mockPricingData.items = [
       {
         ...makePlan("1", "free", "Free"),
-        monthlyPrice: "0",
         paymentRequired: false,
-        yearlyPrice: "0",
         phases: [
           {
             key: "default",
@@ -289,20 +285,11 @@ describe("PricingPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("Shows yearly price by default", () => {
+  it("Does not render an annual price line", () => {
     mockPricingData.items = [makePlan("1", "starter", "Starter")];
     mockSubscriptionData.items = [];
 
     renderWithConfig();
-
-    expect(screen.getByText(/\/year/)).toBeInTheDocument();
-  });
-
-  it("Hides yearly price when showYearlyPrice is false", () => {
-    mockPricingData.items = [makePlan("1", "starter", "Starter")];
-    mockSubscriptionData.items = [];
-
-    renderWithConfig({ pricing: { showYearlyPrice: false } });
 
     expect(screen.queryByText(/\/year/)).not.toBeInTheDocument();
   });

@@ -17,8 +17,6 @@ const plan = (overrides: Partial<Plan> = {}): Plan => ({
   billingCadence: "P1M",
   currency: "USD",
   phases: [phase()],
-  monthlyPrice: null,
-  yearlyPrice: null,
   ...overrides,
 });
 
@@ -43,8 +41,8 @@ describe("PricingTable", () => {
       <PricingTable
         plans={[
           plan({ id: "a", name: "Free" }),
-          plan({ id: "b", name: "Pro", monthlyPrice: "29" }),
-          plan({ id: "c", name: "Enterprise", monthlyPrice: "199" }),
+          plan({ id: "b", name: "Pro" }),
+          plan({ id: "c", name: "Enterprise" }),
         ]}
       />,
     );
@@ -164,11 +162,9 @@ describe("PricingTable", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("passes showYearlyPrice and units through to each card", () => {
+  it("passes units through to each card", () => {
     const planWithUsage: Plan = plan({
       id: "a",
-      monthlyPrice: "29",
-      yearlyPrice: "348",
       phases: [
         phase({
           rateCards: [
@@ -184,15 +180,7 @@ describe("PricingTable", () => {
         }),
       ],
     });
-    render(
-      <PricingTable
-        plans={[planWithUsage]}
-        showYearlyPrice
-        units={{ api: "request" }}
-      />,
-    );
-    // Yearly price comes from showYearlyPrice on PricingCard.
-    expect(screen.getByText("$348/year")).toBeInTheDocument();
+    render(<PricingTable plans={[planWithUsage]} units={{ api: "request" }} />);
     // Custom unit label comes from the `units` map.
     expect(screen.getByText(/\$0\.10\/request/)).toBeInTheDocument();
   });

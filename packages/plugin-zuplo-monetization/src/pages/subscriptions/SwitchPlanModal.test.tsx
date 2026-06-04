@@ -67,8 +67,6 @@ const makePublicPlan = (
 ): Plan => ({
   billingCadence: "P1M",
   currency: "USD",
-  monthlyPrice: "10",
-  yearlyPrice: "100",
   phases: [
     {
       key: "default",
@@ -178,8 +176,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -217,8 +213,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -266,8 +260,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -310,8 +302,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -348,8 +338,6 @@ describe("SwitchPlanModal", () => {
       name: "Private Developer",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -388,8 +376,6 @@ describe("SwitchPlanModal", () => {
       version: 1,
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "49",
-      yearlyPrice: "490",
     });
 
     render(<SwitchPlanModal subscription={subscription} />);
@@ -424,8 +410,6 @@ describe("SwitchPlanModal", () => {
       version: 1,
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "9.99",
-      yearlyPrice: "119.88",
       metadata: { zuplo_private_plan: "true" },
     });
 
@@ -475,8 +459,6 @@ describe("SwitchPlanModal", () => {
       version: 1,
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "49",
-      yearlyPrice: "490",
     });
 
     render(<SwitchPlanModal subscription={subscription} />);
@@ -521,8 +503,6 @@ describe("SwitchPlanModal", () => {
       version: 2,
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "59",
-      yearlyPrice: "590",
     });
 
     render(<SwitchPlanModal subscription={subscription} />);
@@ -565,8 +545,6 @@ describe("SwitchPlanModal", () => {
       name: "Team",
       billingCadence: "P1M",
       phases: [],
-      monthlyPrice: "49",
-      yearlyPrice: "490",
     });
 
     render(<SwitchPlanModal subscription={subscription} />);
@@ -599,5 +577,306 @@ describe("SwitchPlanModal", () => {
         }),
       }),
     );
+  });
+
+  it("shows the current plan's real included quota in the baseline", () => {
+    plansItems.current = [
+      makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
+    ];
+
+    const base = baseSubscription({
+      id: "plan-current",
+      key: "current",
+      name: "My Current Plan",
+      billingCadence: "PT1H",
+      phases: [],
+    });
+    const subscription: Subscription = {
+      ...base,
+      currency: "USD",
+      phases: [
+        {
+          ...base.phases[0],
+          items: [
+            {
+              activeFrom: "2025-01-01T00:00:00.000Z",
+              billingCadence: "PT1H",
+              createdAt: "2025-01-01T00:00:00.000Z",
+              featureKey: "api_requests",
+              id: "item-1",
+              included: {
+                entitlement: {
+                  activeFrom: "2025-01-01T00:00:00.000Z",
+                  annotations: { "subscription.id": "sub-1" },
+                  createdAt: "2025-01-01T00:00:00.000Z",
+                  featureId: "f",
+                  featureKey: "api_requests",
+                  id: "ent-1",
+                  issueAfterReset: 10,
+                  subjectKey: "s",
+                  type: "metered",
+                  updatedAt: "2025-01-01T00:00:00.000Z",
+                  usagePeriod: {
+                    anchor: "x",
+                    interval: "PT1H",
+                    intervalISO: "PT1H",
+                  },
+                },
+                feature: {
+                  createdAt: "x",
+                  id: "f",
+                  key: "api_requests",
+                  name: "API Requests",
+                  updatedAt: "x",
+                },
+              },
+              key: "api_requests",
+              metadata: {},
+              name: "API Requests",
+              updatedAt: "2025-01-01T00:00:00.000Z",
+            },
+          ],
+        },
+      ],
+    };
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Current Plan")).toBeInTheDocument();
+    expect(within(dialog).getByText("My Current Plan")).toBeInTheDocument();
+    expect(within(dialog).getByText("API Requests:")).toBeInTheDocument();
+    expect(within(dialog).getByText(/10 \/ hour/)).toBeInTheDocument();
+  });
+
+  it("renders a custom plan as Contact Sales with no price or switch action", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-custom",
+        key: "enterprise_custom",
+        name: "Enterprise Plus",
+        metadata: { isCustom: "true" },
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Enterprise Plus");
+    expect(within(card).getByText("Contact Sales")).toBeInTheDocument();
+    expect(within(card).getByText("Custom")).toBeInTheDocument();
+    expect(
+      within(card).queryByRole("button", { name: /Upgrade|Downgrade|Switch/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows a phase ramp summary for a multi-phase target", () => {
+    plansItems.current = [
+      {
+        ...makePublicPlan({
+          id: "plan-trial",
+          key: "trialplan",
+          name: "Trial Plan",
+        }),
+        billingCadence: "P1M",
+        phases: [
+          { key: "trial", name: "Free Trial", duration: "P1W", rateCards: [] },
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "fee",
+                name: "Fee",
+                billingCadence: "P1M",
+                price: { type: "flat", amount: "49" },
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    expect(
+      screen.getByText("Free Trial (1 week), then $49 / month"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the target plan's full entitlements without an expander", () => {
+    plansItems.current = [
+      makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Team");
+    // The full annotated list is visible immediately…
+    expect(within(card).getByText("Requests")).toBeInTheDocument();
+    expect(within(card).getByText(/now included/)).toBeInTheDocument();
+    // …with no show/hide details toggle.
+    expect(
+      within(card).queryByRole("button", { name: /details/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders unchanged entitlements plainly alongside highlighted changes", () => {
+    // Current subscription provisions 10 requests/hour; the target offers the
+    // SAME requests quota (unchanged) plus priority support (added).
+    plansItems.current = [
+      {
+        ...makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
+        phases: [
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              meteredRateCard(),
+              {
+                type: "flat_fee",
+                key: "priority_support",
+                name: "Priority Support",
+                featureKey: "priority_support",
+                billingCadence: "P1M",
+                price: null,
+                entitlementTemplate: { type: "boolean" },
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const base = baseSubscription({
+      id: "plan-current",
+      key: "current",
+      name: "My Current Plan",
+      billingCadence: "P1M",
+      phases: [
+        {
+          key: "default",
+          name: "Default",
+          rateCards: [meteredRateCard()],
+        },
+      ],
+    });
+
+    render(<SwitchPlanModal subscription={base} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Team");
+    // Unchanged quota renders as a plain row (no change suffix)…
+    expect(within(card).getByText("Requests")).toBeInTheDocument();
+    expect(
+      within(card).queryByText(/no longer included/),
+    ).not.toBeInTheDocument();
+    // …while the added feature is highlighted.
+    expect(within(card).getByText("Priority Support")).toBeInTheDocument();
+    expect(within(card).getByText(/now included/)).toBeInTheDocument();
+  });
+
+  it("expands a tiered target quota into its actual tier schedule", () => {
+    plansItems.current = [
+      {
+        ...makePublicPlan({
+          id: "plan-ent2",
+          key: "enterprise2",
+          name: "Enterprise 2",
+        }),
+        phases: [
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              {
+                type: "usage_based",
+                key: "api_calls",
+                name: "API Calls",
+                featureKey: "api_calls",
+                billingCadence: "P1M",
+                price: {
+                  type: "tiered",
+                  mode: "graduated",
+                  tiers: [
+                    { upToAmount: "1000", unitPrice: { amount: "0" } },
+                    { unitPrice: { amount: "0.01" } },
+                  ],
+                },
+                entitlementTemplate: { type: "metered", issueAfterReset: 1000 },
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    // Current plan provisions a plain 10/hour quota for the same feature key.
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "current",
+      name: "My Current Plan",
+      billingCadence: "P1M",
+      phases: [
+        {
+          key: "default",
+          name: "Default",
+          rateCards: [
+            {
+              type: "usage_based",
+              key: "api_calls",
+              name: "API Calls",
+              featureKey: "api_calls",
+              billingCadence: "PT1H",
+              price: null,
+              entitlementTemplate: { type: "metered", issueAfterReset: 10 },
+            },
+          ],
+        },
+      ],
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Enterprise 2");
+    // The transition line still names the pricing model…
+    expect(within(card).getByText("Tiered pricing")).toBeInTheDocument();
+    // …but the decision-relevant schedule is shown beneath it.
+    expect(within(card).getByText("Up to 1,000: Included")).toBeInTheDocument();
+    expect(
+      within(card).getByText("Over 1,000: $0.01/unit"),
+    ).toBeInTheDocument();
   });
 });

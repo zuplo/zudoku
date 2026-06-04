@@ -3,6 +3,7 @@ import { formatDuration } from "./formatDuration.js";
 import { formatPrice } from "./formatPrice.js";
 import { formatStaticEntitlementConfig } from "./formatStaticEntitlementConfig.js";
 import { formatTieredPriceBreakdown } from "./formatTieredPriceBreakdown.js";
+import { tierHasPositivePrice } from "./tierHasPositivePrice.js";
 
 export const categorizeRateCards = (
   rateCards: RateCard[],
@@ -45,10 +46,7 @@ export const categorizeRateCards = (
       rc.price?.type === "tiered" && rc.price.tiers.length > 0
         ? rc.price.tiers[0]
         : undefined;
-    const firstTierIsPriced =
-      !!firstTier &&
-      (parseFloat(firstTier.flatPrice?.amount ?? "0") > 0 ||
-        parseFloat(firstTier.unitPrice?.amount ?? "0") > 0);
+    const firstTierIsPriced = !!firstTier && tierHasPositivePrice(firstTier);
 
     if (
       et.type === "metered" &&
@@ -92,11 +90,7 @@ export const categorizeRateCards = (
         // If every tier is flat=0 AND unit=0, the schedule is effectively
         // free — render as a feature rather than a PAYG quota with only
         // "Included" lines.
-        const hasPositivePrice = tiers.some(
-          (t) =>
-            parseFloat(t.flatPrice?.amount ?? "0") > 0 ||
-            parseFloat(t.unitPrice?.amount ?? "0") > 0,
-        );
+        const hasPositivePrice = tiers.some(tierHasPositivePrice);
         if (!hasPositivePrice) {
           features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
           continue;

@@ -3,13 +3,13 @@ import type { Plan } from "../types/PlanType.js";
 import { formatDuration } from "../utils/formatDuration.js";
 import { formatPlanPrice } from "../utils/formatPlanPrice.js";
 import { formatPrice } from "../utils/formatPrice.js";
+import { isCustomPlan } from "../utils/isCustomPlan.js";
 import { cn } from "./cn.js";
 import { PlanEntitlements } from "./PlanEntitlements.js";
 
 export type PricingCardProps = {
   plan: Plan;
   isPopular?: boolean;
-  showYearlyPrice?: boolean;
   units?: Record<string, string>;
   /** CTA element rendered at the bottom of the card (e.g. a Subscribe button). */
   action?: ReactNode;
@@ -19,7 +19,6 @@ export type PricingCardProps = {
 export const PricingCard = ({
   plan,
   isPopular = false,
-  showYearlyPrice = true,
   units,
   action,
   className,
@@ -28,7 +27,7 @@ export const PricingCard = ({
 
   const priceLabel = formatPlanPrice(plan);
 
-  const isCustom = plan.metadata?.isCustom === true;
+  const isCustom = isCustomPlan(plan);
   const billingInterval = formatDuration(plan.billingCadence);
 
   return (
@@ -77,16 +76,11 @@ export const PricingCard = ({
           ) : (
             <>
               <span className="text-3xl font-bold text-card-foreground">
-                {formatPrice(priceLabel.monthly, plan.currency)}
+                {formatPrice(priceLabel.amount, plan.currency)}
               </span>
               <span className="text-muted-foreground text-sm">
                 /{billingInterval}
               </span>
-              {showYearlyPrice && priceLabel.yearly > 0 && (
-                <div className="w-full text-sm text-muted-foreground mt-1">
-                  {formatPrice(priceLabel.yearly, plan.currency)}/year
-                </div>
-              )}
             </>
           )}
         </div>

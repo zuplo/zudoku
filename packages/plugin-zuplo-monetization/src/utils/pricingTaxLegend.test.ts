@@ -13,8 +13,6 @@ const plan = (overrides: Partial<Plan> = {}): Plan => ({
   name: "Plan",
   billingCadence: "P1M",
   phases: [],
-  monthlyPrice: null,
-  yearlyPrice: null,
   ...overrides,
 });
 
