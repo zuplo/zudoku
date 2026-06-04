@@ -725,7 +725,7 @@ describe("SwitchPlanModal", () => {
     ).toBeInTheDocument();
   });
 
-  it("expands a plan card to reveal full details", () => {
+  it("shows the target plan's full entitlements without an expander", () => {
     plansItems.current = [
       makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
     ];
@@ -743,9 +743,67 @@ describe("SwitchPlanModal", () => {
     openModal();
 
     const card = getPlanCard(screen.getByRole("dialog"), "Team");
-    fireEvent.click(within(card).getByRole("button", { name: /details/i }));
+    // The full annotated list is visible immediately…
+    expect(within(card).getByText("Requests")).toBeInTheDocument();
+    expect(within(card).getByText(/now included/)).toBeInTheDocument();
+    // …with no show/hide details toggle.
     expect(
-      within(card).getByRole("button", { name: /Hide details/i }),
-    ).toBeInTheDocument();
+      within(card).queryByRole("button", { name: /details/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders unchanged entitlements plainly alongside highlighted changes", () => {
+    // Current subscription provisions 10 requests/hour; the target offers the
+    // SAME requests quota (unchanged) plus priority support (added).
+    plansItems.current = [
+      {
+        ...makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
+        phases: [
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              meteredRateCard(),
+              {
+                type: "flat_fee",
+                key: "priority_support",
+                name: "Priority Support",
+                featureKey: "priority_support",
+                billingCadence: "P1M",
+                price: null,
+                entitlementTemplate: { type: "boolean" },
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const base = baseSubscription({
+      id: "plan-current",
+      key: "current",
+      name: "My Current Plan",
+      billingCadence: "P1M",
+      phases: [
+        {
+          key: "default",
+          name: "Default",
+          rateCards: [meteredRateCard()],
+        },
+      ],
+    });
+
+    render(<SwitchPlanModal subscription={base} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Team");
+    // Unchanged quota renders as a plain row (no change suffix)…
+    expect(within(card).getByText("Requests")).toBeInTheDocument();
+    expect(
+      within(card).queryByText(/no longer included/),
+    ).not.toBeInTheDocument();
+    // …while the added feature is highlighted.
+    expect(within(card).getByText("Priority Support")).toBeInTheDocument();
+    expect(within(card).getByText(/now included/)).toBeInTheDocument();
   });
 });

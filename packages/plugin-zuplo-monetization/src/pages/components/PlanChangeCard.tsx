@@ -1,16 +1,13 @@
-import { type ReactNode, useMemo, useState } from "react";
-import { cn } from "zudoku";
+import { type ReactNode, useMemo } from "react";
 import {
   ArrowDownIcon,
   ArrowLeftRightIcon,
   ArrowUpIcon,
   CheckIcon,
-  ChevronDownIcon,
   XIcon,
 } from "zudoku/icons";
 import { Badge } from "zudoku/ui/Badge";
 import { Button } from "zudoku/ui/Button";
-import { PlanEntitlements } from "../../pricing-ui/PlanEntitlements.js";
 import { PlanPriceTag } from "../../pricing-ui/PlanPriceTag.js";
 import type { Plan } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
@@ -31,9 +28,6 @@ const MODE_LABEL: Record<PlanChangeMode, string> = {
   private: "Switch",
 };
 
-// How many change rows to show before collapsing the rest behind "details".
-const MAX_SUMMARY_ROWS = 3;
-
 const ChangeRow = ({ change }: { change: EntitlementChange }) => {
   const arrow = (
     <>
@@ -50,7 +44,7 @@ const ChangeRow = ({ change }: { change: EntitlementChange }) => {
       body = (
         <>
           <span className="font-medium">{change.label}</span>
-          {change.targetValue ? (
+          {change.targetValue && change.targetValue !== "Included" ? (
             <span className="text-muted-foreground">
               : {change.targetValue}
             </span>
@@ -87,6 +81,23 @@ const ChangeRow = ({ change }: { change: EntitlementChange }) => {
           <span className="font-medium text-amber-600">
             {change.targetValue}
           </span>
+        </>
+      );
+      break;
+    case "same":
+      // Unchanged entitlement — rendered plainly so the highlighted rows
+      // (added/removed/in-/decrease) stand out against the full list.
+      icon = (
+        <CheckIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+      );
+      body = (
+        <>
+          <span>{change.label}</span>
+          {change.targetValue && change.targetValue !== "Included" && (
+            <span className="text-muted-foreground">
+              : {change.targetValue}
+            </span>
+          )}
         </>
       );
       break;
@@ -128,12 +139,15 @@ export const PlanChangeCard = ({
   units?: Record<string, string>;
   onSwitch: () => void;
 }) => {
-  const [expanded, setExpanded] = useState(false);
   const isCustom = isCustomPlan(plan);
   const priceLabel = formatPlanPrice(plan);
   const ramp = formatPhaseRampSummary(plan);
 
-  const meaningfulChanges = useMemo(() => {
+  // The target plan's FULL entitlement list (steady-state phase), annotated
+  // against the current plan: unchanged rows render plainly while added /
+  // removed / changed rows are highlighted. Removed rows last, so the list
+  // reads as "what you'll have, then what you'll lose".
+  const entitlementChanges = useMemo(() => {
     const steadyPhase = plan.phases.at(-1);
     const target = steadyPhase
       ? categorizeRateCards(steadyPhase.rateCards, {
@@ -142,13 +156,12 @@ export const PlanChangeCard = ({
           planBillingCadence: plan.billingCadence,
         })
       : { quotas: [], features: [] };
-    return comparePlanEntitlements(currentEntitlements, target).filter(
-      (c) => c.change !== "same",
-    );
+    const changes = comparePlanEntitlements(currentEntitlements, target);
+    return [
+      ...changes.filter((c) => c.change !== "removed"),
+      ...changes.filter((c) => c.change === "removed"),
+    ];
   }, [plan, currentEntitlements, units]);
-
-  const shownChanges = meaningfulChanges.slice(0, MAX_SUMMARY_ROWS);
-  const hiddenCount = meaningfulChanges.length - shownChanges.length;
 
   return (
     <div className="border rounded-lg p-4">
@@ -193,46 +206,12 @@ export const PlanChangeCard = ({
 
       {ramp && <p className="text-sm text-muted-foreground mb-2">{ramp}</p>}
 
-      {shownChanges.length > 0 && (
+      {entitlementChanges.length > 0 && (
         <div className="space-y-1.5">
-          {shownChanges.map((change) => (
+          {entitlementChanges.map((change) => (
             <ChangeRow key={`${change.kind}:${change.key}`} change={change} />
           ))}
         </div>
-      )}
-
-      {plan.phases.length > 0 && (
-        <>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="mt-2 -ml-2 h-auto py-1 text-muted-foreground"
-            onClick={() => setExpanded((v) => !v)}
-          >
-            <ChevronDownIcon
-              className={cn(
-                "size-4 transition-transform",
-                expanded && "rotate-180",
-              )}
-            />
-            {expanded
-              ? "Hide details"
-              : hiddenCount > 0
-                ? `Show all details (+${hiddenCount} more)`
-                : "Show plan details"}
-          </Button>
-          {expanded && (
-            <div className="mt-2 pt-3 border-t">
-              <PlanEntitlements
-                phases={plan.phases}
-                currency={plan.currency}
-                billingCadence={plan.billingCadence}
-                units={units}
-              />
-            </div>
-          )}
-        </>
       )}
     </div>
   );
