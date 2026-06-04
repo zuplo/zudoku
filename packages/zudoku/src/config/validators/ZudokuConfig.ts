@@ -604,7 +604,13 @@ const SiteSchema = z
     dir: z.enum(["ltr", "rtl"]).optional(),
     logo: LogoSchema,
     showPoweredBy: z.boolean().optional(),
-    collapsibleSidebar: z.boolean().optional(),
+    sidebar: z
+      .object({
+        collapsible: z.boolean().optional(),
+        toggleVisibility: z.enum(["always", "hover"]).optional(),
+        togglePosition: z.enum(["top", "center", "bottom"]).optional(),
+      })
+      .optional(),
     notFoundPage: z.custom<NonNullable<ReactNode>>(),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),

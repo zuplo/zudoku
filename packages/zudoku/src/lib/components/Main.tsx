@@ -50,7 +50,7 @@ export const Main = ({ children }: PropsWithChildren) => {
         {children}
         <Slot.Target name="content-after" />
       </main>
-      {hasNavigation && options.site?.collapsibleSidebar !== false && (
+      {hasNavigation && options.site?.sidebar?.collapsible !== false && (
         <SidebarToggle />
       )}
     </Drawer>
