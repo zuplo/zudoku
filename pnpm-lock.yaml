@@ -731,8 +731,8 @@ importers:
         specifier: 0.23.13
         version: 0.23.13
       '@scalar/snippetz':
-        specifier: 0.9.6
-        version: 0.9.6
+        specifier: 0.9.11
+        version: 0.9.11
       '@sentry/node':
         specifier: 10.52.0
         version: 10.52.0
@@ -5268,8 +5268,8 @@ packages:
     resolution: {integrity: sha512-uFTcdi3XYDDuaJLWiMuM3ijQit1OBw7AkuOuujReY8L9UmUQHY56erYg0+Db3llTsinuIYFh+eS/WX/sYuevYQ==}
     engines: {node: '>=20'}
 
-  '@scalar/helpers@0.6.0':
-    resolution: {integrity: sha512-pfSamAgBxqFeE8IpEG6uGkHlnPhY1CLeOTttV9+vKQbrBk5b7vvyTsUXv0Hz4kNU1TFrxcTTPE+Akn5S+jlTtQ==}
+  '@scalar/helpers@0.8.0':
+    resolution: {integrity: sha512-gmOC6VravNB9VDl6wnt/GOj4K/hn48tj5bpW4AM4MhH8Ubil6uu7g1DSoKHwltu8Ks79KEtR6JmOrROi9R7jaQ==}
     engines: {node: '>=22'}
 
   '@scalar/json-magic@0.9.0':
@@ -5288,12 +5288,12 @@ packages:
     resolution: {integrity: sha512-065froUtqvaHjyeJtyitf8tb+k7oh7nU0OinAHYbj1Bqgwb1s2+uKMqHYHEES5CNpp+2xtL4lxup6Aq29yW+sQ==}
     engines: {node: '>=20'}
 
-  '@scalar/snippetz@0.9.6':
-    resolution: {integrity: sha512-s2Rso+qajyyf9DBzIgt+T3HZ1Ewx1W+YOUdYg1ldJhlXjBtn0q1w6gbnv4C2HHCgXRh/6YIzIj7eDUWK9K3+sQ==}
+  '@scalar/snippetz@0.9.11':
+    resolution: {integrity: sha512-n6zLzaCanvBWFQfR108jvu14m2JrDYRd9VMbQPOyjfU/QdraigQRctVcUOhjEUyb8O3d2Jye9V4KC5xmU47piA==}
     engines: {node: '>=22'}
 
-  '@scalar/types@0.9.6':
-    resolution: {integrity: sha512-UaCQQcscFTJdxZREE8KhUdSJgaDlc44TZbmWcZffs4m1hzqOvEI7lEBS13iBpLq7/cxUXFgyJdecywvNqJ0PkA==}
+  '@scalar/types@0.12.2':
+    resolution: {integrity: sha512-EzLkubCb7xioiTm9eYnmn/032akaq4kkrrdclgV2uezwtniR8ErQICjhMl2AjBWL6nstHiFZ9RnPZm2Z2/KM0Q==}
     engines: {node: '>=22'}
 
   '@sentry-internal/browser-utils@10.28.0':
@@ -9395,6 +9395,10 @@ packages:
 
   type-fest@5.4.4:
     resolution: {integrity: sha512-JnTrzGu+zPV3aXIUhnyWJj4z/wigMsdYajGLIYakqyOW1nPllzXEJee0QQbHj+CTIQtXGlAjuK0UY+2xTyjVAw==}
+    engines: {node: '>=20'}
+
+  type-fest@5.7.0:
+    resolution: {integrity: sha512-1URUxUqfHFM1c+zfSPsa3gnkO7Aq21qyH75SIduNYz4SzY964rn1X2vCMQaHSHhktiw+0kPa2iyb6PUpXqB6Vg==}
     engines: {node: '>=20'}
 
   type-level-regexp@0.1.17:
@@ -14066,7 +14070,7 @@ snapshots:
 
   '@scalar/helpers@0.2.7': {}
 
-  '@scalar/helpers@0.6.0': {}
+  '@scalar/helpers@0.8.0': {}
 
   '@scalar/json-magic@0.9.0':
     dependencies:
@@ -14093,17 +14097,18 @@ snapshots:
     dependencies:
       '@scalar/openapi-types': 0.5.3
 
-  '@scalar/snippetz@0.9.6':
+  '@scalar/snippetz@0.9.11':
     dependencies:
-      '@scalar/types': 0.9.6
+      '@scalar/helpers': 0.8.0
+      '@scalar/types': 0.12.2
       js-base64: 3.7.8
       stringify-object: 6.0.0
 
-  '@scalar/types@0.9.6':
+  '@scalar/types@0.12.2':
     dependencies:
-      '@scalar/helpers': 0.6.0
+      '@scalar/helpers': 0.8.0
       nanoid: 5.1.11
-      type-fest: 5.4.4
+      type-fest: 5.7.0
       zod: 4.3.6
 
   '@sentry-internal/browser-utils@10.28.0':
@@ -18950,6 +18955,10 @@ snapshots:
   type-fest@4.41.0: {}
 
   type-fest@5.4.4:
+    dependencies:
+      tagged-tag: 1.0.0
+
+  type-fest@5.7.0:
     dependencies:
       tagged-tag: 1.0.0
 
