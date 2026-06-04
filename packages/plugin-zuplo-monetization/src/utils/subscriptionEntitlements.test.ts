@@ -166,6 +166,57 @@ describe("categorizeSubscriptionItems", () => {
     ]);
   });
 
+  it("maps static entitlements to features carrying the config value", () => {
+    const { features } = categorizeSubscriptionItems([
+      item({
+        key: "api_version",
+        name: "Static feature",
+        entitlement: {
+          activeFrom: "x",
+          annotations: { "subscription.id": "sub-1" },
+          createdAt: "x",
+          featureId: "f",
+          featureKey: "api_version",
+          id: "e",
+          subjectKey: "s",
+          type: "static",
+          config: JSON.stringify({ value: "v2" }),
+          updatedAt: "x",
+        },
+      }),
+    ]);
+    expect(features).toEqual([
+      { key: "api_version", name: "Static feature", value: "v2" },
+    ]);
+  });
+
+  it("maps an invalid static config to a feature without a value (no 'undefined' leak)", () => {
+    const { features } = categorizeSubscriptionItems([
+      item({
+        key: "api_version",
+        name: "Static feature",
+        entitlement: {
+          activeFrom: "x",
+          annotations: { "subscription.id": "sub-1" },
+          createdAt: "x",
+          featureId: "f",
+          featureKey: "api_version",
+          id: "e",
+          subjectKey: "s",
+          type: "static",
+          config: "{invalid-json",
+          updatedAt: "x",
+        },
+      }),
+    ]);
+    expect(features).toHaveLength(1);
+    expect(features[0]).toMatchObject({
+      key: "api_version",
+      name: "Static feature",
+    });
+    expect(features[0].value).toBeUndefined();
+  });
+
   it("returns empty sets for no items", () => {
     expect(categorizeSubscriptionItems([])).toEqual({
       quotas: [],
