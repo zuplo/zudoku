@@ -1,10 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import {
-  $RefParser,
-  type JSONSchema,
-} from "@apidevtools/json-schema-ref-parser";
-import { upgrade, validate } from "@scalar/openapi-parser";
+import { $RefParser } from "@apidevtools/json-schema-ref-parser";
+import { upgrade } from "@scalar/openapi-parser";
 import { deepEqual } from "fast-equals";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
@@ -98,7 +95,14 @@ export class SchemaManager {
     this.storeDir = storeDir;
     this.config = config;
     this.processors = [
-      ({ schema }) => upgrade(schema).specification as OpenAPIDocument,
+      ({ schema }) => {
+        const upgraded = upgrade(schema as unknown as Record<string, unknown>)
+          .specification as OpenAPIDocument;
+        if (upgraded?.info && typeof upgraded.info.version !== "string") {
+          upgraded.info.version = "0.0.1";
+        }
+        return upgraded;
+      },
       flattenAllOfProcessor,
       ...processors,
     ];
@@ -147,7 +151,6 @@ export class SchemaManager {
         this.referencedBy.get(file)?.add(filePath);
       });
 
-    const validatedSchema = await this.validateSchema(schema, filePath);
     const processedSchema = await this.processors.reduce(
       async (schema, processor) =>
         processor({
@@ -162,7 +165,7 @@ export class SchemaManager {
               },
             }),
         }),
-      Promise.resolve(validatedSchema),
+      Promise.resolve(schema as OpenAPIDocument),
     );
 
     const processedTime = Date.now();
@@ -364,22 +367,5 @@ export class SchemaManager {
       versionPath,
       `${fileName}${suffix}${extension}`,
     );
-  };
-
-  private validateSchema = async (
-    schema: JSONSchema,
-    filePath: string,
-  ): Promise<OpenAPIDocument> => {
-    const validated = await validate(schema);
-    if (validated.errors?.length) {
-      // biome-ignore lint/suspicious/noConsole: Logging allowed here
-      console.warn(`Schema warnings in ${filePath}:`);
-      for (const error of validated.errors) {
-        // biome-ignore lint/suspicious/noConsole: Logging allowed here
-        console.warn(error);
-      }
-    }
-
-    return schema as OpenAPIDocument;
   };
 }
