@@ -269,6 +269,60 @@ describe("SubscriptionChangeConfirmPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("renders a per-phase price schedule for a multi-phase target plan", () => {
+    testState.purchaseData.data = {
+      ...makePlan({
+        phases: [
+          {
+            key: "intro",
+            name: "First 3 months",
+            duration: "P3M",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "monthly_fee",
+                name: "Monthly Fee",
+                billingCadence: "P1M",
+                price: { type: "flat", amount: "375" },
+              },
+            ],
+          },
+          {
+            key: "main",
+            name: "After 3 months",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "monthly_fee",
+                name: "Monthly Fee",
+                billingCadence: "P1M",
+                price: { type: "flat", amount: "750" },
+              },
+            ],
+          },
+        ],
+      }),
+      tax: {
+        currency: "usd",
+        subtotal: 37500,
+        taxAmount: 900,
+        total: 38400,
+        taxInclusive: false,
+        taxes: [{ taxType: "VAT" }],
+        items: [{ amount: 37500, taxAmount: 900 }],
+      },
+    };
+
+    renderPage("/?planId=plan-1&subscriptionId=sub-1");
+
+    expect(screen.getByText("First 3 months")).toBeInTheDocument();
+    expect(screen.getByText("$375")).toBeInTheDocument();
+    expect(screen.getByText("After that")).toBeInTheDocument();
+    expect(screen.getByText("$750")).toBeInTheDocument();
+    expect(screen.getByText("Billed monthly")).toBeInTheDocument();
+    expect(screen.getByText(/\+ .* VAT/)).toBeInTheDocument();
+  });
+
   it("throws when required search params are missing", () => {
     expect(() => renderPage("/?planId=plan-1")).toThrow(
       "Parameter `subscriptionId` missing",

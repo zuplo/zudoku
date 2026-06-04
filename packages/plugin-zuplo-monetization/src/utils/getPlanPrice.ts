@@ -1,6 +1,6 @@
 import type { Plan, RateCard } from "../types/PlanType.js";
 
-const sumFlatFeeAmounts = (rateCards: RateCard[]): number => {
+export const sumFlatFeeAmounts = (rateCards: RateCard[]): number => {
   let total = 0;
   for (const rc of rateCards) {
     // Only recurring flat fees contribute to the headline. A `flat_fee` rate

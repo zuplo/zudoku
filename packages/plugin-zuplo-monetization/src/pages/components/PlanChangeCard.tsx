@@ -8,16 +8,19 @@ import {
 } from "zudoku/icons";
 import { Badge } from "zudoku/ui/Badge";
 import { Button } from "zudoku/ui/Button";
+import { PlanPhaseHeader } from "../../pricing-ui/PlanEntitlements.js";
+import { PlanPriceSchedule } from "../../pricing-ui/PlanPriceSchedule.js";
 import { PlanPriceTag } from "../../pricing-ui/PlanPriceTag.js";
-import type { Plan } from "../../types/PlanType.js";
+import type { Plan, PlanPhase } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import {
   comparePlanEntitlements,
   type EntitlementChange,
   type EntitlementSet,
+  sameEntitlementSet,
 } from "../../utils/comparePlanEntitlements.js";
-import { formatPhaseRampSummary } from "../../utils/formatPhaseRampSummary.js";
 import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
+import { getPlanPriceSchedule } from "../../utils/getPlanPriceSchedule.js";
 import { isCustomPlan } from "../../utils/isCustomPlan.js";
 
 export type PlanChangeMode = "upgrade" | "downgrade" | "private";
@@ -154,26 +157,49 @@ export const PlanChangeCard = ({
 }) => {
   const isCustom = isCustomPlan(plan);
   const priceLabel = formatPlanPrice(plan);
-  const ramp = formatPhaseRampSummary(plan);
+  // Multi-phase ramp plans show a stacked per-phase price schedule below the
+  // title instead of the inline steady-state price tag.
+  const schedule = isCustom ? undefined : getPlanPriceSchedule(plan);
 
-  // The target plan's FULL entitlement list (steady-state phase), annotated
-  // against the current plan: unchanged rows render plainly while added /
-  // removed / changed rows are highlighted. Removed rows last, so the list
-  // reads as "what you'll have, then what you'll lose".
-  const entitlementChanges = useMemo(() => {
-    const steadyPhase = plan.phases.at(-1);
-    const target = steadyPhase
-      ? categorizeRateCards(steadyPhase.rateCards, {
-          currency: plan.currency,
-          units,
-          planBillingCadence: plan.billingCadence,
-        })
-      : { quotas: [], features: [] };
-    const changes = comparePlanEntitlements(currentEntitlements, target);
-    return [
-      ...changes.filter((c) => c.change !== "removed"),
-      ...changes.filter((c) => c.change === "removed"),
-    ];
+  // The target plan's FULL entitlement list, annotated against the current
+  // plan: unchanged rows render plainly while added / removed / changed rows
+  // are highlighted. Removed rows last, so each list reads as "what you'll
+  // have, then what you'll lose". Mirrors PlanEntitlements' phase handling:
+  // phases with identical entitlements collapse into a single diff (vs the
+  // steady-state phase); differing phases get one diff section per phase,
+  // each compared against the current subscription.
+  const phaseChangeGroups = useMemo((): Array<{
+    phase?: PlanPhase;
+    changes: EntitlementChange[];
+  }> => {
+    const diff = (target: EntitlementSet) => {
+      const changes = comparePlanEntitlements(currentEntitlements, target);
+      return [
+        ...changes.filter((c) => c.change !== "removed"),
+        ...changes.filter((c) => c.change === "removed"),
+      ];
+    };
+    const sets = plan.phases.map((phase) =>
+      categorizeRateCards(phase.rateCards, {
+        currency: plan.currency,
+        units,
+        planBillingCadence: plan.billingCadence,
+      }),
+    );
+
+    const collapsed =
+      plan.phases.length <= 1 ||
+      sets.every((set) => sameEntitlementSet(set, sets[0]));
+    const groups = collapsed
+      ? [{ changes: diff(sets.at(-1) ?? { quotas: [], features: [] }) }]
+      : plan.phases.flatMap((phase, idx) => {
+          const set = sets[idx];
+          // Mirror EntitlementList: a phase without entitlements renders
+          // nothing rather than an all-removed diff.
+          if (set.quotas.length === 0 && set.features.length === 0) return [];
+          return [{ phase, changes: diff(set) }];
+        });
+    return groups.filter((group) => group.changes.length > 0);
   }, [plan, currentEntitlements, units]);
 
   return (
@@ -194,11 +220,13 @@ export const PlanChangeCard = ({
           {isCustom ? (
             <span className="text-primary font-medium">Custom</span>
           ) : (
-            <PlanPriceTag
-              label={priceLabel}
-              currency={plan.currency}
-              billingCadence={plan.billingCadence}
-            />
+            !schedule && (
+              <PlanPriceTag
+                label={priceLabel}
+                currency={plan.currency}
+                billingCadence={plan.billingCadence}
+              />
+            )
           )}
         </div>
         {isCustom ? (
@@ -217,12 +245,33 @@ export const PlanChangeCard = ({
         )}
       </div>
 
-      {ramp && <p className="text-sm text-muted-foreground mb-2">{ramp}</p>}
+      {schedule && (
+        <PlanPriceSchedule
+          schedule={schedule}
+          currency={plan.currency}
+          billingCadence={plan.billingCadence}
+          className="mb-2"
+        />
+      )}
 
-      {entitlementChanges.length > 0 && (
-        <div className="space-y-1.5">
-          {entitlementChanges.map((change) => (
-            <ChangeRow key={`${change.kind}:${change.key}`} change={change} />
+      {phaseChangeGroups.length > 0 && (
+        <div className="space-y-3">
+          {phaseChangeGroups.map((group, idx) => (
+            <div key={group.phase?.key ?? String(idx)} className="space-y-1.5">
+              {group.phase && (
+                <PlanPhaseHeader
+                  phase={group.phase}
+                  currency={plan.currency}
+                  billingCadence={plan.billingCadence}
+                />
+              )}
+              {group.changes.map((change) => (
+                <ChangeRow
+                  key={`${change.kind}:${change.key}`}
+                  change={change}
+                />
+              ))}
+            </div>
           ))}
         </div>
       )}

@@ -3,6 +3,7 @@ import type { Feature, Quota } from "../types/PlanType.js";
 import {
   comparePlanEntitlements,
   type EntitlementSet,
+  sameEntitlementSet,
 } from "./comparePlanEntitlements.js";
 
 const quota = (o: Partial<Quota> & Pick<Quota, "key" | "name">): Quota => ({
@@ -169,5 +170,67 @@ describe("comparePlanEntitlements", () => {
       expect.objectContaining({ key: "b", change: "added", kind: "feature" }),
     );
     expect(changes).toHaveLength(2);
+  });
+});
+
+describe("sameEntitlementSet", () => {
+  it("treats identical sets in different order as equal", () => {
+    const a = set(
+      [quota({ key: "jobs", name: "Jobs", limit: 500_000 })],
+      [feature("api", "API"), feature("enrich", "Enrichment")],
+    );
+    const b = set(
+      [quota({ key: "jobs", name: "Jobs", limit: 500_000 })],
+      [feature("enrich", "Enrichment"), feature("api", "API")],
+    );
+    expect(sameEntitlementSet(a, b)).toBe(true);
+  });
+
+  it("detects differing quota limits, periods, and feature values", () => {
+    const base = set([quota({ key: "jobs", name: "Jobs", limit: 100 })]);
+    expect(
+      sameEntitlementSet(
+        base,
+        set([quota({ key: "jobs", name: "Jobs", limit: 200 })]),
+      ),
+    ).toBe(false);
+    expect(
+      sameEntitlementSet(
+        base,
+        set([quota({ key: "jobs", name: "Jobs", limit: 100, period: "year" })]),
+      ),
+    ).toBe(false);
+    expect(
+      sameEntitlementSet(
+        set([], [feature("api", "API", "10 seats")]),
+        set([], [feature("api", "API", "20 seats")]),
+      ),
+    ).toBe(false);
+  });
+
+  it("detects extra or missing entitlements", () => {
+    const a = set([], [feature("api", "API")]);
+    const b = set([], [feature("api", "API"), feature("extra", "Extra")]);
+    expect(sameEntitlementSet(a, b)).toBe(false);
+    expect(sameEntitlementSet(b, a)).toBe(false);
+  });
+
+  it("compares tier schedules, not just the 'Tiered pricing' label", () => {
+    const a = set([
+      quota({
+        key: "api",
+        name: "API",
+        tierPrices: ["Up to 1,000: Included", "Then $0.01/request"],
+      }),
+    ]);
+    const b = set([
+      quota({
+        key: "api",
+        name: "API",
+        tierPrices: ["Up to 1,000: Included", "Then $0.02/request"],
+      }),
+    ]);
+    expect(sameEntitlementSet(a, b)).toBe(false);
+    expect(sameEntitlementSet(a, { ...a })).toBe(true);
   });
 });
