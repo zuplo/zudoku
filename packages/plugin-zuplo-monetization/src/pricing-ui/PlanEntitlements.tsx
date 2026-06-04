@@ -1,8 +1,7 @@
 import type { PlanPhase } from "../types/PlanType.js";
 import { categorizeRateCards } from "../utils/categorizeRateCards.js";
 import { formatDuration } from "../utils/formatDuration.js";
-import { FeatureItem } from "./FeatureItem.js";
-import { QuotaItem } from "./QuotaItem.js";
+import { EntitlementList } from "./EntitlementList.js";
 
 const PhaseSection = ({
   phase,
@@ -25,32 +24,25 @@ const PhaseSection = ({
     planBillingCadence: billingCadence,
   });
 
-  if (quotas.length === 0 && features.length === 0) return null;
-
   return (
-    <div className="space-y-2">
-      {showName && (
-        <div className="text-sm font-medium text-card-foreground">
-          {phase.name}
-          {phase.duration && (
-            <span className="text-muted-foreground font-normal">
-              {" "}
-              &mdash; {formatDuration(phase.duration)}
-            </span>
-          )}
-        </div>
-      )}
-      {quotas.map((quota) => (
-        <QuotaItem key={quota.key} quota={quota} className={itemClassName} />
-      ))}
-      {features.map((feature) => (
-        <FeatureItem
-          key={feature.key}
-          feature={feature}
-          className={itemClassName}
-        />
-      ))}
-    </div>
+    <EntitlementList
+      quotas={quotas}
+      features={features}
+      itemClassName={itemClassName}
+      header={
+        showName ? (
+          <div className="text-sm font-medium text-card-foreground">
+            {phase.name}
+            {phase.duration && (
+              <span className="text-muted-foreground font-normal">
+                {" "}
+                &mdash; {formatDuration(phase.duration)}
+              </span>
+            )}
+          </div>
+        ) : undefined
+      }
+    />
   );
 };
 

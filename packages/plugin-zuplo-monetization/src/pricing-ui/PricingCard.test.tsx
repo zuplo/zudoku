@@ -17,10 +17,30 @@ const plan = (overrides: Partial<Plan> = {}): Plan => ({
   billingCadence: "P1M",
   currency: "USD",
   phases: [phase()],
-  monthlyPrice: null,
-  yearlyPrice: null,
   ...overrides,
 });
+
+const flatFee = (
+  amount: string,
+  billingCadence = "P1M",
+): PlanPhase["rateCards"][number] => ({
+  type: "flat_fee",
+  key: "base",
+  name: "Base",
+  billingCadence,
+  price: { type: "flat", amount },
+});
+
+const pricedPlan = (amount: string, overrides: Partial<Plan> = {}): Plan => {
+  // Keep the flat-fee rate card's cadence aligned with the plan's so the
+  // fixture mirrors real data (e.g. an hourly plan carries an hourly card).
+  const billingCadence = overrides.billingCadence ?? "P1M";
+  return plan({
+    ...overrides,
+    billingCadence,
+    phases: [phase({ rateCards: [flatFee(amount, billingCadence)] })],
+  });
+};
 
 describe("PricingCard", () => {
   it("renders nothing when the plan has no phases", () => {
@@ -38,42 +58,29 @@ describe("PricingCard", () => {
     expect(screen.getByText("Free")).toBeInTheDocument();
   });
 
-  it("renders the monthly price and billing interval for a priced plan", () => {
-    render(
-      <PricingCard plan={plan({ monthlyPrice: "29", yearlyPrice: "348" })} />,
-    );
+  it("renders the price and billing interval for a priced plan", () => {
+    render(<PricingCard plan={pricedPlan("29")} />);
     expect(screen.getByText("$29")).toBeInTheDocument();
     expect(screen.getByText("/month")).toBeInTheDocument();
   });
 
-  it("renders the yearly price when showYearlyPrice is true (default)", () => {
+  // Regression: an hourly (sub-day) cadence flat fee used to render as "Free".
+  it("renders the flat fee per hour for an hourly (PT1H) plan", () => {
     render(
-      <PricingCard plan={plan({ monthlyPrice: "29", yearlyPrice: "348" })} />,
+      <PricingCard plan={pricedPlan("2.99", { billingCadence: "PT1H" })} />,
     );
-    expect(screen.getByText("$348/year")).toBeInTheDocument();
+    expect(screen.getByText("$2.99")).toBeInTheDocument();
+    expect(screen.getByText("/hour")).toBeInTheDocument();
+    expect(screen.queryByText("Free")).not.toBeInTheDocument();
   });
 
-  it("hides the yearly price line when showYearlyPrice is false", () => {
-    render(
-      <PricingCard
-        plan={plan({ monthlyPrice: "29", yearlyPrice: "348" })}
-        showYearlyPrice={false}
-      />,
-    );
-    expect(screen.queryByText("$348/year")).not.toBeInTheDocument();
-  });
-
-  it("hides the yearly price line when yearly is 0", () => {
-    render(
-      <PricingCard plan={plan({ monthlyPrice: "29", yearlyPrice: "0" })} />,
-    );
-    expect(screen.queryByText(/\$0\/year/)).not.toBeInTheDocument();
+  it("does not render an annual price line for a priced plan", () => {
+    render(<PricingCard plan={pricedPlan("29")} />);
+    expect(screen.queryByText(/\/year/)).not.toBeInTheDocument();
   });
 
   it("renders 'Pay as you go / Usage-based pricing' for a PAYG plan", () => {
     const paygPlan = plan({
-      monthlyPrice: null,
-      yearlyPrice: null,
       phases: [
         phase({
           rateCards: [
