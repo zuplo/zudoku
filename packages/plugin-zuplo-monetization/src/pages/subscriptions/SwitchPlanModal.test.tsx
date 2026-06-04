@@ -806,4 +806,77 @@ describe("SwitchPlanModal", () => {
     expect(within(card).getByText("Priority Support")).toBeInTheDocument();
     expect(within(card).getByText(/now included/)).toBeInTheDocument();
   });
+
+  it("expands a tiered target quota into its actual tier schedule", () => {
+    plansItems.current = [
+      {
+        ...makePublicPlan({
+          id: "plan-ent2",
+          key: "enterprise2",
+          name: "Enterprise 2",
+        }),
+        phases: [
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              {
+                type: "usage_based",
+                key: "api_calls",
+                name: "API Calls",
+                featureKey: "api_calls",
+                billingCadence: "P1M",
+                price: {
+                  type: "tiered",
+                  mode: "graduated",
+                  tiers: [
+                    { upToAmount: "1000", unitPrice: { amount: "0" } },
+                    { unitPrice: { amount: "0.01" } },
+                  ],
+                },
+                entitlementTemplate: { type: "metered", issueAfterReset: 1000 },
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    // Current plan provisions a plain 10/hour quota for the same feature key.
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "current",
+      name: "My Current Plan",
+      billingCadence: "P1M",
+      phases: [
+        {
+          key: "default",
+          name: "Default",
+          rateCards: [
+            {
+              type: "usage_based",
+              key: "api_calls",
+              name: "API Calls",
+              featureKey: "api_calls",
+              billingCadence: "PT1H",
+              price: null,
+              entitlementTemplate: { type: "metered", issueAfterReset: 10 },
+            },
+          ],
+        },
+      ],
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Enterprise 2");
+    // The transition line still names the pricing model…
+    expect(within(card).getByText("Tiered pricing")).toBeInTheDocument();
+    // …but the decision-relevant schedule is shown beneath it.
+    expect(within(card).getByText("Up to 1,000: Included")).toBeInTheDocument();
+    expect(
+      within(card).getByText("Over 1,000: $0.01/unit"),
+    ).toBeInTheDocument();
+  });
 });

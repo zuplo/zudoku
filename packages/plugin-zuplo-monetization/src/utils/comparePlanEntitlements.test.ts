@@ -109,6 +109,54 @@ describe("comparePlanEntitlements", () => {
     ]);
   });
 
+  it("carries the target tier breakdown and detects re-priced schedules", () => {
+    const tiered = (lines: string[]) =>
+      quota({
+        key: "api_calls",
+        name: "API Calls",
+        limit: 1000,
+        period: "month",
+        tierPrices: lines,
+      });
+
+    // Plain quota → tiered: neutral change with the target schedule attached.
+    const toTiered = comparePlanEntitlements(
+      set([
+        quota({
+          key: "api_calls",
+          name: "API Calls",
+          limit: 10,
+          period: "hour",
+        }),
+      ]),
+      set([tiered(["Up to 1,000: Included", "Over 1,000: $0.01/request"])]),
+    );
+    expect(toTiered[0]).toMatchObject({
+      change: "changed",
+      currentValue: "10 / hour",
+      targetValue: "Tiered pricing",
+      tierPrices: ["Up to 1,000: Included", "Over 1,000: $0.01/request"],
+    });
+
+    // Both sides label "Tiered pricing" but the schedule differs: still a change.
+    const repriced = comparePlanEntitlements(
+      set([tiered(["Up to 1,000: Included", "Over 1,000: $0.01/request"])]),
+      set([tiered(["Up to 500: Included", "Over 500: $0.02/request"])]),
+    );
+    expect(repriced[0].change).toBe("changed");
+
+    // Identical schedules stay "same" and still expose the breakdown.
+    const unchanged = comparePlanEntitlements(
+      set([tiered(["Up to 1,000: Included", "Over 1,000: $0.01/request"])]),
+      set([tiered(["Up to 1,000: Included", "Over 1,000: $0.01/request"])]),
+    );
+    expect(unchanged[0].change).toBe("same");
+    expect(unchanged[0].tierPrices).toEqual([
+      "Up to 1,000: Included",
+      "Over 1,000: $0.01/request",
+    ]);
+  });
+
   it("emits a single added/removed row per key in the correct bucket", () => {
     const changes = comparePlanEntitlements(
       set([], [feature("a", "Feature A")]),

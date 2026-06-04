@@ -107,7 +107,11 @@ const ChangeRow = ({ change }: { change: EntitlementChange }) => {
       );
       body = (
         <>
-          <span className="font-medium">{change.label}:</span> {arrow}
+          <span className="font-medium">{change.label}:</span>{" "}
+          {/* Equal labels (e.g. two different tier schedules both reading
+              "Tiered pricing") would render a meaningless "X → X" — the ⇄ icon
+              plus the breakdown below already convey the change. */}
+          {change.currentValue !== change.targetValue && arrow}
           <span className="font-medium">{change.targetValue}</span>
         </>
       );
@@ -116,7 +120,16 @@ const ChangeRow = ({ change }: { change: EntitlementChange }) => {
   return (
     <div className="flex items-start gap-2 text-sm">
       {icon}
-      <div className="flex flex-wrap items-baseline gap-1">{body}</div>
+      <div>
+        <div className="flex flex-wrap items-baseline gap-1">{body}</div>
+        {change.tierPrices && change.tierPrices.length > 0 && (
+          <ul className="text-xs text-muted-foreground mt-1 space-y-0.5">
+            {change.tierPrices.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };

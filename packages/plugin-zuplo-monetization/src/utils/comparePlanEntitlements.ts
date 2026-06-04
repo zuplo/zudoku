@@ -15,6 +15,13 @@ export type EntitlementChange = {
   change: "added" | "removed" | "increase" | "decrease" | "changed" | "same";
   currentValue?: string;
   targetValue?: string;
+  /**
+   * The TARGET quota's tier-price breakdown (the same lines `QuotaItem` shows
+   * on the pricing card, e.g. "Up to 1,000: Included"), so an opaque "Tiered
+   * pricing" value can be expanded into the actual schedule the user is
+   * deciding on.
+   */
+  tierPrices?: string[];
 };
 
 /** Compact, human-readable value for a quota row. */
@@ -29,6 +36,11 @@ const featureValueLabel = (f: Feature): string => f.value ?? "Included";
 
 const isPlainNumericQuota = (q: Quota): boolean =>
   !q.isPayg && !q.unitPrice && (!q.tierPrices || q.tierPrices.length === 0);
+
+// Two tiered quotas both label as "Tiered pricing", so the labels alone can't
+// tell a re-priced schedule from an identical one — compare the actual lines.
+const sameTierSchedule = (a?: string[], b?: string[]): boolean =>
+  (a ?? []).join("\n") === (b ?? []).join("\n");
 
 /**
  * Compare two plans' entitlements, matching strictly by feature key (never by
@@ -62,7 +74,10 @@ export const comparePlanEntitlements = (
       ) {
         if (t.limit > c.limit) change = "increase";
         else if (t.limit < c.limit) change = "decrease";
-      } else if (currentValue !== targetValue) {
+      } else if (
+        currentValue !== targetValue ||
+        !sameTierSchedule(c.tierPrices, t.tierPrices)
+      ) {
         // Cross-cadence or pricing-model change — neutral, no arrow direction.
         change = "changed";
       }
@@ -73,6 +88,7 @@ export const comparePlanEntitlements = (
         change,
         currentValue,
         targetValue,
+        tierPrices: t.tierPrices,
         period: t.period,
       });
     } else if (t) {
@@ -82,6 +98,7 @@ export const comparePlanEntitlements = (
         kind: "quota",
         change: "added",
         targetValue: quotaValueLabel(t),
+        tierPrices: t.tierPrices,
         period: t.period,
       });
     } else if (c) {
