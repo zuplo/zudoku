@@ -13,7 +13,7 @@ export type PlanPriceLabel =
 // actually has a non-zero price. `price: null` (used elsewhere in this repo
 // for free, quota-only metered entitlements) and all-zero tiered schedules
 // don't bill anything per unit and shouldn't flip a plan into PAYG.
-const isPricedUsageRateCard = (rc: RateCard): boolean => {
+export const isPricedUsageRateCard = (rc: RateCard): boolean => {
   if (rc.type !== "usage_based" || !rc.price) return false;
   const p = rc.price;
   if (p.type === "unit") return parseFloat(p.amount) > 0;

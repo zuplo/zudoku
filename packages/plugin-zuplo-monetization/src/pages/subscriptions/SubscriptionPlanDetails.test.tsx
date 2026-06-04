@@ -1,5 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Plan, PlanPhase, RateCard } from "../../types/PlanType.js";
 import type {
   Subscription,
@@ -101,6 +101,10 @@ const makeSubscription = (
 });
 
 describe("SubscriptionPlanDetails", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("renders the plan name, description and subscription ID", () => {
     render(
       <SubscriptionPlanDetails
@@ -342,5 +346,77 @@ describe("SubscriptionPlanDetails", () => {
     expect(screen.getByText("/month")).toBeInTheDocument();
     expect(screen.getByText("API Requests:")).toBeInTheDocument();
     expect(screen.getByText(/500 \/ month/)).toBeInTheDocument();
+  });
+
+  // A two-phase ramp subscription ("$375/month for 3 months, then
+  // $750/month"): the Price field must show the phase that is active NOW,
+  // not the future steady phase and not the catalog plan's last phase.
+  it("shows the active intro phase's price for a multi-phase subscription", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-07-15T00:00:00.000Z"));
+
+    const feeItem = (
+      id: string,
+      amount: string,
+    ): Subscription["phases"][number]["items"][number] =>
+      ({
+        activeFrom: "2026-06-04T00:00:00.000Z",
+        billingCadence: "P1M",
+        createdAt: "2026-06-04T00:00:00.000Z",
+        featureKey: "monthly_fee",
+        id,
+        included: {},
+        key: "monthly_fee",
+        metadata: {},
+        name: "Monthly Fee",
+        price: { type: "flat", amount, paymentTerm: "in_advance" },
+        updatedAt: "2026-06-04T00:00:00.000Z",
+      }) as unknown as Subscription["phases"][number]["items"][number];
+
+    const subPhase = (o: {
+      key: string;
+      activeFrom: string;
+      activeTo?: string;
+      items: Subscription["phases"][number]["items"];
+    }): Subscription["phases"][number] =>
+      ({
+        activeFrom: o.activeFrom,
+        activeTo: o.activeTo,
+        createdAt: o.activeFrom,
+        id: `phase-${o.key}`,
+        itemTimelines: {},
+        items: o.items,
+        key: o.key,
+        metadata: {},
+        name: o.key,
+        updatedAt: o.activeFrom,
+      }) as unknown as Subscription["phases"][number];
+
+    // The catalog plan's steady-state phase says $750 — it must NOT win
+    // over the provisioned intro item.
+    const subscription = makeSubscription(
+      makePlan({ phases: [phase([flatFeeCard("750")])] }),
+      {
+        phases: [
+          subPhase({
+            key: "intro",
+            activeFrom: "2026-06-04T00:00:00.000Z",
+            activeTo: "2026-09-04T00:00:00.000Z",
+            items: [feeItem("fee-intro", "375")],
+          }),
+          subPhase({
+            key: "steady",
+            activeFrom: "2026-09-04T00:00:00.000Z",
+            items: [feeItem("fee-steady", "750")],
+          }),
+        ],
+      },
+    );
+
+    render(<SubscriptionPlanDetails subscription={subscription} />);
+
+    expect(screen.getByText("$375")).toBeInTheDocument();
+    expect(screen.getByText("/month")).toBeInTheDocument();
+    expect(screen.queryByText("$750")).not.toBeInTheDocument();
   });
 });
