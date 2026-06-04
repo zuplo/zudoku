@@ -164,29 +164,42 @@ const config = {
 };
 ```
 
-Alternatively, you can copy the CSS code and paste it into your `customCss` configuration:
+Alternatively, paste the copied CSS into a stylesheet and import it from your config:
+
+```css title=styles.css
+/* Copied CSS code */
+```
 
 ```ts title=zudoku.config.ts
-const config = {
-  theme: {
-    customCss: `
-      /* Copied CSS code */
-    `,
-  },
-};
+import "./styles.css";
 ```
 
 ## Custom CSS
 
-For advanced styling, you can add custom CSS either as a string or structured object:
+The recommended way to add custom styles is to write a `.css` file alongside your config and import
+it. This gives you HMR during development, syntax highlighting, autocompletion, and lets you split
+styles across files as your site grows.
 
-:::note
+```css title=styles.css
+.custom {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+```
 
-Changes to `customCss` require restarting the development server to take effect.
+```ts title=zudoku.config.ts
+import "./styles.css";
 
-:::
+const config = {
+  // ...
+};
+```
 
-### CSS String
+### Inline alternatives (deprecated)
+
+The `theme.customCss` option is deprecated and will be removed in a future release. It still accepts
+a CSS string or object for backwards compatibility, but every change requires restarting the dev
+server and you lose syntax highlighting, autocompletion, and HMR. Migrate to an imported `.css`
+file.
 
 ```ts title=zudoku.config.ts
 const config = {
@@ -200,37 +213,22 @@ const config = {
 };
 ```
 
-### CSS Object
-
-```ts title=zudoku.config.ts
-const config = {
-  theme: {
-    customCss: {
-      ".custom": {
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      },
-    },
-  },
-};
-```
-
 ### Enabling Code Ligatures
 
 Zudoku disables ligatures in code blocks by default to avoid unwanted glyph joining in fonts like
 Geist Mono (e.g. `---`, `###`, `|--|`). If you're using a coding font designed around ligatures
-(Fira Code, JetBrains Mono, etc.), re-enable them via `customCss`:
+(Fira Code, JetBrains Mono, etc.), re-enable them in your CSS file:
 
-```ts title=zudoku.config.ts
-const config = {
-  theme: {
-    customCss: `
-      code, pre, kbd, samp, .shiki, .shiki span {
-        font-variant-ligatures: normal;
-        font-feature-settings: normal;
-      }
-    `,
-  },
-};
+```css title=styles.css
+code,
+pre,
+kbd,
+samp,
+.shiki,
+.shiki span {
+  font-variant-ligatures: normal;
+  font-feature-settings: normal;
+}
 ```
 
 ## Default Theme

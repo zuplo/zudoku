@@ -590,6 +590,11 @@ const CssObject = z.record(
 
 const ThemeConfigSchema = z.object({
   registryUrl: z.string().url().optional(),
+  /**
+   * @deprecated Import a `.css` file from your `zudoku.config.ts` instead.
+   * Inline CSS via this option still works but requires a dev server restart
+   * on every change and provides no editor tooling.
+   */
   customCss: z.union([z.string(), CssObject]).optional(),
   light: ThemeSchema.optional(),
   dark: ThemeSchema.optional(),
