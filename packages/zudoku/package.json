@@ -228,7 +228,7 @@
     "@types/semver": "7.7.1",
     "@types/unist": "3.0.3",
     "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "4.0.18",
+    "@vitest/coverage-v8": "4.1.8",
     "happy-dom": "catalog:",
     "oxc-parser": "^0.133.0",
     "react": "catalog:",
