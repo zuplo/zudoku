@@ -194,6 +194,19 @@ const config = {
 };
 ```
 
+If TypeScript reports `Cannot find module './styles.css'`, add `zudoku/client` to your tsconfig
+types so CSS side-effect imports are recognized:
+
+```json title=tsconfig.json
+{
+  "compilerOptions": {
+    "types": ["zudoku/client"]
+  }
+}
+```
+
+Projects created with `create-zudoku` include this by default.
+
 ### Inline alternatives (deprecated)
 
 The `theme.customCss` option is deprecated and will be removed in a future release. It still accepts
