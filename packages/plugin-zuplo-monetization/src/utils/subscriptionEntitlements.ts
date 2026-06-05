@@ -262,6 +262,53 @@ const phasesByActiveFrom = (subscription: Subscription) =>
   );
 
 /**
+ * A clean ISO-8601 duration between two instants, preferring whole calendar
+ * units (years/months/weeks) over raw days so it formats the same way catalog
+ * plan durations do (e.g. `P1W` → "week", `P3M` → "3 months") rather than as
+ * "7 days" / "90 days". Returns `undefined` for a non-positive span.
+ */
+const isoDurationBetween = (from: string, to: string): string | undefined => {
+  const a = new Date(from);
+  const b = new Date(to);
+  const ms = b.getTime() - a.getTime();
+  if (!(ms > 0)) return undefined;
+
+  // Whole calendar months (and years) when `to` lands exactly N months after
+  // `from` — covers monthly/quarterly/annual ramp phases regardless of how
+  // many days each month has.
+  let months =
+    (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+  const anchor = new Date(a);
+  anchor.setMonth(a.getMonth() + months);
+  if (anchor.getTime() > b.getTime()) months -= 1;
+  const exact = new Date(a);
+  exact.setMonth(a.getMonth() + months);
+  if (months >= 1 && exact.getTime() === b.getTime()) {
+    return months % 12 === 0 ? `P${months / 12}Y` : `P${months}M`;
+  }
+
+  const days = Math.round(ms / 86_400_000);
+  if (days >= 7 && days % 7 === 0) return `P${days / 7}W`;
+  return `P${days}D`;
+};
+
+/**
+ * The intended length of a subscription phase: the matching catalog plan
+ * phase's authored `duration` when available (the cleanest source), otherwise
+ * computed from the phase's own `activeFrom`/`activeTo`. `undefined` for an
+ * open-ended (final) phase — the price schedule labels that one "After that".
+ */
+const phaseDuration = (
+  plan: Subscription["plan"],
+  phase: Subscription["phases"][number],
+): string | undefined => {
+  const catalog = plan.phases?.find((p) => p.key === phase.key)?.duration;
+  if (catalog) return catalog;
+  if (!phase.activeTo) return undefined;
+  return isoDurationBetween(phase.activeFrom, phase.activeTo);
+};
+
+/**
  * Resolve EVERY phase of a subscription (not just the active one) to a
  * {@link SubscriptionPhaseView}, ordered by `activeFrom` and tagged
  * past/current/future. Generalizes {@link getSubscriptionPlanView}: each phase's
@@ -312,7 +359,9 @@ export const getSubscriptionPhaseViews = (
  * for the new plan. Each phase's rate cards come from its provisioned items
  * (the authoritative source) — the embedded `subscription.plan` snapshot is
  * unreliable here (it can arrive with `phases: []`), so we never read its
- * phases for pricing.
+ * phases for pricing. Each phase's `duration` is carried so the price schedule
+ * labels read "First 3 months" / "After that" exactly like the new plan, rather
+ * than falling back to the phase name (see {@link phaseDuration}).
  */
 export const subscriptionToCurrentPlan = (subscription: Subscription): Plan => {
   const plan = subscription.plan;
@@ -322,6 +371,7 @@ export const subscriptionToCurrentPlan = (subscription: Subscription): Plan => {
     .map((phase) => ({
       key: phase.key,
       name: phase.name,
+      duration: phaseDuration(plan, phase),
       rateCards: phaseRateCards(plan, phase),
     }));
 

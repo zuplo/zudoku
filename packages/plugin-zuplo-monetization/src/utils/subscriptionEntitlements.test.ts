@@ -554,11 +554,49 @@ describe("subscriptionToCurrentPlan", () => {
     );
 
     expect(plan.phases.map((p) => p.key)).toEqual(["intro", "steady"]);
-    // The synthesized plan feeds the same pricing-table schedule helper.
+    // The synthesized plan feeds the same pricing-table schedule helper, and
+    // carries per-phase durations computed from the phase dates so the labels
+    // read like the new plan ("First 3 months" / "After that"), not the phase
+    // name.
     expect(getPlanPriceSchedule(plan)).toEqual([
-      expect.objectContaining({ price: { type: "priced", amount: 375 } }),
-      expect.objectContaining({ price: { type: "priced", amount: 750 } }),
+      expect.objectContaining({
+        label: "First 3 months",
+        price: { type: "priced", amount: 375 },
+      }),
+      expect.objectContaining({
+        label: "After that",
+        price: { type: "priced", amount: 750 },
+      }),
     ]);
+  });
+
+  it("prefers the catalog plan phase's authored duration over the date-derived one", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-06-05T00:00:00.000Z"));
+
+    const plan = subscriptionToCurrentPlan(
+      makeSubscription({
+        phases: [
+          makeSubscriptionPhase({
+            key: "trial",
+            activeFrom: "2026-06-01T00:00:00.000Z",
+            activeTo: "2026-06-08T00:00:00.000Z", // 1 week
+            items: [feeItem("0")],
+          }),
+          makeSubscriptionPhase({
+            key: "paid",
+            activeFrom: "2026-06-08T00:00:00.000Z",
+            items: [feeItem("100")],
+          }),
+        ],
+        planPhases: [
+          { key: "trial", name: "Trial", duration: "P1W", rateCards: [] },
+        ],
+      }),
+    );
+
+    expect(plan.phases[0].duration).toBe("P1W");
+    expect(getPlanPriceSchedule(plan)?.[0].label).toBe("First week");
   });
 });
 
