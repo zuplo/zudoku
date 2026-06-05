@@ -680,7 +680,7 @@ describe("SwitchPlanModal", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("shows a phase ramp summary for a multi-phase target", () => {
+  it("shows a per-phase price schedule for a multi-phase target", () => {
     plansItems.current = [
       {
         ...makePublicPlan({
@@ -720,9 +720,78 @@ describe("SwitchPlanModal", () => {
     render(<SwitchPlanModal subscription={subscription} />);
     openModal();
 
-    expect(
-      screen.getByText("Free Trial (1 week), then $49 / month"),
-    ).toBeInTheDocument();
+    const card = getPlanCard(screen.getByRole("dialog"), "Trial Plan");
+    expect(within(card).getByText("First week")).toBeInTheDocument();
+    expect(within(card).getByText("Free")).toBeInTheDocument();
+    expect(within(card).getByText("After that")).toBeInTheDocument();
+    expect(within(card).getByText("$49")).toBeInTheDocument();
+    expect(within(card).getByText("/month")).toBeInTheDocument();
+  });
+
+  it("shows per-phase diff sections when the target's phases differ in entitlements", () => {
+    const apiQuota = (
+      issueAfterReset: number,
+    ): Plan["phases"][number]["rateCards"][number] => ({
+      type: "flat_fee",
+      key: "api_requests",
+      name: "API Requests",
+      featureKey: "api_requests",
+      billingCadence: null,
+      price: null,
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset,
+        usagePeriod: "P1M",
+      },
+    });
+    const fee = (
+      amount: string,
+    ): Plan["phases"][number]["rateCards"][number] => ({
+      type: "flat_fee",
+      key: "monthly_fee",
+      name: "Monthly Fee",
+      billingCadence: "P1M",
+      price: { type: "flat", amount },
+    });
+
+    plansItems.current = [
+      {
+        ...makePublicPlan({ id: "plan-ramp", key: "ramp", name: "Ramp Plan" }),
+        phases: [
+          {
+            key: "intro",
+            name: "First 3 months",
+            duration: "P3M",
+            rateCards: [fee("375"), apiQuota(250_001)],
+          },
+          {
+            key: "steady",
+            name: "After 3 months",
+            rateCards: [fee("750"), apiQuota(250_000)],
+          },
+        ],
+      },
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Ramp Plan");
+    // One diff section per phase, headed by the phase's own price…
+    expect(within(card).getByText("· $375/month")).toBeInTheDocument();
+    expect(within(card).getByText("· $750/month")).toBeInTheDocument();
+    // …each showing that phase's distinct quota.
+    expect(within(card).getByText(/250,001 \/ month/)).toBeInTheDocument();
+    expect(within(card).getByText(/250,000 \/ month/)).toBeInTheDocument();
   });
 
   it("shows the target plan's full entitlements without an expander", () => {

@@ -24,6 +24,7 @@
 //     grid.
 export { FeatureItem } from "./FeatureItem.js";
 export { PlanEntitlements } from "./PlanEntitlements.js";
+export { PlanPriceSchedule } from "./PlanPriceSchedule.js";
 export { PlanPriceTag } from "./PlanPriceTag.js";
 export { PricingCard, type PricingCardProps } from "./PricingCard.js";
 export { PricingTable, type PricingTableProps } from "./PricingTable.js";
@@ -76,7 +77,12 @@ export {
   formatTieredPriceBreakdown,
   type TieredPriceBreakdownTier,
 } from "../utils/formatTieredPriceBreakdown.js";
+export { getPhasePriceLabel } from "../utils/getPhasePriceLabel.js";
 export { getPlanPrice } from "../utils/getPlanPrice.js";
+export {
+  getPlanPriceSchedule,
+  type PlanPriceScheduleRow,
+} from "../utils/getPlanPriceSchedule.js";
 export {
   parseRateCardOrder,
   RATE_CARD_ORDER_METADATA_KEY,

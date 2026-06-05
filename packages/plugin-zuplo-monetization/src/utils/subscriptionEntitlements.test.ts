@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Item, Subscription } from "../types/SubscriptionType.js";
 import {
   categorizeSubscriptionItems,
@@ -54,8 +54,28 @@ const meteredEntitlement = (
   usagePeriod: { anchor: "x", interval: intervalISO, intervalISO },
 });
 
+const makeSubscriptionPhase = (o: {
+  key: string;
+  activeFrom: string;
+  activeTo?: string;
+  items: Item[];
+}): Subscription["phases"][number] =>
+  ({
+    activeFrom: o.activeFrom,
+    activeTo: o.activeTo,
+    createdAt: o.activeFrom,
+    id: `ph-${o.key}`,
+    itemTimelines: {},
+    items: o.items,
+    key: o.key,
+    metadata: {},
+    name: o.key,
+    updatedAt: o.activeFrom,
+  }) as unknown as Subscription["phases"][number];
+
 const makeSubscription = (opts: {
   items?: Item[];
+  phases?: Subscription["phases"];
   planPhases?: Subscription["plan"]["phases"];
 }): Subscription =>
   ({
@@ -71,21 +91,17 @@ const makeSubscription = (opts: {
       currency: "USD",
       phases: opts.planPhases ?? [],
     },
-    phases: opts.items
-      ? [
-          {
-            activeFrom: "2026-01-01T00:00:00.000Z",
-            createdAt: "2026-01-01T00:00:00.000Z",
-            id: "ph",
-            itemTimelines: {},
-            items: opts.items,
-            key: "default",
-            metadata: {},
-            name: "Default",
-            updatedAt: "2026-01-01T00:00:00.000Z",
-          },
-        ]
-      : [],
+    phases:
+      opts.phases ??
+      (opts.items
+        ? [
+            makeSubscriptionPhase({
+              key: "default",
+              activeFrom: "2026-01-01T00:00:00.000Z",
+              items: opts.items,
+            }),
+          ]
+        : []),
   }) as unknown as Subscription;
 
 describe("categorizeSubscriptionItems", () => {
@@ -311,6 +327,83 @@ describe("getSubscriptionPlanView", () => {
     expect(view.usingItems).toBe(false);
     expect(view.priceLabel).toEqual({ type: "priced", amount: 49 });
     expect(view.fallbackPhases).toHaveLength(1);
+  });
+
+  // A two-phase ramp subscription ("$375/month for 3 months, then $750/month"):
+  // the price must always come from the phase that is active NOW — the intro
+  // price during the intro window, the steady price after it — never from the
+  // catalog plan's last phase.
+  describe("multi-phase ramp", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    const rampSubscription = () =>
+      makeSubscription({
+        phases: [
+          makeSubscriptionPhase({
+            key: "intro",
+            activeFrom: "2026-06-04T00:00:00.000Z",
+            activeTo: "2026-09-04T00:00:00.000Z",
+            items: [
+              item({
+                key: "monthly_fee",
+                name: "Monthly Fee",
+                price: {
+                  type: "flat",
+                  amount: "375",
+                  paymentTerm: "in_advance",
+                },
+                billingCadence: "P1M",
+              }),
+              item({
+                key: "api_requests",
+                name: "API Requests",
+                entitlement: meteredEntitlement(250_000, "P1M"),
+              }),
+            ],
+          }),
+          makeSubscriptionPhase({
+            key: "steady",
+            activeFrom: "2026-09-04T00:00:00.000Z",
+            items: [
+              item({
+                key: "monthly_fee",
+                name: "Monthly Fee",
+                price: {
+                  type: "flat",
+                  amount: "750",
+                  paymentTerm: "in_advance",
+                },
+                billingCadence: "P1M",
+              }),
+              item({
+                key: "api_requests",
+                name: "API Requests",
+                entitlement: meteredEntitlement(250_000, "P1M"),
+              }),
+            ],
+          }),
+        ],
+      });
+
+    it("prices the active intro phase, not the future steady phase", () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-07-15T00:00:00.000Z"));
+
+      const view = getSubscriptionPlanView(rampSubscription());
+      expect(view.usingItems).toBe(true);
+      expect(view.priceLabel).toEqual({ type: "priced", amount: 375 });
+    });
+
+    it("prices the steady phase once the intro window has passed", () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-10-15T00:00:00.000Z"));
+
+      const view = getSubscriptionPlanView(rampSubscription());
+      expect(view.usingItems).toBe(true);
+      expect(view.priceLabel).toEqual({ type: "priced", amount: 750 });
+    });
   });
 
   // Regression for the reviewer's concern: a paid active phase must not read as

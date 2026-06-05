@@ -3,10 +3,12 @@ import type { Plan } from "../types/PlanType.js";
 import { formatDuration } from "../utils/formatDuration.js";
 import { formatPlanPrice } from "../utils/formatPlanPrice.js";
 import { formatPrice } from "../utils/formatPrice.js";
+import { getPlanPriceSchedule } from "../utils/getPlanPriceSchedule.js";
 import { isCustomPlan } from "../utils/isCustomPlan.js";
 import { parseRateCardOrder } from "../utils/rateCardOrder.js";
 import { cn } from "./cn.js";
 import { PlanEntitlements } from "./PlanEntitlements.js";
+import { PlanPriceSchedule } from "./PlanPriceSchedule.js";
 
 export type PricingCardProps = {
   plan: Plan;
@@ -30,6 +32,9 @@ export const PricingCard = ({
 
   const isCustom = isCustomPlan(plan);
   const billingInterval = formatDuration(plan.billingCadence);
+  // Multi-phase plans with differing per-phase prices show a stacked schedule
+  // instead of a single headline (which would only reflect the last phase).
+  const schedule = isCustom ? undefined : getPlanPriceSchedule(plan);
 
   return (
     <div
@@ -51,40 +56,49 @@ export const PricingCard = ({
         <h3 className="text-base font-semibold text-muted-foreground mb-2">
           {plan.name}
         </h3>
-        <div className="flex items-baseline gap-1 flex-wrap">
-          {isCustom ? (
-            <div>
-              <div className="text-3xl font-bold text-card-foreground">
-                Custom
+        {schedule ? (
+          <PlanPriceSchedule
+            schedule={schedule}
+            currency={plan.currency}
+            billingCadence={plan.billingCadence}
+            size="lg"
+          />
+        ) : (
+          <div className="flex items-baseline gap-1 flex-wrap">
+            {isCustom ? (
+              <div>
+                <div className="text-3xl font-bold text-card-foreground">
+                  Custom
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Contact Sales
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground mt-1">
-                Contact Sales
+            ) : priceLabel.type === "payg" ? (
+              <div>
+                <div className="text-2xl font-bold text-card-foreground text-balance">
+                  {priceLabel.main}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {priceLabel.sub}
+                </div>
               </div>
-            </div>
-          ) : priceLabel.type === "payg" ? (
-            <div>
-              <div className="text-2xl font-bold text-card-foreground text-balance">
-                {priceLabel.main}
-              </div>
-              <div className="text-sm text-muted-foreground mt-1">
-                {priceLabel.sub}
-              </div>
-            </div>
-          ) : priceLabel.type === "free" ? (
-            <span className="text-3xl font-bold text-card-foreground">
-              Free
-            </span>
-          ) : (
-            <>
+            ) : priceLabel.type === "free" ? (
               <span className="text-3xl font-bold text-card-foreground">
-                {formatPrice(priceLabel.amount, plan.currency)}
+                Free
               </span>
-              <span className="text-muted-foreground text-sm">
-                /{billingInterval}
-              </span>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <span className="text-3xl font-bold text-card-foreground">
+                  {formatPrice(priceLabel.amount, plan.currency)}
+                </span>
+                <span className="text-muted-foreground text-sm">
+                  /{billingInterval}
+                </span>
+              </>
+            )}
+          </div>
+        )}
         {plan.paymentRequired === false && (
           <div className="text-sm text-muted-foreground mt-1">
             No CC required

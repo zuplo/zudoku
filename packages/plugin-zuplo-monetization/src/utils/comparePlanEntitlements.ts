@@ -42,6 +42,48 @@ const isPlainNumericQuota = (q: Quota): boolean =>
 const sameTierSchedule = (a?: string[], b?: string[]): boolean =>
   (a ?? []).join("\n") === (b ?? []).join("\n");
 
+const sameQuota = (a: Quota, b: Quota): boolean =>
+  a.name === b.name &&
+  a.limit === b.limit &&
+  a.period === b.period &&
+  a.isPayg === b.isPayg &&
+  a.unitPrice === b.unitPrice &&
+  sameTierSchedule(a.tierPrices, b.tierPrices);
+
+const sameFeature = (a: Feature, b: Feature): boolean =>
+  a.name === b.name && a.value === b.value;
+
+/**
+ * Whether two entitlement sets render identically: the same quota and feature
+ * keys, each with identical display fields. Order-insensitive (matched by
+ * key), so two phases whose rate cards merely differ in order still compare
+ * equal. Used to collapse per-phase entitlement lists that would repeat the
+ * exact same rows.
+ */
+export const sameEntitlementSet = (
+  a: EntitlementSet,
+  b: EntitlementSet,
+): boolean => {
+  if (
+    a.quotas.length !== b.quotas.length ||
+    a.features.length !== b.features.length
+  ) {
+    return false;
+  }
+  const bQuotas = new Map(b.quotas.map((q) => [q.key, q]));
+  const bFeatures = new Map(b.features.map((f) => [f.key, f]));
+  return (
+    a.quotas.every((q) => {
+      const other = bQuotas.get(q.key);
+      return other !== undefined && sameQuota(q, other);
+    }) &&
+    a.features.every((f) => {
+      const other = bFeatures.get(f.key);
+      return other !== undefined && sameFeature(f, other);
+    })
+  );
+};
+
 /**
  * Compare two plans' entitlements, matching strictly by feature key (never by
  * display name). Each key yields exactly one change row, so a key that exists
