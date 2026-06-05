@@ -415,8 +415,16 @@ describe("SubscriptionPlanDetails", () => {
 
     render(<SubscriptionPlanDetails subscription={subscription} />);
 
-    expect(screen.getByText("$375")).toBeInTheDocument();
-    expect(screen.getByText("/month")).toBeInTheDocument();
-    expect(screen.queryByText("$750")).not.toBeInTheDocument();
+    // The "Price" field shows the phase active NOW ($375), never the future
+    // steady phase or the catalog plan's last phase.
+    const priceField = screen.getByText("Price").parentElement as HTMLElement;
+    expect(within(priceField).getByText("$375")).toBeInTheDocument();
+    expect(within(priceField).getByText("/month")).toBeInTheDocument();
+    expect(within(priceField).queryByText("$750")).not.toBeInTheDocument();
+
+    // The future steady phase ($750/month) is surfaced under "Upcoming phases".
+    const upcoming = screen.getByText("Upcoming phases")
+      .parentElement as HTMLElement;
+    expect(within(upcoming).getByText("$750")).toBeInTheDocument();
   });
 });

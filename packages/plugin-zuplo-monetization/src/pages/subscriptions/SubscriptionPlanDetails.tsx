@@ -15,10 +15,15 @@ import {
   subscriptionTaxLegendSentence,
 } from "../../utils/pricingTaxLegend.js";
 import {
+  getSubscriptionPhaseViews,
   getSubscriptionPlanView,
   hasSubscriptionEntitlements,
 } from "../../utils/subscriptionEntitlements.js";
 import { SubscriptionEntitlements } from "../components/SubscriptionEntitlements.js";
+import {
+  PreviousPhases,
+  UpcomingPhases,
+} from "../components/SubscriptionPhases.js";
 
 const detailLabelClassName = "text-sm font-semibold tracking-wide mb-1";
 const sectionLabelClassName = "text-base font-semibold tracking-wide mb-3 mt-2";
@@ -40,6 +45,11 @@ export const SubscriptionPlanDetails = ({
     : undefined;
 
   const hasEntitlements = hasSubscriptionEntitlements(view);
+  const phaseViews = getSubscriptionPhaseViews(subscription, {
+    units: pricing?.units,
+  });
+  const hasUpcomingPhases = phaseViews.some((p) => p.status === "future");
+  const hasPreviousPhases = phaseViews.some((p) => p.status === "past");
 
   return (
     <div className="space-y-4">
@@ -109,6 +119,25 @@ export const SubscriptionPlanDetails = ({
                 view={view}
                 currency={view.currency}
                 billingCadence={view.billingCadence}
+                units={pricing?.units}
+              />
+            </div>
+          ) : null}
+
+          {hasUpcomingPhases ? (
+            <div className="space-y-3 pt-2 border-t border-border">
+              <p className={sectionLabelClassName}>Upcoming phases</p>
+              <UpcomingPhases
+                subscription={subscription}
+                units={pricing?.units}
+              />
+            </div>
+          ) : null}
+
+          {hasPreviousPhases ? (
+            <div className="pt-2 border-t border-border">
+              <PreviousPhases
+                subscription={subscription}
                 units={pricing?.units}
               />
             </div>

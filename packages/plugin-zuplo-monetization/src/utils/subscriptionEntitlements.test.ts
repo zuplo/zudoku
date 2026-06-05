@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Item, Subscription } from "../types/SubscriptionType.js";
+import { getPlanPriceSchedule } from "./getPlanPriceSchedule.js";
 import {
   categorizeSubscriptionItems,
+  getSubscriptionPhaseViews,
   getSubscriptionPlanView,
   hasSubscriptionEntitlements,
+  subscriptionToCurrentPlan,
 } from "./subscriptionEntitlements.js";
 
 type Entitlement = NonNullable<Item["included"]["entitlement"]>;
@@ -53,6 +56,14 @@ const meteredEntitlement = (
   ...(issueAfterReset != null ? { issueAfterReset } : {}),
   usagePeriod: { anchor: "x", interval: intervalISO, intervalISO },
 });
+
+const feeItem = (amount: string): Item =>
+  item({
+    key: "monthly_fee",
+    name: "Monthly Fee",
+    price: { type: "flat", amount, paymentTerm: "in_advance" },
+    billingCadence: "P1M",
+  });
 
 const makeSubscriptionPhase = (o: {
   key: string;
@@ -423,6 +434,169 @@ describe("getSubscriptionPlanView", () => {
     );
 
     expect(view.priceLabel).toEqual({ type: "priced", amount: 99 });
+  });
+});
+
+describe("getSubscriptionPhaseViews", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("orders phases by activeFrom and tags them past/current/future with each phase's own price", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-07-15T00:00:00.000Z"));
+
+    // Deliberately out of chronological order to verify sorting.
+    const views = getSubscriptionPhaseViews(
+      makeSubscription({
+        phases: [
+          makeSubscriptionPhase({
+            key: "steady",
+            activeFrom: "2026-09-04T00:00:00.000Z",
+            items: [feeItem("750")],
+          }),
+          makeSubscriptionPhase({
+            key: "trial",
+            activeFrom: "2026-05-01T00:00:00.000Z",
+            activeTo: "2026-06-04T00:00:00.000Z",
+            items: [feeItem("0")],
+          }),
+          makeSubscriptionPhase({
+            key: "intro",
+            activeFrom: "2026-06-04T00:00:00.000Z",
+            activeTo: "2026-09-04T00:00:00.000Z",
+            items: [feeItem("375")],
+          }),
+        ],
+      }),
+    );
+
+    expect(views.map((v) => v.name)).toEqual(["trial", "intro", "steady"]);
+    expect(views.map((v) => v.status)).toEqual(["past", "current", "future"]);
+    expect(views[0].priceLabel).toEqual({ type: "free" });
+    expect(views[1].priceLabel).toEqual({ type: "priced", amount: 375 });
+    expect(views[2].priceLabel).toEqual({ type: "priced", amount: 750 });
+  });
+
+  it("falls back to the catalog plan phase (by key) when a future phase has no items", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-07-15T00:00:00.000Z"));
+
+    const future = getSubscriptionPhaseViews(
+      makeSubscription({
+        phases: [
+          makeSubscriptionPhase({
+            key: "intro",
+            activeFrom: "2026-06-04T00:00:00.000Z",
+            activeTo: "2026-09-04T00:00:00.000Z",
+            items: [feeItem("375")],
+          }),
+          makeSubscriptionPhase({
+            key: "steady",
+            activeFrom: "2026-09-04T00:00:00.000Z",
+            items: [],
+          }),
+        ],
+        planPhases: [
+          {
+            key: "steady",
+            name: "Steady",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "base",
+                name: "Base",
+                billingCadence: "P1M",
+                price: { type: "flat", amount: "750" },
+              },
+            ],
+          },
+        ],
+      }),
+    ).find((v) => v.status === "future");
+
+    expect(future?.priceLabel).toEqual({ type: "priced", amount: 750 });
+  });
+});
+
+describe("subscriptionToCurrentPlan", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("keeps current + future phases (drops past), sourced from provisioned items even when the embedded plan snapshot is empty", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-07-15T00:00:00.000Z"));
+
+    const plan = subscriptionToCurrentPlan(
+      makeSubscription({
+        phases: [
+          makeSubscriptionPhase({
+            key: "trial",
+            activeFrom: "2026-05-01T00:00:00.000Z",
+            activeTo: "2026-06-04T00:00:00.000Z",
+            items: [feeItem("0")],
+          }),
+          makeSubscriptionPhase({
+            key: "intro",
+            activeFrom: "2026-06-04T00:00:00.000Z",
+            activeTo: "2026-09-04T00:00:00.000Z",
+            items: [feeItem("375")],
+          }),
+          makeSubscriptionPhase({
+            key: "steady",
+            activeFrom: "2026-09-04T00:00:00.000Z",
+            items: [feeItem("750")],
+          }),
+        ],
+        planPhases: [], // embedded snapshot is empty — must not be the source
+      }),
+    );
+
+    expect(plan.phases.map((p) => p.key)).toEqual(["intro", "steady"]);
+    // The synthesized plan feeds the same pricing-table schedule helper, and
+    // carries per-phase durations computed from the phase dates so the labels
+    // read like the new plan ("First 3 months" / "After that"), not the phase
+    // name.
+    expect(getPlanPriceSchedule(plan)).toEqual([
+      expect.objectContaining({
+        label: "First 3 months",
+        price: { type: "priced", amount: 375 },
+      }),
+      expect.objectContaining({
+        label: "After that",
+        price: { type: "priced", amount: 750 },
+      }),
+    ]);
+  });
+
+  it("prefers the catalog plan phase's authored duration over the date-derived one", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-06-05T00:00:00.000Z"));
+
+    const plan = subscriptionToCurrentPlan(
+      makeSubscription({
+        phases: [
+          makeSubscriptionPhase({
+            key: "trial",
+            activeFrom: "2026-06-01T00:00:00.000Z",
+            activeTo: "2026-06-08T00:00:00.000Z", // 1 week
+            items: [feeItem("0")],
+          }),
+          makeSubscriptionPhase({
+            key: "paid",
+            activeFrom: "2026-06-08T00:00:00.000Z",
+            items: [feeItem("100")],
+          }),
+        ],
+        planPhases: [
+          { key: "trial", name: "Trial", duration: "P1W", rateCards: [] },
+        ],
+      }),
+    );
+
+    expect(plan.phases[0].duration).toBe("P1W");
+    expect(getPlanPriceSchedule(plan)?.[0].label).toBe("First week");
   });
 });
 
