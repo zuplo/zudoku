@@ -1,6 +1,7 @@
 import type { PlanPhase } from "../types/PlanType.js";
 import { categorizeRateCards } from "../utils/categorizeRateCards.js";
 import { formatDuration } from "../utils/formatDuration.js";
+import { sortRateCardsByOrder } from "../utils/rateCardOrder.js";
 import { EntitlementList } from "./EntitlementList.js";
 
 const PhaseSection = ({
@@ -10,6 +11,7 @@ const PhaseSection = ({
   billingCadence,
   units,
   itemClassName,
+  order,
 }: {
   phase: PlanPhase;
   currency?: string;
@@ -17,17 +19,21 @@ const PhaseSection = ({
   billingCadence?: string;
   units?: Record<string, string>;
   itemClassName?: string;
+  /** Rate-card key order for this phase (from plan metadata); unknowns last. */
+  order?: string[];
 }) => {
-  const { quotas, features } = categorizeRateCards(phase.rateCards, {
-    currency,
-    units,
-    planBillingCadence: billingCadence,
-  });
+  const { items } = categorizeRateCards(
+    sortRateCardsByOrder(phase.rateCards, order),
+    {
+      currency,
+      units,
+      planBillingCadence: billingCadence,
+    },
+  );
 
   return (
     <EntitlementList
-      quotas={quotas}
-      features={features}
+      items={items}
       itemClassName={itemClassName}
       header={
         showName ? (
@@ -52,12 +58,19 @@ export const PlanEntitlements = ({
   billingCadence,
   units,
   itemClassName,
+  rateCardOrder,
 }: {
   phases: PlanPhase[];
   currency?: string;
   billingCadence?: string;
   units?: Record<string, string>;
   itemClassName?: string;
+  /**
+   * Per-phase rate-card display order keyed by phase key (from the plan's
+   * `zuplo_rate_card_order` metadata). When omitted, rate cards render in their
+   * incoming array order.
+   */
+  rateCardOrder?: Record<string, string[]>;
 }) => {
   return (
     <div className="space-y-4">
@@ -71,6 +84,7 @@ export const PlanEntitlements = ({
           billingCadence={billingCadence}
           units={units}
           itemClassName={itemClassName}
+          order={rateCardOrder?.[phase.key]}
         />
       ))}
     </div>

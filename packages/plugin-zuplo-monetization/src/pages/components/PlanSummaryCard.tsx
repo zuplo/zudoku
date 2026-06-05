@@ -7,6 +7,7 @@ import { formatBillingCycle } from "../../utils/formatBillingCycle.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
 import { formatMinorCurrencyAmount } from "../../utils/formatPrice.js";
+import { parseRateCardOrder } from "../../utils/rateCardOrder.js";
 
 /**
  * Plan summary shown on the checkout and plan-change confirmation pages: an
@@ -90,6 +91,7 @@ export const PlanSummaryCard = ({
           billingCadence={plan.billingCadence}
           units={units}
           itemClassName={entitlementsItemClassName}
+          rateCardOrder={parseRateCardOrder(plan)}
         />
       </CardContent>
     </Card>

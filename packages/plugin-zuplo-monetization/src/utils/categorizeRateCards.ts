@@ -1,4 +1,9 @@
-import type { Feature, Quota, RateCard } from "../types/PlanType.js";
+import type {
+  EntitlementItem,
+  Feature,
+  Quota,
+  RateCard,
+} from "../types/PlanType.js";
 import { formatDuration } from "./formatDuration.js";
 import { formatPrice } from "./formatPrice.js";
 import { formatStaticEntitlementConfig } from "./formatStaticEntitlementConfig.js";
@@ -16,6 +21,18 @@ export const categorizeRateCards = (
   const { currency, units, planBillingCadence } = options ?? {};
   const quotas: Quota[] = [];
   const features: Feature[] = [];
+  // `items` preserves the rate-card input order with quotas and features
+  // interleaved; `quotas`/`features` remain as filtered views for callers that
+  // count or diff entitlements (order-independent).
+  const items: EntitlementItem[] = [];
+  const pushQuota = (quota: Quota) => {
+    quotas.push(quota);
+    items.push({ kind: "quota", ...quota });
+  };
+  const pushFeature = (feature: Feature) => {
+    features.push(feature);
+    items.push({ kind: "feature", ...feature });
+  };
 
   for (const rc of rateCards) {
     const et = rc.entitlementTemplate;
@@ -70,7 +87,7 @@ export const categorizeRateCards = (
           includedLabel: "Included",
         });
       }
-      quotas.push({
+      pushQuota({
         key: rc.featureKey ?? rc.key,
         name: rc.name,
         limit: et.issueAfterReset,
@@ -92,7 +109,7 @@ export const categorizeRateCards = (
         // "Included" lines.
         const hasPositivePrice = tiers.some(tierHasPositivePrice);
         if (!hasPositivePrice) {
-          features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
+          pushFeature({ key: rc.featureKey ?? rc.key, name: rc.name });
           continue;
         }
         // Single-tier "tiered" prices can't produce a breakdown
@@ -113,7 +130,7 @@ export const categorizeRateCards = (
               ? `${flatPart} + ${unitPart}`
               : flatPart || unitPart;
           if (pricePart) {
-            quotas.push({
+            pushQuota({
               key: rc.featureKey ?? rc.key,
               name: rc.name,
               limit: 0,
@@ -126,7 +143,7 @@ export const categorizeRateCards = (
           // Unreachable — `hasPositivePrice` above guarantees at
           // least one of flat/unit is positive. Defensive fallback
           // so we never render an empty body if invariants change.
-          features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
+          pushFeature({ key: rc.featureKey ?? rc.key, name: rc.name });
           continue;
         }
         const tierPrices = formatTieredPriceBreakdown({
@@ -139,7 +156,7 @@ export const categorizeRateCards = (
           unitLabel,
           includedLabel: "Included",
         });
-        quotas.push({
+        pushQuota({
           key: rc.featureKey ?? rc.key,
           name: rc.name,
           limit: 0,
@@ -149,7 +166,7 @@ export const categorizeRateCards = (
         });
       } else if (rc.price.type === "unit" && parseFloat(rc.price.amount) > 0) {
         const amount = parseFloat(rc.price.amount);
-        quotas.push({
+        pushQuota({
           key: rc.featureKey ?? rc.key,
           name: rc.name,
           limit: 0,
@@ -158,12 +175,12 @@ export const categorizeRateCards = (
           isPayg: true,
         });
       } else {
-        features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
+        pushFeature({ key: rc.featureKey ?? rc.key, name: rc.name });
       }
     } else if (et.type === "boolean") {
-      features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
+      pushFeature({ key: rc.featureKey ?? rc.key, name: rc.name });
     } else if (et.type === "static" && et.config) {
-      features.push({
+      pushFeature({
         key: rc.featureKey ?? rc.key,
         name: rc.name,
         value: formatStaticEntitlementConfig(et.config),
@@ -171,5 +188,5 @@ export const categorizeRateCards = (
     }
   }
 
-  return { quotas, features };
+  return { quotas, features, items };
 };

@@ -113,6 +113,15 @@ export interface Feature {
   value?: string;
 }
 
+/**
+ * A categorized entitlement tagged with its kind, preserving the rate-card
+ * array order. Lets {@link EntitlementList} render quotas and features
+ * interleaved in their authored order instead of grouping all quotas first.
+ */
+export type EntitlementItem =
+  | ({ kind: "quota" } & Quota)
+  | ({ kind: "feature" } & Feature);
+
 export interface Alignment {
   billablesMustAlign?: boolean;
 }

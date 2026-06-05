@@ -27,11 +27,9 @@ export const SubscriptionEntitlements = ({
   itemClassName?: string;
 }) => {
   if (view.usingItems) {
-    const { quotas, features } = view.entitlements;
     return (
       <EntitlementList
-        quotas={quotas}
-        features={features}
+        items={view.entitlements.items}
         itemClassName={itemClassName}
       />
     );
@@ -45,6 +43,7 @@ export const SubscriptionEntitlements = ({
       billingCadence={billingCadence}
       units={units}
       itemClassName={itemClassName}
+      rateCardOrder={view.rateCardOrder}
     />
   );
 };

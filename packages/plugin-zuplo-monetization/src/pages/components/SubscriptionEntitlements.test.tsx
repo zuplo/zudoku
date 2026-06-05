@@ -5,7 +5,7 @@ import { SubscriptionEntitlements } from "./SubscriptionEntitlements.js";
 
 const baseView: SubscriptionPlanView = {
   priceLabel: { type: "free" },
-  entitlements: { quotas: [], features: [] },
+  entitlements: { quotas: [], features: [], items: [] },
   fallbackPhases: [],
   usingItems: true,
 };
@@ -22,6 +22,16 @@ describe("SubscriptionEntitlements", () => {
               { key: "api", name: "API Calls", limit: 1000, period: "month" },
             ],
             features: [{ key: "sso", name: "SSO" }],
+            items: [
+              {
+                kind: "quota",
+                key: "api",
+                name: "API Calls",
+                limit: 1000,
+                period: "month",
+              },
+              { kind: "feature", key: "sso", name: "SSO" },
+            ],
           },
         }}
       />,

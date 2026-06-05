@@ -1,4 +1,5 @@
 import type {
+  EntitlementItem,
   Feature,
   FlatPrice,
   MeteredEntitlementTemplate,
@@ -11,6 +12,7 @@ import type { Item, Subscription } from "../types/SubscriptionType.js";
 import { getActivePhase } from "./billables.js";
 import { categorizeRateCards } from "./categorizeRateCards.js";
 import { formatPlanPrice, type PlanPriceLabel } from "./formatPlanPrice.js";
+import { parseRateCardOrder, sortRateCardsByOrder } from "./rateCardOrder.js";
 
 const toRateCardPrice = (price: Item["price"]): Price | null => {
   if (!price) return null;
@@ -142,9 +144,19 @@ export type SubscriptionPlanView = {
   /** Headline price for the subscription. */
   priceLabel: PlanPriceLabel;
   /** Entitlements derived from the active phase's provisioned items. */
-  entitlements: { quotas: Quota[]; features: Feature[] };
+  entitlements: {
+    quotas: Quota[];
+    features: Feature[];
+    items: EntitlementItem[];
+  };
   /** Catalog plan phases to render when there are no provisioned items. */
   fallbackPhases: PlanPhase[];
+  /**
+   * Per-phase rate-card display order (from the plan's `zuplo_rate_card_order`
+   * metadata), keyed by phase key. Applied to `fallbackPhases` and to the active
+   * phase's provisioned items so the subscription view matches the catalog order.
+   */
+  rateCardOrder?: Record<string, string[]>;
   /** Whether the view is sourced from the subscription's actual items. */
   usingItems: boolean;
   /**
@@ -174,10 +186,17 @@ export const getSubscriptionPlanView = (
   const plan = subscription.plan;
   const currency = subscription.currency ?? plan.currency;
   const billingCadence = subscription.billingCadence ?? plan.billingCadence;
-  const items = getActivePhase(subscription)?.items ?? [];
+  const rateCardOrder = parseRateCardOrder(plan);
+  const activePhase = getActivePhase(subscription);
+  const items = activePhase?.items ?? [];
 
   if (items.length > 0) {
-    const rateCards = subscriptionItemsToRateCards(items);
+    // Sort the provisioned items by the plan's authored order for the active
+    // phase so the live subscription view matches the catalog/pricing order.
+    const rateCards = sortRateCardsByOrder(
+      subscriptionItemsToRateCards(items),
+      activePhase ? rateCardOrder?.[activePhase.key] : undefined,
+    );
     return {
       priceLabel: formatPlanPrice({
         ...plan,
@@ -193,16 +212,18 @@ export const getSubscriptionPlanView = (
       usingItems: true,
       billingCadence,
       currency,
+      rateCardOrder,
     };
   }
 
   return {
     priceLabel: formatPlanPrice(plan),
-    entitlements: { quotas: [], features: [] },
+    entitlements: { quotas: [], features: [], items: [] },
     fallbackPhases: plan.phases ?? [],
     usingItems: false,
     billingCadence,
     currency,
+    rateCardOrder,
   };
 };
 

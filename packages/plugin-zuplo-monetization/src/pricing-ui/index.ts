@@ -34,6 +34,7 @@ export type {
   Alignment,
   BooleanEntitlementTemplate,
   DynamicPrice,
+  EntitlementItem,
   EntitlementTemplate,
   Feature,
   FlatFeeRateCard,
@@ -76,6 +77,11 @@ export {
   type TieredPriceBreakdownTier,
 } from "../utils/formatTieredPriceBreakdown.js";
 export { getPlanPrice } from "../utils/getPlanPrice.js";
+export {
+  parseRateCardOrder,
+  RATE_CARD_ORDER_METADATA_KEY,
+  sortRateCardsByOrder,
+} from "../utils/rateCardOrder.js";
 export {
   collectDefaultTaxBehaviors,
   planHasDefaultTaxBehavior,

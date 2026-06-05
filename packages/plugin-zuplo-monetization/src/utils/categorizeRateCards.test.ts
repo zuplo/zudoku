@@ -726,4 +726,36 @@ describe("categorizeRateCards", () => {
     expect(quotas).toHaveLength(0);
     expect(features).toHaveLength(0);
   });
+
+  it("returns items in input order, interleaving quotas and features", () => {
+    const { quotas, features, items } = categorizeRateCards([
+      {
+        type: "flat_fee",
+        key: "sso",
+        name: "SSO",
+        billingCadence: "P1M",
+        price: null,
+        entitlementTemplate: { type: "boolean" },
+      },
+      makeMeteredRateCard(), // key "requests" -> quota
+      {
+        // No entitlement template -> skipped; must not appear in items.
+        type: "flat_fee",
+        key: "base",
+        name: "Base Fee",
+        billingCadence: "P1M",
+        price: { type: "flat", amount: "10" },
+      },
+    ]);
+
+    // The boolean feature comes BEFORE the metered quota, matching input order
+    // — proving items are not regrouped quotas-first.
+    expect(items.map((i) => [i.kind, i.key])).toEqual([
+      ["feature", "sso"],
+      ["quota", "requests"],
+    ]);
+    // The filtered views remain available (and unchanged) for count/diff callers.
+    expect(quotas.map((q) => q.key)).toEqual(["requests"]);
+    expect(features.map((f) => f.key)).toEqual(["sso"]);
+  });
 });

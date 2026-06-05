@@ -160,4 +160,82 @@ describe("PlanEntitlements", () => {
     expect(quotaRow).toHaveClass("text-muted-foreground");
     expect(featureRow).toHaveClass("text-muted-foreground");
   });
+
+  it("renders rate cards in array order rather than grouping quotas first", () => {
+    const phases: PlanPhase[] = [
+      makePhase({
+        key: "only",
+        name: "Only",
+        rateCards: [
+          {
+            type: "flat_fee",
+            key: "priority_support",
+            name: "Priority Support",
+            billingCadence: "P1M",
+            price: { type: "flat", amount: "0" },
+            entitlementTemplate: { type: "boolean" },
+          },
+          {
+            type: "usage_based",
+            key: "api",
+            name: "API Request",
+            billingCadence: "P1M",
+            price: null,
+            entitlementTemplate: { type: "metered", issueAfterReset: 1000 },
+          },
+        ],
+      }),
+    ];
+
+    const { container } = render(
+      <PlanEntitlements phases={phases} billingCadence="P1M" />,
+    );
+
+    // The boolean feature precedes the metered quota in the DOM, matching the
+    // input array order (the old behaviour grouped all quotas first).
+    const text = container.textContent ?? "";
+    expect(text.indexOf("Priority Support")).toBeGreaterThanOrEqual(0);
+    expect(text.indexOf("Priority Support")).toBeLessThan(
+      text.indexOf("API Request"),
+    );
+  });
+
+  it("orders rate cards by the rateCardOrder prop (keyed by phase)", () => {
+    const phases: PlanPhase[] = [
+      makePhase({
+        key: "main",
+        name: "Main",
+        rateCards: [
+          {
+            type: "flat_fee",
+            key: "alpha",
+            name: "Alpha",
+            billingCadence: "P1M",
+            price: { type: "flat", amount: "0" },
+            entitlementTemplate: { type: "boolean" },
+          },
+          {
+            type: "flat_fee",
+            key: "bravo",
+            name: "Bravo",
+            billingCadence: "P1M",
+            price: { type: "flat", amount: "0" },
+            entitlementTemplate: { type: "boolean" },
+          },
+        ],
+      }),
+    ];
+
+    const { container } = render(
+      <PlanEntitlements
+        phases={phases}
+        billingCadence="P1M"
+        rateCardOrder={{ main: ["bravo", "alpha"] }}
+      />,
+    );
+
+    // Bravo is listed first despite Alpha being first in the array.
+    const text = container.textContent ?? "";
+    expect(text.indexOf("Bravo")).toBeLessThan(text.indexOf("Alpha"));
+  });
 });

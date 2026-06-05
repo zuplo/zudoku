@@ -221,6 +221,7 @@ describe("categorizeSubscriptionItems", () => {
     expect(categorizeSubscriptionItems([])).toEqual({
       quotas: [],
       features: [],
+      items: [],
     });
   });
 });

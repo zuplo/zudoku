@@ -4,6 +4,7 @@ import { formatDuration } from "../utils/formatDuration.js";
 import { formatPlanPrice } from "../utils/formatPlanPrice.js";
 import { formatPrice } from "../utils/formatPrice.js";
 import { isCustomPlan } from "../utils/isCustomPlan.js";
+import { parseRateCardOrder } from "../utils/rateCardOrder.js";
 import { cn } from "./cn.js";
 import { PlanEntitlements } from "./PlanEntitlements.js";
 
@@ -97,6 +98,7 @@ export const PricingCard = ({
           currency={plan.currency}
           billingCadence={plan.billingCadence}
           units={units}
+          rateCardOrder={parseRateCardOrder(plan)}
         />
       </div>
 
