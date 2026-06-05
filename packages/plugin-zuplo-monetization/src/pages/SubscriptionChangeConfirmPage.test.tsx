@@ -183,9 +183,10 @@ describe("SubscriptionChangeConfirmPage", () => {
   it("shows the current plan and the target plan side by side", () => {
     renderPage("/?planId=plan-1&subscriptionId=sub-1");
 
-    expect(screen.getByText("Current Plan")).toBeInTheDocument();
+    expect(screen.getByText("Current plan")).toBeInTheDocument();
     expect(screen.getByText("Current Plan Name")).toBeInTheDocument();
     expect(screen.getByText("Changing to")).toBeInTheDocument();
+    expect(screen.getByText("New plan")).toBeInTheDocument();
     expect(screen.getByText("Pro")).toBeInTheDocument();
   });
 

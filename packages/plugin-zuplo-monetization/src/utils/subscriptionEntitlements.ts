@@ -2,6 +2,7 @@ import type {
   Feature,
   FlatPrice,
   MeteredEntitlementTemplate,
+  Plan,
   PlanPhase,
   Price,
   Quota,
@@ -216,3 +217,118 @@ export const hasSubscriptionEntitlements = (
     : view.fallbackPhases.some((p) =>
         p.rateCards?.some((rc) => rc.entitlementTemplate),
       );
+
+export type SubscriptionPhaseStatus = "past" | "current" | "future";
+
+/** A single subscription phase resolved to its price + entitlements + timing. */
+export type SubscriptionPhaseView = {
+  id: string;
+  name: string;
+  status: SubscriptionPhaseStatus;
+  activeFrom: string;
+  activeTo?: string;
+  priceLabel: PlanPriceLabel;
+  entitlements: { quotas: Quota[]; features: Feature[] };
+  billingCadence?: string;
+  currency?: string;
+};
+
+const phaseStatus = (
+  phase: { activeFrom: string; activeTo?: string },
+  now: number,
+): SubscriptionPhaseStatus => {
+  if (phase.activeTo && new Date(phase.activeTo).getTime() < now) return "past";
+  if (new Date(phase.activeFrom).getTime() > now) return "future";
+  return "current";
+};
+
+/**
+ * Rate cards for one subscription phase: its own provisioned items (the
+ * authoritative quotas/fees), falling back to the catalog plan phase with the
+ * same `key` when a phase (typically a future one) hasn't been provisioned yet.
+ */
+const phaseRateCards = (
+  plan: Subscription["plan"],
+  phase: Subscription["phases"][number],
+): RateCard[] =>
+  phase.items.length > 0
+    ? subscriptionItemsToRateCards(phase.items)
+    : (plan.phases?.find((p) => p.key === phase.key)?.rateCards ?? []);
+
+const phasesByActiveFrom = (subscription: Subscription) =>
+  [...subscription.phases].sort(
+    (a, b) =>
+      new Date(a.activeFrom).getTime() - new Date(b.activeFrom).getTime(),
+  );
+
+/**
+ * Resolve EVERY phase of a subscription (not just the active one) to a
+ * {@link SubscriptionPhaseView}, ordered by `activeFrom` and tagged
+ * past/current/future. Generalizes {@link getSubscriptionPlanView}: each phase's
+ * price and entitlements come from its own provisioned items (the authoritative
+ * source), falling back to the catalog plan phase with the same `key` when a
+ * phase (typically a future one) hasn't been provisioned yet. Powers the
+ * subscription details page's current + upcoming + previous phase timeline.
+ */
+export const getSubscriptionPhaseViews = (
+  subscription: Subscription,
+  options?: { units?: Record<string, string> },
+): SubscriptionPhaseView[] => {
+  const plan = subscription.plan;
+  const currency = subscription.currency ?? plan.currency;
+  const billingCadence = subscription.billingCadence ?? plan.billingCadence;
+  const now = Date.now();
+
+  return phasesByActiveFrom(subscription).map((phase) => {
+    const rateCards = phaseRateCards(plan, phase);
+
+    return {
+      id: phase.id,
+      name: phase.name,
+      status: phaseStatus(phase, now),
+      activeFrom: phase.activeFrom,
+      activeTo: phase.activeTo,
+      priceLabel: formatPlanPrice({
+        ...plan,
+        billingCadence,
+        phases: [{ key: phase.key, name: phase.name, rateCards }],
+      }),
+      entitlements: categorizeRateCards(rateCards, {
+        currency,
+        units: options?.units,
+        planBillingCadence: billingCadence,
+      }),
+      billingCadence,
+      currency,
+    };
+  });
+};
+
+/**
+ * Build a catalog-shaped {@link Plan} from a subscription's *own* current and
+ * future phases (past phases dropped), so the plan-change confirmation page can
+ * render the current subscription with the exact same pricing-table card
+ * ({@link formatPlanPrice} / `getPlanPriceSchedule` / `PlanEntitlements`) used
+ * for the new plan. Each phase's rate cards come from its provisioned items
+ * (the authoritative source) — the embedded `subscription.plan` snapshot is
+ * unreliable here (it can arrive with `phases: []`), so we never read its
+ * phases for pricing.
+ */
+export const subscriptionToCurrentPlan = (subscription: Subscription): Plan => {
+  const plan = subscription.plan;
+  const now = Date.now();
+  const phases = phasesByActiveFrom(subscription)
+    .filter((p) => !(p.activeTo && new Date(p.activeTo).getTime() < now))
+    .map((phase) => ({
+      key: phase.key,
+      name: phase.name,
+      rateCards: phaseRateCards(plan, phase),
+    }));
+
+  return {
+    ...plan,
+    currency: subscription.currency ?? plan.currency,
+    billingCadence: subscription.billingCadence ?? plan.billingCadence,
+    phases,
+  };
+};
