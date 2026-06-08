@@ -1,0 +1,6 @@
+.zudoku-graphiql [aria-label^="Re-fetch GraphQL schema"],
+.zudoku-graphiql [aria-label="Open short keys dialog"],
+.zudoku-graphiql [aria-label="Open settings dialog"] {
+  /* biome-ignore lint/complexity/noImportantStyles: Override style */
+  display: none !important;
+}
