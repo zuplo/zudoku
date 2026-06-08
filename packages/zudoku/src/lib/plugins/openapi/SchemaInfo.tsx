@@ -11,7 +11,7 @@ import {
   WebhookIcon,
 } from "lucide-react";
 import type { PropsWithChildren, ReactNode } from "react";
-import { Link } from "react-router";
+import { Link, Navigate } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Markdown } from "../../components/Markdown.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
@@ -35,6 +35,7 @@ import type {
   SecuritySchemeType,
 } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
+import { shouldShowInfoPage } from "./util/shouldShowInfoPage.js";
 import { useWarmupSchema } from "./util/useWarmupSchema.js";
 
 const SchemaInfoQuery = graphql(/* GraphQL */ `
@@ -257,7 +258,13 @@ const securitySchemeDescription = (scheme: {
   }
 };
 
-export const SchemaInfo = () => {
+export const SchemaInfo = ({
+  showInfoPage,
+  redirectTo,
+}: {
+  showInfoPage?: boolean;
+  redirectTo?: string;
+} = {}) => {
   const { input, type, options } = useOasConfig();
   const query = useCreateQuery(SchemaInfoQuery, { input, type });
   const {
@@ -266,6 +273,12 @@ export const SchemaInfo = () => {
   const { title, description } = schema;
 
   useWarmupSchema();
+
+  // Hide the overview page when there is no description, unless it was
+  // explicitly enabled. Redirect to the first tag so the route still resolves.
+  if (!shouldShowInfoPage(showInfoPage, !!description) && redirectTo) {
+    return <Navigate to={redirectTo} replace />;
+  }
 
   const hasCardContent = !!(
     schema.contact?.name ||

@@ -139,7 +139,7 @@ const createVersionRoutes = ({
   versionPath,
   tagPages,
   hasUntaggedOperations = true,
-  showInfoPage = true,
+  showInfoPage,
 }: {
   versionPath: string;
   tagPages: string[];
@@ -148,19 +148,32 @@ const createVersionRoutes = ({
 }): RouteObject[] => {
   const firstTag =
     tagPages.at(0) ?? (hasUntaggedOperations ? UNTAGGED_PATH : undefined);
+  const redirectTo = firstTag ? joinUrl(versionPath, firstTag) : undefined;
 
-  const indexRoute: RouteObject = showInfoPage
-    ? {
-        index: true,
-        path: versionPath,
-        lazy: async () => {
-          const { SchemaInfo } = await import("../SchemaInfo.js");
-          return { element: <SchemaInfo /> };
-        },
-      }
-    : firstTag
-      ? { index: true, loader: () => redirect(joinUrl(versionPath, firstTag)) }
-      : createRoute({ path: versionPath });
+  // When showInfoPage is explicitly false, skip the info page and redirect to
+  // the first tag. Otherwise render the info page, which decides at runtime
+  // whether to show itself — it hides when there is no API description, unless
+  // showInfoPage is explicitly true.
+  const indexRoute: RouteObject =
+    showInfoPage === false
+      ? redirectTo
+        ? { index: true, loader: () => redirect(redirectTo) }
+        : createRoute({ path: versionPath })
+      : {
+          index: true,
+          path: versionPath,
+          lazy: async () => {
+            const { SchemaInfo } = await import("../SchemaInfo.js");
+            return {
+              element: (
+                <SchemaInfo
+                  showInfoPage={showInfoPage}
+                  redirectTo={redirectTo}
+                />
+              ),
+            };
+          },
+        };
 
   return [
     indexRoute,
@@ -249,7 +262,7 @@ export const getRoutes = ({
             versionPath,
             tagPages: versionTagPages,
             hasUntaggedOperations,
-            showInfoPage: config.options?.showInfoPage !== false,
+            showInfoPage: config.options?.showInfoPage,
           })
         : [
             createNonTagPagesRoute({ path: `${versionPath}/:tag?` }),
