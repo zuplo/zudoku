@@ -176,7 +176,7 @@
     "pagefind": "1.5.2",
     "picocolors": "1.1.1",
     "piscina": "5.1.4",
-    "posthog-node": "5.35.0",
+    "posthog-node": "5.36.2",
     "quick-lru": "7.3.0",
     "react-error-boundary": "6.1.1",
     "react-hook-form": "7.76.1",
