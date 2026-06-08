@@ -11,14 +11,29 @@
   - Always use `--write` when running biome lint to fix issues in one command
 - **Test**: `pnpm test` or for single test: `pnpm vitest run path/to/test.spec.ts`
 - **Typecheck**: `pnpm -F zudoku typecheck` to check types for the zudoku package
-- **Dev**: Running example projects with `nx` (e.g., `nx run docs:dev`) will automatically rebuild
-  dependent packages as needed. Don't manually run `pnpm -F zudoku build` repeatedly.
+- **Dev**: The zudoku CLI runs from source via `tsx` when `packages/zudoku/dist/` is absent, so
+  example projects (e.g. `pnpm -F docs dev`, `pnpm -F cosmo-cargo dev`) work without first building
+  `packages/zudoku`.
 - **Debugging**: During active debugging, leave console.log statements in place and don't fix linter
   issues until debugging is complete. Remove console.logs only after feature is confirmed working.
 
+## Changesets (changelogs & releases)
+
+This repo uses [Changesets](https://github.com/changesets/changesets) for versioning, changelogs,
+and publishing. When a change is user-visible, add a changeset so it appears in the changelog and
+triggers a release:
+
+- Run `pnpm changeset`, then pick the affected package(s), the semver bump, and a one-line summary.
+- That writes a `.changeset/*.md` file — commit it alongside your change. This is where changelog
+  entries go now; do not hand-edit any `CHANGELOG.md` (they are generated at release time).
+- A bot opens a "Version Packages" PR that bumps versions, regenerates the `CHANGELOG.md` files, and
+  publishes to npm when merged.
+- Skip the changeset for changes with no user impact (internal refactors, tests, docs, CI).
+
 ## Architecture
 
-- **Monorepo**: Using pnpm + nx for workspace management
+- **Monorepo**: Using pnpm workspaces. Releases via
+  [Changesets](https://github.com/changesets/changesets).
 - **Main packages**: `packages/zudoku` (core framework) and `packages/create-zudoku` (creates new
   Zudoku projects CLI)
 - **Core tech**: React 19+, Vite, TypeScript, TailwindCSS, React Router 7, Tanstack Query, Radix UI,
@@ -111,4 +126,4 @@ pull the heavy dependency into `entry.client`.
 
 - `examples/cosmo-cargo/` - Feature-rich demo of a futuristic space shipping company. Use this to
   test new features. Content should match the space/sci-fi tone (quantum, interstellar, warp drives,
-  etc.). Run with `nx run cosmo-cargo:dev`
+  etc.). Run with `pnpm -F cosmo-cargo dev`.
