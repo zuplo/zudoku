@@ -19,7 +19,7 @@ if (!semver.satisfies(process.version, ">=20.19.0 <21.0.0 || >=22.12.0")) {
 const isInternal = fs.existsSync(new URL("./.gitignore", import.meta.url));
 const dist = new URL("./dist/cli/cli.js", import.meta.url);
 
-process.env.ZUDOKU_ENV = isInternal ? "internal" : "module";
+process.env.ZUDOKU_ENV ??= isInternal ? "internal" : "module";
 
 if (isInternal && !fs.existsSync(dist)) {
   const { tsImport } = await import("tsx/esm/api");

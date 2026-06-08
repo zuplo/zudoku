@@ -22,6 +22,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: read
     steps:
       - name: Acknowledge command
         if: github.event_name == 'issue_comment'

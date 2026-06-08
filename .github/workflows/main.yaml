@@ -63,7 +63,7 @@ jobs:
 
       - run: pnpm check
       - run: pnpm -r --filter "./packages/*" build
-      - run: pnpm -r --filter "./packages/*" typecheck
+      - run: pnpm -r --filter "./packages/*" run --if-present typecheck
       - run: pnpm test
 
       - name: Copy readme

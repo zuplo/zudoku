@@ -17,6 +17,19 @@
 - **Debugging**: During active debugging, leave console.log statements in place and don't fix linter
   issues until debugging is complete. Remove console.logs only after feature is confirmed working.
 
+## Changesets (changelogs & releases)
+
+This repo uses [Changesets](https://github.com/changesets/changesets) for versioning, changelogs,
+and publishing. When a change is user-visible, add a changeset so it appears in the changelog and
+triggers a release:
+
+- Run `pnpm changeset`, then pick the affected package(s), the semver bump, and a one-line summary.
+- That writes a `.changeset/*.md` file, commit it alongside your change. This is where changelog
+  entries go now; do not hand-edit any `CHANGELOG.md` (they are generated at release time).
+- A bot opens a "Version Packages" PR that bumps versions, regenerates the `CHANGELOG.md` files, and
+  publishes to npm when merged.
+- Skip the changeset for changes with no user impact (internal refactors, tests, docs, CI).
+
 ## Architecture
 
 - **Monorepo**: Using pnpm workspaces. Releases via

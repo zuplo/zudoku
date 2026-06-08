@@ -54,7 +54,7 @@ jobs:
         run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
 
       - run: pnpm -r --filter "./packages/*" build
-      - run: pnpm -r --filter "./packages/*" typecheck
+      - run: pnpm -r --filter "./packages/*" run --if-present typecheck
       - run: pnpm -F zudoku build:standalone
       - run: pnpm test:coverage
 
