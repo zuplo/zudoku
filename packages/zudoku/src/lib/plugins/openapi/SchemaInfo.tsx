@@ -328,7 +328,7 @@ export const SchemaInfo = () => {
                 content={schema.description}
               />
             )}
-            {tags.length > 0 && (
+            {tags.length > 1 && (
               <div>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
                   <TagIcon size={14} />
