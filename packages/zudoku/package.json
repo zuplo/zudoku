@@ -155,7 +155,7 @@
     "hast-util-heading-rank": "3.0.0",
     "hast-util-to-jsx-runtime": "2.3.6",
     "hast-util-to-string": "3.0.1",
-    "hono": "4.12.18",
+    "hono": "4.12.21",
     "http-terminator": "3.2.0",
     "javascript-stringify": "2.1.0",
     "jose": "6.2.2",
