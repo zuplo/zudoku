@@ -962,8 +962,8 @@ importers:
         specifier: 5.2.0
         version: 5.2.0
       semver:
-        specifier: 7.8.0
-        version: 7.8.0
+        specifier: 7.8.2
+        version: 7.8.2
       shiki:
         specifier: 4.1.0
         version: 4.1.0
@@ -8874,6 +8874,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.8.2:
+    resolution: {integrity: sha512-c8jsqUZm3omBOI66G90z1Dyw5z622G8oLG+omfsHBJf3CWQTlOcwOjvOG6wtiNfW6anKm/eA39LMwMtMez2TiQ==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   set-cookie-parser@2.7.2:
     resolution: {integrity: sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==}
 
@@ -12314,7 +12319,7 @@ snapshots:
       enquirer: 2.3.6
       minimatch: 10.2.4
       nx: 22.6.5
-      semver: 7.8.0
+      semver: 7.8.2
       tslib: 2.8.1
       yargs-parser: 21.1.1
 
@@ -12342,7 +12347,7 @@ snapshots:
       npm-run-path: 4.0.1
       picocolors: 1.1.1
       picomatch: 4.0.4
-      semver: 7.8.0
+      semver: 7.8.2
       source-map-support: 0.5.19
       tinyglobby: 0.2.16
       tslib: 2.8.1
@@ -12393,7 +12398,7 @@ snapshots:
       ajv: 8.20.0
       enquirer: 2.3.6
       picomatch: 4.0.4
-      semver: 7.8.0
+      semver: 7.8.2
       tsconfig-paths: 4.2.0
       tslib: 2.8.1
       vite: 8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.4)
@@ -12413,7 +12418,7 @@ snapshots:
       '@nx/devkit': 22.6.5(nx@22.6.5)
       '@nx/js': 22.6.5(@babel/traverse@7.29.0)(nx@22.6.5)
       '@phenomnomnominal/tsquery': 6.1.4(typescript@6.0.3)
-      semver: 7.8.0
+      semver: 7.8.2
       tslib: 2.8.1
     optionalDependencies:
       vite: 8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.4)
@@ -12453,7 +12458,7 @@ snapshots:
       enquirer: 2.3.6
       nx: 22.6.5
       picomatch: 4.0.4
-      semver: 7.8.0
+      semver: 7.8.2
       tslib: 2.8.1
       yargs-parser: 21.1.1
     transitivePeerDependencies:
@@ -16661,7 +16666,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.2
 
   map-cache@0.2.2: {}
 
@@ -17366,7 +17371,7 @@ snapshots:
       ora: 5.3.0
       picocolors: 1.1.1
       resolve.exports: 2.0.3
-      semver: 7.8.0
+      semver: 7.8.2
       smol-toml: 1.6.1
       string-width: 4.2.3
       tar-stream: 2.2.0
@@ -18294,6 +18299,8 @@ snapshots:
 
   semver@7.8.0: {}
 
+  semver@7.8.2: {}
+
   set-cookie-parser@2.7.2: {}
 
   set-value@4.1.0:
@@ -18305,7 +18312,7 @@ snapshots:
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
-      semver: 7.8.0
+      semver: 7.8.2
     optionalDependencies:
       '@img/sharp-darwin-arm64': 0.34.5
       '@img/sharp-darwin-x64': 0.34.5
