@@ -5,10 +5,15 @@ const GraphQLExtensionSchema = z.union([
   z.literal(true),
   z.object({
     endpoint: z.optional(z.string()),
+    // Path to an SDL file describing the endpoint's schema.
+    schema: z.optional(z.string()),
   }),
 ]);
 
-export type GraphQLEndpointConfig = { endpoint?: string };
+export type GraphQLEndpointConfig = {
+  endpoint?: string;
+  schema?: string;
+};
 
 export const getGraphQLEndpoint = (
   operation: OperationsFragmentFragment,

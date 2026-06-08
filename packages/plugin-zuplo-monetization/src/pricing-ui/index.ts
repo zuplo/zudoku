@@ -24,6 +24,8 @@
 //     grid.
 export { FeatureItem } from "./FeatureItem.js";
 export { PlanEntitlements } from "./PlanEntitlements.js";
+export { PlanPriceSchedule } from "./PlanPriceSchedule.js";
+export { PlanPriceTag } from "./PlanPriceTag.js";
 export { PricingCard, type PricingCardProps } from "./PricingCard.js";
 export { PricingTable, type PricingTableProps } from "./PricingTable.js";
 export { QuotaItem } from "./QuotaItem.js";
@@ -62,6 +64,10 @@ export {
   formatDurationInterval,
 } from "../utils/formatDuration.js";
 export {
+  formatPlanPrice,
+  type PlanPriceLabel,
+} from "../utils/formatPlanPrice.js";
+export {
   formatMinorCurrencyAmount,
   formatPrice,
 } from "../utils/formatPrice.js";
@@ -70,10 +76,12 @@ export {
   formatTieredPriceBreakdown,
   type TieredPriceBreakdownTier,
 } from "../utils/formatTieredPriceBreakdown.js";
+export { getPhasePriceLabel } from "../utils/getPhasePriceLabel.js";
+export { getPlanPrice } from "../utils/getPlanPrice.js";
 export {
-  derivePriceFromPlan,
-  getPriceFromPlan,
-} from "../utils/getPriceFromPlan.js";
+  getPlanPriceSchedule,
+  type PlanPriceScheduleRow,
+} from "../utils/getPlanPriceSchedule.js";
 export {
   collectDefaultTaxBehaviors,
   planHasDefaultTaxBehavior,

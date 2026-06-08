@@ -16,7 +16,6 @@ import { buildVersionSwitchUrl } from "./util/getRoutes.js";
 type ApiHeaderProps = {
   title?: ReactNode;
   heading: ReactNode;
-  headingId: string;
   children?: ReactNode;
   tag?: string;
 };
@@ -24,7 +23,6 @@ type ApiHeaderProps = {
 export const ApiHeader = ({
   title,
   heading,
-  headingId,
   children,
   tag,
 }: ApiHeaderProps) => {
@@ -60,7 +58,7 @@ export const ApiHeader = ({
               <Link to="..">{title}</Link>
             </CategoryHeading>
           )}
-          <Heading level={1} id={headingId} registerNavigationAnchor>
+          <Heading level={1} registerNavigationAnchor>
             {heading}
           </Heading>
           {children}

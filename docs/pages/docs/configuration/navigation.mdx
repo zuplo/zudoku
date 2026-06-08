@@ -93,6 +93,7 @@ type NavigationLink = {
   label: string;
   icon?: string; // Lucide icon name
   target?: "_self" | "_blank";
+  stack?: boolean; // open the destination as a stacked sub-nav
   badge?: {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
@@ -141,6 +142,7 @@ type NavigationCategory = {
   label: string;
   collapsible?: boolean;
   collapsed?: boolean;
+  stack?: boolean; // open the category's items as a stacked sub-nav
   link?: string | { type: "doc"; file: string; label?: string; path?: string };
   display?:
     | "auth"
@@ -460,6 +462,67 @@ type NavigationFilter = {
 
 </details>
 
+## Stacked navigation
+
+By default a category expands inline when clicked. Set `stack: true` and it opens as a full panel
+that slides in over the current menu, with a **Back** button to return. Use it for deep sections
+that would otherwise crowd the sidebar.
+
+`stack` works on categories and links. The panel content comes from the item itself:
+
+- A **category** with `stack: true` shows its own `items`.
+- A **link** with `stack: true` opens the navigation at its destination, such as the sidebar a
+  plugin generates at that path.
+
+```tsx title="Stack a category's items"
+{
+  type: "category",
+  label: "Shipping Guides",
+  stack: true,
+  items: ["guides/interstellar", "guides/intergalactic"],
+}
+```
+
+```tsx title="Stack a linked section (e.g. a GraphQL plugin)"
+{
+  type: "link",
+  label: "Developer API",
+  to: "/graphql/dev",
+  stack: true,
+}
+```
+
+The **Back** button points to the section the stacked item belongs to (for example "Back to Our
+APIs"), so the page still works when someone opens it directly from a search result or a shared
+link.
+
+:::note
+
+A stacked link drills into wherever its `to` points, so the destination should be a section with its
+own navigation, such as a plugin route or a category landing page. The slide animation respects the
+user's reduced-motion setting and falls back to an instant swap.
+
+:::
+
+### Stacking generated navigation
+
+Plugin-generated sidebars (e.g. OpenAPI) can be stacked too, with a
+[navigation rule](#navigation-rules). This is useful for large APIs: instead of one long scroll,
+make each tag drill into its own panel.
+
+```tsx title="Stack an OpenAPI tag"
+navigationRules: [
+  {
+    type: "modify",
+    match: "Shipments/Shipment/Shipment Management",
+    set: { stack: true },
+  },
+],
+```
+
+The `match` targets a generated category by label (here, the `Shipment Management` tag under the
+`Shipments` API). See [Navigation Rules](#navigation-rules) for the matching syntax.
+
 ## Display Control
 
 All navigation items support a `display` property that controls when the item should be visible:
@@ -671,13 +734,13 @@ For a practical walkthrough with more examples, see the
 
 Each rule has a `type` and a `match` property that targets a navigation item.
 
-| Type     | Description                                                               |
-| -------- | ------------------------------------------------------------------------- |
-| `insert` | Add items `before` or `after` a matched item                              |
-| `modify` | Change `label`, `icon`, `badge`, `collapsed`, `collapsible`, or `display` |
-| `remove` | Remove a matched item from the sidebar                                    |
-| `sort`   | Sort children of a matched category using a custom comparator             |
-| `move`   | Relocate a matched item `before` or `after` another item                  |
+| Type     | Description                                                                        |
+| -------- | ---------------------------------------------------------------------------------- |
+| `insert` | Add items `before` or `after` a matched item                                       |
+| `modify` | Change `label`, `icon`, `badge`, `collapsed`, `collapsible`, `display`, or `stack` |
+| `remove` | Remove a matched item from the sidebar                                             |
+| `sort`   | Sort children of a matched category using a custom comparator                      |
+| `move`   | Relocate a matched item `before` or `after` another item                           |
 
 ### Match Syntax
 

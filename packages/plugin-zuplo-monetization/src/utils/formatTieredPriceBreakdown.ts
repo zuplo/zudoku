@@ -17,10 +17,8 @@ export const formatTieredPriceBreakdown = (opts: {
   currency?: string;
   unitLabel: string;
   includedLabel: string;
-  omitIncludedUpToAmount?: number;
 }): string[] | undefined => {
-  const { tiers, currency, unitLabel, includedLabel, omitIncludedUpToAmount } =
-    opts;
+  const { tiers, currency, unitLabel, includedLabel } = opts;
   if (!tiers || tiers.length <= 1) return;
 
   const lines: string[] = [];
@@ -38,23 +36,14 @@ export const formatTieredPriceBreakdown = (opts: {
           ? `Over ${lastUpTo.toLocaleString("en-US")}`
           : `Per ${unitLabel}`;
 
+    const flatPart = flat > 0 ? formatPrice(flat, currency) : "";
     const unitPart =
-      unit > 0 ? `${formatPrice(unit, currency)}/${unitLabel}` : includedLabel;
-    const flatPart = flat > 0 ? ` + ${formatPrice(flat, currency)} base` : "";
-    const line = `${prefix}: ${unitPart}${flatPart}`;
-
-    // Avoid redundancy when the UI already shows the quota limit (e.g. "5,000 / month").
-    if (
-      omitIncludedUpToAmount != null &&
-      upTo != null &&
-      upTo === omitIncludedUpToAmount &&
-      unitPart === includedLabel &&
-      flatPart === ""
-    ) {
-      // skip
-    } else {
-      lines.push(line);
-    }
+      unit > 0 ? `${formatPrice(unit, currency)}/${unitLabel}` : "";
+    const pricePart =
+      flatPart && unitPart
+        ? `${flatPart} + ${unitPart}`
+        : flatPart || unitPart || includedLabel;
+    lines.push(`${prefix}: ${pricePart}`);
 
     if (upTo != null) lastUpTo = upTo;
   }

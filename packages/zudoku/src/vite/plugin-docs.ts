@@ -88,7 +88,7 @@ export const resolveCustomNavigationPaths = async (
     const doc =
       item.type === "doc"
         ? { file: item.file, path: item.path }
-        : item.type === "category" && item.link
+        : item.type === "category" && item.link?.type === "doc"
           ? { file: item.link.file, path: item.link.path }
           : undefined;
 
@@ -101,7 +101,8 @@ export const resolveCustomNavigationPaths = async (
 
     const customPath = ensureLeadingSlash(doc.path);
     mapping[customPath] = filePath;
-    delete mapping[fileRoutePath];
+
+    if (customPath !== fileRoutePath) delete mapping[fileRoutePath];
   };
 
   if (config.navigation) {

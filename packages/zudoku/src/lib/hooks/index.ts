@@ -10,3 +10,4 @@ export { useZudoku } from "../components/context/ZudokuContext.js";
 export { useExposedProps } from "../util/useExposedProps.js";
 export { useEvent } from "./useEvent.js";
 export { useSidebar } from "../components/navigation/sidebarStore.js";
+export { useCopyToClipboard } from "../util/useCopyToClipboard.js";

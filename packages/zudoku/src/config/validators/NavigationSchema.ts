@@ -57,11 +57,21 @@ export type NavigationCategoryLinkDoc = ReplaceFields<
   { label: string; path: string } & ResolvedIcon
 >;
 
+export type NavigationCategoryLinkLink = {
+  type: "link";
+  to: string;
+  label?: string;
+} & ResolvedIcon;
+
+export type NavigationCategoryLink =
+  | NavigationCategoryLinkDoc
+  | NavigationCategoryLinkLink;
+
 export type NavigationCategory = ReplaceFields<
   InputNavigationCategory,
   {
     items: NavigationItem[];
-    link?: NavigationCategoryLinkDoc;
+    link?: NavigationCategoryLink;
   } & ResolvedIcon
 >;
 export type NavigationCustomPage = ReplaceFields<
@@ -270,9 +280,13 @@ export class NavigationResolver {
 
   private async resolveItemCategoryLinkDoc(
     item: string | InputNavigationCategoryLinkDoc,
-  ): Promise<NavigationCategoryLinkDoc | undefined> {
+  ): Promise<NavigationCategoryLink | undefined> {
     if (typeof item === "string") {
       return this.resolveLink(item);
+    }
+
+    if (item.type === "link") {
+      return { type: "link", to: item.to, label: item.label };
     }
 
     const doc = await this.resolveDoc(item.file);

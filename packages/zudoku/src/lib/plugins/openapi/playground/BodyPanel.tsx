@@ -20,7 +20,7 @@ import {
 import { Textarea } from "zudoku/ui/Textarea.js";
 import { cn } from "../../../util/cn.js";
 import { humanFileSize } from "../../../util/humanFileSize.js";
-import type { MediaTypeObject } from "../graphql/graphql.js";
+import type { Content } from "../interfaces.js";
 import { exampleToUrlEncodedRows } from "../util/formatRequestBody.js";
 import {
   CollapsibleHeader,
@@ -33,7 +33,7 @@ import { MultipartField } from "./request-panel/MultipartField.js";
 import { UrlEncodedField } from "./request-panel/UrlEncodedField.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
 
-export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
+export const BodyPanel = ({ content }: { content?: Content[] }) => {
   const { register, setValue, watch, control } =
     useFormContext<PlaygroundForm>();
   const examples = (content ?? []).flatMap((e) => e.examples);

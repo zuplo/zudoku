@@ -1,6 +1,6 @@
 import { ExternalLinkIcon } from "lucide-react";
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation, useNavigation } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
@@ -14,7 +14,12 @@ import { NavigationBadge } from "./NavigationBadge.js";
 import { NavigationCategory } from "./NavigationCategory.js";
 import { useNavigationFilter } from "./NavigationFilterContext.js";
 import { NavigationFilterInput } from "./NavigationFilterInput.js";
-import { navigationListItem, shouldShowItem } from "./utils.js";
+import { StackCategoryRow, StackDrillRow } from "./StackRows.js";
+import {
+  getNavLinkState,
+  navigationListItem,
+  shouldShowItem,
+} from "./utils.js";
 
 const HastRichText = lazy(() => import("../../util/hastToJsx.js"));
 
@@ -67,6 +72,7 @@ export const NavigationItem = ({
   onRequestClose?: () => void;
 }) => {
   const location = useLocation();
+  const navigation = useNavigation();
   const { activeAnchor } = useViewportAnchor();
   const auth = useAuth();
   const context = useZudoku();
@@ -78,7 +84,9 @@ export const NavigationItem = ({
 
   switch (item.type) {
     case "category":
-      return (
+      return item.stack && !query.trim() ? (
+        <StackCategoryRow category={item} onRequestClose={onRequestClose} />
+      ) : (
         <NavigationCategory category={item} onRequestClose={onRequestClose} />
       );
     case "separator":
@@ -122,37 +130,41 @@ export const NavigationItem = ({
     case "link":
     case "custom-page": {
       const href = item.type === "link" ? item.to : joinUrl(item.path);
-      const hasAnchor = href.includes("#");
+
+      if (item.type === "link" && item.stack) {
+        return (
+          <StackDrillRow to={joinUrl(item.to)} onRequestClose={onRequestClose}>
+            {item.icon && (
+              <item.icon size={16} className="align-[-0.125em] shrink-0" />
+            )}
+            <TruncatedLabel label={item.label} />
+            {item.badge && <NavigationBadge {...item.badge} />}
+          </StackDrillRow>
+        );
+      }
+
+      const linkState = getNavLinkState(
+        href,
+        { pathname: location.pathname, activeAnchor },
+        navigation.location,
+      );
       return !href.startsWith("http") ? (
         <AnchorLink
+          end
           to={{
             pathname: href.split("#")[0],
             hash: href.split("#")[1],
             search: location.search,
           }}
           {...{ [DATA_ANCHOR_ATTR]: href.split("#")[1] }}
-          className={navigationListItem({
-            isActive:
-              href ===
-              (hasAnchor
-                ? [joinUrl(location.pathname), activeAnchor]
-                    .filter(Boolean)
-                    .join("#")
-                : joinUrl(location.pathname)),
-          })}
+          className={() => navigationListItem(linkState)}
           onClick={onRequestClose}
         >
           {item.icon && (
             <item.icon className="size-4 shrink-0 align-[-0.125em]" />
           )}
-          {item.badge ? (
-            <>
-              {item.label && <TruncatedLabel label={item.label} />}
-              <NavigationBadge {...item.badge} />
-            </>
-          ) : (
-            <span className="break-all">{item.label}</span>
-          )}
+          {item.label && <TruncatedLabel label={item.label} />}
+          {item.badge && <NavigationBadge {...item.badge} />}
         </AnchorLink>
       ) : (
         <a

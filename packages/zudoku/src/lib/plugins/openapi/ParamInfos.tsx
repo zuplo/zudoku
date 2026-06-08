@@ -18,7 +18,7 @@ const Pattern = ({ pattern }: { pattern: string }) => {
     >
       {isExpanded ? pattern : shortPattern}
       {isExpandable && (
-        <button type="button" className="p-1 translate-y-[2px]">
+        <button type="button" className="p-1 translate-y-0.5">
           {!isExpanded && <ChevronsLeftRightIcon size={12} />}
         </button>
       )}
