@@ -1,7 +1,7 @@
 import { UndoIcon } from "lucide-react";
 import { AnimatePresence, LazyMotion, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
-import { useRef } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { cn } from "../../util/cn.js";
 import { NavigationItem } from "./NavigationItem.js";
@@ -34,22 +34,22 @@ export const NavigationFrames = ({
 }) => {
   const reduceMotion = useReducedMotion();
 
-  // Track visited frames to determine slide direction (forward/backward)
-  const visited = useRef<string[]>([frame.id]);
-  const prevId = useRef(frame.id);
-  const directionRef = useRef(1);
+  // Slide direction, tracked in state via React's "adjust state during render"
+  // pattern rather than ref mutation, so it stays concurrent-safe. A frame
+  // already in the history slides back and trims the stack to it; a new frame
+  // slides forward.
+  const [visited, setVisited] = useState<string[]>([frame.id]);
+  const [prevId, setPrevId] = useState(frame.id);
+  const [direction, setDirection] = useState(1);
 
-  if (prevId.current !== frame.id) {
-    const existing = visited.current.indexOf(frame.id);
-    directionRef.current = existing >= 0 ? -1 : 1;
-    visited.current =
-      existing >= 0
-        ? visited.current.slice(0, existing + 1)
-        : [...visited.current, frame.id];
-    prevId.current = frame.id;
+  if (prevId !== frame.id) {
+    const existing = visited.indexOf(frame.id);
+    setDirection(existing >= 0 ? -1 : 1);
+    setVisited(
+      existing >= 0 ? visited.slice(0, existing + 1) : [...visited, frame.id],
+    );
+    setPrevId(frame.id);
   }
-
-  const direction = directionRef.current;
 
   return (
     <LazyMotion features={loadFeatures} strict>

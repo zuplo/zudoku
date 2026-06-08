@@ -2,7 +2,6 @@ import {
   createContext,
   type PropsWithChildren,
   useContext,
-  useRef,
   useState,
 } from "react";
 
@@ -16,18 +15,20 @@ const NavigationFilterContext = createContext<NavigationFilterContextType>({
   setQuery: () => {},
 });
 
-// `resetKey` changes when the active section changes. We reset the filter query
-// during render (instead of remounting via a `key`) so the surrounding
-// navigation subtree — and its slide animation — survives section changes.
+// Clear the filter when the active section or frame changes (`resetKey`). This
+// is React's "adjust state during render" pattern: the previous key lives in
+// state (not a ref) so it's concurrent-safe, and the reset runs in render rather
+// than an effect so results never lag a frame and the nav subtree isn't
+// remounted, which would kill the slide animation.
 export const NavigationFilterProvider = ({
   resetKey,
   children,
 }: PropsWithChildren<{ resetKey?: string }>) => {
   const [query, setQuery] = useState("");
-  const prevResetKey = useRef(resetKey);
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
 
-  if (prevResetKey.current !== resetKey) {
-    prevResetKey.current = resetKey;
+  if (prevResetKey !== resetKey) {
+    setPrevResetKey(resetKey);
     if (query !== "") setQuery("");
   }
 
