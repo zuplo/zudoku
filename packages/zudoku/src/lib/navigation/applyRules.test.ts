@@ -59,6 +59,17 @@ describe("applyRules", () => {
       expect(result[0]).toHaveProperty("collapsible", false);
       expect(result[0]).toHaveProperty("collapsed", true);
     });
+
+    it("should turn a category into a stacked sub-nav", () => {
+      const nav = createMockNavigation();
+      const rules: ResolvedNavigationRule[] = [
+        { type: "modify", match: "Shipments", set: { stack: true } },
+      ];
+
+      const { result } = applyRules(nav, rules);
+
+      expect(result[0]).toHaveProperty("stack", true);
+    });
   });
 
   describe("insert rules", () => {

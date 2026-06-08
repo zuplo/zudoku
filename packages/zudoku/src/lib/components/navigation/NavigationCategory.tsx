@@ -9,7 +9,11 @@ import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useNavigationFilter } from "./NavigationFilterContext.js";
 import { NavigationItem } from "./NavigationItem.js";
-import { navigationListItem, useIsCategoryOpen } from "./utils.js";
+import {
+  navigationItemKey,
+  navigationListItem,
+  useIsCategoryOpen,
+} from "./utils.js";
 
 const NavigationCategoryInner = ({
   category,
@@ -152,13 +156,7 @@ const NavigationCategoryInner = ({
         <ul className="relative after:absolute after:-inset-s-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (
             <NavigationItem
-              key={
-                item.type +
-                (item.label ?? "") +
-                ("path" in item ? item.path : "") +
-                ("file" in item ? item.file : "") +
-                ("to" in item ? item.to : "")
-              }
+              key={navigationItemKey(item)}
               onRequestClose={onRequestClose}
               item={item}
             />
