@@ -2,9 +2,8 @@ import path from "node:path";
 import { preview as vitePreview } from "vite";
 import { getViteConfig } from "../../vite/config.js";
 import type { Arguments } from "../cmds/preview.js";
+import { DEFAULT_PREVIEW_PORT } from "../common/constants.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
-
-export const DEFAULT_PREVIEW_PORT = 4000;
 
 export async function preview(argv: Arguments) {
   const dir = path.resolve(process.cwd(), argv.dir);
@@ -15,12 +14,15 @@ export async function preview(argv: Arguments) {
     isPreview: true,
   });
 
+  const port =
+    argv.port ??
+    (process.env.PORT ? Number(process.env.PORT) : undefined) ??
+    DEFAULT_PREVIEW_PORT;
+
   const server = await vitePreview({
     ...viteConfig,
     appType: "mpa", // to serve the static generated files
-    preview: {
-      port: argv.port ?? DEFAULT_PREVIEW_PORT,
-    },
+    preview: { port },
   });
 
   printDiagnosticsToConsole("");

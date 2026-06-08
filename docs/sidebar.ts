@@ -116,6 +116,7 @@ export const docs: Navigation = [
     items: [
       "docs/guides/static-files",
       "docs/guides/environment-variables",
+      "docs/guides/named-local-urls",
       "docs/guides/custom-pages",
       "docs/guides/mermaid",
       "docs/guides/using-multiple-apis",
