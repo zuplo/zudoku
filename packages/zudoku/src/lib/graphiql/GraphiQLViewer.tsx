@@ -36,6 +36,8 @@ export type GraphiQLViewerProps = {
   onEditVariables?: (variables: string) => void;
   onEditHeaders?: (headers: string) => void;
   shouldPersistHeaders?: boolean;
+  // Hides re-fetch/shortkeys/settings toolbar buttons; defaults to true.
+  hideToolbarButtons?: boolean;
   resetKey?: string | number;
   className?: string;
 };
@@ -84,7 +86,13 @@ const createFetcher = (
 // Props GraphiQL only reads on mount; bundled so they don't trigger re-renders.
 type StaticProps = Omit<
   GraphiQLViewerProps,
-  "fetcher" | "endpoint" | "headers" | "schema" | "resetKey" | "className"
+  | "fetcher"
+  | "endpoint"
+  | "headers"
+  | "schema"
+  | "resetKey"
+  | "className"
+  | "hideToolbarButtons"
 >;
 
 const renderGraphiQL = (
@@ -155,6 +163,7 @@ const GraphiQLViewerImpl = (props: GraphiQLViewerProps) => {
     fetcher: fetcherProp,
     endpoint,
     headers,
+    hideToolbarButtons = true,
     ...staticProps
   } = props;
   const staticRef = useLatest<StaticProps>(staticProps);
@@ -197,7 +206,11 @@ const GraphiQLViewerImpl = (props: GraphiQLViewerProps) => {
   return (
     <div
       ref={containerRef}
-      className={cn("zudoku-graphiql relative h-full w-full", className)}
+      className={cn(
+        "zudoku-graphiql relative h-full w-full",
+        hideToolbarButtons && "hide-toolbar-buttons",
+        className,
+      )}
     />
   );
 };

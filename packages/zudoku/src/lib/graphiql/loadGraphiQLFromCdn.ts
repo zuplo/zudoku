@@ -140,6 +140,15 @@ export const loadGraphiQLFromCdn = (
 ): Promise<CdnGraphiQL> => {
   if (cached) return cached;
 
+  // The dynamic imports below pull https:// URLs, which Node can't resolve.
+  if (typeof document === "undefined") {
+    return Promise.reject(
+      new ZudokuError("The GraphQL playground can only load in a browser.", {
+        title: "Could not load the GraphQL playground",
+      }),
+    );
+  }
+
   cached = (async (): Promise<CdnGraphiQL> => {
     injectImportMap(cdn);
     injectStyles(cdn);
