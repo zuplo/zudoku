@@ -18,10 +18,16 @@ export const NavigationWrapper = ({
     const nav = navRef.current;
     if (!nav) return;
 
+    // Only scroll when the active item changes, so toggling a category (which
+    // mounts/unmounts content and fires the observer) doesn't re-scroll.
+    let lastActive: Element | null = null;
     const scrollActiveIntoView = () => {
       // Leaf and its category both get aria-current; the leaf is last in DOM.
       const active = nav.querySelectorAll('[aria-current="page"]');
-      scrollIntoViewIfNeeded(active.item(active.length - 1));
+      const current = active.item(active.length - 1);
+      if (current === lastActive) return;
+      lastActive = current;
+      scrollIntoViewIfNeeded(current);
     };
     scrollActiveIntoView();
 
