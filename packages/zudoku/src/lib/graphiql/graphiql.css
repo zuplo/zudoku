@@ -1,0 +1,6 @@
+.zudoku-graphiql.hide-toolbar-buttons [aria-label^="Re-fetch GraphQL schema"],
+.zudoku-graphiql.hide-toolbar-buttons [aria-label="Open short keys dialog"],
+.zudoku-graphiql.hide-toolbar-buttons [aria-label="Open settings dialog"] {
+  /* biome-ignore lint/complexity/noImportantStyles: Override style */
+  display: none !important;
+}

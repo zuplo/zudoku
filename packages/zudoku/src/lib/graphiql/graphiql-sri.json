@@ -1,0 +1,11 @@
+{
+  "react": "sha384-ZNmUQ9QQgyl95nnD/FJTBQn2ZEPTbWtMuWCXTKWNuF6Si7nC+6bvSgk5LWu+ELHn",
+  "reactDom": "sha384-qtNxBzn9gBs3CmJItMuvIVyjW3VIU0/rzGhCm9MippVU1BpR/c4VgaFYDIg/FrY2",
+  "reactDomClient": "sha384-mTUBgxMUtjAv2EaEUKPAzT6HMcBqdBS++8DEEoHu+ZFG+8YlcIqDrk22ChJ8/Mj3",
+  "graphql": "sha384-eUWg26UKdPQB05LGm6vm//PmrgaaY3wXONfQPX/1QXSpo78YaUHZ6F7w5/v5DDim",
+  "toolkit": "sha384-g/QXS1WWddfNDQI+qvjLSeaJ0XLV7a8/Q+uY2+NVBfyiEmXu7F4zif760Ux5jhhq",
+  "graphiqlReact": "sha384-iZsbTy9B0VcX2BOTdqMuX0uJ9Hff5GbG2QeOt4OeMp0GHza76dwQaYQYNYkZkIVq",
+  "graphiql": "sha384-pumDMAiSNzyidT/jWu2dyWDEBh3wpnQD0GlhkL+ia5vkznkEZlU7yFbDMNc9/RgD",
+  "setupWorkers": "sha384-6kcfWxD7ew22yqReqaV9W/djDbFbZkCH9eohfEaQoXHSeeLt7sVoxgV9l50iBqjm",
+  "styles": "sha384-TFpQQKp325U5sd3PddH4cS0KOB3Gz/aqdEe12Mqkkq3wm2MGcDhRX5WhWf+o8akh"
+}
