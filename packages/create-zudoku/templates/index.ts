@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { bold, cyan } from "picocolors";
 import { copy } from "../helpers/copy";
+import { getLatestVersion } from "../helpers/get-latest-version";
 import { install } from "../helpers/install";
 import type { GetTemplateFileArgs, InstallTemplateArgs } from "./types";
 
@@ -96,6 +97,21 @@ export const installTemplate = async ({
     },
     devDependencies: {},
   };
+
+  /**
+   * The Zuplo template ships with the monetization plugin. Resolve its latest
+   * published version from the npm registry, falling back to the "latest" tag
+   * when offline.
+   */
+  if (template === "zuplo") {
+    const monetizationVersion = await getLatestVersion(
+      "@zuplo/zudoku-plugin-monetization",
+      "latest",
+      isOnline,
+    );
+    packageJson.dependencies["@zuplo/zudoku-plugin-monetization"] =
+      monetizationVersion === "latest" ? "latest" : `^${monetizationVersion}`;
+  }
 
   /**
    * TypeScript projects will have type definitions and other devDependencies.
