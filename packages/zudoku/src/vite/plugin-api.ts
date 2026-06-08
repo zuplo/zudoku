@@ -94,8 +94,24 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.log(`Re-processing schema ${id}`);
 
-        for (const inputConfig of mainFiles) {
-          await schemaManager.processSchema(inputConfig);
+        try {
+          for (const inputConfig of mainFiles) {
+            await schemaManager.processSchema(inputConfig);
+          }
+        } catch (error) {
+          const err = error instanceof Error ? error : new Error(String(error));
+          server.config.logger.error(
+            `Failed to re-process schema ${id}. Fix the error and save again.`,
+            { error: err },
+          );
+          server.ws.send({
+            type: "error",
+            err: {
+              message: `Failed to re-process schema ${id}: ${err.message}`,
+              stack: err.stack ?? "",
+            },
+          });
+          return;
         }
         schemaManager
           .getAllTrackedFiles()

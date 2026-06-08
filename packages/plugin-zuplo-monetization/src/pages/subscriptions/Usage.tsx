@@ -125,9 +125,7 @@ const UsageItem = ({
             )}
           </Alert>
         )}
-        <CardTitle>
-          {item?.name ?? featureKey} {item?.price?.amount}
-        </CardTitle>
+        <CardTitle>{item?.name ?? featureKey}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="flex items-center justify-between text-sm">

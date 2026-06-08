@@ -102,6 +102,11 @@ When adding new components that depend on these, either lazy-load them or place 
 plugin code. A static import chain from `MdxComponents.tsx` or similar always-loaded modules will
 pull the heavy dependency into `entry.client`.
 
+`motion`/`motion/react`: The core (`m`, `LazyMotion`, `AnimatePresence`, ~5kb) can be statically
+imported, but `domAnimation` (~37kb) must load via `LazyMotion`'s async `features` prop using a
+separate module (see `navigation/motionFeatures.ts`). Always use `m.*` (not `motion.*`) inside
+`<LazyMotion strict features={...}>`.
+
 ## Plugin Architecture
 
 - Plugins live in packages/zudoku/lib/plugins/

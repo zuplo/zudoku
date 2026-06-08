@@ -13,11 +13,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "zudoku/ui/Tooltip.js";
-import type { MediaTypeObject, ResponseItem } from "./graphql/graphql.js";
-import * as SidecarBox from "./SidecarBox.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
+import type { OperationsFragmentFragment } from "./graphql/graphql.js";
+import type { Content } from "./interfaces.js";
 import { SidecarExamples } from "./SidecarExamples.js";
 
-type SidecarMediaTypeObject = MediaTypeObject & { isGenerated?: boolean };
+export type ResponseItem = OperationsFragmentFragment["responses"][number];
+
+type SidecarMediaTypeObject = Content & { isGenerated?: boolean };
 type SidecarResponseItem = Omit<ResponseItem, "content"> & {
   content?: SidecarMediaTypeObject[] | null;
 };

@@ -1,3 +1,6 @@
+// Uncomment the import below to enable Zuplo monetization (pricing, checkout,
+// subscriptions). See: https://zuplo.com/docs/articles/monetization
+// import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
 import type { ZudokuConfig } from "zudoku";
 
 /**
@@ -88,6 +91,9 @@ const config: ZudokuConfig = {
   apiKeys: {
     enabled: true,
   },
+  // Uncomment to enable monetization. Don't forget to also uncomment the
+  // `zuploMonetizationPlugin` import at the top of this file.
+  // plugins: [zuploMonetizationPlugin()],
 };
 
 export default config;

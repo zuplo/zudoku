@@ -319,8 +319,12 @@ export const viteThemePlugin = (): Plugin => {
 
       const [lightTheme, darkTheme] = (
         await Promise.all<ThemeRegistration>([
-          import(`@shikijs/themes/${shikiThemes.light}`).then((m) => m.default),
-          import(`@shikijs/themes/${shikiThemes.dark}`).then((m) => m.default),
+          import(
+            /* @vite-ignore */ `@shikijs/themes/${shikiThemes.light}`
+          ).then((m) => m.default),
+          import(/* @vite-ignore */ `@shikijs/themes/${shikiThemes.dark}`).then(
+            (m) => m.default,
+          ),
         ])
       ).map(normalizeTheme);
 

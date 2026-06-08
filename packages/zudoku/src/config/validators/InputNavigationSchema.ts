@@ -22,6 +22,11 @@ const InputNavigationCategoryLinkDocSchema = z.union([
     label: z.string().optional(),
     path: z.string().optional(),
   }),
+  z.object({
+    type: z.literal("link"),
+    to: z.string(),
+    label: z.string().optional(),
+  }),
 ]);
 
 export const DisplaySchema = z
@@ -43,6 +48,9 @@ const NavigationModifyRuleSchema = z.object({
     collapsed: z.boolean().optional(),
     collapsible: z.boolean().optional(),
     display: DisplaySchema,
+    // Turn a (plugin-generated) category into a stacked sub-nav
+    // E.g. make each OpenAPI tag drill into its own panel. See `stack` above.
+    stack: z.boolean().optional(),
   }),
 });
 
@@ -112,6 +120,7 @@ const InputNavigationLinkSchema = z.object({
   icon: IconSchema.optional(),
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
+  stack: z.boolean().optional(),
 });
 
 const InputNavigationCustomPageSchema = z.object({
@@ -151,6 +160,7 @@ const BaseInputNavigationCategorySchema = z.object({
   collapsed: z.boolean().optional(),
   link: InputNavigationCategoryLinkDocSchema.optional(),
   display: DisplaySchema,
+  stack: z.boolean().optional(),
 });
 
 export type InputNavigationItem =

@@ -769,20 +769,49 @@ export type ZudokuConfig = Omit<
 };
 
 export function validateConfig(config: unknown, configPath?: string) {
+  warnUnsafeConfigKeys(config);
+
   const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
+    const prettyErrors = z.prettifyError(validationResult.error);
+    const location = configPath ? ` at ${configPath}` : "";
+
     // In production (build mode), throw an error to fail the build
     if (process.env.NODE_ENV === "production") {
       throw new Error(
-        `Whoops, looks like there's an issue with your ${configPath ?? "config"}:\n${z.prettifyError(validationResult.error)}`,
+        `Invalid Zudoku configuration${location}:\n${prettyErrors}`,
       );
     }
 
     // In development mode, log warnings but don't fail
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.log(colors.yellow("Validation errors:"));
+    console.log(colors.yellow(`Invalid Zudoku configuration${location}:`));
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.log(colors.yellow(z.prettifyError(validationResult.error)));
+    console.log(colors.yellow(prettyErrors));
   }
+}
+
+// `UNSAFE_` prefixed config options that are deprecated and will be removed soon.
+const DEPRECATED_UNSAFE_KEYS = ["UNSAFE_slotlets"] as const;
+
+/**
+ * Warns when config uses a deprecated `UNSAFE_` prefixed option, signalling
+ * that it will be removed soon.
+ */
+function warnUnsafeConfigKeys(config: unknown) {
+  if (typeof config !== "object" || config === null) return;
+
+  const usedKeys = DEPRECATED_UNSAFE_KEYS.filter((key) =>
+    Object.hasOwn(config, key),
+  );
+
+  if (usedKeys.length === 0) return;
+
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
+  console.log(
+    colors.yellow(
+      `Warning: The following config ${usedKeys.length === 1 ? "option is" : "options are"} deprecated and will be removed soon: ${usedKeys.join(", ")}`,
+    ),
+  );
 }

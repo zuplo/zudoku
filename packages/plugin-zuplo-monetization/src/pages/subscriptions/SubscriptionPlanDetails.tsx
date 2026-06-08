@@ -1,4 +1,3 @@
-import { cn } from "zudoku";
 import { Heading } from "zudoku/components";
 import {
   Card,
@@ -8,236 +7,29 @@ import {
   CardTitle,
 } from "zudoku/ui/Card";
 import { useMonetizationConfig } from "../../MonetizationContext.js";
-import type { Item, Subscription } from "../../types/SubscriptionType.js";
-import { formatDuration } from "../../utils/formatDuration.js";
-import { formatPrice } from "../../utils/formatPrice.js";
-import { formatStaticEntitlementConfig } from "../../utils/formatStaticEntitlementConfig.js";
-import { formatTieredPriceBreakdown } from "../../utils/formatTieredPriceBreakdown.js";
-import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
+import { PlanPriceTag } from "../../pricing-ui/PlanPriceTag.js";
+import type { Subscription } from "../../types/SubscriptionType.js";
+import { formatDateTime } from "../../utils/formatDateTime.js";
 import {
   planHasDefaultTaxBehavior,
   subscriptionTaxLegendSentence,
 } from "../../utils/pricingTaxLegend.js";
+import {
+  getSubscriptionPhaseViews,
+  getSubscriptionPlanView,
+  hasSubscriptionEntitlements,
+} from "../../utils/subscriptionEntitlements.js";
+import { SubscriptionEntitlements } from "../components/SubscriptionEntitlements.js";
+import {
+  PreviousPhases,
+  UpcomingPhases,
+} from "../components/SubscriptionPhases.js";
 
 const detailLabelClassName = "text-sm font-semibold tracking-wide mb-1";
 const sectionLabelClassName = "text-base font-semibold tracking-wide mb-3 mt-2";
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-const formatDateRange = (from: string, to: string) =>
-  `${formatDate(from)} – ${formatDate(to)}`;
-
-const formatNumber = (value: number) => value.toLocaleString("en-US");
-
-const getTierPricesFromItem = (
-  item: Item,
-  currency: string | undefined,
-  units?: Record<string, string>,
-): string[] | undefined => {
-  if (item.price?.type !== "tiered") return;
-  const tiers = item.price.tiers;
-  if (!tiers || tiers.length <= 1) return;
-
-  const unitLabel = units?.[item.key] ?? units?.[item.featureKey] ?? "unit";
-  return formatTieredPriceBreakdown({
-    tiers: tiers.map((t) => ({
-      upToAmount: t.upToAmount,
-      unitPriceAmount: t.unitPrice?.amount,
-      flatPriceAmount: t.flatPrice?.amount,
-    })),
-    currency,
-    unitLabel,
-    includedLabel: "Included",
-  });
-};
-
-// The "issued amount" represents free included usage only when the first tier
-// (matching that amount) carries no flat or unit price. Otherwise it's just
-// the boundary of a graduated/tiered pricing schedule, so the limit shouldn't
-// be displayed as a free quota.
-const hasPricedFirstTier = (item: Item): boolean => {
-  const firstTier = item.price?.tiers?.[0];
-  if (!firstTier) return false;
-  const flat = parseFloat(firstTier.flatPrice?.amount ?? "0");
-  const unit = parseFloat(firstTier.unitPrice?.amount ?? "0");
-  return flat > 0 || unit > 0;
-};
-
-const getEntitlementsFromItems = (
-  items: Item[],
-  currency: string | undefined,
-  units?: Record<string, string>,
-  fallbackBillingCadence?: string,
-) => {
-  const features: Array<
-    | {
-        entitlementType: "metered";
-        key: string;
-        name: string;
-        limit?: number;
-        period?: string;
-        tierPrices?: string[];
-      }
-    | {
-        entitlementType: "boolean";
-        key: string;
-        name: string;
-      }
-    | {
-        entitlementType: "static";
-        key: string;
-        name: string;
-        value?: string;
-      }
-  > = [];
-
-  for (const item of items) {
-    const entitlement = item.included?.entitlement;
-    if (!entitlement) continue;
-
-    if (entitlement.type === "metered" && entitlement.issueAfterReset != null) {
-      // Prefer the entitlement's usage period (when the quota refills) over
-      // the billing cadence — the two are explicitly independent.
-      const cadence =
-        entitlement.usagePeriod?.intervalISO ??
-        item.billingCadence ??
-        fallbackBillingCadence;
-      const tierPrices = getTierPricesFromItem(item, currency, units);
-      // Only suppress the issued amount when there is a tier breakdown to
-      // fall back on. A single-tier priced item produces no breakdown, so
-      // keeping limit/period visible is the only way to show anything.
-      const suppressLimit =
-        hasPricedFirstTier(item) && !!tierPrices && tierPrices.length > 0;
-      features.push({
-        entitlementType: "metered",
-        key: item.featureKey ?? item.key,
-        name: item.name ?? item.featureKey ?? item.key,
-        limit: suppressLimit ? undefined : entitlement.issueAfterReset,
-        period: suppressLimit
-          ? undefined
-          : cadence
-            ? formatDuration(cadence)
-            : "month",
-        tierPrices,
-      });
-      continue;
-    }
-
-    if (entitlement.type === "boolean") {
-      features.push({
-        entitlementType: "boolean",
-        key: item.featureKey ?? item.key,
-        name: item.name ?? item.featureKey ?? item.key,
-      });
-      continue;
-    }
-
-    if (entitlement.type === "static") {
-      const base = {
-        key: item.featureKey ?? item.key,
-        name: item.name ?? item.featureKey ?? item.key,
-      };
-
-      if (!entitlement.config) {
-        features.push({ entitlementType: "static", ...base });
-        continue;
-      }
-
-      features.push({
-        entitlementType: "static",
-        ...base,
-        value: formatStaticEntitlementConfig(entitlement.config),
-      });
-    }
-  }
-
-  return { features };
-};
-
-type FeatureRow = {
-  key: string;
-  name: string;
-  phaseId: string;
-  activeFrom: string;
-  activeTo?: string;
-  entitlementType: "metered" | "boolean" | "static";
-  limit?: number;
-  period?: string;
-  tierPrices?: string[];
-  value?: string;
-};
-
-type PhaseGroup = {
-  id: string;
-  name: string;
-  activeFrom: string;
-  activeTo?: string;
-  rows: FeatureRow[];
-};
-
-const getPhaseRows = (opts: {
-  subscription: Subscription;
-  currency: string | undefined;
-  units?: Record<string, string>;
-}) => {
-  const { subscription, currency, units } = opts;
-
-  const phases = [...subscription.phases].sort(
-    (a, b) =>
-      new Date(a.activeFrom).getTime() - new Date(b.activeFrom).getTime(),
-  );
-
-  const phaseGroups: PhaseGroup[] = [];
-
-  for (const phase of phases) {
-    const { features } = getEntitlementsFromItems(
-      phase.items ?? [],
-      currency,
-      units,
-      subscription.billingCadence,
-    );
-
-    const rows: FeatureRow[] = [];
-    for (const f of features) {
-      rows.push({
-        key: f.key,
-        name: f.name,
-        entitlementType: f.entitlementType,
-        limit: f.entitlementType === "metered" ? f.limit : undefined,
-        period: f.entitlementType === "metered" ? f.period : undefined,
-        tierPrices: f.entitlementType === "metered" ? f.tierPrices : undefined,
-        value: f.entitlementType === "static" ? f.value : undefined,
-        phaseId: phase.id,
-        activeFrom: phase.activeFrom,
-        activeTo: phase.activeTo,
-      });
-    }
-
-    if (rows.length > 0) {
-      phaseGroups.push({
-        id: phase.id,
-        name: phase.name,
-        activeFrom: phase.activeFrom,
-        activeTo: phase.activeTo,
-        rows,
-      });
-    }
-  }
-
-  return { phaseGroups };
-};
-
-const formatActiveRange = (activeFrom: string, activeTo?: string) => {
-  if (!activeTo) return `Starts ${formatDate(activeFrom)}`;
-  return `${formatDate(activeFrom)} – ${formatDate(activeTo)}`;
-};
+const formatDateTimeRange = (from: string, to: string) =>
+  `${formatDateTime(from)} – ${formatDateTime(to)}`;
 
 export const SubscriptionPlanDetails = ({
   subscription,
@@ -246,32 +38,18 @@ export const SubscriptionPlanDetails = ({
 }) => {
   const { pricing } = useMonetizationConfig();
   const plan = subscription.plan;
-  const currency = subscription.currency ?? plan.currency;
-  const priceInfo = getPriceFromPlan(plan);
+  const view = getSubscriptionPlanView(subscription, { units: pricing?.units });
+  const { priceLabel } = view;
   const taxLegendSentence = planHasDefaultTaxBehavior(plan)
     ? subscriptionTaxLegendSentence(plan.defaultTaxConfig?.behavior ?? "")
     : undefined;
 
-  const primaryPrice =
-    priceInfo.monthly === 0 && priceInfo.yearly === 0 ? (
-      <span className="text-primary font-medium">Free</span>
-    ) : (
-      <>
-        <span className="text-primary font-medium text-lg">
-          {formatPrice(priceInfo.monthly, currency)}
-        </span>
-        <span className="text-muted-foreground">
-          {" / "}
-          {formatDuration(plan.billingCadence)}
-        </span>
-      </>
-    );
-
-  const { phaseGroups } = getPhaseRows({
-    subscription,
-    currency,
+  const hasEntitlements = hasSubscriptionEntitlements(view);
+  const phaseViews = getSubscriptionPhaseViews(subscription, {
     units: pricing?.units,
   });
+  const hasUpcomingPhases = phaseViews.some((p) => p.status === "future");
+  const hasPreviousPhases = phaseViews.some((p) => p.status === "past");
 
   return (
     <div className="space-y-4">
@@ -296,15 +74,23 @@ export const SubscriptionPlanDetails = ({
             <div>
               <dt className={detailLabelClassName}>Active since</dt>
               <dd className="text-foreground">
-                {formatDate(subscription.activeFrom)}
+                {formatDateTime(subscription.activeFrom)}
               </dd>
             </div>
 
             <div>
               <dt className={detailLabelClassName}>Price</dt>
               <dd>
+                {/* For usage-based plans the concrete per-unit / tier prices
+                    live in the entitlements list below, so the "Pay as you go"
+                    headline stays a summary rather than the whole story. */}
                 <div className="flex flex-wrap items-baseline gap-1">
-                  {primaryPrice}
+                  <PlanPriceTag
+                    label={priceLabel}
+                    currency={view.currency}
+                    billingCadence={view.billingCadence}
+                    description
+                  />
                 </div>
                 {taxLegendSentence ? (
                   <p className="text-xs text-muted-foreground mt-1">
@@ -317,7 +103,7 @@ export const SubscriptionPlanDetails = ({
               <dt className={detailLabelClassName}>Current period</dt>
               <dd className="text-foreground">
                 {subscription.alignment?.currentAlignedBillingPeriod
-                  ? formatDateRange(
+                  ? formatDateTimeRange(
                       subscription.alignment.currentAlignedBillingPeriod.from,
                       subscription.alignment.currentAlignedBillingPeriod.to,
                     )
@@ -326,84 +112,34 @@ export const SubscriptionPlanDetails = ({
             </div>
           </dl>
 
-          {phaseGroups.length > 0 ? (
-            <div className="space-y-5 pt-2 border-t border-border">
-              <div className="space-y-2">
-                <p className={cn(sectionLabelClassName, "mb-5")}>
-                  Entitlements
-                </p>
-                <div className="space-y-5">
-                  {phaseGroups.map((phase) => (
-                    <div key={phase.id} className="space-y-3">
-                      {phaseGroups.length > 1 ? (
-                        <div className="text-sm font-medium text-card-foreground">
-                          {phase.name}
-                          <span className="text-muted-foreground font-normal">
-                            {" "}
-                            &mdash;{" "}
-                            {formatActiveRange(
-                              phase.activeFrom,
-                              phase.activeTo,
-                            )}
-                          </span>
-                        </div>
-                      ) : null}
+          {hasEntitlements ? (
+            <div className="space-y-2 pt-2 border-t border-border">
+              <p className={sectionLabelClassName}>What's included</p>
+              <SubscriptionEntitlements
+                view={view}
+                currency={view.currency}
+                billingCadence={view.billingCadence}
+                units={pricing?.units}
+              />
+            </div>
+          ) : null}
 
-                      <ul className="space-y-3">
-                        {phase.rows.map((row) => (
-                          <li
-                            key={`${row.key}:${row.phaseId}`}
-                            className="text-sm"
-                          >
-                            <div className="flex flex-col gap-1">
-                              <div className="text-foreground font-medium">
-                                {row.name}
-                                {row.entitlementType === "static" &&
-                                row.value !== undefined
-                                  ? `: ${row.value}`
-                                  : ""}
-                              </div>
+          {hasUpcomingPhases ? (
+            <div className="space-y-3 pt-2 border-t border-border">
+              <p className={sectionLabelClassName}>Upcoming phases</p>
+              <UpcomingPhases
+                subscription={subscription}
+                units={pricing?.units}
+              />
+            </div>
+          ) : null}
 
-                              <div className="text-muted-foreground">
-                                {row.entitlementType === "metered" &&
-                                (row.limit != null ||
-                                  (row.tierPrices &&
-                                    row.tierPrices.length > 0)) ? (
-                                  <>
-                                    {/* Tier breakdown carries the included
-                                        quota as a "Up to X: Included" line,
-                                        so suppress the redundant "X / period"
-                                        when both are present. */}
-                                    {row.limit != null &&
-                                    (!row.tierPrices ||
-                                      row.tierPrices.length === 0) ? (
-                                      <>
-                                        {formatNumber(row.limit)}
-                                        {row.period ? ` / ${row.period}` : ""}
-                                      </>
-                                    ) : null}
-                                    {row.tierPrices &&
-                                    row.tierPrices.length > 0 ? (
-                                      <ul className="text-xs space-y-0.5">
-                                        {row.tierPrices.map((line) => (
-                                          <li key={line}>{line}</li>
-                                        ))}
-                                      </ul>
-                                    ) : null}
-                                  </>
-                                ) : row.entitlementType === "static" &&
-                                  row.value !== undefined ? null : (
-                                  "Included"
-                                )}
-                              </div>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {hasPreviousPhases ? (
+            <div className="pt-2 border-t border-border">
+              <PreviousPhases
+                subscription={subscription}
+                units={pricing?.units}
+              />
             </div>
           ) : null}
         </CardContent>
