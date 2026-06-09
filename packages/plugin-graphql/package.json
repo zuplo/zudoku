@@ -1,18 +1,42 @@
 {
   "name": "@zudoku/plugin-graphql",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuplo/zudoku",
+    "directory": "packages/plugin-graphql"
+  },
   "type": "module",
   "main": "./src/index.tsx",
   "types": "./src/index.tsx",
   "exports": {
-    ".": "./src/index.tsx"
+    ".": "./src/index.tsx",
+    "./vite-plugin": "./vite-plugin.ts"
   },
   "files": [
-    "src",
-    "vite.config.ts",
-    "vite-plugin.ts"
+    "dist",
+    "vite.config.ts"
   ],
-  "scripts": {},
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "prepublishOnly": "pnpm typecheck && pnpm build",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "publishConfig": {
+    "main": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.mts",
+        "import": "./dist/index.mjs"
+      },
+      "./vite-plugin": {
+        "types": "./dist/vite-plugin.d.mts",
+        "import": "./dist/vite-plugin.mjs"
+      }
+    }
+  },
   "dependencies": {
     "graphql": "catalog:",
     "zod": "catalog:"
@@ -23,6 +47,7 @@
     "@types/react-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "zudoku": "workspace:*"
   },
@@ -30,5 +55,10 @@
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0",
     "zudoku": "*"
+  },
+  "peerDependenciesMeta": {
+    "zudoku": {
+      "optional": true
+    }
   }
 }
