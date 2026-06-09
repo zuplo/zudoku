@@ -295,7 +295,7 @@ export const ResponseTab = ({
         </CollapsibleContent>
       </Collapsible>
 
-      <div className="flex gap-2 justify-between items-center border-b px-2 flex-0">
+      <div className="flex gap-2 justify-between items-center border-b px-4 flex-0">
         <CollapsibleHeader className="flex items-center gap-2">
           <SquareCodeIcon size={14} aria-hidden="true" />
           Response body
@@ -307,7 +307,7 @@ export const ResponseTab = ({
               setView(value as "formatted" | "raw" | "types")
             }
           >
-            <SelectTrigger className="max-w-32 border-0 bg-transparent">
+            <SelectTrigger className="max-w-32 border-0 shadow-none bg-transparent! px-0">
               <SelectValue placeholder="View" />
             </SelectTrigger>
             <SelectContent>
@@ -318,7 +318,7 @@ export const ResponseTab = ({
           </Select>
         )}
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-h-0">
         {isBinary ? (
           blob && isAudioContentType(getContentType(headers)) ? (
             <AudioPlayer
