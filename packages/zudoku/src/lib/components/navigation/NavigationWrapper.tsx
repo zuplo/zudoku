@@ -18,10 +18,20 @@ export const NavigationWrapper = ({
     const nav = navRef.current;
     if (!nav) return;
 
+    // Only scroll when the active item changes, so toggling a category (which
+    // fires the observer by mutating the DOM) doesn't re-scroll. Track the href
+    // rather than the element: collapsing a category remounts its links, so the
+    // node identity changes even though the active page didn't.
+    let lastHref: string | null = null;
     const scrollActiveIntoView = () => {
       // Leaf and its category both get aria-current; the leaf is last in DOM.
       const active = nav.querySelectorAll('[aria-current="page"]');
-      scrollIntoViewIfNeeded(active.item(active.length - 1));
+      const current = active.item(active.length - 1);
+      if (!current) return;
+      const href = current.getAttribute("href");
+      if (href === lastHref) return;
+      lastHref = href;
+      scrollIntoViewIfNeeded(current);
     };
     scrollActiveIntoView();
 

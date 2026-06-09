@@ -301,6 +301,43 @@ const config: ZudokuConfig = {
             "cargo-handbook/anomalous",
           ],
         },
+        {
+          type: "category",
+          icon: "rocket",
+          label: "Fleet Management",
+          items: [
+            "fleet/warp-drives",
+            "fleet/maintenance",
+            "fleet/crew",
+            "fleet/refueling",
+          ],
+        },
+        {
+          type: "category",
+          icon: "credit-card",
+          label: "Billing & Credits",
+          items: [
+            "billing/invoices",
+            "billing/galactic-credits",
+            "billing/refunds",
+          ],
+        },
+        {
+          type: "category",
+          icon: "shield-check",
+          label: "Compliance",
+          items: [
+            "compliance/customs",
+            "compliance/quarantine",
+            "compliance/treaties",
+          ],
+        },
+        {
+          type: "category",
+          icon: "life-buoy",
+          label: "Support",
+          items: ["support/contact", "support/faq", "support/escalations"],
+        },
         { type: "separator" },
         {
           type: "link",
