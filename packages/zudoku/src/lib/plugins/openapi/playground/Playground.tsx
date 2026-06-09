@@ -197,7 +197,7 @@ export type PlaygroundContentProps = {
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
-  responseSchemas?: Record<string, string>;
+  responseSchemas?: Record<string, string | undefined>;
 };
 
 export const Playground = ({

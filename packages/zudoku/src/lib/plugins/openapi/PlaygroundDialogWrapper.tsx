@@ -63,18 +63,16 @@ export const PlaygroundDialogWrapper = ({
     ? []
     : extractOperationSecuritySchemes(operation);
 
+  // Keep unnamed statuses so `default` only applies to undefined status codes.
   const responseSchemas = Object.fromEntries(
-    operation.responses.flatMap((response) => {
+    operation.responses.map((response) => {
       const schema = response.content?.find((c) =>
         c.mediaType.includes("json"),
       )?.schema;
 
       const name = extractRefName(schema?.__$ref) ?? schema?.title;
 
-      if (name) {
-        return [[response.statusCode, name]];
-      }
-      return [];
+      return [response.statusCode, name];
     }),
   );
 
