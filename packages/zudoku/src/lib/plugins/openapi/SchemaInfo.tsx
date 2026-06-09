@@ -11,7 +11,7 @@ import {
   WebhookIcon,
 } from "lucide-react";
 import type { PropsWithChildren, ReactNode } from "react";
-import { Link, Navigate } from "react-router";
+import { Link, Navigate, useLocation } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Markdown } from "../../components/Markdown.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
@@ -266,6 +266,7 @@ export const SchemaInfo = ({
   redirectTo?: string;
 } = {}) => {
   const { input, type, options } = useOasConfig();
+  const location = useLocation();
   const query = useCreateQuery(SchemaInfoQuery, { input, type });
   const {
     data: { schema },
@@ -275,9 +276,15 @@ export const SchemaInfo = ({
   useWarmupSchema();
 
   // Hide the overview page when there is no description, unless it was
-  // explicitly enabled. Redirect to the first tag so the route still resolves.
+  // explicitly enabled. Redirect to the first tag so the route still resolves,
+  // preserving any existing query string.
   if (!shouldShowInfoPage(showInfoPage, !!description) && redirectTo) {
-    return <Navigate to={redirectTo} replace />;
+    return (
+      <Navigate
+        to={{ pathname: redirectTo, search: location.search }}
+        replace
+      />
+    );
   }
 
   const hasCardContent = !!(
