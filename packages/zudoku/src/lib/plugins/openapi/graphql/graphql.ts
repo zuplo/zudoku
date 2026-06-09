@@ -270,6 +270,7 @@ export type GetNavigationOperationsQueryVariables = Exact<{
 export type GetNavigationOperationsQuery = {
   schema: {
     extensions: any;
+    description: string | null;
     tags: Array<{
       slug: string | null;
       name: string | null;
@@ -719,6 +720,7 @@ export const GetNavigationOperationsDocument = new TypedDocumentString(`
     query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
   schema(input: $input, type: $type) {
     extensions
+    description
     tags {
       slug
       name
