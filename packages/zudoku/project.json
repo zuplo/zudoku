@@ -24,7 +24,7 @@
     },
     "build": {
       "dependsOn": ["^build", "generate:types"],
-      "outputs": ["{projectRoot}/dist/cli"],
+      "outputs": ["{projectRoot}/dist/cli", "{projectRoot}/dist/vite"],
       "inputs": [
         "{projectRoot}/src/**/*.ts",
         "{projectRoot}/src/**/*.tsx",
