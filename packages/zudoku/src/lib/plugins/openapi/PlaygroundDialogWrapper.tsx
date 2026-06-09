@@ -4,6 +4,11 @@ import type { Content } from "./interfaces.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 
+const extractRefName = (ref: unknown): string | undefined => {
+  if (typeof ref !== "string") return undefined;
+  return ref.split("/").pop();
+};
+
 export const PlaygroundDialogWrapper = ({
   server,
   servers,
@@ -58,6 +63,19 @@ export const PlaygroundDialogWrapper = ({
     ? []
     : extractOperationSecuritySchemes(operation);
 
+  // Keep unnamed statuses so `default` only applies to undefined status codes.
+  const responseSchemas = Object.fromEntries(
+    operation.responses.map((response) => {
+      const schema = response.content?.find((c) =>
+        c.mediaType.includes("json"),
+      )?.schema;
+
+      const name = extractRefName(schema?.__$ref) ?? schema?.title;
+
+      return [response.statusCode, name];
+    }),
+  );
+
   return (
     <PlaygroundDialog
       server={server}
@@ -74,6 +92,7 @@ export const PlaygroundDialogWrapper = ({
           : undefined
       }
       securitySchemes={securitySchemes}
+      responseSchemas={responseSchemas}
     />
   );
 };

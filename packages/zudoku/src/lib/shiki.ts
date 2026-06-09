@@ -172,7 +172,7 @@ export const highlight = (
     jsxs,
     components: {
       pre: (props) => props.children,
-      code: (props) =>
+      code: ({ inline: _inline, ...props }) =>
         createElement("code", {
           ...props,
           className: cn(props.className, HIGHLIGHT_CODE_BLOCK_CLASS),

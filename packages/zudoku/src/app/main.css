@@ -259,7 +259,8 @@
     background-color: var(--shiki-dark-bg) !important;
   }
   .code-block .shiki {
-    @apply grid grid-rows-1 whitespace-pre;
+    @apply grid whitespace-pre;
+    align-content: start;
     grid-auto-rows: 1lh;
   }
 
