@@ -8,8 +8,12 @@ import {
   type IntrospectionQuery,
 } from "graphql";
 import { z } from "zod/mini";
-import { joinUrl } from "zudoku";
-import { getPluginConfigs, getZudokuConfig, type Plugin } from "zudoku/vite";
+import {
+  getPluginConfigs,
+  getZudokuConfig,
+  joinUrl,
+  type Plugin,
+} from "zudoku/vite";
 import { type GraphQLConfig, GRAPHQL_PLUGIN_NAME } from "./src/interfaces.js";
 import { buildManifest } from "./src/util/manifest.js";
 

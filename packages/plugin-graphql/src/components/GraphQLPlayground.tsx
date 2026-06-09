@@ -89,7 +89,6 @@ export const GraphQLPlayground = ({
       shouldPersistHeaders
       hideToolbarButtons
       resetKey={operation?.id ?? "empty"}
-      logo={<span className="text-sm font-semibold">GraphQL Playground</span>}
       className={cn(
         "h-full border rounded-lg overflow-hidden bg-background font-sans text-foreground",
         className,

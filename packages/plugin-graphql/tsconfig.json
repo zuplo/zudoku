@@ -11,8 +11,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "useUnknownInCatchVariables": false,
-    "jsx": "react-jsx",
-    "types": ["node"]
+    "noEmit": true,
+    "jsx": "react-jsx"
   },
   "include": ["src", "vite.config.ts", "vite-plugin.ts"]
 }
