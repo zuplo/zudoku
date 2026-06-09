@@ -89,9 +89,9 @@ describe("generateInterface", () => {
     const expected = [
       "{",
       "  user: {",
-      "  name: string;",
-      "  age: number;",
-      "};",
+      "    name: string;",
+      "    age: number;",
+      "  };",
       "}",
     ].join("\n");
 
@@ -110,8 +110,8 @@ describe("generateInterface", () => {
       "  numbers: number[];",
       "  empty: any[];",
       "  objects: {",
-      "  id: number;",
-      "}[];",
+      "    id: number;",
+      "  }[];",
       "}",
     ].join("\n");
 
