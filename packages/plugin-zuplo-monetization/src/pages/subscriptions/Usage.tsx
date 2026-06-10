@@ -3,6 +3,7 @@ import { Button, Heading, Link } from "zudoku/components";
 import {
   AlertTriangleIcon,
   ArrowUpIcon,
+  BadgePercentIcon,
   Grid2x2XIcon,
   Loader2Icon,
 } from "zudoku/icons";
@@ -26,6 +27,17 @@ export type UsageResult = {
   subscriptionId: string;
   paymentStatus: PaymentStatus;
   annotations?: Annotations;
+  pendingCredits?: PendingCredit[];
+};
+
+// A usage credit (overage waiver) applied by the API owner that will be applied to
+// the next invoice automatically. Surfaced so the user understands a charge was
+// forgiven (the recorded usage/balance is unchanged).
+export type PendingCredit = {
+  featureKey: string;
+  units: number;
+  appliesToInvoiceAt?: string;
+  source: string;
 };
 
 export type PaymentStatus = {
@@ -61,11 +73,13 @@ const UsageItem = ({
   item,
   subscription,
   featureKey,
+  pendingCredit,
 }: {
   meter: MeteredEntitlement;
   item?: Item;
   subscription?: Subscription;
   featureKey: string;
+  pendingCredit?: PendingCredit;
 }) => {
   const cadence = item?.billingCadence ?? subscription?.billingCadence;
   const billingPeriod = cadence ? formatDurationAdjective(cadence) : "monthly";
@@ -77,12 +91,27 @@ const UsageItem = ({
   const hasOverage = meter.overage > 0;
   const limit = meter.balance + meter.usage - meter.overage;
   const isAtLimit = !isSoftLimit && meter.usage >= limit;
-  const dangerZone = hasOverage || isAtLimit;
+  // A pending credit waives the overage charge, so don't also show the
+  // "you're being charged for overage" warning (or the red danger styling) for it.
+  const hasCredit = pendingCredit != null;
+  const dangerZone = (hasOverage && !hasCredit) || isAtLimit;
 
   return (
     <Card className={cn(dangerZone && "border-destructive bg-destructive/5")}>
       <CardHeader>
-        {hasOverage && isSoftLimit && (
+        {pendingCredit && (
+          <Alert className="mb-4">
+            <BadgePercentIcon className="size-4 text-green-600 shrink-0" />
+            <AlertTitle>A usage credit was applied</AlertTitle>
+            <AlertDescription>
+              Support credited {pendingCredit.units.toLocaleString()} overage{" "}
+              {pendingCredit.units === 1 ? "unit" : "units"} for this billing
+              period — you won't be billed for them. The credit is applied to
+              your next invoice automatically.
+            </AlertDescription>
+          </Alert>
+        )}
+        {hasOverage && isSoftLimit && !hasCredit && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
             <AlertTitle>You've exceeded your {billingPeriod} quota</AlertTitle>
@@ -172,6 +201,10 @@ export const Usage = ({
     isMeteredEntitlement(value),
   );
 
+  const creditByFeature = new Map(
+    (usage.pendingCredits ?? []).map((credit) => [credit.featureKey, credit]),
+  );
+
   return (
     <div className="space-y-4">
       <Heading level={3}>Usage</Heading>
@@ -216,6 +249,7 @@ export const Usage = ({
               meter={{ ...value }}
               subscription={subscription}
               item={currentItems?.find((item) => item.featureKey === key)}
+              pendingCredit={creditByFeature.get(key)}
             />
           ) : (
             []

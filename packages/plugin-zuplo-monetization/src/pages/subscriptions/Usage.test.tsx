@@ -256,4 +256,52 @@ describe("Usage - UsageItem", () => {
     );
     expect(screen.getByText("requests")).toBeInTheDocument();
   });
+
+  it("shows a pending credit banner and suppresses the overage charge alert", () => {
+    render(
+      <Usage
+        usage={{
+          ...makeUsage({ balance: 0, usage: 1200, overage: 200 }),
+          pendingCredits: [
+            { featureKey: "requests", units: 200, source: "support" },
+          ],
+        }}
+        isFetching={false}
+        currentItems={[softLimitItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    // Positive credit banner is shown...
+    expect(screen.getByText("A usage credit was applied")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Support credited 200 overage units/),
+    ).toBeInTheDocument();
+    // ...and the contradictory "you're being charged for overage" alert is hidden.
+    expect(
+      screen.queryByText("You've exceeded your monthly quota"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not show a credit banner for features without a pending credit", () => {
+    render(
+      <Usage
+        usage={{
+          ...makeUsage({ balance: 0, usage: 1200, overage: 200 }),
+          pendingCredits: [
+            { featureKey: "something-else", units: 50, source: "support" },
+          ],
+        }}
+        isFetching={false}
+        currentItems={[softLimitItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.queryByText("A usage credit was applied"),
+    ).not.toBeInTheDocument();
+    // The overage alert still shows since this feature has no credit.
+    expect(
+      screen.getByText("You've exceeded your monthly quota"),
+    ).toBeInTheDocument();
+  });
 });
