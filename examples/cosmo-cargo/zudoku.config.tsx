@@ -11,6 +11,7 @@ import { Landingpage } from "./src/Landingpage";
 import { MembersOnly } from "./src/MembersOnly";
 import { NotFound } from "./src/NotFound";
 import { VipLounge } from "./src/VipLounge";
+import "./custom.css";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -117,6 +118,10 @@ const config: ZudokuConfig = {
     llms: { llmsTxt: true, llmsTxtFull: true },
   },
   site: {
+    sidebar: {
+      togglePosition: "center",
+      toggleVisibility: "hover",
+    },
     notFoundPage: <NotFound />,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },

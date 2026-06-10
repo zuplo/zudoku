@@ -193,24 +193,17 @@ Or pass any React node as the `icon` to override the default for the chosen `typ
 ## Customize colors
 
 Each callout type is driven by a single CSS variable that determines the icon, border tint, and
-background tint via `color-mix`. Override any of them in your theme's `customCss` to recolor a type
-globally:
+background tint via `color-mix`. Override any of them in your stylesheet to recolor a type globally:
 
-```ts title="zudoku.config.ts"
-export default {
-  theme: {
-    customCss: `
-      :root {
-        --callout-tip: oklch(0.65 0.18 160);
-        --callout-sparkles: oklch(0.6 0.22 320);
-      }
-      .dark {
-        --callout-tip: oklch(0.78 0.18 160);
-        --callout-sparkles: oklch(0.75 0.2 320);
-      }
-    `,
-  },
-};
+```css title=styles.css
+:root {
+  --callout-tip: oklch(0.65 0.18 160);
+  --callout-sparkles: oklch(0.6 0.22 320);
+}
+.dark {
+  --callout-tip: oklch(0.78 0.18 160);
+  --callout-sparkles: oklch(0.75 0.2 320);
+}
 ```
 
 All available variables:

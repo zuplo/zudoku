@@ -113,7 +113,7 @@ export const NavigationItem = ({
           end
         >
           {item.icon && (
-            <item.icon size={16} className="align-[-0.125em] shrink-0" />
+            <item.icon className="size-4 shrink-0 align-[-0.125em]" />
           )}
           {item.rich ? (
             <Suspense fallback={<span>{item.label}</span>}>
@@ -161,7 +161,7 @@ export const NavigationItem = ({
           onClick={onRequestClose}
         >
           {item.icon && (
-            <item.icon size={16} className="align-[-0.125em] shrink-0" />
+            <item.icon className="size-4 shrink-0 align-[-0.125em]" />
           )}
           {item.label && <TruncatedLabel label={item.label} />}
           {item.badge && <NavigationBadge {...item.badge} />}
@@ -175,12 +175,12 @@ export const NavigationItem = ({
           onClick={onRequestClose}
         >
           {item.icon && (
-            <item.icon size={16} className="align-[-0.125em] shrink-0" />
+            <item.icon className="size-4 shrink-0 align-[-0.125em]" />
           )}
           <span className="whitespace-normal">{item.label}</span>
           {/* This prevents that the icon would be positioned in its own line if the text fills a line entirely */}
           <span className="whitespace-nowrap">
-            <ExternalLinkIcon className="inline -translate-y-0.5" size={12} />
+            <ExternalLinkIcon className="inline size-3 -translate-y-0.5" />
           </span>
         </a>
       );

@@ -152,7 +152,10 @@
   ul.contains-task-list {
     @apply list-none px-0;
     li {
-      @apply my-1 flex items-center gap-1.5;
+      @apply my-1 ps-6 -indent-6;
+    }
+    li input[type="checkbox"] {
+      @apply me-1.5 align-[-0.125em];
     }
   }
 }

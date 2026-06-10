@@ -5,6 +5,7 @@ import { Drawer, DrawerTrigger } from "zudoku/ui/Drawer.js";
 import { cn } from "../util/cn.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { Navigation } from "./navigation/Navigation.js";
+import { SidebarToggle } from "./navigation/SidebarToggle.js";
 import { Slot } from "./Slot.js";
 
 export const Main = ({ children }: PropsWithChildren) => {
@@ -50,6 +51,9 @@ export const Main = ({ children }: PropsWithChildren) => {
         {children}
         <Slot.Target name="content-after" />
       </main>
+      {hasNavigation && options.site?.sidebar?.collapsible !== false && (
+        <SidebarToggle />
+      )}
     </Drawer>
   );
 };

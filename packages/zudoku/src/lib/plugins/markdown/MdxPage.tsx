@@ -28,6 +28,7 @@ import { useViewportAnchor } from "../../components/context/ViewportAnchorContex
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
+import { useSidebar } from "../../components/navigation/sidebarStore.js";
 import { Toc, TocContent } from "../../components/navigation/Toc.js";
 import {
   useCurrentItem,
@@ -169,12 +170,14 @@ export const MdxPage = ({
   const location = useLocation();
   const { options } = useZudoku();
   const [isCopied, setIsCopied] = useState(false);
+  const sidebarCollapsed = useSidebar((s) => s.isCollapsed);
 
   const title = frontmatter.title;
   const description = frontmatter.description ?? excerpt;
   const category = frontmatter.category ?? categoryTitle;
   const tocEnabled = frontmatter.toc ?? defaultOptions?.toc ?? true;
   const fullWidth = frontmatter.fullWidth ?? defaultOptions?.fullWidth ?? false;
+  const centered = frontmatter.centered ?? defaultOptions?.centered ?? true;
   const pageTitle =
     title ?? tableOfContents.find((item) => item.depth === 1)?.text;
   const hidePager =
@@ -263,7 +266,11 @@ export const MdxPage = ({
       <Typography
         className={cn(
           "max-w-full flex-1 shrink pt-(--padding-content-top)",
-          !fullWidth && "xl:w-full xl:max-w-3xl",
+          !fullWidth &&
+            (sidebarCollapsed
+              ? "lg:w-full lg:max-w-4xl"
+              : "xl:w-full xl:max-w-3xl"),
+          centered && "xl:mx-auto",
         )}
       >
         <header className="flow-root">
