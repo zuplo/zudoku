@@ -28,6 +28,10 @@ import { remarkLinkRewrite } from "./mdx/remark-link-rewrite.js";
 import { remarkNormalizeImageUrl } from "./mdx/remark-normalize-image-url.js";
 import { remarkStaticGeneration } from "./mdx/remark-static-generation.js";
 import { exportMdxjsConst } from "./mdx/utils.js";
+import {
+  globMarkdownFiles,
+  resolveCustomNavigationPaths,
+} from "./plugin-docs.js";
 
 // Convert mdxJsxFlowElement img elements to regular element nodes
 // so rehype-mdx-import-media can pick them up
@@ -86,6 +90,19 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
   const buildConfig = await getBuildConfig();
   const highlighter = await highlighterPromise;
 
+  // Map each markdown file (absolute path, no extension) to its route so link
+  // rewriting can resolve `./foo/index.mdx` links to the real page route.
+  // Computed once at plugin init. In dev this is a snapshot; editing a custom
+  // path needs a server restart to re-sync link rewriting.
+  const routesByFile = new Map<string, string>();
+  const fileMapping = await resolveCustomNavigationPaths(
+    config,
+    await globMarkdownFiles(config, { absolute: true }),
+  );
+  for (const [route, filePath] of Object.entries(fileMapping)) {
+    routesByFile.set(filePath.replace(/\.mdx?$/, ""), route);
+  }
+
   const defaultRemarkPlugins = [
     remarkStaticGeneration,
     [remarkInjectFilepath, config.__meta.rootDir],
@@ -100,7 +117,7 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
     remarkDirective,
     remarkDirectiveRehype,
     remarkCodeTabs,
-    [remarkLinkRewrite, config.basePath],
+    [remarkLinkRewrite, config.basePath, routesByFile],
     [remarkNormalizeImageUrl, config.basePath],
     ...(config.build?.remarkPlugins ?? []),
   ] satisfies PluggableList;
