@@ -2,6 +2,7 @@ import type {
   Feature,
   FlatPrice,
   MeteredEntitlementTemplate,
+  Plan,
   PlanPhase,
   Price,
   Quota,
@@ -216,3 +217,168 @@ export const hasSubscriptionEntitlements = (
     : view.fallbackPhases.some((p) =>
         p.rateCards?.some((rc) => rc.entitlementTemplate),
       );
+
+export type SubscriptionPhaseStatus = "past" | "current" | "future";
+
+/** A single subscription phase resolved to its price + entitlements + timing. */
+export type SubscriptionPhaseView = {
+  id: string;
+  name: string;
+  status: SubscriptionPhaseStatus;
+  activeFrom: string;
+  activeTo?: string;
+  priceLabel: PlanPriceLabel;
+  entitlements: { quotas: Quota[]; features: Feature[] };
+  billingCadence?: string;
+  currency?: string;
+};
+
+const phaseStatus = (
+  phase: { activeFrom: string; activeTo?: string },
+  now: number,
+): SubscriptionPhaseStatus => {
+  if (phase.activeTo && new Date(phase.activeTo).getTime() < now) return "past";
+  if (new Date(phase.activeFrom).getTime() > now) return "future";
+  return "current";
+};
+
+/**
+ * Rate cards for one subscription phase: its own provisioned items (the
+ * authoritative quotas/fees), falling back to the catalog plan phase with the
+ * same `key` when a phase (typically a future one) hasn't been provisioned yet.
+ */
+const phaseRateCards = (
+  plan: Subscription["plan"],
+  phase: Subscription["phases"][number],
+): RateCard[] =>
+  phase.items.length > 0
+    ? subscriptionItemsToRateCards(phase.items)
+    : (plan.phases?.find((p) => p.key === phase.key)?.rateCards ?? []);
+
+const phasesByActiveFrom = (subscription: Subscription) =>
+  [...subscription.phases].sort(
+    (a, b) =>
+      new Date(a.activeFrom).getTime() - new Date(b.activeFrom).getTime(),
+  );
+
+/**
+ * A clean ISO-8601 duration between two instants, preferring whole calendar
+ * units (years/months/weeks) over raw days so it formats the same way catalog
+ * plan durations do (e.g. `P1W` → "week", `P3M` → "3 months") rather than as
+ * "7 days" / "90 days". Returns `undefined` for a non-positive span.
+ */
+const isoDurationBetween = (from: string, to: string): string | undefined => {
+  const a = new Date(from);
+  const b = new Date(to);
+  const ms = b.getTime() - a.getTime();
+  if (!(ms > 0)) return undefined;
+
+  // Whole calendar months (and years) when `to` lands exactly N months after
+  // `from` — covers monthly/quarterly/annual ramp phases regardless of how
+  // many days each month has.
+  let months =
+    (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+  const anchor = new Date(a);
+  anchor.setMonth(a.getMonth() + months);
+  if (anchor.getTime() > b.getTime()) months -= 1;
+  const exact = new Date(a);
+  exact.setMonth(a.getMonth() + months);
+  if (months >= 1 && exact.getTime() === b.getTime()) {
+    return months % 12 === 0 ? `P${months / 12}Y` : `P${months}M`;
+  }
+
+  const days = Math.round(ms / 86_400_000);
+  if (days >= 7 && days % 7 === 0) return `P${days / 7}W`;
+  return `P${days}D`;
+};
+
+/**
+ * The intended length of a subscription phase: the matching catalog plan
+ * phase's authored `duration` when available (the cleanest source), otherwise
+ * computed from the phase's own `activeFrom`/`activeTo`. `undefined` for an
+ * open-ended (final) phase — the price schedule labels that one "After that".
+ */
+const phaseDuration = (
+  plan: Subscription["plan"],
+  phase: Subscription["phases"][number],
+): string | undefined => {
+  const catalog = plan.phases?.find((p) => p.key === phase.key)?.duration;
+  if (catalog) return catalog;
+  if (!phase.activeTo) return undefined;
+  return isoDurationBetween(phase.activeFrom, phase.activeTo);
+};
+
+/**
+ * Resolve EVERY phase of a subscription (not just the active one) to a
+ * {@link SubscriptionPhaseView}, ordered by `activeFrom` and tagged
+ * past/current/future. Generalizes {@link getSubscriptionPlanView}: each phase's
+ * price and entitlements come from its own provisioned items (the authoritative
+ * source), falling back to the catalog plan phase with the same `key` when a
+ * phase (typically a future one) hasn't been provisioned yet. Powers the
+ * subscription details page's current + upcoming + previous phase timeline.
+ */
+export const getSubscriptionPhaseViews = (
+  subscription: Subscription,
+  options?: { units?: Record<string, string> },
+): SubscriptionPhaseView[] => {
+  const plan = subscription.plan;
+  const currency = subscription.currency ?? plan.currency;
+  const billingCadence = subscription.billingCadence ?? plan.billingCadence;
+  const now = Date.now();
+
+  return phasesByActiveFrom(subscription).map((phase) => {
+    const rateCards = phaseRateCards(plan, phase);
+
+    return {
+      id: phase.id,
+      name: phase.name,
+      status: phaseStatus(phase, now),
+      activeFrom: phase.activeFrom,
+      activeTo: phase.activeTo,
+      priceLabel: formatPlanPrice({
+        ...plan,
+        billingCadence,
+        phases: [{ key: phase.key, name: phase.name, rateCards }],
+      }),
+      entitlements: categorizeRateCards(rateCards, {
+        currency,
+        units: options?.units,
+        planBillingCadence: billingCadence,
+      }),
+      billingCadence,
+      currency,
+    };
+  });
+};
+
+/**
+ * Build a catalog-shaped {@link Plan} from a subscription's *own* current and
+ * future phases (past phases dropped), so the plan-change confirmation page can
+ * render the current subscription with the exact same pricing-table card
+ * ({@link formatPlanPrice} / `getPlanPriceSchedule` / `PlanEntitlements`) used
+ * for the new plan. Each phase's rate cards come from its provisioned items
+ * (the authoritative source) — the embedded `subscription.plan` snapshot is
+ * unreliable here (it can arrive with `phases: []`), so we never read its
+ * phases for pricing. Each phase's `duration` is carried so the price schedule
+ * labels read "First 3 months" / "After that" exactly like the new plan, rather
+ * than falling back to the phase name (see {@link phaseDuration}).
+ */
+export const subscriptionToCurrentPlan = (subscription: Subscription): Plan => {
+  const plan = subscription.plan;
+  const now = Date.now();
+  const phases = phasesByActiveFrom(subscription)
+    .filter((p) => !(p.activeTo && new Date(p.activeTo).getTime() < now))
+    .map((phase) => ({
+      key: phase.key,
+      name: phase.name,
+      duration: phaseDuration(plan, phase),
+      rateCards: phaseRateCards(plan, phase),
+    }));
+
+  return {
+    ...plan,
+    currency: subscription.currency ?? plan.currency,
+    billingCadence: subscription.billingCadence ?? plan.billingCadence,
+    phases,
+  };
+};

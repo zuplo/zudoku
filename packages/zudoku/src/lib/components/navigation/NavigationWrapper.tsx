@@ -3,6 +3,7 @@ import { cn } from "../../util/cn.js";
 import { scrollIntoViewIfNeeded } from "../../util/scrollIntoViewIfNeeded.js";
 import { useZudoku } from "../context/ZudokuContext.js";
 import { PoweredByZudoku } from "./PoweredByZudoku.js";
+import { useSidebar } from "./sidebarStore.js";
 
 export const NavigationWrapper = ({
   children,
@@ -11,6 +12,7 @@ export const NavigationWrapper = ({
   className?: string;
 }>) => {
   const { options } = useZudoku();
+  const isCollapsed = useSidebar((s) => s.isCollapsed);
   const navRef = useRef<HTMLDivElement>(null);
 
   // Scroll the active item into view on mount and whenever it changes.
@@ -18,10 +20,20 @@ export const NavigationWrapper = ({
     const nav = navRef.current;
     if (!nav) return;
 
+    // Only scroll when the active item changes, so toggling a category (which
+    // fires the observer by mutating the DOM) doesn't re-scroll. Track the href
+    // rather than the element: collapsing a category remounts its links, so the
+    // node identity changes even though the active page didn't.
+    let lastHref: string | null = null;
     const scrollActiveIntoView = () => {
       // Leaf and its category both get aria-current; the leaf is last in DOM.
       const active = nav.querySelectorAll('[aria-current="page"]');
-      scrollIntoViewIfNeeded(active.item(active.length - 1));
+      const current = active.item(active.length - 1);
+      if (!current) return;
+      const href = current.getAttribute("href");
+      if (href === lastHref) return;
+      lastHref = href;
+      scrollIntoViewIfNeeded(current);
     };
     scrollActiveIntoView();
 
@@ -37,13 +49,18 @@ export const NavigationWrapper = ({
 
   return (
     <div
-      className="grid sticky top-(--header-height) lg:h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r"
+      className={cn(
+        "grid sticky top-(--header-height) lg:h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r lg:col-start-1 lg:row-start-1",
+        "transition-opacity duration-200 motion-reduce:transition-none",
+        isCollapsed && "lg:opacity-0 lg:pointer-events-none",
+      )}
       data-pagefind-ignore="all"
+      inert={isCollapsed}
     >
       <nav
         ref={navRef}
         className={cn(
-          "hidden max-w-[calc(var(--side-nav-width)+var(--padding-nav-item))] lg:flex scrollbar flex-col overflow-y-auto shrink-0 text-sm pe-3 ps-4 lg:ps-8",
+          "hidden max-w-[calc(var(--side-nav-width)+var(--padding-nav-item))] lg:flex scrollbar flex-col overflow-y-auto shrink-0 text-sm ps-4 pe-4 lg:ps-8",
           "-mx-(--padding-nav-item) pb-[8vh] pt-(--padding-content-top) scroll-pt-2",
           // Revert the padding/margin on the first child
           "-mt-2.5",

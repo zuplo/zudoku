@@ -16,6 +16,7 @@ export type MarkdownPluginDefaultOptions = Pick<
   | "suggestEdit"
   | "copyPage"
   | "fullWidth"
+  | "centered"
 >;
 
 export type Frontmatter = {
@@ -31,6 +32,7 @@ export type Frontmatter = {
   suggestEdit?: { url: string; text?: string } | false;
   copyPage?: boolean;
   fullWidth?: boolean;
+  centered?: boolean;
 };
 
 export type MDXImport = {

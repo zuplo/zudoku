@@ -127,6 +127,44 @@ export const NotFound = () => (
 
 ## Layout
 
+### Collapsible Sidebar
+
+The navigation sidebar is collapsible by default. A small toggle button on the sidebar's right
+border lets users hide and reveal it. Configure the behavior under `site.sidebar`:
+
+```tsx title=zudoku.config.tsx
+{
+  site: {
+    sidebar: {
+      collapsible: true, // default: true. Set to false to disable the toggle entirely.
+      toggleVisibility: "always", // "always" (default) or "hover" — show button only when hovering the sidebar's right edge
+      togglePosition: "bottom", // "top", "center", or "bottom" (default)
+    },
+  }
+}
+```
+
+For finer vertical placement, override the `--sidebar-toggle-y` CSS variable in your stylesheet:
+
+```css
+:root {
+  --sidebar-toggle-y: 30%;
+}
+```
+
+The toggle button carries `aria-expanded="true"` when the sidebar is open and `"false"` when
+collapsed. Combine it with the `[data-sidebar-toggle]` selector to position the button differently
+per state:
+
+```css
+[data-sidebar-toggle][aria-expanded="true"] {
+  --sidebar-toggle-y: 20%;
+}
+[data-sidebar-toggle][aria-expanded="false"] {
+  --sidebar-toggle-y: 80%;
+}
+```
+
 ### Banner
 
 Add a banner message to the top of the page:

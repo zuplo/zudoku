@@ -29,8 +29,18 @@ const config: ZudokuConfig = {
           label: "GraphQL",
           collapsed: false,
           items: [
-            { label: "Developer API", type: "link", to: "/graphql/dev" },
-            { label: "Analytics API", type: "link", to: "/graphql/analytics" },
+            {
+              label: "Developer API",
+              type: "link",
+              to: "/graphql/dev",
+              stack: true,
+            },
+            {
+              label: "Analytics API",
+              type: "link",
+              to: "/graphql/analytics",
+              stack: true,
+            },
           ],
         },
         {
@@ -47,7 +57,6 @@ const config: ZudokuConfig = {
         },
       ],
     },
-    { label: "GraphQL API", type: "link", to: "/graphql/default" },
     { label: "REST API", type: "link", to: "/api" },
     { label: "GraphQL OAS", type: "link", to: "/graphql-api" },
   ],

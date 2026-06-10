@@ -12,8 +12,8 @@ import { useMonetizationConfig } from "../MonetizationContext";
 import { subscriptionsQuery } from "../queries.js";
 import { formatDateTime } from "../utils/formatDateTime.js";
 import { formatPrice } from "../utils/formatPrice.js";
+import { subscriptionToCurrentPlan } from "../utils/subscriptionEntitlements.js";
 import { ConfirmationScreen } from "./components/ConfirmationScreen.js";
-import { CurrentPlanBaseline } from "./components/CurrentPlanBaseline.js";
 import { PlanSummaryCard } from "./components/PlanSummaryCard.js";
 
 const SubscriptionChangeConfirmPage = () => {
@@ -80,9 +80,14 @@ const SubscriptionChangeConfirmPage = () => {
       <div className="space-y-3">
         {currentSubscription && (
           <>
-            <CurrentPlanBaseline
-              subscription={currentSubscription}
+            <PlanSummaryCard
+              plan={subscriptionToCurrentPlan(currentSubscription)}
+              label="Current plan"
+              descriptionFallback=""
+              taxLabel=""
+              taxInclusive={false}
               units={pricing?.units}
+              collapsibleDetails
             />
             <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
               <ArrowDownIcon className="size-4" /> Changing to
@@ -93,11 +98,13 @@ const SubscriptionChangeConfirmPage = () => {
         {selectedPlan && (
           <PlanSummaryCard
             plan={selectedPlan}
-            descriptionFallback="New plan"
+            label="New plan"
+            descriptionFallback=""
             taxAmount={taxAmount}
             taxLabel={taxLabel}
             taxInclusive={taxInclusive}
             units={pricing?.units}
+            collapsibleDetails
           />
         )}
 

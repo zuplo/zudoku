@@ -1,8 +1,10 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { createStore } from "zustand";
-import { setupCookieSync } from "./cookie-sync.js";
+import { setupCookieSync, waitForSessionSync } from "./cookie-sync.js";
 import type { UserProfile } from "./state.js";
+
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 // cookie-sync is intentionally provider-agnostic: it reads top-level
 // access/refresh tokens off providerData. Use a loose shape so tests can
@@ -193,5 +195,117 @@ describe("setupCookieSync", () => {
     });
     await vi.waitFor(() => expect(errSpy).toHaveBeenCalled());
     errSpy.mockRestore();
+  });
+
+  test("waitForSessionSync resolves only after the in-flight POST settles", async () => {
+    let resolveFetch: (r: Response) => void = () => {};
+    fetchMock.mockReturnValueOnce(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve;
+      }),
+    );
+    const store = createSlice();
+    setup(store);
+    store.setState({
+      isAuthenticated: true,
+      profile: PROFILE,
+      providerData: { accessToken: "t" },
+    });
+
+    let settled = false;
+    const wait = waitForSessionSync().then(() => {
+      settled = true;
+    });
+    await flush();
+    expect(settled).toBe(false); // POST still in flight
+
+    resolveFetch(new Response(null, { status: 200 }));
+    await wait;
+    expect(settled).toBe(true);
+  });
+
+  test("waitForSessionSync resolves (never rejects) when the sync fails", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 502 }));
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const store = createSlice();
+    setup(store);
+    store.setState({
+      isAuthenticated: true,
+      profile: PROFILE,
+      providerData: { accessToken: "t" },
+    });
+
+    await expect(waitForSessionSync()).resolves.toBeUndefined();
+    errSpy.mockRestore();
+  });
+
+  test("waitForSessionSync awaits a superseding sync, not the superseded one", async () => {
+    const resolvers: Array<(r: Response) => void> = [];
+    fetchMock.mockImplementation(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolvers.push(resolve);
+        }),
+    );
+    const store = createSlice();
+    setup(store);
+    store.setState({
+      isAuthenticated: true,
+      profile: PROFILE,
+      providerData: { accessToken: "a" },
+    });
+
+    let settled = false;
+    const wait = waitForSessionSync().then(() => {
+      settled = true;
+    });
+
+    // A token refresh supersedes the first POST before it settles.
+    store.setState({ providerData: { accessToken: "b" } });
+    await flush();
+
+    // Settling only the first (superseded) POST must NOT open the gate.
+    resolvers[0]?.(new Response(null, { status: 200 }));
+    await flush();
+    expect(settled).toBe(false);
+
+    // Settling the superseding POST does.
+    resolvers[1]?.(new Response(null, { status: 200 }));
+    await wait;
+    expect(settled).toBe(true);
+  });
+
+  test("waitForSessionSync tracks the DELETE on logout", async () => {
+    let resolveFetch: (r: Response) => void = () => {};
+    fetchMock.mockReturnValueOnce(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve;
+      }),
+    );
+    const store = createSlice({
+      isAuthenticated: true,
+      profile: PROFILE,
+      providerData: { accessToken: "t" },
+    });
+    (window as { ZUDOKU_SSR_AUTH?: unknown }).ZUDOKU_SSR_AUTH = {
+      profile: PROFILE,
+    };
+    setup(store);
+    store.setState({
+      isAuthenticated: false,
+      profile: null,
+      providerData: null,
+    });
+
+    let settled = false;
+    const wait = waitForSessionSync().then(() => {
+      settled = true;
+    });
+    await flush();
+    expect(settled).toBe(false); // DELETE still in flight
+
+    resolveFetch(new Response(null, { status: 200 }));
+    await wait;
+    expect(settled).toBe(true);
   });
 });

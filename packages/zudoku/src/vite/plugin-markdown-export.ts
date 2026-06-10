@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
+import { DocsConfigSchema } from "../config/validators/ZudokuConfig.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { readFrontmatter } from "../lib/util/readFrontmatter.js";
 import { matchesAnyProtectedPattern } from "../lib/util/url.js";
@@ -85,12 +86,15 @@ const viteMarkdownExportPlugin = (): Plugin => {
     },
     async buildStart() {
       const config = getCurrentConfig();
-      const llmsConfig = config.docs?.llms;
+      // Parse so schema defaults (e.g. publishMarkdown) apply; the loaded
+      // config isn't run through the schema.
+      const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
+      const llmsConfig = docsConfig.llms ?? {};
 
       const needsMdFiles =
-        config.docs?.publishMarkdown ||
-        llmsConfig?.llmsTxt ||
-        llmsConfig?.llmsTxtFull;
+        docsConfig.publishMarkdown ||
+        llmsConfig.llmsTxt ||
+        llmsConfig.llmsTxtFull;
 
       if (config.__meta.mode === "standalone" || !needsMdFiles) {
         return;
@@ -118,13 +122,13 @@ const viteMarkdownExportPlugin = (): Plugin => {
     },
     async configureServer(server) {
       const config = getCurrentConfig();
-      const llmsConfig = config.docs?.llms;
+      const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
+      const llmsConfig = docsConfig.llms ?? {};
 
-      // Serve .md files if markdown export is needed
       const needsMdFiles =
-        config.docs?.publishMarkdown ||
-        llmsConfig?.llmsTxt ||
-        llmsConfig?.llmsTxtFull;
+        docsConfig.publishMarkdown ||
+        llmsConfig.llmsTxt ||
+        llmsConfig.llmsTxtFull;
 
       if (!needsMdFiles) return;
 
@@ -157,12 +161,13 @@ const viteMarkdownExportPlugin = (): Plugin => {
     },
     async closeBundle() {
       const config = getCurrentConfig();
-      const llmsConfig = config.docs?.llms;
+      const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
+      const llmsConfig = docsConfig.llms ?? {};
 
       const needsMdFiles =
-        config.docs?.publishMarkdown ||
-        llmsConfig?.llmsTxt ||
-        llmsConfig?.llmsTxtFull;
+        docsConfig.publishMarkdown ||
+        llmsConfig.llmsTxt ||
+        llmsConfig.llmsTxtFull;
 
       if (
         process.env.NODE_ENV !== "production" ||
@@ -208,7 +213,7 @@ const viteMarkdownExportPlugin = (): Plugin => {
         }
       }
 
-      if (config.docs?.llms?.llmsTxt || config.docs?.llms?.llmsTxtFull) {
+      if (llmsConfig.llmsTxt || llmsConfig.llmsTxtFull) {
         const markdownInfoPath = path.join(
           config.__meta.rootDir,
           "node_modules/.zudoku/markdown-info.json",

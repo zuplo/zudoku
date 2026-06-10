@@ -11,6 +11,15 @@ import {
 
 const GraphiQLPanel = lazy(() => import("./GraphiQL.js"));
 
+// Best-effort warm on hover/focus; swallow errors so a failed preload neither
+// reports an unhandled rejection nor poisons the real load on click.
+const preloadGraphiQL = () => {
+  void import("./GraphiQL.js").catch(() => {});
+  void import("../../../graphiql/loadGraphiQLFromCdn.js")
+    .then((m) => m.loadGraphiQLFromCdn())
+    .catch(() => {});
+};
+
 export type GraphiQLTab = {
   query: string;
   variables?: string;
@@ -33,7 +42,13 @@ export const GraphiQLDialog = ({
   return (
     <Dialog onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="xs" className="group gap-1">
+        <Button
+          variant="outline"
+          size="xs"
+          className="group gap-1"
+          onMouseEnter={preloadGraphiQL}
+          onFocus={preloadGraphiQL}
+        >
           <span className="text-xs text-muted-foreground">Test</span>
           <PlayIcon
             className="fill-muted-foreground group-hover:fill-foreground transition"

@@ -74,27 +74,50 @@ async function loadZudokuConfigWithMeta(
 ): Promise<ConfigWithMeta> {
   const configPath = await getConfigFilePath(rootDir);
 
-  const { module, dependencies } = await runnerImport<{
-    default: ZudokuConfig;
-  }>(configPath, {
-    plugins: [virtualModuleStubPlugin],
-    environments: {
-      inline: {
-        resolve: {
-          // Prevent Node.js from trying to load zudoku's raw .ts source
-          // directly, which fails with ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING
-          // when --experimental-strip-types is enabled. Uses regex to also
-          // catch plugins that re-export from zudoku (e.g. @zuplo/zudoku-plugin-*).
-          noExternal: [/zudoku/],
+  let module: { default: ZudokuConfig };
+  let dependencies: string[];
+
+  try {
+    ({ module, dependencies } = await runnerImport<{
+      default: ZudokuConfig;
+    }>(configPath, {
+      plugins: [virtualModuleStubPlugin],
+      environments: {
+        inline: {
+          resolve: {
+            // Prevent Node.js from trying to load zudoku's raw .ts source
+            // directly, which fails with ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING
+            // when --experimental-strip-types is enabled. Uses regex to also
+            // catch plugins that re-export from zudoku (e.g. @zuplo/zudoku-plugin-*).
+            noExternal: [/zudoku/],
+          },
         },
       },
-    },
-    server: {
-      // this allows us to 'load' CSS files in the config
-      // see https://github.com/vitejs/vite/pull/19577
-      perEnvironmentStartEndDuringDev: true,
-    },
-  });
+      server: {
+        // this allows us to 'load' CSS files in the config
+        // see https://github.com/vitejs/vite/pull/19577
+        perEnvironmentStartEndDuringDev: true,
+      },
+    }));
+  } catch (error) {
+    // A failed import (bad/missing import, syntax error, throwing top-level
+    // code) is not a "missing config file". Surface the underlying cause inline
+    // so the user doesn't have to hunt through earlier logs to find it.
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Invalid Zudoku configuration at ${colors.dim(configPath)}:\n\n${detail}`,
+      { cause: error },
+    );
+  }
+
+  // Only treat a genuinely absent default export as missing. A present-but-falsy
+  // export (e.g. `export default null`) falls through to validateConfig so it's
+  // reported as an invalid configuration rather than a missing one.
+  if (module.default === undefined) {
+    throw new Error(
+      `Invalid Zudoku configuration at ${colors.dim(configPath)}:\n\nConfig file must have a default export.`,
+    );
+  }
 
   const config = module.default;
 
@@ -214,15 +237,26 @@ export async function loadZudokuConfig(
 
     return { config, envPrefix, publicEnv };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
     const lastValid = getConfig();
     if (lastValid) {
-      // return the last valid config if it exists
+      // Keep serving the last valid config (e.g. during dev reload), but log
+      // the error instead of silently swallowing it so the user knows why
+      // their latest changes haven't taken effect.
+      // Pass the error object via `options.error` so the logger prints the full
+      // stack/location of the import or syntax failure, not just the message.
+      logger.error(
+        colors.red("Failed to reload config, using last valid config."),
+        {
+          timestamp: true,
+          error: error instanceof Error ? error : new Error(String(error)),
+        },
+      );
       return { config: lastValid, envPrefix, publicEnv };
     }
 
-    throw new Error(errorMessage, { cause: error });
+    // Preserve the original error (and its `cause`) so the branded
+    // "Invalid Zudoku configuration" message and stack survive.
+    throw error;
   } finally {
     await updateModifiedTimes();
   }

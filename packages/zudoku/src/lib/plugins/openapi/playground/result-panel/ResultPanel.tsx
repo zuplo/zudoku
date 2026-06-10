@@ -8,6 +8,21 @@ import type { PlaygroundResult } from "../Playground.js";
 import ResponseStatusBar from "./ResponseStatusBar.js";
 import { ResponseTab } from "./ResponseTab.js";
 
+// Match status code to schema name: exact, then NXX, then `default`.
+const resolveTypeName = (
+  responseSchemas: Record<string, string | undefined> | undefined,
+  status: number,
+): string | undefined => {
+  if (!responseSchemas) return undefined;
+
+  const exact = String(status);
+  const range = `${Math.floor(status / 100)}XX`;
+
+  if (exact in responseSchemas) return responseSchemas[exact];
+  if (range in responseSchemas) return responseSchemas[range];
+  return responseSchemas.default;
+};
+
 export const ResultPanel = ({
   queryMutation,
   showLongRunningWarning,
@@ -15,6 +30,7 @@ export const ResultPanel = ({
   tip,
   isFinished,
   progress,
+  responseSchemas,
 }: {
   // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   queryMutation: UseMutationResult<PlaygroundResult, Error, any>;
@@ -23,6 +39,7 @@ export const ResultPanel = ({
   isFinished: boolean;
   progress: number;
   tip?: React.ReactNode;
+  responseSchemas?: Record<string, string | undefined>;
 }) => {
   return (
     <div className="flex flex-col overflow-y-auto h-[80vh] bg-muted/50">
@@ -61,6 +78,7 @@ export const ResultPanel = ({
           isBinary={queryMutation.data.isBinary}
           fileName={queryMutation.data.fileName}
           blob={queryMutation.data.blob}
+          typeName={resolveTypeName(responseSchemas, queryMutation.data.status)}
         />
       ) : queryMutation.isPending ? (
         <div className="grid place-items-center h-full">

@@ -3,6 +3,7 @@ import { selectPluginConfigs } from "../lib/core/plugin-config.js";
 
 export type { ConfigEnv, Plugin, PluginOption, UserConfig } from "vite";
 export { defineConfig, mergeConfig } from "vite";
+export { joinUrl } from "../lib/util/joinUrl.js";
 export { getCurrentConfig as getZudokuConfig };
 
 // Read configs of all plugins registered with `createPlugin(name, ...)`. Used by

@@ -5,11 +5,13 @@ import type {
   ZudokuConfig,
   ZudokuContext,
 } from "zudoku";
+import { Callout } from "zudoku/components";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
 import { MembersOnly } from "./src/MembersOnly";
 import { NotFound } from "./src/NotFound";
 import { VipLounge } from "./src/VipLounge";
+import "./custom.css";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -116,6 +118,10 @@ const config: ZudokuConfig = {
     llms: { llmsTxt: true, llmsTxtFull: true },
   },
   site: {
+    sidebar: {
+      togglePosition: "center",
+      toggleVisibility: "hover",
+    },
     notFoundPage: <NotFound />,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
@@ -223,12 +229,12 @@ const config: ZudokuConfig = {
         children: ReactNode;
         sector?: string;
       }) => (
-        <div className="my-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
-          <div className="flex items-center gap-2 font-semibold text-yellow-600 dark:text-yellow-400">
-            ⚠️ {sector ? `Sector ${sector} Advisory` : "Space Advisory"}
-          </div>
-          <div className="mt-1 text-sm">{children}</div>
-        </div>
+        <Callout
+          type="danger"
+          title={sector ? `Sector ${sector} Advisory` : "Space Advisory"}
+        >
+          {children}
+        </Callout>
       ),
     },
   },
@@ -270,7 +276,6 @@ const config: ZudokuConfig = {
       items: [
         { type: "filter", placeholder: "Filter documentation" },
         "documentation",
-        { type: "section", label: "Operations" },
         {
           type: "category",
           icon: "telescope",
@@ -283,15 +288,62 @@ const config: ZudokuConfig = {
             "ship-states",
           ],
         },
-        "global",
-        { type: "separator" },
-        { type: "section", label: "Guides" },
         {
           type: "category",
           icon: "library-big",
           label: "Shipping Guides",
-          items: ["interstellar", "intergalactic"],
+          items: ["global", "interstellar", "intergalactic"],
         },
+        {
+          type: "category",
+          icon: "book-marked",
+          label: "Cargo Handbook",
+          stack: true,
+          items: [
+            "cargo-handbook/hazardous",
+            "cargo-handbook/cryo",
+            "cargo-handbook/living",
+            "cargo-handbook/anomalous",
+          ],
+        },
+        {
+          type: "category",
+          icon: "rocket",
+          label: "Fleet Management",
+          items: [
+            "fleet/warp-drives",
+            "fleet/maintenance",
+            "fleet/crew",
+            "fleet/refueling",
+          ],
+        },
+        {
+          type: "category",
+          icon: "credit-card",
+          label: "Billing & Credits",
+          items: [
+            "billing/invoices",
+            "billing/galactic-credits",
+            "billing/refunds",
+          ],
+        },
+        {
+          type: "category",
+          icon: "shield-check",
+          label: "Compliance",
+          items: [
+            "compliance/customs",
+            "compliance/quarantine",
+            "compliance/treaties",
+          ],
+        },
+        {
+          type: "category",
+          icon: "life-buoy",
+          label: "Support",
+          items: ["support/contact", "support/faq", "support/escalations"],
+        },
+        { type: "separator" },
         {
           type: "link",
           label: "See Shipment API",

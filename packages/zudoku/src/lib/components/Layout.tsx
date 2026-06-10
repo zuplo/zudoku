@@ -8,6 +8,7 @@ import { useZudoku } from "./context/ZudokuContext.js";
 import { Footer } from "./Footer.js";
 import { Header } from "./Header.js";
 import { Main } from "./Main.js";
+import { useSidebar } from "./navigation/sidebarStore.js";
 import { Slot } from "./Slot.js";
 import { Spinner } from "./Spinner.js";
 
@@ -19,6 +20,7 @@ const LoadingFallback = () => (
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
   const { authentication } = useZudoku();
+  const isCollapsed = useSidebar((s) => s.isCollapsed);
 
   useScrollToAnchor();
   useScrollToTop();
@@ -38,7 +40,10 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
         className={cn(
           "grid max-w-screen-2xl w-full lg:mx-auto",
           "[&:has(>:only-child)]:grid-rows-1 grid-rows-[0_min-content_1fr] lg:grid-rows-[min-content_1fr]",
-          "grid-cols-1 lg:grid-cols-[var(--side-nav-width)_1fr]",
+          "grid-cols-1 transition-[grid-template-columns] duration-200 ease-out motion-reduce:transition-none",
+          isCollapsed
+            ? "lg:grid-cols-[0_1fr]"
+            : "lg:grid-cols-[var(--side-nav-width)_1fr]",
         )}
       >
         <Suspense fallback={<LoadingFallback />}>

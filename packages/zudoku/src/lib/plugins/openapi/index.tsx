@@ -13,6 +13,7 @@ import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { buildTagCategories } from "./util/buildTagCategories.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
 import { getRoutes, getVersionMetadata } from "./util/getRoutes.js";
+import { shouldShowInfoPage } from "./util/shouldShowInfoPage.js";
 
 const PlaygroundDialog = lazy(() =>
   import("./playground/PlaygroundDialog.js").then((m) => ({
@@ -24,6 +25,7 @@ export const GetNavigationOperationsQuery = graphql(`
   query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
       extensions
+      description
       tags {
         slug
         name
@@ -177,7 +179,12 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
           expandAllTags: config.options?.expandAllTags,
         });
 
-        if (config.options?.showInfoPage !== false) {
+        if (
+          shouldShowInfoPage(
+            config.options?.showInfoPage,
+            !!data.schema.description,
+          )
+        ) {
           categories.unshift({
             type: "link" as const,
             to: joinUrl(basePath, versionParam),

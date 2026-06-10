@@ -1,4 +1,10 @@
+import { ChevronDownIcon } from "zudoku/icons";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "zudoku/ui/Collapsible";
 import { Separator } from "zudoku/ui/Separator";
 import { PlanEntitlements } from "../../pricing-ui/PlanEntitlements.js";
 import { PlanPriceSchedule } from "../../pricing-ui/PlanPriceSchedule.js";
@@ -21,23 +27,32 @@ import { getPlanPriceSchedule } from "../../utils/getPlanPriceSchedule.js";
  * The price is derived from the plan's rate cards via {@link formatPlanPrice}
  * and rendered in the plan's own billing cadence, so it stays correct for any
  * cadence (e.g. `$2.99/hour`).
+ *
+ * Pass `collapsibleDetails` to hide the "What's included" section behind a
+ * collapsed-by-default toggle — used on the plan-change confirmation page where
+ * the current and new plan are stacked and the user opens each to compare. Pass
+ * `label` to render a small eyebrow above the name (e.g. "Current plan").
  */
 export const PlanSummaryCard = ({
   plan,
+  label,
   descriptionFallback,
   taxAmount,
   taxLabel,
   taxInclusive,
   units,
   entitlementsItemClassName,
+  collapsibleDetails = false,
 }: {
   plan: Plan;
+  label?: string;
   descriptionFallback: string;
   taxAmount?: number;
   taxLabel: string;
   taxInclusive: boolean;
   units?: Record<string, string>;
   entitlementsItemClassName?: string;
+  collapsibleDetails?: boolean;
 }) => {
   const priceLabel = formatPlanPrice(plan);
   const schedule = getPlanPriceSchedule(plan);
@@ -67,6 +82,11 @@ export const PlanSummaryCard = ({
               {plan.name.at(0)?.toUpperCase()}
             </div>
             <div className="flex flex-col">
+              {label && (
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  {label}
+                </span>
+              )}
               <span className="text-lg font-bold">{plan.name}</span>
               <span className="text-sm font-normal text-muted-foreground">
                 {plan.description || descriptionFallback}
@@ -106,14 +126,36 @@ export const PlanSummaryCard = ({
       </CardHeader>
       <CardContent>
         <Separator />
-        <div className="text-sm font-medium mb-3 mt-3">What's included:</div>
-        <PlanEntitlements
-          phases={plan.phases}
-          currency={plan.currency}
-          billingCadence={plan.billingCadence}
-          units={units}
-          itemClassName={entitlementsItemClassName}
-        />
+        {collapsibleDetails ? (
+          <Collapsible>
+            <CollapsibleTrigger className="group flex w-full items-center justify-between text-sm font-medium mt-3">
+              Plan details
+              <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3">
+              <PlanEntitlements
+                phases={plan.phases}
+                currency={plan.currency}
+                billingCadence={plan.billingCadence}
+                units={units}
+                itemClassName={entitlementsItemClassName}
+              />
+            </CollapsibleContent>
+          </Collapsible>
+        ) : (
+          <>
+            <div className="text-sm font-medium mb-3 mt-3">
+              What's included:
+            </div>
+            <PlanEntitlements
+              phases={plan.phases}
+              currency={plan.currency}
+              billingCadence={plan.billingCadence}
+              units={units}
+              itemClassName={entitlementsItemClassName}
+            />
+          </>
+        )}
       </CardContent>
     </Card>
   );

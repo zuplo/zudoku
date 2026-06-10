@@ -94,6 +94,7 @@ const ApiOptionsSchema = z
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
+    disableSecurity: z.boolean(),
     schemaDownload: z
       .object({
         enabled: z.boolean(),
@@ -338,6 +339,7 @@ export const DocsConfigSchema = z.object({
       disablePager: z.boolean(),
       showLastModified: z.boolean(),
       fullWidth: z.boolean().optional(),
+      centered: z.boolean().optional(),
       suggestEdit: z
         .object({
           url: z.string(),
@@ -588,6 +590,11 @@ const CssObject = z.record(
 
 const ThemeConfigSchema = z.object({
   registryUrl: z.string().url().optional(),
+  /**
+   * @deprecated Import a `.css` file from your `zudoku.config.ts` instead.
+   * Inline CSS via this option still works but requires a dev server restart
+   * on every change and provides no editor tooling.
+   */
   customCss: z.union([z.string(), CssObject]).optional(),
   light: ThemeSchema.optional(),
   dark: ThemeSchema.optional(),
@@ -602,6 +609,13 @@ const SiteSchema = z
     dir: z.enum(["ltr", "rtl"]).optional(),
     logo: LogoSchema,
     showPoweredBy: z.boolean().optional(),
+    sidebar: z
+      .object({
+        collapsible: z.boolean().optional(),
+        toggleVisibility: z.enum(["always", "hover"]).optional(),
+        togglePosition: z.enum(["top", "center", "bottom"]).optional(),
+      })
+      .optional(),
     notFoundPage: z.custom<NonNullable<ReactNode>>(),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
@@ -774,18 +788,21 @@ export function validateConfig(config: unknown, configPath?: string) {
   const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
+    const prettyErrors = z.prettifyError(validationResult.error);
+    const location = configPath ? ` at ${configPath}` : "";
+
     // In production (build mode), throw an error to fail the build
     if (process.env.NODE_ENV === "production") {
       throw new Error(
-        `Whoops, looks like there's an issue with your ${configPath ?? "config"}:\n${z.prettifyError(validationResult.error)}`,
+        `Invalid Zudoku configuration${location}:\n${prettyErrors}`,
       );
     }
 
     // In development mode, log warnings but don't fail
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.log(colors.yellow("Validation errors:"));
+    console.log(colors.yellow(`Invalid Zudoku configuration${location}:`));
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.log(colors.yellow(z.prettifyError(validationResult.error)));
+    console.log(colors.yellow(prettyErrors));
   }
 }
 
