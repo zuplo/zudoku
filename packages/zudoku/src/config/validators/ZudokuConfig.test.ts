@@ -528,4 +528,24 @@ describe("validateConfig parsed result", () => {
     expect(result.docs.publishMarkdown).toBe(true);
     spy.mockRestore();
   });
+
+  it("keeps nested defaults when an invalid section is merged back in dev", () => {
+    process.env.NODE_ENV = "development";
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const result = validateConfig({
+      docs: { publishMarkdown: "no" },
+    });
+
+    // Raw invalid value survives, but sibling defaults stay resolved so
+    // consumers like `config.docs.llms.llmsTxt` don't crash.
+    expect(result.docs.publishMarkdown).toBe("no");
+    expect(result.docs.files).toEqual(["/pages/**/*.{md,mdx}"]);
+    expect(result.docs.llms).toEqual({
+      llmsTxt: false,
+      llmsTxtFull: false,
+      includeProtected: false,
+    });
+    spy.mockRestore();
+  });
 });

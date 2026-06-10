@@ -8,6 +8,7 @@ import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { AuthState } from "../../lib/authentication/state.js";
 import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
+import { mergeConfig } from "../../lib/core/transform-config.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { FilterCatalogItemsFn } from "../../lib/plugins/api-catalog/index.js";
 import type { ApiConsumer } from "../../lib/plugins/api-keys/index.js";
@@ -821,7 +822,7 @@ export function validateConfig(
     rawEntries.filter(([key]) => invalidKeys.has(key)),
   );
 
-  return { ...resolved, ...rawInvalidSections } as ResolvedZudokuConfig;
+  return mergeConfig(resolved, rawInvalidSections) as ResolvedZudokuConfig;
 }
 
 // `UNSAFE_` prefixed config options that are deprecated and will be removed soon.
