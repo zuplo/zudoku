@@ -274,6 +274,7 @@ export const SchemaInfo = ({
     data: { schema },
   } = useSuspenseQuery(query);
   const { title, description } = schema;
+  const sidebarCollapsed = useSidebar((s) => s.isCollapsed);
 
   useWarmupSchema();
 
@@ -302,7 +303,6 @@ export const SchemaInfo = ({
   const tags = schema.tags.flatMap(({ name, description, extensions }) =>
     name ? { name, description, extensions } : [],
   );
-  const sidebarCollapsed = useSidebar((s) => s.isCollapsed);
 
   return (
     <div
