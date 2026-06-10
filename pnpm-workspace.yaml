@@ -4,6 +4,10 @@ packages:
   - examples/**
   - website
   - docs
+  # Exclude build output; SSR examples emit a dist/package.json that pnpm would
+  # otherwise register as a workspace package and write into the lockfile.
+  - "!**/dist/**"
+  - "!**/dist"
 
 catalog:
   "@testing-library/dom": 10.4.1
@@ -45,6 +49,7 @@ overrides:
   lodash-es: ">=4.18.0 <5"
   defu: ">=6.1.5 <7"
   picomatch: ">=4.0.4 <5"
+  shell-quote: ">=1.8.4"
 
 patchedDependencies:
   decode-named-character-reference@1.2.0: patches/decode-named-character-reference@1.2.0.patch
