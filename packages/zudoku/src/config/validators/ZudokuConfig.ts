@@ -182,11 +182,7 @@ const ApiKeysSchema = z.object({
     .optional(),
   createKey: z
     .custom<
-      ({
-        apiKey,
-        context,
-        auth,
-      }: {
+      (args: {
         apiKey: { description: string; expiresOn?: string };
         context: ZudokuContext;
         auth: UseAuthReturn;
@@ -222,7 +218,7 @@ export const FooterSocialIcons = [
   "telegram",
 ] as const;
 
-export const FooterSocialSchema = z.object({
+const FooterSocialSchema = z.object({
   label: z.string().optional(),
   href: z.string(),
   icon: z
@@ -319,38 +315,43 @@ const LlmsConfigSchema = z
         "When enabled, includes content from protected routes in the generated .md files and llms.txt files. By default, protected routes are excluded.",
       ),
   })
-  .partial();
+  .partial()
+  // `prefault` so parsing an absent value still yields the inner defaults
+  .prefault({});
 
-export const DocsConfigSchema = z.object({
-  files: z
-    .union([z.string(), z.array(z.string())])
-    .transform((val) => (typeof val === "string" ? [val] : val))
-    .default([DEFAULT_DOCS_FILES]),
-  publishMarkdown: z
-    .boolean()
-    .default(true)
-    .describe(
-      "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
-    ),
-  defaultOptions: z
-    .object({
-      toc: z.boolean(),
-      copyPage: z.boolean().optional(),
-      disablePager: z.boolean(),
-      showLastModified: z.boolean(),
-      fullWidth: z.boolean().optional(),
-      centered: z.boolean().optional(),
-      suggestEdit: z
-        .object({
-          url: z.string(),
-          text: z.string().optional(),
-        })
-        .optional(),
-    })
-    .partial()
-    .optional(),
-  llms: LlmsConfigSchema.optional(),
-});
+const DocsConfigSchema = z
+  .object({
+    files: z
+      .union([z.string(), z.array(z.string())])
+      .transform((val) => (typeof val === "string" ? [val] : val))
+      .default([DEFAULT_DOCS_FILES]),
+    publishMarkdown: z
+      .boolean()
+      .default(true)
+      .describe(
+        "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
+      ),
+    defaultOptions: z
+      .object({
+        toc: z.boolean(),
+        copyPage: z.boolean().optional(),
+        disablePager: z.boolean(),
+        showLastModified: z.boolean(),
+        fullWidth: z.boolean().optional(),
+        centered: z.boolean().optional(),
+        suggestEdit: z
+          .object({
+            url: z.string(),
+            text: z.string().optional(),
+          })
+          .optional(),
+      })
+      .partial()
+      .optional(),
+    llms: LlmsConfigSchema,
+  })
+  // `prefault` so parsing an absent value still yields the inner defaults
+  .prefault({});
 
 const Redirect = z.object({
   from: z.string(),
@@ -419,7 +420,9 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
       .refine((val) => /^pk_(test|live)_\w+$/.test(val), {
         message: "Clerk public key invalid, must start with pk_test or pk_live",
       }),
-    jwtTemplateName: z.string().optional().default("dev-portal"),
+    // No default: an absent template must stay absent so Clerk issues its
+    // standard session token instead of requesting a non-existent template.
+    jwtTemplateName: z.string().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -589,7 +592,7 @@ const CssObject = z.record(
 );
 
 const ThemeConfigSchema = z.object({
-  registryUrl: z.string().url().optional(),
+  registryUrl: z.url().optional(),
   /**
    * @deprecated Import a `.css` file from your `zudoku.config.ts` instead.
    * Inline CSS via this option still works but requires a dev server restart
@@ -661,7 +664,7 @@ const ApiCatalogSchema = z.object({
     .optional(),
 });
 
-export const CdnUrlSchema = z
+const CdnUrlSchema = z
   .union([
     z.string(),
     z.object({
@@ -674,8 +677,7 @@ export const CdnUrlSchema = z
       return { base: val, media: val };
     }
     return { base: val.base, media: val.media };
-  })
-  .optional();
+  });
 
 const BaseConfigSchema = z.object({
   slots: z.record(z.string(), z.custom<SlotType>()),
@@ -731,7 +733,6 @@ const BaseConfigSchema = z.object({
   metadata: MetadataSchema,
   authentication: AuthenticationSchema,
   search: SearchSchema,
-  docs: DocsConfigSchema.optional(),
   apis: z.union([ApiSchema, z.array(ApiSchema)]),
   catalogs: z.union([ApiCatalogSchema, z.array(ApiCatalogSchema)]),
   apiKeys: ApiKeysSchema,
@@ -750,60 +751,77 @@ const BaseConfigSchema = z.object({
   __pluginDirs: z.array(z.string()),
 });
 
-export const ZudokuConfig = BaseConfigSchema.partial();
+// `docs` is added after `.partial()` because partial's ZodOptional wrapper
+// would widen its output type to `| undefined`, even though the prefault
+// keeps it present at runtime.
+export const ZudokuConfig = BaseConfigSchema.partial().extend({
+  docs: DocsConfigSchema,
+});
 
-export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type VersionConfig = z.infer<typeof VersionConfigSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
-export type ZudokuLlmsConfig = z.infer<typeof LlmsConfigSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
 export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
 
-// Use `z.input` type for flexibility with transforms,
-// but override navigation with `z.infer` for strict validation
-type BaseZudokuConfig = z.input<typeof ZudokuConfig>;
-export type ZudokuConfig = Omit<
-  BaseZudokuConfig,
-  "header" | "navigation" | "navigationRules"
-> & {
-  header?: {
-    navigation?: z.infer<typeof HeaderNavigationSchema>;
-    themeSwitcher?: {
-      enabled?: boolean;
-    };
-    placements?: {
-      navigation?: "start" | "center" | "end";
-      search?: "start" | "center" | "end";
-      auth?: "start" | "center" | "end" | "navigation";
-    };
-  };
+// Pin navigation types to their strict inferred form (z.input widens them due to z.lazy recursion).
+type InputOverrides = {
   navigation?: z.infer<typeof InputNavigationSchema>;
   navigationRules?: z.infer<typeof NavigationRulesSchema>;
 };
 
-export function validateConfig(config: unknown, configPath?: string) {
+type BaseZudokuConfig = z.input<typeof ZudokuConfig>;
+export type ZudokuConfig = Omit<BaseZudokuConfig, keyof InputOverrides> &
+  InputOverrides;
+
+export type ResolvedZudokuConfig = z.output<typeof ZudokuConfig>;
+
+export function validateConfig(
+  config: unknown,
+  configPath?: string,
+): ResolvedZudokuConfig {
   warnUnsafeConfigKeys(config);
 
   const validationResult = ZudokuConfig.safeParse(config);
 
-  if (!validationResult.success) {
-    const prettyErrors = z.prettifyError(validationResult.error);
-    const location = configPath ? ` at ${configPath}` : "";
-
-    // In production (build mode), throw an error to fail the build
-    if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        `Invalid Zudoku configuration${location}:\n${prettyErrors}`,
-      );
-    }
-
-    // In development mode, log warnings but don't fail
-    // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.log(colors.yellow(`Invalid Zudoku configuration${location}:`));
-    // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.log(colors.yellow(prettyErrors));
+  if (validationResult.success) {
+    return validationResult.data;
   }
+
+  const prettyErrors = z.prettifyError(validationResult.error);
+  const location = configPath ? ` at ${configPath}` : "";
+
+  // In production (build mode), throw an error to fail the build
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      `Invalid Zudoku configuration${location}:\n${prettyErrors}`,
+    );
+  }
+
+  // In development mode, log warnings but don't fail
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
+  console.log(colors.yellow(`Invalid Zudoku configuration${location}:`));
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
+  console.log(colors.yellow(prettyErrors));
+
+  // Keep the dev server running: parse the valid sections, keep the user's
+  // raw values for the invalid ones (more useful in dev than dropping them).
+  const invalidKeys = new Set(
+    validationResult.error.issues.map((issue) => issue.path[0]),
+  );
+  const rawEntries =
+    typeof config === "object" && config !== null ? Object.entries(config) : [];
+  const sanitized = Object.fromEntries(
+    rawEntries.filter(([key]) => !invalidKeys.has(key)),
+  );
+
+  const fallback = ZudokuConfig.safeParse(sanitized);
+  const resolved = fallback.success ? fallback.data : ZudokuConfig.parse({});
+  const rawInvalidSections = Object.fromEntries(
+    rawEntries.filter(([key]) => invalidKeys.has(key)),
+  );
+
+  return { ...resolved, ...rawInvalidSections } as ResolvedZudokuConfig;
 }
 
 // `UNSAFE_` prefixed config options that are deprecated and will be removed soon.

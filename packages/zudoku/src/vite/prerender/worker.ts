@@ -1,8 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import Piscina from "piscina";
-import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
-import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
+import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { matchesAnyProtectedPattern } from "../../lib/util/url.js";
@@ -24,10 +23,9 @@ const { template, distDir, serverConfigPath, entryServerPath, writeRedirects } =
   Piscina.workerData as StaticWorkerData;
 
 const server: EntryServer = await import(entryServerPath);
-const rawConfig: ZudokuConfig = await import(serverConfigPath).then(
-  (m) => m.default,
-);
-const config = await runPluginTransformConfig(rawConfig);
+// Same order as the loader: transform the raw bundle config, then parse.
+const rawConfig = await import(serverConfigPath).then((m) => m.default);
+const config = validateConfig(await runPluginTransformConfig(rawConfig));
 
 const routes = server.getRoutesByConfig(config);
 const { basePath } = config;
@@ -40,9 +38,8 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
 
   const request = new Request(url);
 
-  const protectedRoutes = ProtectedRoutesSchema.parse(config.protectedRoutes);
-  const isProtectedRoute = protectedRoutes
-    ? matchesAnyProtectedPattern(Object.keys(protectedRoutes), urlPath)
+  const isProtectedRoute = config.protectedRoutes
+    ? matchesAnyProtectedPattern(Object.keys(config.protectedRoutes), urlPath)
     : false;
 
   // Get the main response

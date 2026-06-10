@@ -84,7 +84,10 @@ describe("getProtectedSourceMatcher", () => {
 
   const configWith = (patterns: string[] | undefined) =>
     ({
-      protectedRoutes: patterns,
+      // Normalized record shape, as produced by the parsed loader config
+      protectedRoutes: patterns
+        ? Object.fromEntries(patterns.map((pattern) => [pattern, () => true]))
+        : undefined,
       __meta: { rootDir: "/tmp" },
     }) as never;
 
