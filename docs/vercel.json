@@ -1,7 +1,7 @@
 {
   "framework": null,
   "devCommand": "pnpm dev",
-  "buildCommand": "pnpm -F 'docs...' build",
+  "buildCommand": "ZUDOKU_ENV=module pnpm -F 'docs...' build",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "cleanUrls": true
