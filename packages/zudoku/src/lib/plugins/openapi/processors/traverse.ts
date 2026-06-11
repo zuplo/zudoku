@@ -1,1 +1,5 @@
-export { type RecordAny, traverse } from "../../../util/traverse.js";
+export {
+  type RecordAny,
+  traverse,
+  traverseAsync,
+} from "../../../util/traverse.js";

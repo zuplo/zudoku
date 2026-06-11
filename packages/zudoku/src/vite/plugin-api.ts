@@ -1,14 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { deepEqual } from "fast-equals";
-import { type Plugin, runnerImport } from "vite";
+import type { Plugin } from "vite";
 import { ZuploEnv } from "../app/env.js";
-import { getZudokuRootDir } from "../cli/common/package-json.js";
+import { logger } from "../cli/common/logger.js";
 import { getCurrentConfig } from "../config/loader.js";
-import {
-  getBuildConfig,
-  type Processor,
-} from "../config/validators/BuildSchema.js";
+import { getBuildConfig } from "../config/validators/BuildSchema.js";
+import { selectPluginConfigs } from "../lib/core/plugin-config.js";
 import { getAllTags } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
@@ -28,22 +26,29 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
   const initialConfig = getCurrentConfig();
 
-  // Load Zuplo-specific processors if in Zuplo environment
-  const zuploProcessors = ZuploEnv.isZuplo
-    ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
-        path.resolve(getZudokuRootDir(), "src/zuplo/with-zuplo-processors.ts"),
-      ).then((m) => m.module.default(initialConfig.__meta.rootDir))
-    : [];
+  if (
+    ZuploEnv.isZuplo &&
+    selectPluginConfigs(initialConfig.plugins ?? [], "zuplo").length === 0
+  ) {
+    logger.warn(
+      "Running in Zuplo mode without the Zuplo plugin. " +
+        "Install `@zuplo/zudoku` and add `zuploPlugin()` to the `plugins` in your Zudoku config " +
+        "to set up your APIs and apply Zuplo-specific OpenAPI processing.",
+      { timestamp: true },
+    );
+  }
 
   const buildConfig = await getBuildConfig();
   const buildProcessors = buildConfig?.processors ?? [];
+  // Processors contributed by plugins via `transformConfig` (e.g. @zuplo/zudoku)
+  const configProcessors = initialConfig.__processors ?? [];
 
   const tmpStoreDir = path.posix.join(
     initialConfig.__meta.rootDir,
     PROCESSED_STORE_SUBPATH,
   );
 
-  const processors = [...buildProcessors, ...zuploProcessors];
+  const processors = [...buildProcessors, ...configProcessors];
   const schemaManager = new SchemaManager({
     storeDir: tmpStoreDir,
     config: initialConfig,

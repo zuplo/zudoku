@@ -2,9 +2,9 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { OpenAPIDocument } from "../lib/oas/parser/index.js";
-import { removeExtensions } from "../lib/plugins/openapi/processors/removeExtensions.js";
-import { removePaths } from "../lib/plugins/openapi/processors/removePaths.js";
+import { removeExtensions } from "zudoku/processors/removeExtensions";
+import { removePaths } from "zudoku/processors/removePaths";
+import type { OpenAPIDocument } from "../types.js";
 import { enrichWithZuploMcpServerData } from "./enrich-with-zuplo-mcp.js";
 
 const mcpRouteHandler = (operations: Array<{ file: string; id: string }>) => ({
@@ -81,7 +81,6 @@ describe("enrichWithZuploMcpServerData", () => {
       processorArg(schema),
     );
 
-    // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op?.["x-mcp-server"]).toBeDefined();
     expect(op["x-mcp-server"].name).toBe("MCP Server");
@@ -139,7 +138,6 @@ describe("enrichWithZuploMcpServerData", () => {
       processorArg(schema),
     );
 
-    // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op["x-mcp-server"].tools).toHaveLength(3);
     expect(
@@ -205,7 +203,6 @@ describe("enrichWithZuploMcpServerData", () => {
       shouldRemove: (key) => key.startsWith("x-zuplo"),
     })(processorArg(result));
 
-    // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op?.["x-mcp-server"]).toBeDefined();
     expect(op["x-mcp-server"].name).toBe("MCP Server");
@@ -264,7 +261,6 @@ describe("enrichWithZuploMcpServerData", () => {
       processorArg(schema),
     );
 
-    // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op["x-mcp-server"].security).toEqual([{ api_key: [] }]);
 
@@ -324,7 +320,6 @@ describe("enrichWithZuploMcpServerData", () => {
       processorArg(schema),
     );
 
-    // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op["x-mcp-server"].security).toEqual([{ bearer_auth: [] }]);
     expect(op["x-mcp-server"].securitySchemes).toEqual({
@@ -368,7 +363,6 @@ describe("enrichWithZuploMcpServerData", () => {
       processorArg(schema),
     );
 
-    // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op["x-mcp-server"].security).toBeUndefined();
     expect(result.components?.securitySchemes).toBeUndefined();
@@ -436,7 +430,6 @@ describe("enrichWithZuploMcpServerData", () => {
       processorArg(schema),
     );
 
-    // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     // Should be deduplicated to a single entry
     expect(op["x-mcp-server"].security).toEqual([{ api_key: [] }]);
@@ -478,7 +471,6 @@ describe("enrichWithZuploMcpServerData", () => {
       processorArg(schema),
     );
 
-    // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op.tags).toEqual(["MCP"]);
 
@@ -527,7 +519,6 @@ describe("enrichWithZuploMcpServerData", () => {
       processorArg(schema),
     );
 
-    // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op.tags).toEqual(["AI"]);
 

@@ -1,6 +1,11 @@
+import { zuploPlugin } from "@zuplo/zudoku";
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
+  // Sets up the APIs of this Zuplo project: an OpenAPI reference for each
+  // OpenAPI file in ../config and a GraphQL reference for each GraphQL
+  // endpoint, enriched with the project's policies
+  plugins: [zuploPlugin()],
   site: {
     title: "My Developer Portal",
     banner: {
@@ -65,11 +70,6 @@ const config: ZudokuConfig = {
     },
   ],
   redirects: [{ from: "/", to: "/introduction" }],
-  apis: {
-    type: "file",
-    input: "../config/routes.oas.json",
-    path: "/api",
-  },
   docs: {
     files: "/pages/**/*.mdx",
   },
