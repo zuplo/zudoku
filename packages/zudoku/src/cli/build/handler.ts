@@ -1,9 +1,11 @@
 import path from "node:path";
+import { ZuploEnv } from "../../app/env.js";
 import { runBuild, type SSRAdapter } from "../../vite/build.js";
 import type { Arguments } from "../cmds/build.js";
 import { logger } from "../common/logger.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
 import { getZudokuPackageJson } from "../common/package-json.js";
+import { runCreateFromZuplo } from "../create-from-zuplo/handler.js";
 import { preview as runPreview } from "../preview/handler.js";
 
 export async function build(argv: Arguments) {
@@ -14,6 +16,11 @@ export async function build(argv: Arguments) {
 
   const dir = path.resolve(process.cwd(), argv.dir);
   try {
+    // In Zuplo mode the generated Zuplo config is refreshed before the build
+    // so configs extending it pick up the latest gateway setup.
+    if (ZuploEnv.isZuplo) {
+      await runCreateFromZuplo({ dir: argv.dir });
+    }
     await runBuild({
       dir,
       ssr: argv.experimentalSsr,

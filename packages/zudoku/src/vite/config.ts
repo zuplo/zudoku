@@ -20,6 +20,7 @@ import { PROTECTED_CHUNK_DIR } from "../lib/manifest.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import type { SSRAdapter } from "./build.js";
 import { findPackageRoot } from "./package-root.js";
+import { rawVirtualModuleId } from "./plugin-config.js";
 import vitePlugin from "./plugin.js";
 import { protectedAnnotatorPlugin } from "./protected/annotator.js";
 import { getProtectedSourceMatcher } from "./protected/registry.js";
@@ -204,7 +205,12 @@ export async function getViteConfig(
           copyPublicDir: false,
           rolldownOptions: {
             logLevel: "warn",
-            input: ["zudoku/app/entry.server.tsx", config.__meta.configPath],
+            input: {
+              "entry.server": "zudoku/app/entry.server.tsx",
+              // Raw config with `extends` resolved; the prerender worker
+              // imports this as `zudoku.config.js` and parses it itself.
+              "zudoku.config": rawVirtualModuleId,
+            },
           },
         },
       },

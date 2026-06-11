@@ -1,6 +1,9 @@
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
+  // Generated from the Zuplo project (../config) when running in Zuplo mode.
+  // Remove this to opt out of the generated API reference setup.
+  extends: ["./zudoku-zuplo.config.ts"],
   site: {
     title: "My Developer Portal",
     banner: {
@@ -58,18 +61,8 @@ const config: ZudokuConfig = {
         },
       ],
     },
-    {
-      type: "link",
-      to: "/api",
-      label: "API Reference",
-    },
   ],
   redirects: [{ from: "/", to: "/introduction" }],
-  apis: {
-    type: "file",
-    input: "../config/routes.oas.json",
-    path: "/api",
-  },
   docs: {
     files: "/pages/**/*.mdx",
   },

@@ -67,20 +67,20 @@ you know how to customize it:
 
 1. **API Reference**
 
-   Your [API Reference](/api) is generated from your Zuplo OpenAPI file in `../routes.oas.json`—you
-   can add other APIs whenever you need them. Improve your documentation by adding more details to
-   the OpenAPI file.
+   Your [API Reference](/api) is generated automatically from the OpenAPI files in your Zuplo
+   project's `config` directory via the generated `zudoku-zuplo.config.ts`, which your config
+   includes through the `extends` option. Improve your documentation by adding more details to the
+   OpenAPI file.
 
-   ```json
+   ```ts
    {
      // ...
-     "apis": {
-       "type": "file",
-       "input": "../config/routes.oas.json",
-       "navigationId": "api"
-     }
+     "extends": ["./zudoku-zuplo.config.ts"]
    }
    ```
+
+   Prefer to configure your APIs yourself? Remove the `extends` entry and add an
+   [`apis`](https://zuplo.com/docs/dev-portal/zudoku/configuration/api-reference) entry instead.
 
 1. **Authentication & Login**
 

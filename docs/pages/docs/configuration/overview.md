@@ -384,6 +384,26 @@ This option is enabled by default, but you can disable it if you don't need thes
 }
 ```
 
+### `extends`
+
+Extends the configuration with other config files. Each entry is a path to another config file,
+resolved relative to your config file. The extended configs are merged underneath your config:
+
+- Scalar and object values from your config win over the extended configs
+- Arrays (like `navigation`, `apis`, or `plugins`) are concatenated, with your config's items first
+- Later entries in `extends` take precedence over earlier ones
+
+```ts
+{
+  extends: ["./zudoku-zuplo.config.ts"],
+}
+```
+
+Entries that point to files that don't exist are skipped with a warning. This allows extending
+generated config files—such as the one created by
+[`zudoku create-from-zuplo`](../deploy/zuplo.md#zuplo-mode)—before they have been generated. Remove
+the entry from `extends` to opt out of an extended config entirely.
+
 ## Multiple Files
 
 The configuration file is a standard JavaScript or TypeScript file, so you can split it into

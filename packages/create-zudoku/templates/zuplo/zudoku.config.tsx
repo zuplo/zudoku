@@ -9,6 +9,10 @@ import type { ZudokuConfig } from "zudoku";
  * https://zuplo.com/docs/dev-portal/zudoku/configuration/overview
  */
 const config: ZudokuConfig = {
+  // Generated from your Zuplo project (../config) when running in Zuplo mode:
+  // it documents your OpenAPI files and GraphQL endpoints and links them in
+  // the navigation. Remove this to opt out and configure everything yourself.
+  extends: ["./zudoku-zuplo.config.ts"],
   site: {
     title: "My Developer Portal",
     logo: {
@@ -62,20 +66,8 @@ const config: ZudokuConfig = {
         },
       ],
     },
-    {
-      type: "link",
-      to: "/api",
-      label: "API Reference",
-    },
   ],
   redirects: [{ from: "/", to: "/api" }],
-  apis: [
-    {
-      type: "file",
-      input: "../config/routes.oas.json",
-      path: "api",
-    },
-  ],
   authentication: {
     // IMPORTANT: This is a demo Auth0 configuration.
     // In a real application, you should replace these values with your own

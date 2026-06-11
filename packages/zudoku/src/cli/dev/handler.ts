@@ -1,8 +1,11 @@
 import path from "node:path";
+import { ZuploEnv } from "../../app/env.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { DevServer } from "../../vite/dev-server.js";
+import { logger } from "../common/logger.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
 import { getZudokuPackageJson } from "../common/package-json.js";
+import { runCreateFromZuplo } from "../create-from-zuplo/handler.js";
 
 export interface Arguments {
   dir: string;
@@ -15,6 +18,19 @@ export async function dev(argv: Arguments) {
   const packageJson = getZudokuPackageJson();
   process.env.NODE_ENV = "development";
   const dir = path.resolve(process.cwd(), argv.dir);
+
+  // In Zuplo mode the generated Zuplo config is refreshed before the server
+  // starts; failures shouldn't prevent the dev server from coming up.
+  if (ZuploEnv.isZuplo) {
+    try {
+      await runCreateFromZuplo({ dir: argv.dir });
+    } catch (error) {
+      logger.error("Failed to generate the Zuplo config", {
+        timestamp: true,
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
+    }
+  }
   const server = new DevServer({
     dir,
     argPort: argv.port,

@@ -691,6 +691,13 @@ const CdnUrlSchema = z
   });
 
 const BaseConfigSchema = z.object({
+  /**
+   * Paths to config files to extend, resolved relative to this config file.
+   * Extended configs are merged underneath this config: scalar and object
+   * values from this config win, arrays are concatenated with this config's
+   * items first. Entries pointing to missing files are skipped with a warning.
+   */
+  extends: z.array(z.string()),
   slots: z.record(z.string(), z.custom<SlotType>()),
   /**
    * @deprecated Use `slots` instead

@@ -17,7 +17,8 @@ vi.mock("../cli/common/package-json.js", () => ({
   getZudokuRootDir: () => "/zudoku-root",
 }));
 
-vi.mock("../lib/core/transform-config.js", () => ({
+vi.mock("../lib/core/transform-config.js", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
   runPluginTransformConfig: vi.fn((config) => config),
 }));
 
@@ -124,6 +125,88 @@ describe("loadZudokuConfig", () => {
       expect.stringContaining("using last valid config"),
       expect.objectContaining({ timestamp: true }),
     );
+  });
+});
+
+describe("loadZudokuConfig extends", () => {
+  it("merges extended configs underneath the project config", async () => {
+    vi.mocked(fileExists).mockResolvedValue(true);
+    vi.mocked(runnerImport).mockImplementation(async (configPath) => {
+      if (configPath === "/extends-project/zudoku-zuplo.config.ts") {
+        return {
+          module: {
+            default: {
+              basePath: "/base",
+              navigation: [{ type: "link", to: "/api", label: "API" }],
+            },
+          },
+          dependencies: ["/extends-project/extended-dep.ts"],
+        } as never;
+      }
+      return {
+        module: {
+          default: {
+            extends: ["./zudoku-zuplo.config.ts"],
+            basePath: "/docs",
+            navigation: [{ type: "link", to: "/intro", label: "Intro" }],
+          },
+        },
+        dependencies: [],
+      } as never;
+    });
+
+    const { config } = await loadZudokuConfig(configEnv, "/extends-project");
+
+    // The project config wins for scalars, arrays concatenate user-first
+    expect(config.basePath).toBe("/docs");
+    expect(config.navigation).toEqual([
+      { type: "link", to: "/intro", label: "Intro" },
+      { type: "link", to: "/api", label: "API" },
+    ]);
+    expect("extends" in config).toBe(false);
+    expect(config.__meta.extendedConfigPaths).toEqual([
+      "/extends-project/zudoku-zuplo.config.ts",
+    ]);
+    // Extended configs and their imports participate in change detection
+    expect(config.__meta.dependencies).toEqual(
+      expect.arrayContaining([
+        "/extends-project/zudoku-zuplo.config.ts",
+        "/extends-project/extended-dep.ts",
+      ]),
+    );
+  });
+
+  it("warns and skips extends entries pointing to missing files", async () => {
+    vi.mocked(fileExists).mockImplementation(
+      async (path) => !path.includes("zudoku-zuplo.config.ts"),
+    );
+    vi.mocked(runnerImport).mockResolvedValue({
+      module: {
+        default: { extends: ["./zudoku-zuplo.config.ts"], basePath: "/docs" },
+      },
+      dependencies: [],
+    } as never);
+
+    const { config } = await loadZudokuConfig(configEnv, "/missing-extends");
+
+    expect(config.basePath).toBe("/docs");
+    expect(config.__meta.extendedConfigPaths).toEqual([]);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining("extended config not found"),
+      expect.objectContaining({ timestamp: true }),
+    );
+  });
+
+  it("rejects non-string extends entries", async () => {
+    vi.mocked(fileExists).mockResolvedValue(true);
+    vi.mocked(runnerImport).mockResolvedValue({
+      module: { default: { extends: [42] } },
+      dependencies: [],
+    } as never);
+
+    await expect(
+      loadZudokuConfig(configEnv, "/invalid-extends"),
+    ).rejects.toThrow(/`extends` must be an array of config file paths/);
   });
 });
 

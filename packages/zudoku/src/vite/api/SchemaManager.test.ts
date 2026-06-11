@@ -36,6 +36,7 @@ describe("SchemaManager", () => {
         mode: "module",
         dependencies: [],
         configPath: path.join(tempDir, "zudoku.config.ts"),
+        extendedConfigPaths: [],
       },
     };
     await fs.mkdir(storeDir);

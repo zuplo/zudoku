@@ -55,6 +55,39 @@ To deploy your Zudoku documentation to Zuplo:
 For detailed setup instructions, see the
 [Zuplo Developer Portal documentation](https://zuplo.com/docs/dev-portal/introduction).
 
+## Zuplo Mode
+
+Running Zudoku with the `--zuplo` flag (as Zuplo projects do via `zudoku dev --zuplo` and
+`zudoku build --zuplo`) enables Zuplo mode. In this mode, Zudoku inspects your Zuplo project and
+generates a `zudoku-zuplo.config.ts` next to your Zudoku config before the dev server starts or the
+build runs:
+
+- Every OpenAPI file (`*.oas.json`) in your Zuplo `config` directory is set up as an API reference
+- Every route marked as GraphQL (via `x-graphql` or an `x-zuplo-route.mcp` type of `graphql`) is set
+  up with the [`@zudoku/plugin-graphql`](https://zuplo.com/docs/articles/graphql) plugin, if it's
+  installed
+- All of them are linked in the navigation
+
+Your config opts into the generated setup through the
+[`extends`](../configuration/overview.md#extends) option:
+
+```ts title=zudoku.config.ts
+const config: ZudokuConfig = {
+  extends: ["./zudoku-zuplo.config.ts"],
+  // ...
+};
+```
+
+Anything you define in your own config takes precedence over the generated file, and you can opt out
+entirely by removing the entry from `extends`. The file is regenerated on every run in Zuplo mode,
+so it shouldn't be edited manually (or committed—new projects ignore it via `.gitignore`).
+
+You can also generate the file manually without running the dev server or a build:
+
+```bash
+zudoku create-from-zuplo
+```
+
 ## Custom Domains
 
 You can configure custom domains for your developer portal in the Zuplo Portal:

@@ -9,6 +9,7 @@ import {
 } from "vite";
 import { logger } from "../cli/common/logger.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
+import { mergeConfigExtends } from "../lib/core/config-extends.js";
 import { runPluginTransformConfig } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
 import { fileExists } from "./file-exists.js";
@@ -23,6 +24,8 @@ export type ConfigWithMeta = ResolvedZudokuConfig & {
     rootDir: string;
     moduleDir: string;
     configPath: string;
+    /** Resolved paths of existing config files referenced via `extends` */
+    extendedConfigPaths: string[];
     mode: typeof process.env.ZUDOKU_ENV;
     dependencies: string[];
   };
@@ -50,14 +53,21 @@ const zudokuConfigFiles = [
   "zudoku.config.mjs",
 ];
 
-async function getConfigFilePath(rootDir: string) {
+export async function findZudokuConfigFile(rootDir: string) {
   for (const fileName of zudokuConfigFiles) {
     const filepath = path.join(rootDir, fileName);
     if (await fileExists(filepath)) {
       return filepath;
     }
   }
-  throw new Error(`No zudoku config file found in project root.`);
+}
+
+async function getConfigFilePath(rootDir: string) {
+  const filepath = await findZudokuConfigFile(rootDir);
+  if (!filepath) {
+    throw new Error(`No zudoku config file found in project root.`);
+  }
+  return filepath;
 }
 
 // Stub virtual modules so transitive imports don't fail during config loading.
@@ -74,11 +84,7 @@ const virtualModuleStubPlugin: VitePlugin = {
 
 type RawConfigWithMeta = ZudokuConfig & { __meta: ConfigWithMeta["__meta"] };
 
-async function loadZudokuConfigWithMeta(
-  rootDir: string,
-): Promise<RawConfigWithMeta> {
-  const configPath = await getConfigFilePath(rootDir);
-
+async function importConfigModule(configPath: string) {
   let module: { default: ZudokuConfig };
   let dependencies: string[];
 
@@ -124,14 +130,102 @@ async function loadZudokuConfigWithMeta(
     );
   }
 
+  return { config: module.default, dependencies };
+}
+
+/**
+ * Resolves the config's `extends` entries: each existing entry is imported
+ * and merged underneath the config (see `mergeConfigExtends`). Entries
+ * pointing to missing files are skipped with a warning so a config can
+ * reference a generated file (e.g. `zudoku-zuplo.config.ts`) before it has
+ * been created.
+ */
+async function resolveConfigExtends(
+  config: ZudokuConfig,
+  configPath: string,
+  dependencies: string[],
+): Promise<{
+  config: ZudokuConfig;
+  extendedConfigPaths: string[];
+  dependencies: string[];
+}> {
+  // Pass invalid configs (e.g. `export default null`) through untouched so
+  // they are reported by validateConfig instead of crashing here.
+  const extendsValue =
+    typeof config === "object" && config !== null ? config.extends : undefined;
+  if (extendsValue === undefined) {
+    return { config, extendedConfigPaths: [], dependencies };
+  }
+
+  if (
+    !Array.isArray(extendsValue) ||
+    !extendsValue.every((entry) => typeof entry === "string")
+  ) {
+    throw new Error(
+      `Invalid Zudoku configuration at ${colors.dim(configPath)}:\n\n\`extends\` must be an array of config file paths.`,
+    );
+  }
+
+  const baseConfigs: ZudokuConfig[] = [];
+  const extendedConfigPaths: string[] = [];
+  const allDependencies = [...dependencies];
+
+  for (const entry of extendsValue) {
+    const extendPath = path.resolve(path.dirname(configPath), entry);
+
+    if (!(await fileExists(extendPath))) {
+      logger.warn(
+        colors.yellow(`extended config not found, skipping `) +
+          colors.dim(extendPath),
+        { timestamp: true },
+      );
+      continue;
+    }
+
+    const extended = await importConfigModule(extendPath);
+
+    if (extended.config.extends) {
+      logger.warn(
+        colors.yellow(`nested \`extends\` is not supported, ignoring it in `) +
+          colors.dim(extendPath),
+        { timestamp: true },
+      );
+    }
+
+    baseConfigs.push(extended.config);
+    extendedConfigPaths.push(extendPath);
+    allDependencies.push(extendPath, ...extended.dependencies);
+  }
+
   return {
-    ...module.default,
+    config: mergeConfigExtends(baseConfigs, config),
+    extendedConfigPaths,
+    dependencies: [...new Set(allDependencies)],
+  };
+}
+
+async function loadZudokuConfigWithMeta(
+  rootDir: string,
+): Promise<RawConfigWithMeta> {
+  const configPath = await getConfigFilePath(rootDir);
+
+  const imported = await importConfigModule(configPath);
+  const { config, extendedConfigPaths, dependencies } =
+    await resolveConfigExtends(
+      imported.config,
+      configPath,
+      imported.dependencies,
+    );
+
+  return {
+    ...config,
     __meta: {
       rootDir,
       moduleDir: getZudokuRootDir(),
       mode: process.env.ZUDOKU_ENV,
       dependencies,
       configPath,
+      extendedConfigPaths,
     },
   };
 }
@@ -276,6 +370,7 @@ export const setStandaloneConfig = (rootDir: string) => {
       mode: "standalone",
       dependencies: [],
       configPath: "",
+      extendedConfigPaths: [],
     },
   });
 };

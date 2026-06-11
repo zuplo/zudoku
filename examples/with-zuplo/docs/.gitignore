@@ -1,6 +1,7 @@
 .zuplo/
 .cache/
 dist/
+zudoku-zuplo.config.ts
 node_modules/
 .env
 .env.zuplo

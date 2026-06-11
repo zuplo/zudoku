@@ -11,6 +11,7 @@ import type {
   ZudokuContext,
   ZudokuEvents,
 } from "./ZudokuContext.js";
+export { mergeConfigExtends } from "./config-extends.js";
 export { runPluginTransformConfig } from "./transform-config.js";
 
 export type ZudokuPlugin =

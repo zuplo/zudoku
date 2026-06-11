@@ -29,9 +29,11 @@ export const viteConfigReloadPlugin = (): Plugin => ({
       const currentConfig = getCurrentConfig();
       importDependencies = currentConfig.__meta.dependencies;
 
-      // Assume `.tsx` files are handled by HMR (skip if the config file itself changed)
-      if (file !== currentConfig.__meta.configPath && file.endsWith(".tsx"))
-        return;
+      // Assume `.tsx` files are handled by HMR (skip if a config file itself changed)
+      const isConfigFile =
+        file === currentConfig.__meta.configPath ||
+        currentConfig.__meta.extendedConfigPaths.includes(file);
+      if (!isConfigFile && file.endsWith(".tsx")) return;
 
       invalidateNavigation(server);
       Object.values(server.environments).forEach((env) => {
