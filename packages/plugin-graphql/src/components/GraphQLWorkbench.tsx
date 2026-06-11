@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import { cn } from "zudoku";
+import { ApiIdentityPicker } from "zudoku/components";
 import {
   ChevronsDownIcon,
   ChevronsUpIcon,
@@ -222,7 +223,7 @@ const GraphQLWorkbenchDrawer = ({
       data-pagefind-ignore="all"
     >
       <div
-        className="absolute inset-x-3 top-0 z-20 mx-auto h-0.5 max-w-6xl cursor-ns-resize hover:bg-border/50 after:absolute after:inset-x-3 after:-top-1 after:-bottom-1 after:content-['']"
+        className="absolute inset-x-3 top-0 z-20 mx-auto h-1 max-w-6xl cursor-row-resize hover:bg-border/50 after:absolute after:-top-1 after:-bottom-1 after:content-['']"
         role="separator"
         aria-label="Resize playground"
         aria-orientation="horizontal"
@@ -260,6 +261,7 @@ const GraphQLWorkbenchDrawer = ({
             </span>
           </div>
           <div className="flex items-center gap-1">
+            <ApiIdentityPicker showLabel />
             {state === "collapsed" ? (
               <DrawerToolbarButton
                 label="Open playground"
