@@ -39,7 +39,8 @@ export type LandingPageProps = {
   className?: string;
 };
 
-const isExternal = (href: string) => /^(https?:)?\/\//.test(href);
+// Anything with a scheme (https:, mailto:, tel:, …) or protocol-relative is not an internal route
+const isExternal = (href: string) => /^([a-z][a-z0-9+.-]*:|\/\/)/i.test(href);
 
 const SmartLink = ({
   href,
@@ -49,21 +50,27 @@ const SmartLink = ({
   href: string;
   className?: string;
   children: ReactNode;
-}) =>
-  isExternal(href) ? (
+}) => {
+  if (!isExternal(href)) {
+    return (
+      <Link to={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+
+  const opensNewTab = /^(https?:)?\/\//.test(href);
+  return (
     <a
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      target={opensNewTab ? "_blank" : undefined}
+      rel={opensNewTab ? "noopener noreferrer" : undefined}
       className={className}
     >
       {children}
     </a>
-  ) : (
-    <Link to={href} className={className}>
-      {children}
-    </Link>
   );
+};
 
 const Actions = ({
   actions,
