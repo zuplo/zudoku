@@ -1005,8 +1005,8 @@ importers:
         specifier: 7.1.1
         version: 7.1.1(@types/node@22.19.1)(bufferutil@4.1.0)(graphql-sock@1.0.1(graphql@16.14.0))(graphql@16.14.0)(typescript@6.0.3)(utf-8-validate@6.0.6)
       '@inkeep/cxkit-types':
-        specifier: 0.5.117
-        version: 0.5.117
+        specifier: 0.5.119
+        version: 0.5.119
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.1
@@ -3014,8 +3014,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@inkeep/cxkit-types@0.5.117':
-    resolution: {integrity: sha512-LTbfGyy/9QofivzyGCNN3bhZsuR0Xo0I1ZY8xwPbGwwVekCsZycOzExswUBOCAP+/LqsLSO0kJ98FTQgwWpa5g==}
+  '@inkeep/cxkit-types@0.5.119':
+    resolution: {integrity: sha512-knp2rnA8hPw+eH6TUu5KM1Y824Vm8Pie0E/vEQZb3tZ0XI3ioXyEj8ym8ovcICuHsuDIGtiATtK35QVjeabQlw==}
 
   '@inquirer/ansi@2.0.5':
     resolution: {integrity: sha512-doc2sWgJpbFQ64UflSVd17ibMGDuxO1yKgOgLMwavzESnXjFWJqUeG8saYosqKpHp4kWiM5x1nXvEjbpx90gzw==}
@@ -11799,7 +11799,7 @@ snapshots:
   '@img/sharp-win32-x64@0.34.5':
     optional: true
 
-  '@inkeep/cxkit-types@0.5.117': {}
+  '@inkeep/cxkit-types@0.5.119': {}
 
   '@inquirer/ansi@2.0.5': {}
 

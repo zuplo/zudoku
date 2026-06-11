@@ -208,7 +208,7 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "7.1.1",
-    "@inkeep/cxkit-types": "0.5.117",
+    "@inkeep/cxkit-types": "0.5.119",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
