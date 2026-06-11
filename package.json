@@ -29,14 +29,17 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.16",
     "@changesets/cli": "2.31.0",
-    "changesets-changelog-clean": "1.4.0",
+    "@changesets/release-utils": "^0.2.7",
+    "@manypkg/get-packages": "^3.1.0",
     "@playwright/test": "^1.60.0",
     "@size-limit/file": "^12.1.0",
     "@vitest/coverage-v8": "4.1.8",
+    "changesets-changelog-clean": "1.4.0",
     "lefthook": "2.1.9",
     "oxfmt": "0.36.0",
     "publint": "^0.3.21",
     "size-limit": "^12.1.0",
+    "tsx": "4.22.4",
     "typescript": "catalog:",
     "vitest": "4.1.0"
   },
