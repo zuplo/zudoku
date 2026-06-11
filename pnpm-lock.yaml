@@ -43,8 +43,8 @@ catalogs:
       specifier: 19.2.5
       version: 19.2.5
     react-is:
-      specifier: 19.2.5
-      version: 19.2.5
+      specifier: 19.2.7
+      version: 19.2.7
     tsdown:
       specifier: 0.22.0
       version: 0.22.0
@@ -918,7 +918,7 @@ importers:
         version: 7.76.1(react@19.2.5)
       react-is:
         specifier: 'catalog:'
-        version: 19.2.5
+        version: 19.2.7
       react-markdown:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.2.14)(react@19.2.5)
@@ -8391,8 +8391,8 @@ packages:
   react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
 
-  react-is@19.2.5:
-    resolution: {integrity: sha512-Dn0t8IQhCmeIT3wu+Apm1/YVsJXsGWi6k4sPdnBIdqMVtHtv0IGi6dcpNpNkNac0zB2uUAqNX3MHzN8c+z2rwQ==}
+  react-is@19.2.7:
+    resolution: {integrity: sha512-kZFnouyVv7eP/Phmrlo9FK+zcAdriZJvzxXHF1Sl1P377WSGe2G/JxVolhTrB/jeV47lKImhNUsijjHAAbcl/A==}
 
   react-markdown@10.1.0:
     resolution: {integrity: sha512-qKxVopLT/TyA6BX3Ue5NwabOsAzm0Q7kAPwq6L+wWDwisYs7R8vZ0nRXqq6rkueboxpkjvLGU9fWifiX/ZZFxQ==}
@@ -17576,7 +17576,7 @@ snapshots:
 
   react-is@17.0.2: {}
 
-  react-is@19.2.5: {}
+  react-is@19.2.7: {}
 
   react-markdown@10.1.0(@types/react@19.2.14)(react@19.2.5):
     dependencies:
