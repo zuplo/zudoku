@@ -7,6 +7,12 @@ export { ZudokuError } from "../util/invariant.js";
 export { CategoryHeading } from "./CategoryHeading.js";
 export { ClientOnly } from "./ClientOnly.js";
 export { Heading } from "./Heading.js";
+export {
+  LandingPage,
+  type LandingPageAction,
+  type LandingPageFeature,
+  type LandingPageProps,
+} from "./LandingPage.js";
 export { Markdown } from "./Markdown.js";
 export { Search } from "./Search.js";
 export { type CustomSlotNames, Slot } from "./Slot.js";

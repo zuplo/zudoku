@@ -165,6 +165,7 @@ export const components: Navigation = [
       "docs/components/badge",
       "docs/components/card",
       "docs/components/icons",
+      "docs/components/landing-page",
       "docs/components/markdown",
       "docs/components/typography",
     ],
