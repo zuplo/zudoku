@@ -2,11 +2,12 @@ name: pkg.pr.new
 on:
   push:
     branches: [main]
+  workflow_dispatch:
   issue_comment:
     types: [created]
 
 concurrency:
-  group: pkg-pr-new-${{ github.event.issue.number || github.sha }}
+  group: pkg-pr-new-${{ github.event.issue.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -14,6 +15,7 @@ jobs:
     name: Publish to pkg.pr.new
     if: |
       github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
        contains(github.event.comment.body, '/prerelease') &&
