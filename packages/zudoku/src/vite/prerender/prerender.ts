@@ -122,20 +122,24 @@ export const prerender = async ({
   }
 
   const workerJsUrl = new URL("./worker.js", import.meta.url);
-  const workerTsUrl = new URL("./worker.ts", import.meta.url);
   const hasCompiledWorker = existsSync(fileURLToPath(workerJsUrl));
 
+  // When running from source, Node's native type stripping runs worker.ts
+  // directly (its import graph uses .ts specifiers for this; tsx can't load
+  // TS inside worker threads, see privatenumber/tsx#354).
+  const workerUrl = hasCompiledWorker
+    ? workerJsUrl
+    : new URL("./worker.ts", import.meta.url);
+
   const pool = new Piscina<WorkerData, WorkerResult>({
-    filename: (hasCompiledWorker ? workerJsUrl : workerTsUrl).href,
+    filename: workerUrl.href,
     idleTimeout: 5_000,
     minThreads: 1,
     maxThreads,
     resourceLimits: {
       maxOldGenerationSizeMb,
     },
-    execArgv: hasCompiledWorker
-      ? ["--no-deprecation"]
-      : ["--import", "tsx", "--no-deprecation"],
+    execArgv: ["--no-deprecation"],
     workerData: {
       template: html,
       distDir,
