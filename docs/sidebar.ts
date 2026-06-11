@@ -163,6 +163,7 @@ export const components: Navigation = [
       "docs/components/alert",
       "docs/components/callout",
       "docs/components/badge",
+      "docs/components/browser-window",
       "docs/components/card",
       "docs/components/icons",
       "docs/components/landing-page",

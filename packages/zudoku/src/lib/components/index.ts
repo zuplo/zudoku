@@ -1,6 +1,7 @@
 export { Head } from "@unhead/react";
 export { Link } from "react-router";
 export { Anchor } from "./Anchor.js";
+export { BrowserWindow, type BrowserWindowProps } from "./BrowserWindow.js";
 export { Button } from "../ui/Button.js";
 export { Callout } from "../ui/Callout.js";
 export { ZudokuError } from "../util/invariant.js";

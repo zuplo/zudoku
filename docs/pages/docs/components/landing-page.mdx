@@ -3,7 +3,7 @@ title: Landing Page
 sidebar_icon: layout-template
 ---
 
-import { LandingPage } from "zudoku/components";
+import { BrowserWindow, LandingPage } from "zudoku/components";
 import { BookOpenIcon, CodeIcon, KeyIcon, RocketIcon, WebhookIcon, ZapIcon } from "zudoku/icons";
 
 A ready-made, customizable landing page for your developer portal. It comes in three variants
@@ -47,34 +47,37 @@ import { LandingPage } from "zudoku/components";
 ### Hero (default)
 
 A centered hero with call-to-action buttons and an optional feature grid below. The classic landing
-page for product-focused portals.
+page for product-focused portals. The previews on this page are presented in a
+[Browser Window](./browser-window) component.
 
-<LandingPage
-  eyebrow="Developer Platform"
-  title="Build with our API"
-  description="Everything you need to integrate payments, webhooks, and more — in minutes, not days."
-  actions={[
-    { label: "Get started", href: "/docs/getting-started" },
-    { label: "API Reference", href: "/docs", variant: "outline" },
-  ]}
-  features={[
-    {
-      icon: <ZapIcon />,
-      title: "Fast integration",
-      description: "Go from zero to your first API call in under five minutes.",
-    },
-    {
-      icon: <KeyIcon />,
-      title: "API keys built in",
-      description: "Issue, rotate, and revoke keys right from the portal.",
-    },
-    {
-      icon: <WebhookIcon />,
-      title: "Webhooks",
-      description: "Subscribe to events and react to changes in real time.",
-    },
-  ]}
-/>
+<BrowserWindow url="https://developers.example.com" scale={0.75} contentClassName="px-8">
+  <LandingPage
+    eyebrow="Developer Platform"
+    title="Build with our API"
+    description="Everything you need to integrate payments, webhooks, and more — in minutes, not days."
+    actions={[
+      { label: "Get started", href: "/docs/getting-started" },
+      { label: "API Reference", href: "/docs", variant: "outline" },
+    ]}
+    features={[
+      {
+        icon: <ZapIcon />,
+        title: "Fast integration",
+        description: "Go from zero to your first API call in under five minutes.",
+      },
+      {
+        icon: <KeyIcon />,
+        title: "API keys built in",
+        description: "Issue, rotate, and revoke keys right from the portal.",
+      },
+      {
+        icon: <WebhookIcon />,
+        title: "Webhooks",
+        description: "Subscribe to events and react to changes in real time.",
+      },
+    ]}
+  />
+</BrowserWindow>
 
 ```tsx
 <LandingPage
@@ -111,23 +114,25 @@ A two-column hero with your own content on the side — an illustration, screens
 passed via the `aside` prop. A great fit for developer-oriented portals that want to show code up
 front.
 
-<LandingPage
-  variant="split"
-  eyebrow="Shipping API"
-  title="Ship anywhere in the whole universe"
-  description="Create and manage shipments, track packages in real-time, and integrate with multiple carriers through a single interface."
-  actions={[
-    { label: "Get started", href: "/docs/getting-started" },
-    { label: "View on GitHub", href: "https://github.com/zuplo/zudoku", variant: "outline" },
-  ]}
-  aside={
-    <div className="rounded-xl border bg-card p-4 font-mono text-sm">
-      <pre>{`curl https://api.example.com/v1/shipments \\
+<BrowserWindow url="https://shipping.example.com" scale={0.75} contentClassName="px-8">
+  <LandingPage
+    variant="split"
+    eyebrow="Shipping API"
+    title="Ship anywhere in the whole universe"
+    description="Create and manage shipments, track packages in real-time, and integrate with multiple carriers through a single interface."
+    actions={[
+      { label: "Get started", href: "/docs/getting-started" },
+      { label: "View on GitHub", href: "https://github.com/zuplo/zudoku", variant: "outline" },
+    ]}
+    aside={
+      <div className="rounded-xl border bg-card p-4 font-mono text-sm">
+        <pre>{`curl https://api.example.com/v1/shipments \\
   -H "Authorization: Bearer $API_KEY" \\
   -d destination="alpha-centauri"`}</pre>
-    </div>
-  }
-/>
+      </div>
+    }
+  />
+</BrowserWindow>
 
 ```tsx
 <LandingPage
@@ -168,37 +173,39 @@ The `aside` accepts any React node — use an `<img />` for an illustration inst
 A compact header followed by prominent, clickable feature cards. Ideal as a documentation hub that
 routes visitors to the right section quickly.
 
-<LandingPage
-  variant="grid"
-  title="Documentation"
-  description="Explore guides, API references, and examples to get the most out of the platform."
-  features={[
-    {
-      icon: <RocketIcon />,
-      title: "Getting Started",
-      description: "Set up your account and make your first request.",
-      href: "/docs/getting-started",
-    },
-    {
-      icon: <BookOpenIcon />,
-      title: "Guides",
-      description: "Step-by-step tutorials for common use cases.",
-      href: "/docs",
-    },
-    {
-      icon: <CodeIcon />,
-      title: "API Reference",
-      description: "Complete reference for every endpoint and type.",
-      href: "/docs",
-    },
-    {
-      icon: <WebhookIcon />,
-      title: "Webhooks",
-      description: "Listen to events and build real-time integrations.",
-      href: "/docs",
-    },
-  ]}
-/>
+<BrowserWindow url="https://developers.example.com/docs" scale={0.75} contentClassName="px-8">
+  <LandingPage
+    variant="grid"
+    title="Documentation"
+    description="Explore guides, API references, and examples to get the most out of the platform."
+    features={[
+      {
+        icon: <RocketIcon />,
+        title: "Getting Started",
+        description: "Set up your account and make your first request.",
+        href: "/docs/getting-started",
+      },
+      {
+        icon: <BookOpenIcon />,
+        title: "Guides",
+        description: "Step-by-step tutorials for common use cases.",
+        href: "/docs",
+      },
+      {
+        icon: <CodeIcon />,
+        title: "API Reference",
+        description: "Complete reference for every endpoint and type.",
+        href: "/docs",
+      },
+      {
+        icon: <WebhookIcon />,
+        title: "Webhooks",
+        description: "Listen to events and build real-time integrations.",
+        href: "/docs",
+      },
+    ]}
+  />
+</BrowserWindow>
 
 ```tsx
 <LandingPage
