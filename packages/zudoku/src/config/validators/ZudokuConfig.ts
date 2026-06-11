@@ -1,8 +1,3 @@
-import type {
-  InkeepAIChatSettings,
-  InkeepModalSettings,
-  InkeepSearchSettings,
-} from "@inkeep/cxkit-types";
 import type { Options } from "@mdx-js/rollup";
 import colors from "picocolors";
 import type { ComponentType, ReactNode } from "react";
@@ -20,6 +15,7 @@ import type {
   GenerateCodeSnippetFn,
   TransformExamplesFn,
 } from "../../lib/plugins/openapi/interfaces.js";
+import type { InkeepSearchPluginOptions } from "../../lib/plugins/search-inkeep/index.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
@@ -373,9 +369,15 @@ const SearchSchema = z
       organizationId: z.string(),
       primaryBrandColor: z.string(),
       organizationDisplayName: z.string(),
-      searchSettings: z.custom<InkeepSearchSettings>().optional(),
-      aiChatSettings: z.custom<InkeepAIChatSettings>().optional(),
-      modalSettings: z.custom<InkeepModalSettings>().optional(),
+      searchSettings: z
+        .custom<NonNullable<InkeepSearchPluginOptions["searchSettings"]>>()
+        .optional(),
+      aiChatSettings: z
+        .custom<NonNullable<InkeepSearchPluginOptions["aiChatSettings"]>>()
+        .optional(),
+      modalSettings: z
+        .custom<NonNullable<InkeepSearchPluginOptions["modalSettings"]>>()
+        .optional(),
     }),
     z.object({
       type: z.literal("pagefind"),

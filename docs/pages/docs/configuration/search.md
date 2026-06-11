@@ -179,7 +179,8 @@ You can also pass
 [`searchSettings`](https://docs.inkeep.com/cloud/ui-components/common-settings/search),
 [`aiChatSettings`](https://docs.inkeep.com/cloud/ui-components/common-settings/ai-chat), and
 `modalSettings` to customize the respective parts of the search experience. They are merged with
-Zudoku's defaults.
+Zudoku's defaults and passed through to Inkeep as-is, so any option Inkeep supports can be used —
+including ones added after this Zudoku version was released.
 
 For example, to categorize results into tabs based on their URL:
 

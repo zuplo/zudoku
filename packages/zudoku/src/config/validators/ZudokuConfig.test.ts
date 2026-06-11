@@ -461,8 +461,10 @@ describe("validateConfig", () => {
         primaryBrandColor: "#26D6FF",
         organizationDisplayName: "Example",
         transformSource: (source: unknown) => source,
+        someFutureBaseSetting: true,
         searchSettings: {
           tabs: ["Docs", ["All", { isAlwaysVisible: true }]],
+          someFutureSearchSetting: true,
         },
         aiChatSettings: {
           aiAssistantName: "Example Assistant",

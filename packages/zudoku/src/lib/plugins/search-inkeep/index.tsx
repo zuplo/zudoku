@@ -23,13 +23,17 @@ declare global {
   }
 }
 
-export type InkeepSearchPluginOptions = InkeepBaseSettings & {
-  // Discriminator from the Zudoku `search` config; not passed to Inkeep
-  type?: "inkeep";
-  searchSettings?: InkeepSearchSettings;
-  aiChatSettings?: InkeepAIChatSettings;
-  modalSettings?: InkeepModalSettings;
-};
+// All settings are intersected with Record<string, unknown> and passed through
+// as-is, so settings added in newer Inkeep versions can be used before they
+// appear in the type definitions.
+export type InkeepSearchPluginOptions = InkeepBaseSettings &
+  Record<string, unknown> & {
+    // Discriminator from the Zudoku `search` config; not passed to Inkeep
+    type?: "inkeep";
+    searchSettings?: InkeepSearchSettings & Record<string, unknown>;
+    aiChatSettings?: InkeepAIChatSettings & Record<string, unknown>;
+    modalSettings?: InkeepModalSettings & Record<string, unknown>;
+  };
 
 const InkeepSearch = ({
   isOpen,
