@@ -30,6 +30,12 @@ triggers a release:
   publishes to npm when merged.
 - Skip the changeset for changes with no user impact (internal refactors, tests, docs, CI).
 
+`create-zudoku` is version-locked to `zudoku` (`fixed` group in `.changeset/config.json`) because it
+writes its own version into scaffolded apps as the `zudoku` dependency. As an implementation detail
+it is deliberately invisible in releases: the `version-packages` script deletes its `CHANGELOG.md`,
+and `main.yaml` publishes with `--no-git-tag` plus a script that creates tags/GitHub releases for
+every published package except `create-zudoku`.
+
 ## Architecture
 
 - **Monorepo**: Using pnpm workspaces. Releases via

@@ -74,7 +74,11 @@ jobs:
         uses: changesets/action@v1
         with:
           version: pnpm run version-packages
-          publish: pnpm exec changeset publish
+          # --no-git-tag so create-zudoku (version-locked to zudoku, but an
+          # implementation detail) never gets a tag or GitHub release; tags and
+          # releases for the other packages are created in the next step.
+          publish: pnpm exec changeset publish --no-git-tag
+          createGithubReleases: false
           commit: "chore(release): publish"
           title: "chore(release): version packages"
         env:
@@ -84,28 +88,12 @@ jobs:
           NPM_TOKEN: ""
           NPM_CONFIG_PROVENANCE: "true"
 
-      - name: Delete create-zudoku release
+      - name: Create tags and GitHub releases
         if: steps.changesets.outputs.published == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISHED: ${{ steps.changesets.outputs.publishedPackages }}
-        run: |
-          set -euo pipefail
-          VERSION=$(jq -er '.[] | select(.name=="create-zudoku") | .version' <<< "$PUBLISHED" || true)
-          if [ -z "$VERSION" ]; then
-            echo "no create-zudoku release in this publish; skipping"
-            exit 0
-          fi
-          TAG="create-zudoku@$VERSION"
-          echo "deleting GH release $TAG"
-          if ! err=$(gh release delete "$TAG" --yes --cleanup-tag 2>&1); then
-            if echo "$err" | grep -qi 'not found\|release not found\|no release found'; then
-              echo "release $TAG not found; nothing to delete"
-            else
-              echo "::error::failed to delete $TAG: $err"
-              exit 1
-            fi
-          fi
+        run: pnpm tsx .github/scripts/create-github-releases.ts
 
       - name: Detect zudoku release
         if: steps.changesets.outputs.published == 'true'
