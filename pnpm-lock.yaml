@@ -854,8 +854,8 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
       jose:
-        specifier: 6.2.2
-        version: 6.2.2
+        specifier: 6.2.3
+        version: 6.2.3
       json-schema-to-typescript-lite:
         specifier: 15.0.0
         version: 15.0.0
@@ -7402,8 +7402,8 @@ packages:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
 
-  jose@6.2.2:
-    resolution: {integrity: sha512-d7kPDd34KO/YnzaDOlikGpOurfF0ByC2sEV4cANCtdqLlTfBlw2p14O/5d/zv40gJPbIQxfES3nSx1/oYNyuZQ==}
+  jose@6.2.3:
+    resolution: {integrity: sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw==}
 
   js-base64@3.7.8:
     resolution: {integrity: sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow==}
@@ -16150,7 +16150,7 @@ snapshots:
 
   jiti@2.7.0: {}
 
-  jose@6.2.2: {}
+  jose@6.2.3: {}
 
   js-base64@3.7.8: {}
 
