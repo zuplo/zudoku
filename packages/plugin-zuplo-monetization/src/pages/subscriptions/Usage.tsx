@@ -83,10 +83,13 @@ const UsageItem = ({
   const hasOverage = meter.overage > 0;
   const limit = meter.balance + meter.usage - meter.overage;
   const isAtLimit = !isSoftLimit && meter.usage >= limit;
-  // A pending credit waives the overage charge, so don't also show the
-  // "you're being charged for overage" warning (or the red danger styling) for it.
-  const hasCredit = pendingCredit != null;
-  const dangerZone = (hasOverage && !hasCredit) || isAtLimit;
+  // A pending credit waives overage charges, but only suppress the "you're being
+  // charged for overage" warning (and the red danger styling) when the credit covers
+  // the full overage — a partial credit still leaves billable overage the user
+  // should be warned about. The credit banner itself shows for any credit.
+  const hasFullOverageCredit =
+    pendingCredit != null && pendingCredit.units >= meter.overage;
+  const dangerZone = (hasOverage && !hasFullOverageCredit) || isAtLimit;
 
   return (
     <Card className={cn(dangerZone && "border-destructive bg-destructive/5")}>
@@ -103,7 +106,7 @@ const UsageItem = ({
             </AlertDescription>
           </Alert>
         )}
-        {hasOverage && isSoftLimit && !hasCredit && (
+        {hasOverage && isSoftLimit && !hasFullOverageCredit && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
             <AlertTitle>You've exceeded your {billingPeriod} quota</AlertTitle>

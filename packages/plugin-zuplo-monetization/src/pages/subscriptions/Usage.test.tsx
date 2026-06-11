@@ -280,6 +280,27 @@ describe("Usage - UsageItem", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("keeps the overage charge alert when the credit only partially covers the overage", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        pendingCredits={[
+          { featureKey: "requests", units: 50, source: "support" },
+        ]}
+        isFetching={false}
+        currentItems={[softLimitItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    // The credit banner shows for the waived units...
+    expect(screen.getByText("A usage credit was applied")).toBeInTheDocument();
+    // ...but the remaining 150 overage units are still billed, so the charge
+    // warning must stay visible.
+    expect(
+      screen.getByText("You've exceeded your monthly quota"),
+    ).toBeInTheDocument();
+  });
+
   it("does not show a credit banner for features without a pending credit", () => {
     render(
       <Usage
