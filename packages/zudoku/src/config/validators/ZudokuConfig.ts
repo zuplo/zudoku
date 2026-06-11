@@ -19,6 +19,8 @@ import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/t
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
+// Type-only import to avoid a runtime cycle (BuildSchema imports the config loader)
+import type { Processor } from "./BuildSchema.js";
 import { HeaderNavigationSchema } from "./HeaderNavigationSchema.js";
 import {
   InputNavigationSchema,
@@ -748,6 +750,11 @@ const BaseConfigSchema = z.object({
   }),
   // Internal: populated by plugins via `transformConfig` to track plugin directories
   __pluginDirs: z.array(z.string()),
+  // Internal: populated by plugins via `transformConfig` to contribute OpenAPI
+  // schema processors (applied after `zudoku.build.ts` processors)
+  __processors: z.array(
+    z.custom<Processor>((val) => typeof val === "function"),
+  ),
 });
 
 export const ZudokuConfig = BaseConfigSchema.partial();

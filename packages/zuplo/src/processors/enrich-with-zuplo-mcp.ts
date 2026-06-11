@@ -9,9 +9,12 @@ import {
   DEFAULT_MCP_SERVER_VERSION,
 } from "@zuplo/mcp/server";
 import type { OpenAPIV3_1 } from "openapi-types";
-import type { ProcessorArg } from "../config/validators/BuildSchema.js";
-import { traverse, traverseAsync } from "../lib/util/traverse.js";
-import type { RecordAny } from "../lib/util/types.js";
+import {
+  type RecordAny,
+  traverse,
+  traverseAsync,
+} from "zudoku/processors/traverse";
+import type { ProcessorArg } from "../types.js";
 import { operations } from "./enrich-with-zuplo.js";
 
 const MCP_TAG_NAME = "MCP";
@@ -177,7 +180,7 @@ export const enrichWithZuploMcpServerData = ({
     await traverseAsync(modifiedSchema, async (node, nodePath) => {
       // Check if we're at a "post" operation (paths -> /some/path -> "post").
       // HTTP MCP servers are only allow post operations.
-      if (!nodePath || nodePath.length !== 3 || nodePath[2] !== "post") {
+      if (nodePath?.length !== 3 || nodePath[2] !== "post") {
         return node;
       }
 
