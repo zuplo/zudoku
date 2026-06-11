@@ -11,9 +11,9 @@
   - Always use `--write` when running biome lint to fix issues in one command
 - **Test**: `pnpm test` or for single test: `pnpm vitest run path/to/test.spec.ts`
 - **Typecheck**: `pnpm -F zudoku typecheck` to check types for the zudoku package
-- **Dev**: The zudoku CLI runs from source via `tsx` when `packages/zudoku/dist/` is absent, so
-  example projects (e.g. `pnpm -F docs dev`, `pnpm -F cosmo-cargo dev`) work without first building
-  `packages/zudoku`.
+- **Dev**: The zudoku CLI always runs from source via `tsx` in the workspace (a local
+  `packages/zudoku/dist/` is ignored), so example projects (e.g. `pnpm -F docs dev`,
+  `pnpm -F cosmo-cargo dev`) work without building `packages/zudoku`.
 - **Debugging**: During active debugging, leave console.log statements in place and don't fix linter
   issues until debugging is complete. Remove console.logs only after feature is confirmed working.
 
