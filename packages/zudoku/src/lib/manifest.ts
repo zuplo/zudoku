@@ -1,10 +1,10 @@
 import type { ZudokuConfig } from "../config/config.js";
-import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
 import {
   ACCESS_TOKEN_COOKIE,
   AUTH_PROFILE_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from "./authentication/cookies.js";
+import { normalizeProtectedRoutes } from "./core/ZudokuContext.js";
 import { joinUrl } from "./util/joinUrl.js";
 
 export const PROTECTED_CHUNK_DIR = "_protected";
@@ -37,7 +37,9 @@ export type ZudokuManifest = {
 export const buildManifest = (
   config: Pick<ZudokuConfig, "basePath" | "protectedRoutes">,
 ): ZudokuManifest => {
-  const protectedRoutes = ProtectedRoutesSchema.parse(config.protectedRoutes);
+  // Called with the raw config from the SSR entry (`virtual:zudoku-config`),
+  // so normalization must happen here. Idempotent for parsed configs.
+  const protectedRoutes = normalizeProtectedRoutes(config.protectedRoutes);
   const routePatterns = protectedRoutes ? Object.keys(protectedRoutes) : [];
   return {
     version: MANIFEST_VERSION,

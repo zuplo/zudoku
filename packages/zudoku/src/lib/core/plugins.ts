@@ -71,6 +71,12 @@ export interface ConfigHookContext {
 }
 
 export interface TransformConfigContext {
+  /**
+   * The raw authored config; schema defaults and transforms are not applied
+   * yet. On the server/build side the transformed result is schema-parsed
+   * afterwards, so additions must conform to the schema (unknown keys are
+   * stripped there).
+   */
   config: ZudokuConfig;
   merge: <T extends Partial<ZudokuConfig>>(partial: T) => ZudokuConfig & T;
 }

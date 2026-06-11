@@ -27,7 +27,6 @@ import type {
   NavigationRule,
   NavigationSortRule,
 } from "./InputNavigationSchema.js";
-import { DocsConfigSchema } from "./ZudokuConfig.js";
 
 type ReplaceFields<Base, Overrides> = Omit<Base, keyof Overrides> & Overrides;
 // string icons will be transformed to `LucideIcon` in `vite/plugin-navigation.ts`
@@ -176,7 +175,7 @@ export class NavigationResolver {
 
   constructor(config: ConfigWithMeta) {
     this.rootDir = config.__meta.rootDir;
-    this.globPatterns = DocsConfigSchema.parse(config.docs ?? {}).files;
+    this.globPatterns = config.docs.files;
     this.items = config.navigation ?? [];
   }
 
