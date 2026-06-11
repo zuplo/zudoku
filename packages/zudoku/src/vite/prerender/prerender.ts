@@ -10,7 +10,7 @@ import type { getRoutesByConfig } from "../../app/main.js";
 import { logger } from "../../cli/common/logger.js";
 import { fileExists } from "../../config/file-exists.js";
 import { getBuildConfig } from "../../config/validators/BuildSchema.js";
-import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
+import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
@@ -69,10 +69,9 @@ export const prerender = async ({
     path.join(distDir, "server/entry.server.js"),
   ).href;
 
-  const rawConfig: ZudokuConfig = await import(serverConfigPath).then(
-    (m) => m.default,
-  );
-  const config = await runPluginTransformConfig(rawConfig);
+  // Same order as the loader: transform the raw bundle config, then parse.
+  const rawConfig = await import(serverConfigPath).then((m) => m.default);
+  const config = validateConfig(await runPluginTransformConfig(rawConfig));
 
   const buildConfig = await getBuildConfig();
   const module = await import(entryServerPath);
@@ -224,49 +223,43 @@ export const prerender = async ({
   });
 
   // Generate llms.txt files if markdown export is enabled
-  if (config.docs) {
-    const { DocsConfigSchema } =
-      await import("../../config/validators/ZudokuConfig.js");
+  const llmsConfig = config.docs.llms;
+
+  const markdownInfoPath = path.join(
+    dir,
+    "node_modules/.zudoku/markdown-info.json",
+  );
+  let markdownFileInfos: MarkdownFileInfo[] = [];
+
+  if (await fileExists(markdownInfoPath)) {
+    const markdownInfoContent = await readFile(markdownInfoPath, "utf-8");
+    markdownFileInfos = JSON.parse(markdownInfoContent);
+  }
+
+  if (llmsConfig.llmsTxt || llmsConfig.llmsTxtFull) {
     const { generateLlmsTxtFiles } = await import("../llms.js");
+    await generateLlmsTxtFiles({
+      markdownFileInfos,
+      basePath: config.basePath,
+      outputUrls: paths,
+      baseOutputDir: distDir,
+      siteName: config.site?.title,
+      llmsTxt: llmsConfig.llmsTxt,
+      llmsTxtFull: llmsConfig.llmsTxtFull,
+      redirectUrls,
+    });
+  }
 
-    const docsConfig = DocsConfigSchema.parse(config.docs);
-    const llmsConfig = docsConfig.llms ?? {};
-
-    const markdownInfoPath = path.join(
-      dir,
-      "node_modules/.zudoku/markdown-info.json",
+  if (!config.docs.publishMarkdown) {
+    await Promise.all(
+      markdownFileInfos.map((info) => {
+        const outputPath = getMarkdownOutputPath(distDir, info.routePath);
+        if (!path.resolve(outputPath).startsWith(path.resolve(distDir))) {
+          return;
+        }
+        return rm(outputPath).catch(() => {});
+      }),
     );
-    let markdownFileInfos: MarkdownFileInfo[] = [];
-
-    if (await fileExists(markdownInfoPath)) {
-      const markdownInfoContent = await readFile(markdownInfoPath, "utf-8");
-      markdownFileInfos = JSON.parse(markdownInfoContent);
-    }
-
-    if (llmsConfig.llmsTxt || llmsConfig.llmsTxtFull) {
-      await generateLlmsTxtFiles({
-        markdownFileInfos,
-        basePath: config.basePath,
-        outputUrls: paths,
-        baseOutputDir: distDir,
-        siteName: config.site?.title,
-        llmsTxt: llmsConfig.llmsTxt,
-        llmsTxtFull: llmsConfig.llmsTxtFull,
-        redirectUrls,
-      });
-    }
-
-    if (!docsConfig.publishMarkdown) {
-      await Promise.all(
-        markdownFileInfos.map((info) => {
-          const outputPath = getMarkdownOutputPath(distDir, info.routePath);
-          if (!path.resolve(outputPath).startsWith(path.resolve(distDir))) {
-            return;
-          }
-          return rm(outputPath).catch(() => {});
-        }),
-      );
-    }
   }
 
   return { workerResults, rewrites };

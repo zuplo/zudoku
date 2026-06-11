@@ -126,3 +126,31 @@ describe("loadZudokuConfig", () => {
     );
   });
 });
+
+describe("loadZudokuConfig parsed result", () => {
+  it("applies schema defaults and transforms to the loaded config", async () => {
+    const plugin = { getRoutes: () => [] };
+    vi.mocked(fileExists).mockResolvedValue(true);
+    vi.mocked(runnerImport).mockResolvedValue({
+      module: {
+        default: {
+          docs: { files: "/custom/**/*.md" },
+          cdnUrl: "https://cdn.example.com",
+          plugins: [plugin],
+        },
+      },
+      dependencies: [],
+    } as never);
+
+    const { config } = await loadZudokuConfig(configEnv, "/defaults-project");
+
+    expect(config.docs.publishMarkdown).toBe(true);
+    expect(config.docs.files).toEqual(["/custom/**/*.md"]);
+    expect(config.cdnUrl).toEqual({
+      base: "https://cdn.example.com",
+      media: "https://cdn.example.com",
+    });
+    expect(config.plugins?.[0]).toBe(plugin);
+    expect(config.__meta.rootDir).toBe("/defaults-project");
+  });
+});

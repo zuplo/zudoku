@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { ConfigWithMeta } from "../config/loader.js";
+import { validateConfig } from "../config/validators/ZudokuConfig.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 import {
   type MarkdownPluginOptions,
@@ -49,8 +50,8 @@ describe("resolveCustomNavigationPaths", () => {
 
   const resolve = async (navigation: ConfigWithMeta["navigation"]) => {
     const config: ConfigWithMeta = {
+      ...validateConfig({ docs: { files: "pages/**/*.{md,mdx}" } }),
       __meta,
-      docs: { files: "pages/**/*.{md,mdx}" },
       navigation,
     };
     return resolveCustomNavigationPaths(
@@ -123,7 +124,6 @@ describe("resolveCustomNavigationPaths", () => {
     const plugin = markdownPlugin({
       basePath: "",
       fileImports,
-      files: ["pages/**/*.{md,mdx}"],
       publishMarkdown: false,
     });
     const routes = isNavigationPlugin(plugin) ? plugin.getRoutes() : [];
