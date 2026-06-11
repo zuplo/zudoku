@@ -62,6 +62,7 @@ export const docs: Navigation = [
     items: [
       "docs/configuration/api-reference",
       "docs/configuration/api-catalog",
+      "docs/guides/openapi-plugin",
       {
         type: "category",
         label: "Supported Extensions",

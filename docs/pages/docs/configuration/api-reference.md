@@ -13,6 +13,10 @@ specify the OpenAPI document that you want to use to generate your API reference
 There are multiple ways to reference an API file in the configuration including using a URL or a
 local file path. The OpenAPI document can be in either JSON or YAML format.
 
+Under the hood, this setting creates an instance of the OpenAPI plugin for each configured API. For
+advanced use cases you can also [use the OpenAPI plugin directly](../guides/openapi-plugin.md) in
+the `plugins` array.
+
 ## File Reference
 
 You can reference a local OpenAPI document by setting the `type` to `file` and providing the path to
