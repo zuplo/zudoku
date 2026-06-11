@@ -34,8 +34,8 @@ catalogs:
       specifier: 16.14.0
       version: 16.14.0
     happy-dom:
-      specifier: 20.9.0
-      version: 20.9.0
+      specifier: 20.10.2
+      version: 20.10.2
     react:
       specifier: 19.2.5
       version: 19.2.5
@@ -82,10 +82,10 @@ importers:
         version: 2.4.16
       '@nx/vite':
         specifier: 22.7.5
-        version: 22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))
+        version: 22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))
       '@nx/web':
         specifier: 22.7.5
-        version: 22.7.5(@babel/traverse@7.29.7)(@nx/vite@22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))))(nx@22.7.5)
+        version: 22.7.5(@babel/traverse@7.29.7)(@nx/vite@22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))))(nx@22.7.5)
       '@playwright/test':
         specifier: ^1.60.0
         version: 1.60.0
@@ -94,7 +94,7 @@ importers:
         version: 12.1.0(size-limit@12.1.0(jiti@2.7.0))
       '@vitest/coverage-v8':
         specifier: 4.1.8
-        version: 4.1.8(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))
+        version: 4.1.8(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))
       lefthook:
         specifier: 2.1.8
         version: 2.1.8
@@ -115,7 +115,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 4.1.0
-        version: 4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
 
   docs:
     dependencies:
@@ -606,7 +606,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       happy-dom:
         specifier: 'catalog:'
-        version: 20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+        version: 20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       react:
         specifier: 'catalog:'
         version: 19.2.5
@@ -1060,7 +1060,7 @@ importers:
         version: 4.1.8(vitest@4.1.8)
       happy-dom:
         specifier: 'catalog:'
-        version: 20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+        version: 20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       oxc-parser:
         specifier: ^0.133.0
         version: 0.133.0
@@ -6079,6 +6079,10 @@ packages:
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
 
+  buffer-image-size@0.6.4:
+    resolution: {integrity: sha512-nEh+kZOPY1w+gcCMobZ6ETUp9WfibndnosbpwB1iJk/8Gt5ZF2bhS6+B6bPYz424KtwsR6Rflc3tCz1/ghX2dQ==}
+    engines: {node: '>=4.0'}
+
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
@@ -7049,8 +7053,8 @@ packages:
   hachure-fill@0.5.2:
     resolution: {integrity: sha512-3GKBOn+m2LX9iq+JC1064cSFprJY4jL1jCXTcpnfER5HYE2l/4EfWSGzkPa/ZDBmYI0ZOEj5VHV/eKnPGkHuOg==}
 
-  happy-dom@20.9.0:
-    resolution: {integrity: sha512-GZZ9mKe8r646NUAf/zemnGbjYh4Bt8/MqASJY+pSm5ZDtc3YQox+4gsLI7yi1hba6o+eCsGxpHn5+iEVn31/FQ==}
+  happy-dom@20.10.2:
+    resolution: {integrity: sha512-5p9Sxis3eowDJKqx90QCsgbNA02XXqJ59NOHvD4V6cxp+rP4d/xOyVx7uY3hS8hiUbY1VeiFH8lbJ81AyuDVLQ==}
     engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
@@ -9515,6 +9519,18 @@ packages:
 
   ws@8.20.0:
     resolution: {integrity: sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
+  ws@8.21.0:
+    resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -12199,11 +12215,11 @@ snapshots:
   '@nx/nx-win32-x64-msvc@22.7.5':
     optional: true
 
-  '@nx/vite@22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))':
+  '@nx/vite@22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))':
     dependencies:
       '@nx/devkit': 22.7.5(nx@22.7.5)
       '@nx/js': 22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)
-      '@nx/vitest': 22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))
+      '@nx/vitest': 22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))
       '@phenomnomnominal/tsquery': 6.2.0(typescript@6.0.3)
       ajv: 8.20.0
       enquirer: 2.3.6
@@ -12212,7 +12228,7 @@ snapshots:
       tsconfig-paths: 4.2.0
       tslib: 2.8.1
       vite: 8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)
-      vitest: 4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
+      vitest: 4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@nx/eslint'
@@ -12224,7 +12240,7 @@ snapshots:
       - typescript
       - verdaccio
 
-  '@nx/vitest@22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))':
+  '@nx/vitest@22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))':
     dependencies:
       '@nx/devkit': 22.7.5(nx@22.7.5)
       '@nx/js': 22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)
@@ -12233,7 +12249,7 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       vite: 8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)
-      vitest: 4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
+      vitest: 4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -12244,7 +12260,7 @@ snapshots:
       - typescript
       - verdaccio
 
-  '@nx/web@22.7.5(@babel/traverse@7.29.7)(@nx/vite@22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))))(nx@22.7.5)':
+  '@nx/web@22.7.5(@babel/traverse@7.29.7)(@nx/vite@22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))))(nx@22.7.5)':
     dependencies:
       '@nx/devkit': 22.7.5(nx@22.7.5)
       '@nx/js': 22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)
@@ -12253,7 +12269,7 @@ snapshots:
       picocolors: 1.1.1
       tslib: 2.8.1
     optionalDependencies:
-      '@nx/vite': 22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))
+      '@nx/vite': 22.7.5(@babel/traverse@7.29.7)(nx@22.7.5)(typescript@6.0.3)(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -14328,7 +14344,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)
 
-  '@vitest/coverage-v8@4.1.8(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))':
+  '@vitest/coverage-v8@4.1.8(vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)))':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.1.8
@@ -14340,7 +14356,7 @@ snapshots:
       obug: 2.1.2
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
+      vitest: 4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
 
   '@vitest/coverage-v8@4.1.8(vitest@4.1.8)':
     dependencies:
@@ -14354,7 +14370,7 @@ snapshots:
       obug: 2.1.2
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@22.19.1)(@vitest/coverage-v8@4.1.8)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
+      vitest: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@22.19.1)(@vitest/coverage-v8@4.1.8)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
 
   '@vitest/expect@4.1.0':
     dependencies:
@@ -14714,6 +14730,10 @@ snapshots:
       base-x: 5.0.1
 
   buffer-from@1.1.2: {}
+
+  buffer-image-size@0.6.4:
+    dependencies:
+      '@types/node': 25.6.2
 
   buffer@5.7.1:
     dependencies:
@@ -15717,14 +15737,15 @@ snapshots:
 
   hachure-fill@0.5.2: {}
 
-  happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+  happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       '@types/node': 25.6.2
       '@types/whatwg-mimetype': 3.0.2
       '@types/ws': 8.18.1
+      buffer-image-size: 0.6.4
       entities: 7.0.1
       whatwg-mimetype: 3.0.0
-      ws: 8.20.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      ws: 8.21.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -18638,7 +18659,7 @@ snapshots:
       tsx: 4.22.4
       yaml: 2.9.0
 
-  vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)):
+  vitest@4.1.0(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)):
     dependencies:
       '@vitest/expect': 4.1.0
       '@vitest/mocker': 4.1.0(vite@8.0.13(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
@@ -18663,11 +18684,11 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       '@types/node': 25.6.2
-      happy-dom: 20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      happy-dom: 20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - msw
 
-  vitest@4.1.8(@opentelemetry/api@1.9.1)(@types/node@22.19.1)(@vitest/coverage-v8@4.1.8)(happy-dom@20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)):
+  vitest@4.1.8(@opentelemetry/api@1.9.1)(@types/node@22.19.1)(@vitest/coverage-v8@4.1.8)(happy-dom@20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0)):
     dependencies:
       '@vitest/expect': 4.1.8
       '@vitest/mocker': 4.1.8(vite@8.0.13(@types/node@22.19.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.9.0))
@@ -18693,7 +18714,7 @@ snapshots:
       '@opentelemetry/api': 1.9.1
       '@types/node': 22.19.1
       '@vitest/coverage-v8': 4.1.8(vitest@4.1.8)
-      happy-dom: 20.9.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      happy-dom: 20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - msw
 
@@ -18788,6 +18809,11 @@ snapshots:
       utf-8-validate: 6.0.6
 
   ws@8.20.0(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+    optionalDependencies:
+      bufferutil: 4.1.0
+      utf-8-validate: 6.0.6
+
+  ws@8.21.0(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     optionalDependencies:
       bufferutil: 4.1.0
       utf-8-validate: 6.0.6
