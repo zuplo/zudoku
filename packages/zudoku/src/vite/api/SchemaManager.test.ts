@@ -5,6 +5,7 @@ import type { OpenAPIV3_1 } from "openapi-types";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { ConfigWithMeta } from "../../config/loader.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
+import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
 import invariant from "../../lib/util/invariant.js";
@@ -22,17 +23,20 @@ const mockSchema = {
 describe("SchemaManager", () => {
   let tempDir: string;
   let storeDir: string;
-  let __meta: ConfigWithMeta["__meta"];
+  let baseConfig: ConfigWithMeta;
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "zudoku-test-"));
     storeDir = path.join(tempDir, "store");
-    __meta = {
-      rootDir: tempDir,
-      moduleDir: path.join(tempDir, "node_modules"),
-      mode: "module",
-      dependencies: [],
-      configPath: path.join(tempDir, "zudoku.config.ts"),
+    baseConfig = {
+      ...validateConfig({}),
+      __meta: {
+        rootDir: tempDir,
+        moduleDir: path.join(tempDir, "node_modules"),
+        mode: "module",
+        dependencies: [],
+        configPath: path.join(tempDir, "zudoku.config.ts"),
+      },
     };
     await fs.mkdir(storeDir);
   });
@@ -46,7 +50,7 @@ describe("SchemaManager", () => {
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
 
     const config: ConfigWithMeta = {
-      __meta,
+      ...baseConfig,
       apis: [{ type: "file", path: "test-api", input: schemaPath }],
     };
 
@@ -73,7 +77,7 @@ describe("SchemaManager", () => {
     );
 
     const config: ConfigWithMeta = {
-      __meta,
+      ...baseConfig,
       apis: [
         {
           type: "file",
@@ -107,7 +111,7 @@ describe("SchemaManager", () => {
     );
 
     const config: ConfigWithMeta = {
-      __meta,
+      ...baseConfig,
       apis: [
         {
           type: "file",
@@ -142,7 +146,7 @@ describe("SchemaManager", () => {
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
 
     const config: ConfigWithMeta = {
-      __meta,
+      ...baseConfig,
       apis: [
         {
           type: "file",
@@ -171,7 +175,7 @@ describe("SchemaManager", () => {
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
 
     const config: ConfigWithMeta = {
-      __meta,
+      ...baseConfig,
       apis: [{ type: "file", path: "test-api", input: schemaPath }],
     };
 
@@ -227,7 +231,7 @@ describe("SchemaManager", () => {
     await fs.writeFile(schemaPath, JSON.stringify(schemaWithRefs));
 
     const config: ConfigWithMeta = {
-      __meta,
+      ...baseConfig,
       apis: [{ type: "file", path: "test-api", input: schemaPath }],
     };
 
@@ -283,7 +287,7 @@ describe("SchemaManager", () => {
     const manager = new SchemaManager({
       storeDir,
       config: {
-        __meta,
+        ...baseConfig,
         apis: [{ type: "file", path: "test-api", input: schemaPath }],
       },
       processors: [flattenAllOfProcessor],
@@ -328,7 +332,7 @@ describe("SchemaManager", () => {
     };
 
     const config: ConfigWithMeta = {
-      __meta,
+      ...baseConfig,
       apis: [
         {
           type: "file",
@@ -391,7 +395,7 @@ describe("SchemaManager", () => {
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
 
     const config: ConfigWithMeta = {
-      __meta,
+      ...baseConfig,
       apis: [
         {
           type: "file",

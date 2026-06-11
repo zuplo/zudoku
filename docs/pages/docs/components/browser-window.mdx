@@ -1,0 +1,92 @@
+---
+title: Browser Window
+sidebar_icon: app-window
+---
+
+import { BrowserWindow } from "zudoku/components";
+import { Button } from "zudoku/ui/Button";
+
+A mock browser window for presenting UI previews, screenshots-as-code, or full page layouts in your
+documentation. It renders its children inside a browser-style frame with a URL bar and a working
+zoom control — the current scale is displayed like in a real browser and readers can zoom in and out
+themselves.
+
+## Import
+
+```tsx
+import { BrowserWindow } from "zudoku/components";
+```
+
+## Usage
+
+<BrowserWindow>
+  <div className="flex flex-col items-center gap-3 p-10 text-center">
+    <span className="text-2xl font-bold">Hello, world!</span>
+    <p className="text-muted-foreground">Any content renders inside the browser frame.</p>
+    <Button>Get started</Button>
+  </div>
+</BrowserWindow>
+
+```tsx
+<BrowserWindow>
+  <div className="flex flex-col items-center gap-3 p-10 text-center">
+    <span className="text-2xl font-bold">Hello, world!</span>
+    <p className="text-muted-foreground">Any content renders inside the browser frame.</p>
+    <Button>Get started</Button>
+  </div>
+</BrowserWindow>
+```
+
+## Scale
+
+Use the `scale` prop to set the initial zoom of the content. This is useful for presenting
+full-width layouts, like a landing page, at a reduced size. The zoom control in the toolbar shows
+the current scale — readers can change it with the `+`/`-` buttons or click the percentage to reset
+it, just like in a real browser.
+
+<BrowserWindow scale={0.5}>
+  <div className="flex flex-col items-center gap-3 p-10 text-center">
+    <span className="text-4xl font-bold">Scaled to 50%</span>
+    <p className="text-muted-foreground">
+      The content is laid out at full width and scaled down to fit.
+    </p>
+  </div>
+</BrowserWindow>
+
+```tsx
+<BrowserWindow scale={0.5}>
+  <div className="flex flex-col items-center gap-3 p-10 text-center">
+    <span className="text-4xl font-bold">Scaled to 50%</span>
+    <p className="text-muted-foreground">
+      The content is laid out at full width and scaled down to fit.
+    </p>
+  </div>
+</BrowserWindow>
+```
+
+Scaling affects layout, not just size: at `scale={0.5}` the content is laid out at twice the
+container width and scaled down, so responsive layouts behave as if viewed on a larger screen.
+
+## URL
+
+Set the `url` prop to change the address shown in the URL bar (defaults to `localhost:3000`):
+
+<BrowserWindow url="https://developers.example.com">
+  <p className="p-10 text-center text-muted-foreground">Your developer portal</p>
+</BrowserWindow>
+
+```tsx
+<BrowserWindow url="https://developers.example.com">
+  <p className="p-10 text-center text-muted-foreground">Your developer portal</p>
+</BrowserWindow>
+```
+
+## Props
+
+| Prop               | Type        | Description                                                         |
+| ------------------ | ----------- | ------------------------------------------------------------------- |
+| `url`              | `string`    | Address displayed in the URL bar. Defaults to `localhost:3000`.     |
+| `scale`            | `number`    | Initial zoom of the content (e.g. `0.75` for 75%). Defaults to `1`. |
+| `className`        | `string`    | Additional classes for the outer frame.                             |
+| `contentClassName` | `string`    | Additional classes for the content viewport.                        |
+| `children`         | `ReactNode` | The content rendered inside the browser window.                     |

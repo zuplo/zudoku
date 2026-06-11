@@ -1,6 +1,5 @@
 import { matchPath } from "react-router";
 import type { ConfigWithMeta } from "../../config/loader.js";
-import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { matchesProtectedPattern } from "../../lib/util/url.js";
 
@@ -53,11 +52,11 @@ export const scopeMatchesPattern = (
 export const getProtectedSourceMatcher = (
   config: ConfigWithMeta,
 ): { match: ProtectedSourceMatcher; enabled: boolean; patterns: string[] } => {
-  const protectedRoutes = ProtectedRoutesSchema.parse(config.protectedRoutes);
-  const patterns = protectedRoutes ? Object.keys(protectedRoutes) : [];
+  const patterns = Object.keys(config.protectedRoutes ?? {});
   if (patterns.length === 0) {
     return { match: () => false, enabled: false, patterns };
   }
+
   return {
     enabled: true,
     patterns,

@@ -48,6 +48,22 @@
 - Use UI components from the `zudoku/ui` module. (based on shadcn/ui)
 - Use icons from the `zudoku/icons` module (based on Lucide icons)
 
+## Config Schema (Zod)
+
+- The loader parses the user config via `validateConfig()`, so schema `.default()`/`.transform()`
+  values apply to everything downstream. Don't re-parse config sections in consumers.
+- Order is always transform-then-parse: plugin `transformConfig` hooks run on the RAW authored
+  config (same shape they see in the client bundle), then the result is schema-parsed. Hook
+  additions must conform to the schema; unknown keys are stripped on the server side.
+- Zod only applies nested `.default()`s when the parent object is present in the input. A parent
+  that is `.optional()` short-circuits to `undefined` and inner defaults never run. Sub-schemas
+  whose defaults should apply when omitted must use `.prefault({})` on the schema itself (see
+  `DocsConfigSchema`). `.default({})` does NOT work for this: it returns the literal `{}` without
+  running the inner schema.
+- Exceptions that read the raw (unparsed) config: the client bundle via `virtual:zudoku-config`, and
+  `buildManifest` when called from the SSR entry. The prerender worker parses the built bundle's
+  config itself via `validateConfig()`.
+
 ## OpenAPI Schema Processing Pipeline
 
 There are two distinct pipelines depending on how schemas are loaded:

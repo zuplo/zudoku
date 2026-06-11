@@ -1,6 +1,7 @@
 export { Head } from "@unhead/react";
 export { Link } from "react-router";
 export { Anchor } from "./Anchor.js";
+export { BrowserWindow, type BrowserWindowProps } from "./BrowserWindow.js";
 export { Button } from "../ui/Button.js";
 export { Callout } from "../ui/Callout.js";
 export { ZudokuError } from "../util/invariant.js";
@@ -8,6 +9,12 @@ export { CategoryHeading } from "./CategoryHeading.js";
 export { ClientOnly } from "./ClientOnly.js";
 export { Heading } from "./Heading.js";
 export { ApiIdentityPicker } from "./ApiIdentityPicker.js";
+export {
+  LandingPage,
+  type LandingPageAction,
+  type LandingPageFeature,
+  type LandingPageProps,
+} from "./LandingPage.js";
 export { Markdown } from "./Markdown.js";
 export { Search } from "./Search.js";
 export { type CustomSlotNames, Slot } from "./Slot.js";
