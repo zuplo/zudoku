@@ -1,14 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { deepEqual } from "fast-equals";
-import { type Plugin, runnerImport } from "vite";
-import { ZuploEnv } from "../app/env.js";
-import { getZudokuRootDir } from "../cli/common/package-json.js";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
-import {
-  getBuildConfig,
-  type Processor,
-} from "../config/validators/BuildSchema.js";
+import { getBuildConfig } from "../config/validators/BuildSchema.js";
 import { getAllTags } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
@@ -28,22 +23,18 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
   const initialConfig = getCurrentConfig();
 
-  // Load Zuplo-specific processors if in Zuplo environment
-  const zuploProcessors = ZuploEnv.isZuplo
-    ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
-        path.resolve(getZudokuRootDir(), "src/zuplo/with-zuplo-processors.ts"),
-      ).then((m) => m.module.default(initialConfig.__meta.rootDir))
-    : [];
-
   const buildConfig = await getBuildConfig();
   const buildProcessors = buildConfig?.processors ?? [];
+
+  // Processors contributed by integrations (e.g. @zudoku/zuplo in Zuplo mode)
+  const configProcessors = initialConfig.__processors ?? [];
 
   const tmpStoreDir = path.posix.join(
     initialConfig.__meta.rootDir,
     PROCESSED_STORE_SUBPATH,
   );
 
-  const processors = [...buildProcessors, ...zuploProcessors];
+  const processors = [...buildProcessors, ...configProcessors];
   const schemaManager = new SchemaManager({
     storeDir: tmpStoreDir,
     config: initialConfig,

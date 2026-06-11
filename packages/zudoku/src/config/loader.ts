@@ -7,10 +7,12 @@ import {
   loadEnv as viteLoadEnv,
   type Plugin as VitePlugin,
 } from "vite";
+import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { runPluginTransformConfig } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
+import { resolveZuploPackage, ZUPLO_PACKAGE_NAME } from "../vite/zuplo.js";
 import { fileExists } from "./file-exists.js";
 import type { ZudokuConfig } from "./validators/ZudokuConfig.js";
 import { validateConfig } from "./validators/ZudokuConfig.js";
@@ -137,6 +139,39 @@ async function loadZudokuConfigWithMeta(
   return configWithMetadata;
 }
 
+// In Zuplo mode all Zuplo-specific behavior lives in the @zudoku/zuplo
+// package: it inspects the surrounding Zuplo project (OpenAPI files, GraphQL
+// endpoints, policies) and builds the Zudoku config for it. The package is
+// resolved from the user's project so it is only ever used in that context.
+async function applyZuploEnrichment(
+  config: ConfigWithMeta,
+): Promise<ConfigWithMeta> {
+  if (!ZuploEnv.isZuplo) return config;
+
+  const entryPath = resolveZuploPackage(config.__meta.rootDir, "node");
+  if (!entryPath) {
+    logger.warn(
+      colors.yellow(
+        `Zuplo mode is enabled, but ${ZUPLO_PACKAGE_NAME} is not installed. ` +
+          `Install it in your dev portal project to enable Zuplo-specific configuration.`,
+      ),
+      { timestamp: true },
+    );
+    return config;
+  }
+
+  const { module } = await runnerImport<{
+    buildZuploConfig: (config: ConfigWithMeta) => Promise<ConfigWithMeta>;
+  }>(entryPath, {
+    plugins: [virtualModuleStubPlugin],
+    environments: {
+      inline: { resolve: { noExternal: [/zudoku/] } },
+    },
+  });
+
+  return await module.buildZuploConfig(config);
+}
+
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
   const envPrefix = ["ZUPLO_PUBLIC_", "ZUDOKU_PUBLIC_"];
   const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
@@ -226,7 +261,8 @@ export async function loadZudokuConfig(
   ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
 
   try {
-    const loadedConfig = await loadZudokuConfigWithMeta(rootDir);
+    const loadedConfig =
+      await loadZudokuConfigWithMeta(rootDir).then(applyZuploEnrichment);
     const config = await runPluginTransformConfig(loadedConfig);
     setConfig(config);
 

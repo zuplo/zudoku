@@ -1,4 +1,25 @@
+import { createRequire } from "node:module";
+import path from "node:path";
 import bs58 from "bs58";
+
+export const ZUPLO_PACKAGE_NAME = "@zudoku/zuplo";
+
+/**
+ * Resolves an entry of the `@zudoku/zuplo` package from the user's project.
+ * The package holds all Zuplo-specific behavior and is expected to be
+ * installed in projects running in Zuplo mode; returns undefined when it
+ * isn't.
+ */
+export const resolveZuploPackage = (rootDir: string, subpath?: string) => {
+  try {
+    const require = createRequire(path.join(rootDir, "package.json"));
+    return require.resolve(
+      subpath ? `${ZUPLO_PACKAGE_NAME}/${subpath}` : ZUPLO_PACKAGE_NAME,
+    );
+  } catch {
+    return undefined;
+  }
+};
 
 export type ZuploEnvironmentVariables = {
   __ZUPLO_DEPLOYMENT_NAME?: string;

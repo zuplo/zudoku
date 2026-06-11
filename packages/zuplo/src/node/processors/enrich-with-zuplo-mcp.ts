@@ -9,9 +9,9 @@ import {
   DEFAULT_MCP_SERVER_VERSION,
 } from "@zuplo/mcp/server";
 import type { OpenAPIV3_1 } from "openapi-types";
-import type { ProcessorArg } from "../config/validators/BuildSchema.js";
-import { traverse, traverseAsync } from "../lib/util/traverse.js";
-import type { RecordAny } from "../lib/util/types.js";
+import type { ProcessorArg } from "zudoku/vite";
+import { traverse, traverseAsync } from "../../util/traverse.js";
+import type { RecordAny } from "../../util/types.js";
 import { operations } from "./enrich-with-zuplo.js";
 
 const MCP_TAG_NAME = "MCP";

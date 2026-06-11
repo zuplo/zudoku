@@ -1,0 +1,60 @@
+{
+  "name": "@zudoku/zuplo",
+  "version": "0.0.1",
+  "description": "Zuplo integration for Zudoku. Inspects a Zuplo project and builds the dev portal configuration for it.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuplo/zudoku",
+    "directory": "packages/zuplo"
+  },
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./node": "./src/node/index.ts",
+    "./vite-plugin": "./vite-plugin.ts"
+  },
+  "files": [
+    "dist",
+    "vite.config.ts"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "prepublishOnly": "pnpm typecheck && pnpm build",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "publishConfig": {
+    "main": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.mts",
+        "import": "./dist/index.mjs"
+      },
+      "./node": {
+        "types": "./dist/node/index.d.mts",
+        "import": "./dist/node/index.mjs"
+      },
+      "./vite-plugin": {
+        "types": "./dist/vite-plugin.d.mts",
+        "import": "./dist/vite-plugin.mjs"
+      }
+    }
+  },
+  "dependencies": {
+    "@zudoku/plugin-graphql": "workspace:*",
+    "@zuplo/mcp": "0.0.32",
+    "openapi-types": "12.1.3"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "zudoku": "workspace:*"
+  },
+  "peerDependencies": {
+    "zudoku": ">=0.80.1"
+  }
+}

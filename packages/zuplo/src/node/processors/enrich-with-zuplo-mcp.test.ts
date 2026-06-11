@@ -2,10 +2,12 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { OpenAPIDocument } from "../lib/oas/parser/index.js";
-import { removeExtensions } from "../lib/plugins/openapi/processors/removeExtensions.js";
-import { removePaths } from "../lib/plugins/openapi/processors/removePaths.js";
+import { removeExtensions } from "zudoku/processors/removeExtensions";
+import { removePaths } from "zudoku/processors/removePaths";
+import type { ProcessorArg } from "zudoku/vite";
 import { enrichWithZuploMcpServerData } from "./enrich-with-zuplo-mcp.js";
+
+type OpenAPIDocument = ProcessorArg["schema"];
 
 const mcpRouteHandler = (operations: Array<{ file: string; id: string }>) => ({
   "x-zuplo-route": {

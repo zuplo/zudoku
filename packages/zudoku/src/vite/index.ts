@@ -1,6 +1,10 @@
 import { getCurrentConfig } from "../config/loader.js";
 import { selectPluginConfigs } from "../lib/core/plugin-config.js";
 
+export type {
+  Processor,
+  ProcessorArg,
+} from "../config/validators/ProcessorSchema.js";
 export type { ConfigEnv, Plugin, PluginOption, UserConfig } from "vite";
 export { defineConfig, mergeConfig } from "vite";
 export { joinUrl } from "../lib/util/joinUrl.js";

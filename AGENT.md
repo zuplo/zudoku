@@ -21,6 +21,14 @@
 - **Monorepo**: Using pnpm + nx for workspace management
 - **Main packages**: `packages/zudoku` (core framework) and `packages/create-zudoku` (creates new
   Zudoku projects CLI)
+- **Zuplo integration**: `packages/zuplo` (`@zudoku/zuplo`) holds all Zuplo-specific behavior. In
+  Zuplo mode (`--zuplo`/`ZUPLO=1`) the config loader resolves it from the user's project; it
+  inspects the Zuplo context and builds the config: an `apis` entry per `../config/*.oas.json` file,
+  a `@zudoku/plugin-graphql` instance per `x-graphql` route, and the Zuplo schema processors (policy
+  enrichment, MCP, server URL injection, `x-zuplo-*` removal). The inspected context is stored on
+  the config (`__zuplo`) and served to the client via `virtual:zudoku-zuplo-context` so client and
+  build derive identical configs. Core must not hardcode Zuplo behavior; it only exposes generic
+  hooks (e.g. `__processors`).
 - **Core tech**: React 19+, Vite, TypeScript, TailwindCSS, React Router 7, Tanstack Query, Radix UI,
   Zod, mdx.js
 - **Plugins**: Modular architecture via plugins (openapi, markdown, api-keys, search, etc.)

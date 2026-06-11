@@ -1,7 +1,7 @@
 import type { OpenAPIV3_1 } from "openapi-types";
-import type { ProcessorArg } from "../config/validators/BuildSchema.js";
-import { objectEntries } from "../lib/util/objectEntries.js";
-import type { RecordAny } from "../lib/util/traverse.js";
+import type { ProcessorArg } from "zudoku/vite";
+import { objectEntries } from "../../util/objectEntries.js";
+import type { RecordAny } from "../../util/types.js";
 import type {
   PoliciesConfigFile,
   PolicyConfigurationFragment,

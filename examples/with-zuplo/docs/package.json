@@ -21,6 +21,7 @@
     }
   },
   "dependencies": {
+    "@zudoku/zuplo": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zudoku": "workspace:*"

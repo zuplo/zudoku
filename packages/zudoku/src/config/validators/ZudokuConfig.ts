@@ -24,6 +24,7 @@ import {
   InputNavigationSchema,
   NavigationRulesSchema,
 } from "./InputNavigationSchema.js";
+import { BuildProcessorSchema } from "./ProcessorSchema.js";
 import { ProtectedRoutesSchema } from "./ProtectedRoutesSchema.js";
 
 const ThemeSchema = z
@@ -748,6 +749,12 @@ const BaseConfigSchema = z.object({
   }),
   // Internal: populated by plugins via `transformConfig` to track plugin directories
   __pluginDirs: z.array(z.string()),
+  // Internal: build-time OpenAPI schema processors contributed by integrations
+  // (e.g. @zudoku/zuplo); appended after the user's build config processors
+  __processors: z.array(BuildProcessorSchema),
+  // Internal: serialized Zuplo context set by @zudoku/zuplo, served to the
+  // client via its `virtual:zudoku-zuplo-context` module
+  __zuplo: z.unknown(),
 });
 
 export const ZudokuConfig = BaseConfigSchema.partial();

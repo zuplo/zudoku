@@ -65,11 +65,8 @@ const config: ZudokuConfig = {
     },
   ],
   redirects: [{ from: "/", to: "/introduction" }],
-  apis: {
-    type: "file",
-    input: "../config/routes.oas.json",
-    path: "/api",
-  },
+  // The OpenAPI files in ../config are auto-detected by @zudoku/zuplo and
+  // mounted at /api (routes.oas.json), so no `apis` entry is needed here.
   docs: {
     files: "/pages/**/*.mdx",
   },
