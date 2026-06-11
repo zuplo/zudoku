@@ -158,7 +158,10 @@ describe("assertProtectedPatternsCovered", () => {
 
   const configWith = (patterns: string[]) =>
     ({
-      protectedRoutes: patterns,
+      // Normalized record shape, as produced by the parsed loader config
+      protectedRoutes: Object.fromEntries(
+        patterns.map((pattern) => [pattern, () => true]),
+      ),
       __meta: { rootDir: "/tmp" },
     }) as never;
 
@@ -207,7 +210,10 @@ describe("assertCloudflareWranglerGatesProtected", () => {
 
   const configWith = (patterns: string[]) =>
     ({
-      protectedRoutes: patterns,
+      // Normalized record shape, as produced by the parsed loader config
+      protectedRoutes: Object.fromEntries(
+        patterns.map((pattern) => [pattern, () => true]),
+      ),
       __meta: { rootDir: "/tmp" },
     }) as never;
 

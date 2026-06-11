@@ -16,7 +16,6 @@ import {
   getZudokuRootDir,
 } from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
-import { CdnUrlSchema } from "../config/validators/ZudokuConfig.js";
 import { PROTECTED_CHUNK_DIR } from "../lib/manifest.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import type { SSRAdapter } from "./build.js";
@@ -69,7 +68,7 @@ export async function getViteConfig(
     chunk.moduleIds.some(isProtectedSource);
 
   const isWorker = options.adapter === "cloudflare";
-  const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
+  const cdnUrl = config.cdnUrl;
 
   const base = cdnUrl?.base
     ? joinUrl(cdnUrl.base, config.basePath)
