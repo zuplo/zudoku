@@ -1,0 +1,68 @@
+"""
+Cosmo Cargo's interstellar shipment API.
+"""
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+"""
+Read-only entry points for tracking shipments across the galaxy.
+"""
+type Query {
+  """
+  Get a shipment by its tracking ID.
+  """
+  shipment(id: ID!): Shipment
+
+  """
+  List all shipments currently in transit.
+  """
+  shipments(status: ShipmentStatus): [Shipment!]!
+}
+
+"""
+Book and update interstellar shipments.
+"""
+type Mutation {
+  """
+  Book a new shipment between two star systems.
+  """
+  bookShipment(input: BookShipmentInput!): Shipment!
+}
+
+"""
+A parcel on its way through the cosmos.
+"""
+type Shipment {
+  id: ID!
+  origin: StarSystem!
+  destination: StarSystem!
+  status: ShipmentStatus!
+  """
+  Warp factor the carrier is travelling at.
+  """
+  warpFactor: Float
+}
+
+"""
+A star system served by Cosmo Cargo.
+"""
+type StarSystem {
+  id: ID!
+  name: String!
+  sector: String
+}
+
+enum ShipmentStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  LOST_IN_WORMHOLE
+}
+
+input BookShipmentInput {
+  originId: ID!
+  destinationId: ID!
+  warpFactor: Float
+}

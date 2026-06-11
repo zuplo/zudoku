@@ -4,7 +4,11 @@ import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { IconNames } from "./icon-types.js";
 import type { SortableNavigationItem } from "./NavigationSchema.js";
 
-const IconSchema = z.custom<IconNames>((f) => typeof f === "string");
+// `meta` keeps the field (as a string) in derived JSON schemas, which
+// otherwise omit unannotated `z.custom` fields (see codegen/json-schema.ts).
+const IconSchema = z
+  .custom<IconNames>((f) => typeof f === "string")
+  .meta({ type: "string", description: "Lucide icon name" });
 
 const BadgeSchema = z.object({
   label: z.string(),

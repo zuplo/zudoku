@@ -9,7 +9,10 @@ import {
 } from "vite";
 import { logger } from "../cli/common/logger.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
-import { runPluginTransformConfig } from "../lib/core/transform-config.js";
+import {
+  resolveExtends,
+  runPluginTransformConfig,
+} from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
 import { fileExists } from "./file-exists.js";
 import type {
@@ -125,7 +128,7 @@ async function loadZudokuConfigWithMeta(
   }
 
   return {
-    ...module.default,
+    ...resolveExtends(module.default),
     __meta: {
       rootDir,
       moduleDir: getZudokuRootDir(),

@@ -243,6 +243,22 @@ importers:
         specifier: workspace:*
         version: link:../../packages/zudoku
 
+  examples/config-spec:
+    dependencies:
+      '@zudoku/plugin-graphql':
+        specifier: workspace:*
+        version: link:../../packages/plugin-graphql
+      zudoku:
+        specifier: workspace:*
+        version: link:../../packages/zudoku
+    devDependencies:
+      react:
+        specifier: 'catalog:'
+        version: 19.2.5
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.5(react@19.2.5)
+
   examples/cosmo-cargo:
     dependencies:
       react:
@@ -616,6 +632,9 @@ importers:
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(publint@0.3.21)(tsx@4.22.4)(typescript@6.0.3)
+      zod:
+        specifier: 'catalog:'
+        version: 4.3.6
       zudoku:
         specifier: workspace:*
         version: link:../zudoku

@@ -54,6 +54,7 @@
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
     "./plugins/search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
+    "./codegen": "./src/codegen/index.ts",
     "./components": "./src/lib/components/index.ts",
     "./mermaid": "./src/lib/components/Mermaid.tsx",
     "./router": "./src/lib/core/router.ts",

@@ -19,6 +19,7 @@ vi.mock("../cli/common/package-json.js", () => ({
 
 vi.mock("../lib/core/transform-config.js", () => ({
   runPluginTransformConfig: vi.fn((config) => config),
+  resolveExtends: vi.fn((config) => config),
 }));
 
 vi.mock("./file-exists.js", () => ({

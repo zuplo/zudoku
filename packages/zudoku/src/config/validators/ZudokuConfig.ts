@@ -430,7 +430,8 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
       .custom<`pk_test_${string}` | `pk_live_${string}`>()
       .refine((val) => /^pk_(test|live)_\w+$/.test(val), {
         message: "Clerk public key invalid, must start with pk_test or pk_live",
-      }),
+      })
+      .meta({ type: "string", pattern: "^pk_(test|live)_\\w+$" }),
     // No default: an absent template must stay absent so Clerk issues its
     // standard session token instead of requesting a non-existent template.
     jwtTemplateName: z.string().optional(),
@@ -632,11 +633,16 @@ const SiteSchema = z
       .optional(),
     notFoundPage: z.custom<NonNullable<ReactNode>>(),
     banner: z.object({
-      message: z.custom<NonNullable<ReactNode>>(),
+      // `meta` keeps these fields (as strings) in derived JSON schemas, which
+      // otherwise omit unannotated `z.custom` fields.
+      message: z
+        .custom<NonNullable<ReactNode>>()
+        .meta({ type: "string", description: "Banner message" }),
       color: z
         .custom<"note" | "tip" | "info" | "caution" | "danger" | (string & {})>(
           (val) => typeof val === "string",
         )
+        .meta({ type: "string" })
         .optional(),
       dismissible: z.boolean().optional(),
     }),
@@ -691,6 +697,14 @@ const CdnUrlSchema = z
   });
 
 const BaseConfigSchema = z.object({
+  /**
+   * Base config layers this config composes (e.g. a generated config from
+   * `zudoku generate`). Layers are merged in order, with this config applied
+   * on top: scalars and objects from later layers win, `plugins` concatenate.
+   */
+  // Typed as `ZudokuConfig[]` via `InputOverrides` below; `z.custom` can't
+  // reference the config type directly without a circular type error.
+  extends: z.array(z.custom<Record<string, unknown>>()),
   slots: z.record(z.string(), z.custom<SlotType>()),
   /**
    * @deprecated Use `slots` instead
@@ -733,10 +747,10 @@ const BaseConfigSchema = z.object({
   theme: ThemeConfigSchema,
   syntaxHighlighting: z
     .object({
-      languages: z.array(z.custom<BundledLanguage>()),
+      languages: z.array(z.custom<BundledLanguage>().meta({ type: "string" })),
       themes: z.object({
-        light: z.custom<BundledTheme>(),
-        dark: z.custom<BundledTheme>(),
+        light: z.custom<BundledTheme>().meta({ type: "string" }),
+        dark: z.custom<BundledTheme>().meta({ type: "string" }),
       }),
     })
     .partial()
@@ -776,9 +790,11 @@ export type ZudokuRedirect = z.infer<typeof Redirect>;
 export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
 
 // Pin navigation types to their strict inferred form (z.input widens them due to z.lazy recursion).
+// `extends` is typed here because the schema can't self-reference the config type.
 type InputOverrides = {
   navigation?: z.infer<typeof InputNavigationSchema>;
   navigationRules?: z.infer<typeof NavigationRulesSchema>;
+  extends?: ZudokuConfig[];
 };
 
 type BaseZudokuConfig = z.input<typeof ZudokuConfig>;

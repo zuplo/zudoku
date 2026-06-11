@@ -11,7 +11,10 @@ import { logger } from "../../cli/common/logger.js";
 import { fileExists } from "../../config/file-exists.js";
 import { getBuildConfig } from "../../config/validators/BuildSchema.js";
 import { validateConfig } from "../../config/validators/ZudokuConfig.js";
-import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
+import {
+  resolveExtends,
+  runPluginTransformConfig,
+} from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import {
@@ -69,9 +72,12 @@ export const prerender = async ({
     path.join(distDir, "server/entry.server.js"),
   ).href;
 
-  // Same order as the loader: transform the raw bundle config, then parse.
+  // Same order as the loader: resolve extends layers and transform the raw
+  // bundle config, then parse.
   const rawConfig = await import(serverConfigPath).then((m) => m.default);
-  const config = validateConfig(await runPluginTransformConfig(rawConfig));
+  const config = validateConfig(
+    await runPluginTransformConfig(resolveExtends(rawConfig)),
+  );
 
   const buildConfig = await getBuildConfig();
   const module = await import(entryServerPath);

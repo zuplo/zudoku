@@ -1,0 +1,19 @@
+---
+title: Welcome aboard
+---
+
+This portal is assembled from two layers:
+
+1. `zudoku.base.ts` — generated from [`spec.json`](https://github.com/zuplo/zudoku) by
+   `zudoku generate`. It wires up the GraphQL plugin without any hand-written plugin code.
+2. `zudoku.config.ts` — the hand-written layer on top, composed via `extends: [base]`. It overrides
+   the site title and adds this page.
+
+Check out the [Shipment GraphQL API](/graphql) — its routes come entirely from the generated layer.
+
+Regenerate the base layer after changing `spec.json`:
+
+```sh
+pnpm generate
+# -> zudoku generate spec.json -o zudoku.base.ts
+```
