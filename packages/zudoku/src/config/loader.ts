@@ -12,10 +12,13 @@ import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { runPluginTransformConfig } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
 import { fileExists } from "./file-exists.js";
-import type { ZudokuConfig } from "./validators/ZudokuConfig.js";
+import type {
+  ResolvedZudokuConfig,
+  ZudokuConfig,
+} from "./validators/ZudokuConfig.js";
 import { validateConfig } from "./validators/ZudokuConfig.js";
 
-export type ConfigWithMeta = ZudokuConfig & {
+export type ConfigWithMeta = ResolvedZudokuConfig & {
   __meta: {
     rootDir: string;
     moduleDir: string;
@@ -69,9 +72,11 @@ const virtualModuleStubPlugin: VitePlugin = {
   },
 };
 
+type RawConfigWithMeta = ZudokuConfig & { __meta: ConfigWithMeta["__meta"] };
+
 async function loadZudokuConfigWithMeta(
   rootDir: string,
-): Promise<ConfigWithMeta> {
+): Promise<RawConfigWithMeta> {
   const configPath = await getConfigFilePath(rootDir);
 
   let module: { default: ZudokuConfig };
@@ -119,12 +124,8 @@ async function loadZudokuConfigWithMeta(
     );
   }
 
-  const config = module.default;
-
-  validateConfig(config, configPath);
-
-  const configWithMetadata: ConfigWithMeta = {
-    ...config,
+  return {
+    ...module.default,
     __meta: {
       rootDir,
       moduleDir: getZudokuRootDir(),
@@ -133,8 +134,6 @@ async function loadZudokuConfigWithMeta(
       configPath,
     },
   };
-
-  return configWithMetadata;
 }
 
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
@@ -227,7 +226,13 @@ export async function loadZudokuConfig(
 
   try {
     const loadedConfig = await loadZudokuConfigWithMeta(rootDir);
-    const config = await runPluginTransformConfig(loadedConfig);
+    // Transform first (plugin hooks see the same raw shape as in the client
+    // bundle), then parse so schema defaults and transforms apply.
+    const transformed = await runPluginTransformConfig(loadedConfig);
+    const config: ConfigWithMeta = {
+      ...validateConfig(transformed, transformed.__meta.configPath),
+      __meta: transformed.__meta,
+    };
     setConfig(config);
 
     logger.info(
@@ -264,6 +269,7 @@ export async function loadZudokuConfig(
 
 export const setStandaloneConfig = (rootDir: string) => {
   setConfig({
+    ...validateConfig({}),
     __meta: {
       rootDir,
       moduleDir: getZudokuRootDir(),
