@@ -15,9 +15,12 @@ import {
 } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
+import type { PendingCredit } from "../../hooks/usePendingCredits.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDurationAdjective } from "../../utils/formatDuration.js";
 import { SwitchPlanModal } from "./SwitchPlanModal";
+
+export type { PendingCredit };
 
 export type UsageResult = {
   $schema: string;
@@ -27,17 +30,6 @@ export type UsageResult = {
   subscriptionId: string;
   paymentStatus: PaymentStatus;
   annotations?: Annotations;
-  pendingCredits?: PendingCredit[];
-};
-
-// A usage credit (overage waiver) applied by the API owner that will be applied to
-// the next invoice automatically. Surfaced so the user understands a charge was
-// forgiven (the recorded usage/balance is unchanged).
-export type PendingCredit = {
-  featureKey: string;
-  units: number;
-  appliesToInvoiceAt?: string;
-  source: string;
 };
 
 export type PaymentStatus = {
@@ -190,19 +182,21 @@ export const Usage = ({
   currentItems,
   subscription,
   isPendingFirstPayment,
+  pendingCredits,
 }: {
   usage: UsageResult;
   isFetching: boolean;
   currentItems?: Item[];
   subscription?: Subscription;
   isPendingFirstPayment: boolean;
+  pendingCredits?: PendingCredit[];
 }) => {
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
   );
 
   const creditByFeature = new Map(
-    (usage.pendingCredits ?? []).map((credit) => [credit.featureKey, credit]),
+    (pendingCredits ?? []).map((credit) => [credit.featureKey, credit]),
   );
 
   return (

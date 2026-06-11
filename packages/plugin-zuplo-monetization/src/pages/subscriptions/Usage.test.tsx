@@ -260,12 +260,10 @@ describe("Usage - UsageItem", () => {
   it("shows a pending credit banner and suppresses the overage charge alert", () => {
     render(
       <Usage
-        usage={{
-          ...makeUsage({ balance: 0, usage: 1200, overage: 200 }),
-          pendingCredits: [
-            { featureKey: "requests", units: 200, source: "support" },
-          ],
-        }}
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        pendingCredits={[
+          { featureKey: "requests", units: 200, source: "support" },
+        ]}
         isFetching={false}
         currentItems={[softLimitItem]}
         isPendingFirstPayment={false}
@@ -285,12 +283,10 @@ describe("Usage - UsageItem", () => {
   it("does not show a credit banner for features without a pending credit", () => {
     render(
       <Usage
-        usage={{
-          ...makeUsage({ balance: 0, usage: 1200, overage: 200 }),
-          pendingCredits: [
-            { featureKey: "something-else", units: 50, source: "support" },
-          ],
-        }}
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        pendingCredits={[
+          { featureKey: "something-else", units: 50, source: "support" },
+        ]}
         isFetching={false}
         currentItems={[softLimitItem]}
         isPendingFirstPayment={false}
