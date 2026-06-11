@@ -317,5 +317,39 @@ describe("Usage - pay-as-you-go and included framing", () => {
       screen.getByText("250 used this billing period"),
     ).toBeInTheDocument();
     expect(screen.queryByText(/used your included/)).not.toBeInTheDocument();
+    // The price has a free leading tier, so the caption must not claim
+    // per-call billing.
+    expect(
+      screen.getByText(/The first 1,?000 calls are included/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Pay as you go/)).not.toBeInTheDocument();
+  });
+
+  it("doesn't claim pay-as-you-go for price shapes the derivation can't reason about", () => {
+    const volumeItem = {
+      featureKey: "requests",
+      name: "API Requests",
+      included: { entitlement: { isSoftLimit: true } },
+      price: {
+        type: "tiered",
+        mode: "volume",
+        tiers: [
+          { upToAmount: "1000", unitPrice: { amount: "0" } },
+          { unitPrice: { amount: "0.02" } },
+        ],
+      },
+    } as Item;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 500, usage: 500, overage: 0 })}
+        isFetching={false}
+        currentItems={[volumeItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    // Quota framing stays; no "every call is billed" claim.
+    expect(screen.getByText(/1,?000 included/)).toBeInTheDocument();
+    expect(screen.queryByText(/Pay as you go/)).not.toBeInTheDocument();
   });
 });

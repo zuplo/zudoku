@@ -80,10 +80,28 @@ const UsageItem = ({
   // A soft limit on a price that bills from the first unit caps nothing and
   // includes nothing — its quota is meaningless, so show plain consumption
   // instead of quota math. Same when no quota was issued (track-usage-only).
+  // "Billed from the first call" is only a trustworthy claim for the price
+  // shapes the derivation actually understands (unit and graduated tiers);
+  // priceIncludedUnits returns 0 merely conservatively for the rest.
   const freeUnits = priceIncludedUnits(item?.price);
-  const hasUsagePrice = !!item?.price && item.price.type !== "flat";
-  const payAsYouGo = isSoftLimit && hasUsagePrice && freeUnits === 0;
+  const isGraduatedTiered =
+    item?.price?.type === "tiered" &&
+    (item.price.mode ?? "graduated") === "graduated";
+  const payAsYouGo =
+    isSoftLimit &&
+    freeUnits === 0 &&
+    (item?.price?.type === "unit" || isGraduatedTiered);
   const usageOnly = payAsYouGo || (isSoftLimit && quota <= 0);
+  // The usage-only caption must not claim per-call billing when the price
+  // actually includes leading units (track-only quota) or is a shape we
+  // can't reason about.
+  const usageOnlyCaption = payAsYouGo
+    ? "Pay as you go — every call is billed; there is no usage cap."
+    : freeUnits === Number.POSITIVE_INFINITY
+      ? "Included with your plan — there is no usage cap."
+      : freeUnits > 0
+        ? `The first ${freeUnits.toLocaleString()} calls are included; additional usage is billed. There is no usage cap.`
+        : "Usage is billed per your plan's pricing. There is no usage cap.";
   const isAtLimit = !isSoftLimit && meter.usage >= quota;
   // Exceeding a soft limit is pay-per-use working as designed, not an error —
   // only a blocking hard limit gets the destructive treatment.
@@ -152,9 +170,7 @@ const UsageItem = ({
                 </span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Pay as you go — every call is billed; there is no usage cap.
-            </p>
+            <p className="text-xs text-muted-foreground">{usageOnlyCaption}</p>
           </>
         ) : (
           <>
