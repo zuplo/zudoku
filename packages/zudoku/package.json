@@ -131,7 +131,7 @@
     "@tanstack/react-query": "5.97.0",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "6.0.1",
+    "@vitejs/plugin-react": "6.0.2",
     "@x0k/json-schema-merge": "1.0.3",
     "@unhead/react": "3.1.0",
     "@zuplo/mcp": "0.0.32",
