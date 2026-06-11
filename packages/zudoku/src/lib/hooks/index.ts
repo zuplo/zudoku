@@ -6,7 +6,11 @@ export {
   useVerifiedEmail,
 } from "../authentication/hook.js";
 export { CACHE_KEYS, useCache } from "../components/cache.js";
-export { useZudoku } from "../components/context/ZudokuContext.js";
+export {
+  useApiIdentities,
+  useZudoku,
+} from "../components/context/ZudokuContext.js";
+export { useApiIdentitySelection } from "./useApiIdentitySelection.js";
 export { useExposedProps } from "../util/useExposedProps.js";
 export { useEvent } from "./useEvent.js";
 export { useSidebar } from "../components/navigation/sidebarStore.js";
