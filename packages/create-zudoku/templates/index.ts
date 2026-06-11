@@ -105,6 +105,15 @@ export const installTemplate = async ({
    * "latest" tag when offline.
    */
   if (template === "zuplo") {
+    // Zuplo mode generates the base config layer (zudoku.base.ts) the
+    // template's zudoku.config.tsx extends.
+    packageJson.scripts = {
+      ...packageJson.scripts,
+      dev: "zudoku dev --zuplo",
+      build: "zudoku build --zuplo",
+      preview: "zudoku preview --zuplo",
+    };
+
     for (const dependency of [
       "@zudoku/zuplo",
       "@zuplo/zudoku-plugin-monetization",

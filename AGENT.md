@@ -21,14 +21,17 @@
 - **Monorepo**: Using pnpm + nx for workspace management
 - **Main packages**: `packages/zudoku` (core framework) and `packages/create-zudoku` (creates new
   Zudoku projects CLI)
-- **Zuplo integration**: `packages/zuplo` (`@zudoku/zuplo`) holds all Zuplo-specific behavior. In
-  Zuplo mode (`--zuplo`/`ZUPLO=1`) the config loader resolves it from the user's project; it
-  inspects the Zuplo context and builds the config: an `apis` entry per `../config/*.oas.json` file,
-  a `@zudoku/plugin-graphql` instance per `x-graphql` route, and the Zuplo schema processors (policy
-  enrichment, MCP, server URL injection, `x-zuplo-*` removal). The inspected context is stored on
-  the config (`__zuplo`) and served to the client via `virtual:zudoku-zuplo-context` so client and
-  build derive identical configs. Core must not hardcode Zuplo behavior; it only exposes generic
-  hooks (e.g. `__processors`).
+- **Zuplo integration**: `packages/zuplo` (`@zudoku/zuplo`) holds all Zuplo-specific behavior,
+  applied through a two-step process. Step 1: `zudoku generate` (runs before `dev`/`build`/
+  `preview`) compiles `spec.json` — a serializable, Zod-validated site description — into a typed
+  base config layer (`zudoku.base.ts`) with static plugin imports; in a Zuplo project the package's
+  `extendSpec` adds an `apis` entry per `../config/*.oas.json` file and a `@zudoku/plugin-graphql`
+  entry per `x-graphql` route. Step 2: the user's `zudoku.config.ts` layers on top via `extends`
+  (resolved by `resolveConfigExtends` identically node-side and in the client bundle; plugins/apis
+  concatenate, top layer wins otherwise), and in Zuplo mode the config loader resolves the package
+  from the user's project to attach the node-only schema processors (policy enrichment, MCP, server
+  URL injection, `x-zuplo-*` removal). Core must not hardcode Zuplo behavior; it only exposes
+  generic hooks (`extendSpec`, `__processors`).
 - **Core tech**: React 19+, Vite, TypeScript, TailwindCSS, React Router 7, Tanstack Query, Radix UI,
   Zod, mdx.js
 - **Plugins**: Modular architecture via plugins (openapi, markdown, api-keys, search, etc.)

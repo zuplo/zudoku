@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { graphqlPlugin } from "@zudoku/plugin-graphql";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { inspectZuploContext } from "./inspect.js";
 
@@ -49,12 +48,12 @@ describe("inspectZuploContext", () => {
     ]);
   });
 
-  it("skips files already configured by the user", async () => {
+  it("skips files the spec already configures", async () => {
     await writeOasFile("routes.oas.json", baseDocument());
 
     const context = await inspectZuploContext({
       rootDir,
-      config: {
+      spec: {
         apis: {
           type: "file",
           input: "../config/routes.oas.json",
@@ -71,7 +70,7 @@ describe("inspectZuploContext", () => {
 
     const context = await inspectZuploContext({
       rootDir,
-      config: {
+      spec: {
         apis: {
           type: "url",
           input: "https://example.com/openapi.json",
@@ -168,7 +167,7 @@ describe("inspectZuploContext", () => {
     expect(context.graphql).toHaveLength(1);
   });
 
-  it("skips GraphQL endpoints the user already documents", async () => {
+  it("skips GraphQL endpoints the spec already documents", async () => {
     vi.stubEnv("ZUPLO_SERVER_URL", "https://my-gateway.example.com");
     await writeOasFile(
       "routes.oas.json",
@@ -179,13 +178,16 @@ describe("inspectZuploContext", () => {
 
     const context = await inspectZuploContext({
       rootDir,
-      config: {
+      spec: {
         plugins: [
-          graphqlPlugin({
-            type: "url",
-            input: "https://my-gateway.example.com/graphql",
-            path: "/my-graphql",
-          }),
+          {
+            name: "graphql",
+            options: {
+              type: "url",
+              input: "https://my-gateway.example.com/graphql",
+              path: "/my-graphql",
+            },
+          },
         ],
       },
     });

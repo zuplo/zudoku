@@ -1,7 +1,5 @@
 import { normalizePath, type Plugin, type ResolvedConfig } from "vite";
-import { ZuploEnv } from "../app/env.js";
 import { getCurrentConfig } from "../config/loader.js";
-import { resolveZuploPackage } from "./zuplo.js";
 
 const virtualModuleId = "virtual:zudoku-config";
 const resolvedVirtualModuleId = `\0${virtualModuleId}`;
@@ -27,31 +25,14 @@ const viteConfigPlugin = (): Plugin => {
         return `export default {};`;
       }
 
-      // In Zuplo mode the config was enriched node-side by @zudoku/zuplo
-      // (see `applyZuploEnrichment` in the config loader); apply the identical
-      // enrichment to the raw config here so the client sees the same
-      // `apis`/`plugins` the build was generated from.
-      const zuploEntry = ZuploEnv.isZuplo
-        ? resolveZuploPackage(getCurrentConfig().__meta.rootDir)
-        : undefined;
-
-      if (zuploEntry) {
-        return `
-import rawConfig from "${normalizePath(configPath)}";
-import { runPluginTransformConfig } from "zudoku/plugins";
-import { applyZuploContext } from "${normalizePath(zuploEntry)}";
-import zuploContext from "virtual:zudoku-zuplo-context";
-
-const config = await runPluginTransformConfig(applyZuploContext(rawConfig, zuploContext));
-export default config;
-`;
-      }
-
+      // Base config layers (`extends`) are static imports inside the user's
+      // config module, so resolving them here yields the exact same merged
+      // config node-side and in the client bundle.
       return `
 import rawConfig from "${normalizePath(configPath)}";
-import { runPluginTransformConfig } from "zudoku/plugins";
+import { resolveConfigExtends, runPluginTransformConfig } from "zudoku/plugins";
 
-const config = await runPluginTransformConfig(rawConfig);
+const config = await runPluginTransformConfig(resolveConfigExtends(rawConfig));
 export default config;
 `;
     },

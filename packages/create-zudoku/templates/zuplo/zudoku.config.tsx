@@ -2,6 +2,10 @@
 // subscriptions). See: https://zuplo.com/docs/articles/monetization
 // import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
 import type { ZudokuConfig } from "zudoku";
+// Compiled from your Zuplo project by `zudoku generate`, which runs
+// automatically before dev/build. It contains the detected OpenAPI files
+// (e.g. ../config/routes.oas.json mounted at /api) and GraphQL endpoints.
+import baseConfig from "./zudoku.base.js";
 
 /**
  * Developer Portal Configuration
@@ -9,6 +13,7 @@ import type { ZudokuConfig } from "zudoku";
  * https://zuplo.com/docs/dev-portal/zudoku/configuration/overview
  */
 const config: ZudokuConfig = {
+  extends: [baseConfig],
   site: {
     title: "My Developer Portal",
     logo: {
@@ -69,13 +74,6 @@ const config: ZudokuConfig = {
     },
   ],
   redirects: [{ from: "/", to: "/api" }],
-  apis: [
-    {
-      type: "file",
-      input: "../config/routes.oas.json",
-      path: "api",
-    },
-  ],
   authentication: {
     // IMPORTANT: This is a demo Auth0 configuration.
     // In a real application, you should replace these values with your own

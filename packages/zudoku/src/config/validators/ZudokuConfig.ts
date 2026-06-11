@@ -52,7 +52,7 @@ const ThemeSchema = z
   })
   .partial();
 
-const ApiCatalogCategorySchema = z.object({
+export const ApiCatalogCategorySchema = z.object({
   label: z.string(),
   tags: z.array(z.string()),
 });
@@ -86,7 +86,7 @@ const AiAssistantsSchema = z
 
 export type AiAssistantsConfig = z.infer<typeof AiAssistantsSchema>;
 
-const ApiOptionsSchema = z
+export const ApiOptionsSchema = z
   .object({
     examplesLanguage: z.string(),
     supportedLanguages: z.array(LanguageOption),
@@ -125,7 +125,7 @@ const ApiConfigSchema = z
   })
   .partial();
 
-const VersionConfigSchema = z.object({
+export const VersionConfigSchema = z.object({
   path: z.string(),
   input: z.string(),
   label: z.string().optional(),
@@ -198,7 +198,7 @@ const ApiKeysSchema = z.object({
 
 export type ApiKeysOptions = z.infer<typeof ApiKeysSchema>;
 
-const LogoSchema = z.object({
+export const LogoSchema = z.object({
   src: z.object({ light: z.string(), dark: z.string() }),
   alt: z.string().optional(),
   width: z.string().or(z.number()).optional(),
@@ -412,7 +412,7 @@ const SignUpOpenIdSchema = z.union([
     .strict(),
 ]);
 
-const AuthenticationSchema = z.discriminatedUnion("type", [
+export const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
     clerkPubKey: z
@@ -538,7 +538,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-const MetadataSchema = z
+export const MetadataSchema = z
   .object({
     title: z.string(),
     defaultTitle: z.string().optional(),
@@ -589,7 +589,7 @@ const CssObject = z.record(
   ),
 );
 
-const ThemeConfigSchema = z.object({
+export const ThemeConfigSchema = z.object({
   registryUrl: z.string().url().optional(),
   /**
    * @deprecated Import a `.css` file from your `zudoku.config.ts` instead.
@@ -679,6 +679,9 @@ export const CdnUrlSchema = z
   .optional();
 
 const BaseConfigSchema = z.object({
+  // Base config layers this config sits on top of (e.g. a generated
+  // `zudoku.base.ts`). Resolved before validation, see `resolveConfigExtends`.
+  extends: z.array(z.looseObject({})),
   slots: z.record(z.string(), z.custom<SlotType>()),
   /**
    * @deprecated Use `slots` instead
@@ -752,9 +755,6 @@ const BaseConfigSchema = z.object({
   // Internal: build-time OpenAPI schema processors contributed by integrations
   // (e.g. @zudoku/zuplo); appended after the user's build config processors
   __processors: z.array(BuildProcessorSchema),
-  // Internal: serialized Zuplo context set by @zudoku/zuplo, served to the
-  // client via its `virtual:zudoku-zuplo-context` module
-  __zuplo: z.unknown(),
 });
 
 export const ZudokuConfig = BaseConfigSchema.partial();
@@ -772,8 +772,9 @@ export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
 type BaseZudokuConfig = z.input<typeof ZudokuConfig>;
 export type ZudokuConfig = Omit<
   BaseZudokuConfig,
-  "header" | "navigation" | "navigationRules"
+  "extends" | "header" | "navigation" | "navigationRules"
 > & {
+  extends?: ZudokuConfig[];
   header?: {
     navigation?: z.infer<typeof HeaderNavigationSchema>;
     themeSwitcher?: {

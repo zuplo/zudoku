@@ -13,6 +13,7 @@ import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { runPluginTransformConfig } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
 import { resolveZuploPackage, ZUPLO_PACKAGE_NAME } from "../vite/zuplo.js";
+import { resolveConfigExtends } from "./extends.js";
 import { fileExists } from "./file-exists.js";
 import type { ZudokuConfig } from "./validators/ZudokuConfig.js";
 import { validateConfig } from "./validators/ZudokuConfig.js";
@@ -121,7 +122,9 @@ async function loadZudokuConfigWithMeta(
     );
   }
 
-  const config = module.default;
+  // Resolve base config layers (e.g. a generated `zudoku.base.ts`) before
+  // validation so the merged result is what gets validated and used.
+  const config = resolveConfigExtends(module.default);
 
   validateConfig(config, configPath);
 
@@ -139,11 +142,13 @@ async function loadZudokuConfigWithMeta(
   return configWithMetadata;
 }
 
-// In Zuplo mode all Zuplo-specific behavior lives in the @zudoku/zuplo
-// package: it inspects the surrounding Zuplo project (OpenAPI files, GraphQL
-// endpoints, policies) and builds the Zudoku config for it. The package is
-// resolved from the user's project so it is only ever used in that context.
-async function applyZuploEnrichment(
+// In Zuplo mode the @zudoku/zuplo package contributes the build-time OpenAPI
+// schema processors (policy documentation, MCP enrichment, server URL
+// injection). The static config itself comes from the generated base layer
+// (`zudoku generate`), so this only attaches the node-only processors that
+// can't live in a serializable config. The package is resolved from the
+// user's project so it is only ever used in that context.
+async function applyZuploProcessors(
   config: ConfigWithMeta,
 ): Promise<ConfigWithMeta> {
   if (!ZuploEnv.isZuplo) return config;
@@ -161,7 +166,7 @@ async function applyZuploEnrichment(
   }
 
   const { module } = await runnerImport<{
-    buildZuploConfig: (config: ConfigWithMeta) => Promise<ConfigWithMeta>;
+    applyZuploProcessors: (config: ConfigWithMeta) => Promise<ConfigWithMeta>;
   }>(entryPath, {
     plugins: [virtualModuleStubPlugin],
     environments: {
@@ -169,7 +174,7 @@ async function applyZuploEnrichment(
     },
   });
 
-  return await module.buildZuploConfig(config);
+  return await module.applyZuploProcessors(config);
 }
 
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
@@ -262,7 +267,7 @@ export async function loadZudokuConfig(
 
   try {
     const loadedConfig =
-      await loadZudokuConfigWithMeta(rootDir).then(applyZuploEnrichment);
+      await loadZudokuConfigWithMeta(rootDir).then(applyZuploProcessors);
     const config = await runPluginTransformConfig(loadedConfig);
     setConfig(config);
 

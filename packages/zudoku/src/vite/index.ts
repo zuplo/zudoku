@@ -2,6 +2,11 @@ import { getCurrentConfig } from "../config/loader.js";
 import { selectPluginConfigs } from "../lib/core/plugin-config.js";
 
 export type {
+  ZudokuSpec,
+  ZudokuSpecApi,
+  ZudokuSpecPlugin,
+} from "../config/spec/schema.js";
+export type {
   Processor,
   ProcessorArg,
 } from "../config/validators/ProcessorSchema.js";

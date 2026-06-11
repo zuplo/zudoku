@@ -1,4 +1,5 @@
 import path from "node:path";
+import { maybeGenerateBaseConfig } from "../../config/spec/generate.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { DevServer } from "../../vite/dev-server.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
@@ -15,6 +16,7 @@ export async function dev(argv: Arguments) {
   const packageJson = getZudokuPackageJson();
   process.env.NODE_ENV = "development";
   const dir = path.resolve(process.cwd(), argv.dir);
+  await maybeGenerateBaseConfig(dir);
   const server = new DevServer({
     dir,
     argPort: argv.port,

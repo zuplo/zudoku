@@ -8,16 +8,14 @@
     "directory": "packages/zuplo"
   },
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./src/node/index.ts",
+  "types": "./src/node/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./node": "./src/node/index.ts",
-    "./vite-plugin": "./vite-plugin.ts"
+    ".": "./src/node/index.ts",
+    "./node": "./src/node/index.ts"
   },
   "files": [
-    "dist",
-    "vite.config.ts"
+    "dist"
   ],
   "scripts": {
     "build": "tsdown",
@@ -26,20 +24,16 @@
     "typecheck": "tsc --project tsconfig.json"
   },
   "publishConfig": {
-    "main": "./dist/index.mjs",
-    "types": "./dist/index.d.mts",
+    "main": "./dist/node/index.mjs",
+    "types": "./dist/node/index.d.mts",
     "exports": {
       ".": {
-        "types": "./dist/index.d.mts",
-        "import": "./dist/index.mjs"
+        "types": "./dist/node/index.d.mts",
+        "import": "./dist/node/index.mjs"
       },
       "./node": {
         "types": "./dist/node/index.d.mts",
         "import": "./dist/node/index.mjs"
-      },
-      "./vite-plugin": {
-        "types": "./dist/vite-plugin.d.mts",
-        "import": "./dist/vite-plugin.mjs"
       }
     }
   },

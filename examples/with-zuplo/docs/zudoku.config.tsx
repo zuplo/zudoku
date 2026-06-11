@@ -1,6 +1,11 @@
 import type { ZudokuConfig } from "zudoku";
+// Compiled from the Zuplo project by `zudoku generate`, which runs
+// automatically before dev/build. It contains the detected OpenAPI files
+// (e.g. ../config/routes.oas.json mounted at /api) and GraphQL endpoints.
+import baseConfig from "./zudoku.base.js";
 
 const config: ZudokuConfig = {
+  extends: [baseConfig],
   site: {
     title: "My Developer Portal",
     banner: {
@@ -65,8 +70,6 @@ const config: ZudokuConfig = {
     },
   ],
   redirects: [{ from: "/", to: "/introduction" }],
-  // The OpenAPI files in ../config are auto-detected by @zudoku/zuplo and
-  // mounted at /api (routes.oas.json), so no `apis` entry is needed here.
   docs: {
     files: "/pages/**/*.mdx",
   },

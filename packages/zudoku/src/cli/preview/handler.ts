@@ -1,5 +1,6 @@
 import path from "node:path";
 import { preview as vitePreview } from "vite";
+import { maybeGenerateBaseConfig } from "../../config/spec/generate.js";
 import { getViteConfig } from "../../vite/config.js";
 import type { Arguments } from "../cmds/preview.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
@@ -8,6 +9,7 @@ export const DEFAULT_PREVIEW_PORT = 4000;
 
 export async function preview(argv: Arguments) {
   const dir = path.resolve(process.cwd(), argv.dir);
+  await maybeGenerateBaseConfig(dir);
 
   const viteConfig = await getViteConfig(dir, {
     command: "serve",

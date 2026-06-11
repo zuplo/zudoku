@@ -15,6 +15,7 @@
 
 # zudoku
 /dist/
+zudoku.base.ts
 
 # misc
 .DS_Store

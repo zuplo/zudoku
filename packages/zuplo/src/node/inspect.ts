@@ -1,8 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { GraphQLConfig } from "@zudoku/plugin-graphql";
-import type { ZudokuConfig } from "zudoku";
-import type { ZuploApiEntry, ZuploClientContext } from "../context.js";
+import type { ZudokuSpec, ZudokuSpecApi } from "zudoku/vite";
 import { ensureArray } from "../util/ensureArray.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { slugify } from "../util/slugify.js";
@@ -11,19 +10,20 @@ import { operations } from "./processors/enrich-with-zuplo.js";
 
 const OAS_SUFFIX = ".oas.json";
 
-// Configs of plugins created via `createPlugin(name, ...)` are tagged under
-// this symbol (see zudoku's plugin-config); used to detect user-configured
-// GraphQL plugin instances.
-const PLUGIN_CONFIG = Symbol.for("zudoku.pluginConfig");
-
 // biome-ignore lint/suspicious/noConsole: Logging allowed here
 const warn = (message: string) => console.warn(`[zuplo] ${message}`);
 
 export type InspectZuploContextOptions = {
   /** The dev portal root directory (where the Zudoku config lives) */
   rootDir: string;
-  /** The user's Zudoku config, used to skip already configured APIs/endpoints */
-  config?: ZudokuConfig;
+  /** The spec assembled so far, used to skip already configured APIs/endpoints */
+  spec?: ZudokuSpec;
+};
+
+/** The detected configuration of a Zuplo project */
+export type ZuploInspection = {
+  apis: ZudokuSpecApi[];
+  graphql: GraphQLConfig[];
 };
 
 type GraphQLRoute = {
@@ -34,20 +34,14 @@ type GraphQLRoute = {
 
 const normalizeNavPath = (value: string) => `/${value.replace(/^\/+/, "")}`;
 
-const getUserGraphQLConfigs = (config?: ZudokuConfig): GraphQLConfig[] =>
-  (config?.plugins ?? []).flatMap((plugin) => {
-    const tag =
-      plugin && typeof plugin === "object"
-        ? (plugin as { [PLUGIN_CONFIG]?: { name: string; config: unknown } })[
-            PLUGIN_CONFIG
-          ]
-        : undefined;
-    return tag?.name === "graphql" ? [tag.config as GraphQLConfig] : [];
-  });
+const getSpecGraphQLConfigs = (spec?: ZudokuSpec): GraphQLConfig[] =>
+  (spec?.plugins ?? []).flatMap((plugin) =>
+    plugin.name === "graphql" ? [plugin.options as GraphQLConfig] : [],
+  );
 
 const buildGraphQLConfigs = (
   routes: GraphQLRoute[],
-  config?: ZudokuConfig,
+  spec?: ZudokuSpec,
 ): GraphQLConfig[] => {
   if (routes.length === 0) return [];
 
@@ -59,12 +53,12 @@ const buildGraphQLConfigs = (
     return [];
   }
 
-  const userConfigs = getUserGraphQLConfigs(config);
+  const specConfigs = getSpecGraphQLConfigs(spec);
   const usedPaths = new Set(
-    userConfigs.flatMap((c) => (c.path ? [normalizeNavPath(c.path)] : [])),
+    specConfigs.flatMap((c) => (c.path ? [normalizeNavPath(c.path)] : [])),
   );
   const usedInputs = new Set(
-    userConfigs.flatMap((c) =>
+    specConfigs.flatMap((c) =>
       c.type === "url" && typeof c.input === "string" ? [c.input] : [],
     ),
   );
@@ -105,16 +99,16 @@ const buildGraphQLConfigs = (
  * portal root) and returns the detected OpenAPI files and GraphQL endpoints.
  *
  * - Every `*.oas.json` file becomes an `apis` entry (`routes.oas.json` is
- *   mounted at `/api`, other files at `/api-<name>`), unless the user's config
- *   already references the file or occupies the path.
+ *   mounted at `/api`, other files at `/api-<name>`), unless the spec already
+ *   references the file or occupies the path.
  * - Every operation marked with `x-graphql: true` becomes a GraphQL plugin
  *   config that introspects the deployed gateway endpoint
  *   (`ZUPLO_SERVER_URL` + route path).
  */
 export const inspectZuploContext = async ({
   rootDir,
-  config,
-}: InspectZuploContextOptions): Promise<ZuploClientContext> => {
+  spec,
+}: InspectZuploContextOptions): Promise<ZuploInspection> => {
   const configDir = path.resolve(rootDir, "../config");
 
   let fileNames: string[];
@@ -127,9 +121,9 @@ export const inspectZuploContext = async ({
     return { apis: [], graphql: [] };
   }
 
-  const userApis = config?.apis ? ensureArray(config.apis) : [];
+  const specApis = spec?.apis ? ensureArray(spec.apis) : [];
   const configuredInputs = new Set(
-    userApis.flatMap((api) =>
+    specApis.flatMap((api) =>
       "input" in api && api.input
         ? ensureArray(api.input).flatMap((input) =>
             // Versioned inputs are objects with their own `input` path
@@ -141,10 +135,10 @@ export const inspectZuploContext = async ({
     ),
   );
   const configuredPaths = new Set(
-    userApis.flatMap((api) => (api.path ? [normalizeNavPath(api.path)] : [])),
+    specApis.flatMap((api) => (api.path ? [normalizeNavPath(api.path)] : [])),
   );
 
-  const apis: ZuploApiEntry[] = [];
+  const apis: ZudokuSpecApi[] = [];
   // Keyed by route path so an endpoint referenced from multiple files is
   // documented once
   const graphqlRoutes = new Map<string, GraphQLRoute>();
@@ -192,6 +186,6 @@ export const inspectZuploContext = async ({
 
   return {
     apis,
-    graphql: buildGraphQLConfigs([...graphqlRoutes.values()], config),
+    graphql: buildGraphQLConfigs([...graphqlRoutes.values()], spec),
   };
 };

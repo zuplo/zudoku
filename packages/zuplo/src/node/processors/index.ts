@@ -11,11 +11,6 @@ import type { PoliciesConfigFile } from "./policy-types.js";
 export type GetProcessorsOptions = {
   /** The dev portal root directory (where the Zudoku config lives) */
   rootDir: string;
-  /**
-   * Remove operations marked with `x-graphql` from the OpenAPI reference.
-   * Used when those endpoints get dedicated GraphQL documentation instead.
-   */
-  stripGraphQLRoutes?: boolean;
 };
 
 const loadPoliciesConfig = async (
@@ -42,9 +37,14 @@ const loadPoliciesConfig = async (
  */
 export const getProcessors = async ({
   rootDir,
-  stripGraphQLRoutes = false,
 }: GetProcessorsOptions): Promise<Processor[]> => {
   const policiesConfig = await loadPoliciesConfig(rootDir);
+
+  // GraphQL endpoints get dedicated documentation pages (introspecting
+  // ZUPLO_SERVER_URL + route path, see `extendSpec`), which exist exactly
+  // when the server URL is set — so the raw operations are removed from the
+  // OpenAPI reference under the same condition.
+  const stripGraphQLRoutes = Boolean(process.env.ZUPLO_SERVER_URL);
 
   return [
     removePaths({ shouldRemove: ({ operation }) => operation["x-internal"] }),

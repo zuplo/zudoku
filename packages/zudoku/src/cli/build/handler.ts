@@ -1,4 +1,5 @@
 import path from "node:path";
+import { maybeGenerateBaseConfig } from "../../config/spec/generate.js";
 import { runBuild, type SSRAdapter } from "../../vite/build.js";
 import type { Arguments } from "../cmds/build.js";
 import { logger } from "../common/logger.js";
@@ -14,6 +15,7 @@ export async function build(argv: Arguments) {
 
   const dir = path.resolve(process.cwd(), argv.dir);
   try {
+    await maybeGenerateBaseConfig(dir);
     await runBuild({
       dir,
       ssr: argv.experimentalSsr,
