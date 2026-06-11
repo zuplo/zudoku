@@ -1,5 +1,29 @@
 import { graphqlPlugin } from "@zudoku/plugin-graphql";
-import type { ZudokuConfig } from "zudoku";
+import type { ApiIdentityPlugin, ZudokuConfig } from "zudoku";
+
+// Demo identities so the playground auth picker shows in this example
+const demoApiIdentityPlugin: ApiIdentityPlugin = {
+  getIdentities: async () => [
+    {
+      id: "test-key",
+      label: "Test API Key",
+      authorizeRequest: (request: Request) => {
+        request.headers.set("Authorization", "Bearer demo-test-key");
+        return request;
+      },
+      authorizationFields: { headers: ["Authorization"] },
+    },
+    {
+      id: "staging-key",
+      label: "Staging API Key",
+      authorizeRequest: (request: Request) => {
+        request.headers.set("Authorization", "Bearer demo-staging-key");
+        return request;
+      },
+      authorizationFields: { headers: ["Authorization"] },
+    },
+  ],
+};
 
 const config: ZudokuConfig = {
   site: {
@@ -83,6 +107,7 @@ const config: ZudokuConfig = {
     },
   ],
   plugins: [
+    demoApiIdentityPlugin,
     graphqlPlugin({
       type: "file",
       input: "./schema.graphql",
