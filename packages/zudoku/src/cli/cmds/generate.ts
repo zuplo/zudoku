@@ -33,11 +33,12 @@ const generate = async (argv: Arguments) => {
 
   await writeFile(outputPath, generateConfig(spec), "utf-8");
 
+  const extendsHint = `./${path.basename(outputPath).replace(/\.[^.]+$/, "")}`;
   printDiagnosticsToConsole(
     `${colors.green("✓")} generated ${colors.dim(outputPath)}`,
   );
   printDiagnosticsToConsole(
-    `Compose it in your zudoku.config: ${colors.dim("extends: [base]")}`,
+    `Compose it in your zudoku.config: ${colors.dim(`extends: ["${extendsHint}"]`)}`,
   );
 };
 

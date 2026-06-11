@@ -39,6 +39,7 @@ describe("resolveCustomNavigationPaths", () => {
       moduleDir: path.join(tempDir, "node_modules"),
       mode: "module",
       dependencies: [],
+      configLayers: [],
       configPath: path.join(tempDir, "zudoku.config.ts"),
     };
   });

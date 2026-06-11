@@ -12,19 +12,26 @@ base config, while your hand-written `zudoku.config.ts` stays editable on top.
 
 ## Extending configurations
 
-Use `extends` to compose your config from base layers:
+Use `extends` to compose your config from base layers. Like in a `tsconfig.json`, entries are module
+specifiers resolved relative to the config file (extension optional):
 
 ```ts title=zudoku.config.ts
 import type { ZudokuConfig } from "zudoku";
-import base from "./zudoku.base.js";
 
 const config: ZudokuConfig = {
-  extends: [base],
+  extends: ["./zudoku.base"],
   site: { title: "My Override" },
 };
 
 export default config;
 ```
+
+String layers are resolved **lazily**, when the config is loaded — not when it is written or
+type-checked. This matters for generated layers: a tool can emit `zudoku.base.ts` just before
+`zudoku dev` or `zudoku build` runs, and the committed config never needs the file to exist. If a
+referenced layer is missing at load time, Zudoku fails with a hint to run `zudoku generate`.
+
+Entries can also be inline config objects (e.g. an imported preset), and both forms can be mixed.
 
 Layers are merged in order, with the config itself applied on top:
 
@@ -32,7 +39,8 @@ Layers are merged in order, with the config itself applied on top:
 - **`plugins`**: concatenated in layer order, with the config's own plugins last (never replaced).
 - **All other arrays** (e.g. `redirects`, `navigation`): replaced by the later layer.
 
-Layers can themselves use `extends`; they are resolved depth-first.
+Layers can themselves use `extends`; they are resolved depth-first. In dev, layer files are watched
+like the config file itself, so regenerating a layer reloads the site.
 
 ## Generating a config layer
 
@@ -88,6 +96,19 @@ const config: ZudokuConfig = {
 };
 
 export default config;
+```
+
+A typical setup regenerates the layer right before starting Zudoku and keeps it out of version
+control:
+
+```json title=package.json
+{
+  "scripts": {
+    "generate": "zudoku generate spec.json -o zudoku.base.ts",
+    "dev": "pnpm generate && zudoku dev",
+    "build": "pnpm generate && zudoku build"
+  }
+}
 ```
 
 Config keys that hold code — `slots`, `mdx`, `customPages`, `build`, and function options — can't be

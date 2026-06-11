@@ -2,10 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import Piscina from "piscina";
 import { validateConfig } from "../../config/validators/ZudokuConfig.js";
-import {
-  resolveExtends,
-  runPluginTransformConfig,
-} from "../../lib/core/transform-config.js";
+import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { matchesAnyProtectedPattern } from "../../lib/util/url.js";
 import type { WorkerResult } from "./prerender.js";
@@ -26,12 +23,10 @@ const { template, distDir, serverConfigPath, entryServerPath, writeRedirects } =
   Piscina.workerData as StaticWorkerData;
 
 const server: EntryServer = await import(entryServerPath);
-// Same order as the loader: resolve extends layers and transform the raw
-// bundle config, then parse.
+// The bundle entry is `virtual:zudoku-raw-config`: extends layers are already
+// merged in. Same order as the loader: transform, then parse.
 const rawConfig = await import(serverConfigPath).then((m) => m.default);
-const config = validateConfig(
-  await runPluginTransformConfig(resolveExtends(rawConfig)),
-);
+const config = validateConfig(await runPluginTransformConfig(rawConfig));
 
 const routes = server.getRoutesByConfig(config);
 const { basePath } = config;

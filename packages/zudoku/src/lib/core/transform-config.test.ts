@@ -120,4 +120,62 @@ describe("resolveExtends", () => {
   it("passes through non-object configs untouched", () => {
     expect(resolveExtends(null as unknown as ZudokuConfig)).toBeNull();
   });
+
+  it("resolves string entries from the layer module queue in order", () => {
+    const [a, b] = [plugin("a"), plugin("b")];
+    const config: ZudokuConfig = {
+      extends: ["./first", "./second"],
+      metadata: { description: "Own" },
+    };
+
+    const result = resolveExtends(config, [
+      { metadata: { title: "First" }, plugins: [a] },
+      { metadata: { title: "Second" }, plugins: [b] },
+    ]);
+
+    expect(result).toEqual({
+      metadata: { title: "Second", description: "Own" },
+      plugins: [a, b],
+    });
+  });
+
+  it("keeps the order of mixed string and object entries", () => {
+    const config: ZudokuConfig = {
+      extends: [
+        "./first",
+        { metadata: { title: "Inline" }, basePath: "/inline" },
+        "./third",
+      ],
+    };
+
+    const result = resolveExtends(config, [
+      { metadata: { title: "First", description: "First" } },
+      { metadata: { title: "Third" }, basePath: "/third" },
+    ]);
+
+    expect(result.metadata).toEqual({ title: "Third", description: "First" });
+    expect(result.basePath).toBe("/third");
+  });
+
+  it("consumes the queue depth-first when string layers have their own string extends", () => {
+    const [base, mid, sibling] = [plugin("base"), plugin("mid"), plugin("s")];
+    const config: ZudokuConfig = { extends: ["./mid", "./sibling"] };
+
+    // Pre-order: ./mid, then its own layer ./base, then ./sibling
+    const result = resolveExtends(config, [
+      { extends: ["./base"], plugins: [mid] },
+      { plugins: [base] },
+      { plugins: [sibling] },
+    ]);
+
+    expect(result.plugins).toEqual([base, mid, sibling]);
+  });
+
+  it("throws a helpful error for an unresolved string entry", () => {
+    const config: ZudokuConfig = { extends: ["./zudoku.base"] };
+
+    expect(() => resolveExtends(config)).toThrow(
+      /Could not resolve config layer "\.\/zudoku\.base".*zudoku generate/,
+    );
+  });
 });

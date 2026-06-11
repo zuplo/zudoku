@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "zudoku dev",
-    "build": "zudoku build",
+    "dev": "pnpm generate && zudoku dev",
+    "build": "pnpm generate && zudoku build",
     "generate": "zudoku generate spec.json -o zudoku.base.ts",
     "preview": "zudoku preview"
   },
