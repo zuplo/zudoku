@@ -450,4 +450,31 @@ describe("validateConfig", () => {
 
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
+
+  it("should accept inkeep search with nested settings", () => {
+    const config = {
+      search: {
+        type: "inkeep" as const,
+        apiKey: "key",
+        integrationId: "integration",
+        organizationId: "org",
+        primaryBrandColor: "#26D6FF",
+        organizationDisplayName: "Example",
+        transformSource: (source: unknown) => source,
+        searchSettings: {
+          tabs: ["Docs", ["All", { isAlwaysVisible: true }]],
+        },
+        aiChatSettings: {
+          aiAssistantName: "Example Assistant",
+        },
+        modalSettings: {
+          shortcutKey: "k",
+        },
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
 });

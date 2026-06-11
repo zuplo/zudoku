@@ -1,3 +1,8 @@
+import type {
+  InkeepAIChatSettings,
+  InkeepModalSettings,
+  InkeepSearchSettings,
+} from "@inkeep/cxkit-types";
 import type { Options } from "@mdx-js/rollup";
 import colors from "picocolors";
 import type { ComponentType, ReactNode } from "react";
@@ -368,6 +373,9 @@ const SearchSchema = z
       organizationId: z.string(),
       primaryBrandColor: z.string(),
       organizationDisplayName: z.string(),
+      searchSettings: z.custom<InkeepSearchSettings>().optional(),
+      aiChatSettings: z.custom<InkeepAIChatSettings>().optional(),
+      modalSettings: z.custom<InkeepModalSettings>().optional(),
     }),
     z.object({
       type: z.literal("pagefind"),

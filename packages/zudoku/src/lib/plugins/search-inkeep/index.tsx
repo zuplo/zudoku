@@ -1,17 +1,20 @@
 import type {
+  InkeepAIChatSettings,
   InkeepBaseSettings,
   InkeepComponentInstance,
   InkeepJS,
+  InkeepModalSettings,
+  InkeepSearchSettings,
   InkeepSettings,
 } from "@inkeep/cxkit-types";
 import { useEffect, useMemo, useState } from "react";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import {
-  aiChatSettings,
-  baseSettings,
-  modalSettings,
-  searchSettings,
+  aiChatSettings as defaultAiChatSettings,
+  baseSettings as defaultBaseSettings,
+  modalSettings as defaultModalSettings,
+  searchSettings as defaultSearchSettings,
 } from "./inkeep.js";
 
 declare global {
@@ -20,6 +23,12 @@ declare global {
   }
 }
 
+export type InkeepSearchPluginOptions = InkeepBaseSettings & {
+  searchSettings?: InkeepSearchSettings;
+  aiChatSettings?: InkeepAIChatSettings;
+  modalSettings?: InkeepModalSettings;
+};
+
 const InkeepSearch = ({
   isOpen,
   onClose,
@@ -27,32 +36,43 @@ const InkeepSearch = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  settings: InkeepBaseSettings;
+  settings: InkeepSearchPluginOptions;
 }) => {
-  const config = useMemo<InkeepSettings>(
-    () => ({
+  const config = useMemo<InkeepSettings>(() => {
+    const { searchSettings, aiChatSettings, modalSettings, ...baseSettings } =
+      settings;
+
+    return {
       baseSettings: {
+        ...defaultBaseSettings,
         ...baseSettings,
-        ...settings,
         colorMode: {
           sync: {
             target: "html",
             attributes: ["class"],
             isDarkMode: (attrs) => attrs.class?.includes("dark") ?? false,
           },
+          ...baseSettings.colorMode,
         },
       },
       modalSettings: {
+        ...defaultModalSettings,
         ...modalSettings,
         onOpenChange: (newOpen: boolean) => {
+          modalSettings?.onOpenChange?.(newOpen);
           if (!newOpen) onClose();
         },
       },
-      searchSettings,
-      aiChatSettings,
-    }),
-    [onClose, settings],
-  );
+      searchSettings: {
+        ...defaultSearchSettings,
+        ...searchSettings,
+      },
+      aiChatSettings: {
+        ...defaultAiChatSettings,
+        ...aiChatSettings,
+      },
+    };
+  }, [onClose, settings]);
   const [searchInstance, setSearchInstance] = useState<
     InkeepComponentInstance | undefined
   >(
@@ -85,7 +105,7 @@ const InkeepSearch = ({
 };
 
 export const inkeepSearchPlugin = (
-  settings: InkeepBaseSettings,
+  settings: InkeepSearchPluginOptions,
 ): ZudokuPlugin => {
   return {
     getHead: () => {

@@ -168,3 +168,38 @@ your [Zudoku Configuration](./overview.md):
   // ...
 }
 ```
+
+### Customizing Inkeep
+
+Any other [base settings](https://docs.inkeep.com/cloud/ui-components/common-settings/base) can be
+set alongside the required fields, for example `filters` to scope results or `transformSource` to
+customize how sources are displayed.
+
+You can also pass
+[`searchSettings`](https://docs.inkeep.com/cloud/ui-components/common-settings/search),
+[`aiChatSettings`](https://docs.inkeep.com/cloud/ui-components/common-settings/ai-chat), and
+`modalSettings` to customize the respective parts of the search experience. They are merged with
+Zudoku's defaults.
+
+For example, to categorize results into tabs based on their URL:
+
+```typescript
+{
+  // ...
+  search: {
+    type: "inkeep",
+    // ...required fields from above
+    transformSource: (source) => {
+      if (!source.url.includes("/blog/")) return source;
+      return { ...source, tabs: [...(source.tabs ?? []), "Blog"] };
+    },
+    searchSettings: {
+      tabs: [["All", { isAlwaysVisible: true }], "Blog"],
+    },
+    aiChatSettings: {
+      aiAssistantName: "My Assistant",
+    },
+  }
+  // ...
+}
+```
