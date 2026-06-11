@@ -73,4 +73,24 @@ describe("priceIncludedUnits", () => {
     expect(priceIncludedUnits(undefined)).toBe(0);
     expect(priceIncludedUnits(null)).toBe(0);
   });
+
+  it("treats malformed amounts and bounds as paid, not free", () => {
+    expect(
+      priceIncludedUnits({
+        type: "tiered",
+        mode: "graduated",
+        tiers: [{ upToAmount: "100", unitPrice: { amount: "oops" } }],
+      }),
+    ).toBe(0);
+    expect(
+      priceIncludedUnits({
+        type: "tiered",
+        mode: "graduated",
+        tiers: [
+          { upToAmount: "oops", unitPrice: { amount: "0" } },
+          { unitPrice: { amount: "0.01" } },
+        ],
+      }),
+    ).toBe(0);
+  });
 });

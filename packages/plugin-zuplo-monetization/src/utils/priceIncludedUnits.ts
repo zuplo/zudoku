@@ -24,8 +24,10 @@ export type UsagePriceLike = {
 };
 
 const partAmount = (part: PricePartLike): number => {
-  const amount = parseFloat(part?.amount ?? "0");
-  return Number.isFinite(amount) ? amount : 0;
+  if (!part || part.amount === undefined) return 0;
+  const amount = parseFloat(part.amount);
+  // A malformed amount is conservatively treated as paid, not free.
+  return Number.isFinite(amount) ? amount : Number.POSITIVE_INFINITY;
 };
 
 export const priceIncludedUnits = (
@@ -54,7 +56,11 @@ export const priceIncludedUnits = (
       if (partAmount(tier.unitPrice) > 0) break;
       if (index > 0 && partAmount(tier.flatPrice) > 0) break;
       if (tier.upToAmount === undefined) return Number.POSITIVE_INFINITY;
-      free = Number(tier.upToAmount) || free;
+      // A malformed or non-increasing bound ends the free range rather than
+      // silently carrying the previous one forward.
+      const bound = Number(tier.upToAmount);
+      if (!Number.isFinite(bound) || bound <= free) break;
+      free = bound;
     }
     return free;
   }
