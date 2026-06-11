@@ -57,7 +57,7 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(
-      screen.getByText("You've exceeded your monthly quota"),
+      screen.getByText("You've used your included monthly usage"),
     ).toBeInTheDocument();
     expect(
       screen.queryByText("You've reached your monthly limit"),
@@ -79,7 +79,7 @@ describe("Usage - UsageItem", () => {
       screen.getByText("You've reached your monthly limit"),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText("You've exceeded your monthly quota"),
+      screen.queryByText("You've used your included monthly usage"),
     ).not.toBeInTheDocument();
   });
 
@@ -93,7 +93,7 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(
-      screen.queryByText("You've exceeded your monthly quota"),
+      screen.queryByText("You've used your included monthly usage"),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByText("You've reached your monthly limit"),
@@ -127,7 +127,7 @@ describe("Usage - UsageItem", () => {
       screen.getByText("You've reached your monthly limit"),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText("You've exceeded your monthly quota"),
+      screen.queryByText("You've used your included monthly usage"),
     ).not.toBeInTheDocument();
     expect(screen.queryByText(/overage/)).not.toBeInTheDocument();
   });
@@ -159,7 +159,7 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(
-      screen.getByText("You've exceeded your weekly quota"),
+      screen.getByText("You've used your included weekly usage"),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/remaining this billing period/),
@@ -188,7 +188,7 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(
-      screen.getByText("You've exceeded your monthly quota"),
+      screen.getByText("You've used your included monthly usage"),
     ).toBeInTheDocument();
   });
 
@@ -207,7 +207,7 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(
-      screen.getByText("You've exceeded your billing period quota"),
+      screen.getByText("You've used your included billing period usage"),
     ).toBeInTheDocument();
   });
 
@@ -227,7 +227,7 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(
-      screen.getByText("You've exceeded your weekly quota"),
+      screen.getByText("You've used your included weekly usage"),
     ).toBeInTheDocument();
   });
 
@@ -241,7 +241,7 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(
-      screen.getByText("You've exceeded your monthly quota"),
+      screen.getByText("You've used your included monthly usage"),
     ).toBeInTheDocument();
   });
 
@@ -255,5 +255,67 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(screen.getByText("requests")).toBeInTheDocument();
+  });
+});
+
+const payAsYouGoItem = {
+  featureKey: "requests",
+  name: "API Requests",
+  included: { entitlement: { isSoftLimit: true } },
+  price: {
+    type: "tiered",
+    tiers: [{ flatPrice: { amount: "3" }, unitPrice: { amount: "0.01" } }],
+  },
+} as Item;
+
+describe("Usage - pay-as-you-go and included framing", () => {
+  it("shows plain consumption for pay-as-you-go soft limits — no quota math, no alert", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 1200 })}
+        isFetching={false}
+        currentItems={[payAsYouGoItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("1,200 used this billing period"),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Pay as you go/)).toBeInTheDocument();
+    expect(screen.getByText("$0.01/call")).toBeInTheDocument();
+    expect(screen.queryByText(/used your included/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/limit/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/remaining/)).not.toBeInTheDocument();
+  });
+
+  it("labels a free-tier-backed soft quota as included, not a limit", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 500, usage: 500, overage: 0 })}
+        isFetching={false}
+        currentItems={[softLimitItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(screen.getByText(/1,?000 included/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/500 included remaining this billing period/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/1,?000 limit/)).not.toBeInTheDocument();
+  });
+
+  it("shows usage-only framing when a soft limit has no quota issued", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 250, overage: 250 })}
+        isFetching={false}
+        currentItems={[softLimitItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("250 used this billing period"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/used your included/)).not.toBeInTheDocument();
   });
 });

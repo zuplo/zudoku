@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDurationAdjective } from "../../utils/formatDuration.js";
+import { priceIncludedUnits } from "../../utils/priceIncludedUnits.js";
 import { SwitchPlanModal } from "./SwitchPlanModal";
 
 export type UsageResult = {
@@ -75,27 +76,38 @@ const UsageItem = ({
     item?.price?.tiers?.at(-1);
   const rate = overageTier?.unitPrice?.amount;
   const hasOverage = meter.overage > 0;
-  const limit = meter.balance + meter.usage - meter.overage;
-  const isAtLimit = !isSoftLimit && meter.usage >= limit;
-  const dangerZone = hasOverage || isAtLimit;
+  const quota = meter.balance + meter.usage - meter.overage;
+  // A soft limit on a price that bills from the first unit caps nothing and
+  // includes nothing — its quota is meaningless, so show plain consumption
+  // instead of quota math. Same when no quota was issued (track-usage-only).
+  const freeUnits = priceIncludedUnits(item?.price);
+  const hasUsagePrice = !!item?.price && item.price.type !== "flat";
+  const payAsYouGo = isSoftLimit && hasUsagePrice && freeUnits === 0;
+  const usageOnly = payAsYouGo || (isSoftLimit && quota <= 0);
+  const isAtLimit = !isSoftLimit && meter.usage >= quota;
+  // Exceeding a soft limit is pay-per-use working as designed, not an error —
+  // only a blocking hard limit gets the destructive treatment.
+  const dangerZone = isAtLimit;
 
   return (
     <Card className={cn(dangerZone && "border-destructive bg-destructive/5")}>
       <CardHeader>
-        {hasOverage && isSoftLimit && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
-            <AlertTitle>You've exceeded your {billingPeriod} quota</AlertTitle>
+        {hasOverage && isSoftLimit && !usageOnly && (
+          <Alert variant="warning" className="mb-4">
+            <AlertTriangleIcon className="size-4 shrink-0" />
+            <AlertTitle>
+              You've used your included {billingPeriod} usage
+            </AlertTitle>
             <AlertDescription>
-              Additional usage is being charged at the overage rate
-              {rate ? ` ($${Number(rate).toFixed(2)}/call)` : ""}. Upgrade to a
-              higher plan for more usage.
+              Additional usage is billed
+              {rate ? ` at $${Number(rate).toFixed(2)}/call` : ""}. Upgrade to a
+              higher plan for more included usage.
             </AlertDescription>
 
             {subscription && (
               <AlertAction>
                 <SwitchPlanModal subscription={subscription}>
-                  <Button variant="destructive" size="xs">
+                  <Button variant="outline" size="xs">
                     <ArrowUpIcon />
                     Upgrade
                   </Button>
@@ -128,28 +140,52 @@ const UsageItem = ({
         <CardTitle>{item?.name ?? featureKey}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex flex-col gap-2 mb-2">
-            <span className={cn(dangerZone && "text-red-600 font-medium")}>
-              {meter.usage.toLocaleString()} used
-              {hasOverage && isSoftLimit && (
-                <span className="ml-1 text-xs">
-                  (+{meter.overage.toLocaleString()} overage)
+        {usageOnly ? (
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <span>
+                {meter.usage.toLocaleString()} used this billing period
+              </span>
+              {rate && (
+                <span className="text-muted-foreground">
+                  ${Number(rate).toFixed(2)}/call
                 </span>
               )}
-            </span>
-          </div>
-          <span className="text-foreground font-medium">
-            {limit.toLocaleString()} limit
-          </span>
-        </div>
-        <Progress
-          value={Math.min(100, limit > 0 ? (meter.usage / limit) * 100 : 100)}
-          className={cn("mb-3 h-2", dangerZone && "bg-destructive")}
-        />
-        <p className="text-xs text-muted-foreground">
-          {meter.balance.toLocaleString()} remaining this billing period
-        </p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Pay as you go — every call is billed; there is no usage cap.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex flex-col gap-2 mb-2">
+                <span className={cn(dangerZone && "text-red-600 font-medium")}>
+                  {meter.usage.toLocaleString()} used
+                  {hasOverage && isSoftLimit && (
+                    <span className="ml-1 text-xs">
+                      (+{meter.overage.toLocaleString()} overage)
+                    </span>
+                  )}
+                </span>
+              </div>
+              <span className="text-foreground font-medium">
+                {quota.toLocaleString()} {isSoftLimit ? "included" : "limit"}
+              </span>
+            </div>
+            <Progress
+              value={Math.min(
+                100,
+                quota > 0 ? (meter.usage / quota) * 100 : 100,
+              )}
+              className={cn("mb-3 h-2", dangerZone && "bg-destructive")}
+            />
+            <p className="text-xs text-muted-foreground">
+              {meter.balance.toLocaleString()}
+              {isSoftLimit ? " included" : ""} remaining this billing period
+            </p>
+          </>
+        )}
       </CardContent>
     </Card>
   );
