@@ -24,6 +24,8 @@ declare global {
 }
 
 export type InkeepSearchPluginOptions = InkeepBaseSettings & {
+  // Discriminator from the Zudoku `search` config; not passed to Inkeep
+  type?: "inkeep";
   searchSettings?: InkeepSearchSettings;
   aiChatSettings?: InkeepAIChatSettings;
   modalSettings?: InkeepModalSettings;
@@ -39,8 +41,13 @@ const InkeepSearch = ({
   settings: InkeepSearchPluginOptions;
 }) => {
   const config = useMemo<InkeepSettings>(() => {
-    const { searchSettings, aiChatSettings, modalSettings, ...baseSettings } =
-      settings;
+    const {
+      type: _type,
+      searchSettings,
+      aiChatSettings,
+      modalSettings,
+      ...baseSettings
+    } = settings;
 
     return {
       baseSettings: {

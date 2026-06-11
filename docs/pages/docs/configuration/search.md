@@ -199,7 +199,7 @@ For example, to categorize results into tabs based on their URL:
     aiChatSettings: {
       aiAssistantName: "My Assistant",
     },
-  }
+  },
   // ...
 }
 ```
