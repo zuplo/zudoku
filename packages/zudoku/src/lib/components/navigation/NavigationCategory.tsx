@@ -106,8 +106,9 @@ const NavigationCategoryInner = ({
       onOpenChange={(value) => {
         // Categories with a link navigate on row click, so they only open here
         // (closing is done via the chevron). Without a link the row toggles.
-        setOpen(category.link ? true : value);
-        setHasInteracted(true);
+        const nextOpen = category.link ? true : value;
+        if (nextOpen !== open) setHasInteracted(true);
+        setOpen(nextOpen);
       }}
     >
       <Collapsible.Trigger className="group" asChild disabled={!isCollapsible}>
