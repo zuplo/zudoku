@@ -11,7 +11,6 @@ import { logger } from "../../cli/common/logger.js";
 import { fileExists } from "../../config/file-exists.js";
 import { getBuildConfig } from "../../config/validators/BuildSchema.js";
 import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
-import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import {
@@ -52,31 +51,24 @@ export const prerender = async ({
   html,
   dir,
   basePath = "",
-  serverConfigFilename,
   writeRedirects = true,
 }: {
   html: string;
   dir: string;
   basePath?: string;
-  serverConfigFilename: string;
   writeRedirects: boolean;
 }) => {
   const distDir = path.join(dir, "dist", basePath);
-  const serverConfigPath = pathToFileURL(
-    path.join(distDir, "server", serverConfigFilename),
-  ).href;
   const entryServerPath = pathToFileURL(
     path.join(distDir, "server/entry.server.js"),
   ).href;
 
-  const rawConfig: ZudokuConfig = await import(serverConfigPath).then(
-    (m) => m.default,
-  );
-  const config = await runPluginTransformConfig(rawConfig);
-
   const buildConfig = await getBuildConfig();
   const module = await import(entryServerPath);
   const getRoutes = module.getRoutesByConfig as typeof getRoutesByConfig;
+  // The server entry exports the fully transformed config (including plugins
+  // applied automatically in Zuplo mode)
+  const config: ZudokuConfig = module.config;
 
   const routes = getRoutes(config);
   const paths = routesToPaths(routes);
@@ -134,7 +126,6 @@ export const prerender = async ({
     workerData: {
       template: html,
       distDir,
-      serverConfigPath,
       entryServerPath,
       writeRedirects,
     } satisfies StaticWorkerData,

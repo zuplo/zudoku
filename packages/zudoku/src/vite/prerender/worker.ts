@@ -2,8 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import Piscina from "piscina";
 import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
-import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
-import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { matchesAnyProtectedPattern } from "../../lib/util/url.js";
 import type { WorkerResult } from "./prerender.js";
@@ -13,21 +11,19 @@ type EntryServer = typeof import("../../app/entry.server.js");
 export type StaticWorkerData = {
   template: string;
   distDir: string;
-  serverConfigPath: string;
   entryServerPath: string;
   writeRedirects: boolean;
 };
 
 export type WorkerData = { urlPath: string };
 
-const { template, distDir, serverConfigPath, entryServerPath, writeRedirects } =
+const { template, distDir, entryServerPath, writeRedirects } =
   Piscina.workerData as StaticWorkerData;
 
 const server: EntryServer = await import(entryServerPath);
-const rawConfig: ZudokuConfig = await import(serverConfigPath).then(
-  (m) => m.default,
-);
-const config = await runPluginTransformConfig(rawConfig);
+// The server entry exports the fully transformed config (including plugins
+// applied automatically in Zuplo mode)
+const config = server.config;
 
 const routes = server.getRoutesByConfig(config);
 const { basePath } = config;

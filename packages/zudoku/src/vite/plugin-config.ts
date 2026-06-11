@@ -1,5 +1,6 @@
 import { normalizePath, type Plugin, type ResolvedConfig } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
+import { selectPluginConfigs } from "../lib/core/plugin-config.js";
 
 const virtualModuleId = "virtual:zudoku-config";
 const resolvedVirtualModuleId = `\0${virtualModuleId}`;
@@ -20,16 +21,25 @@ const viteConfigPlugin = (): Plugin => {
     load(id) {
       if (id !== resolvedVirtualModuleId) return;
 
-      const configPath = getCurrentConfig().__meta.configPath;
+      const config = getCurrentConfig();
+      const configPath = config.__meta.configPath;
       if (!configPath) {
         return `export default {};`;
       }
 
+      // The Zuplo plugin is applied automatically in Zuplo mode during config
+      // loading; the raw config doesn't contain it, so re-apply it here for
+      // the client/server bundles. No-ops when configured explicitly.
+      const hasZuploPlugin =
+        selectPluginConfigs(config.plugins ?? [], "zuplo").length > 0;
+
       return `
 import rawConfig from "${normalizePath(configPath)}";
 import { runPluginTransformConfig } from "zudoku/plugins";
-
-const config = await runPluginTransformConfig(rawConfig);
+${hasZuploPlugin ? `import { withZuploPlugin } from "@zuplo/zudoku";` : ""}
+const config = await runPluginTransformConfig(${
+        hasZuploPlugin ? "withZuploPlugin(rawConfig)" : "rawConfig"
+      });
 export default config;
 `;
     },

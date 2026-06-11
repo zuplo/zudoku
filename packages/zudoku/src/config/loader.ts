@@ -1,4 +1,5 @@
 import { stat } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import colors from "picocolors";
 import {
@@ -7,6 +8,7 @@ import {
   loadEnv as viteLoadEnv,
   type Plugin as VitePlugin,
 } from "vite";
+import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { runPluginTransformConfig } from "../lib/core/transform-config.js";
@@ -137,6 +139,49 @@ async function loadZudokuConfigWithMeta(
   return configWithMetadata;
 }
 
+// In Zuplo mode the Zuplo plugin is applied automatically so the Zudoku config
+// is built from the Zuplo project on the fly. The package is resolved from the
+// docs project, where it is a dependency — zudoku itself never depends on it.
+const ZUPLO_PACKAGE = "@zuplo/zudoku";
+
+type ZuploModule = {
+  withZuploPlugin: <T extends ZudokuConfig>(config: T) => T;
+};
+
+let zuploModule: ZuploModule | false | undefined;
+
+async function applyZuploPlugin<T extends ZudokuConfig>(
+  config: T,
+  rootDir: string,
+): Promise<T> {
+  if (zuploModule === undefined) {
+    try {
+      const entryPath = createRequire(
+        path.join(rootDir, "package.json"),
+      ).resolve(ZUPLO_PACKAGE);
+
+      ({ module: zuploModule } = await runnerImport<ZuploModule>(entryPath, {
+        plugins: [virtualModuleStubPlugin],
+        environments: {
+          inline: { resolve: { noExternal: [/zudoku/] } },
+        },
+      }));
+    } catch (error) {
+      zuploModule = false;
+      const detail = error instanceof Error ? error.message : String(error);
+      logger.warn(
+        colors.yellow(
+          `Running in Zuplo mode but \`${ZUPLO_PACKAGE}\` could not be loaded. ` +
+            `Install it in your docs project to set up your APIs and apply Zuplo-specific OpenAPI processing.`,
+        ) + colors.dim(`\n${detail}`),
+        { timestamp: true },
+      );
+    }
+  }
+
+  return zuploModule ? zuploModule.withZuploPlugin(config) : config;
+}
+
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
   const envPrefix = ["ZUPLO_PUBLIC_", "ZUDOKU_PUBLIC_"];
   const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
@@ -226,7 +271,10 @@ export async function loadZudokuConfig(
   ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
 
   try {
-    const loadedConfig = await loadZudokuConfigWithMeta(rootDir);
+    let loadedConfig = await loadZudokuConfigWithMeta(rootDir);
+    if (ZuploEnv.isZuplo) {
+      loadedConfig = await applyZuploPlugin(loadedConfig, rootDir);
+    }
     const config = await runPluginTransformConfig(loadedConfig);
     setConfig(config);
 

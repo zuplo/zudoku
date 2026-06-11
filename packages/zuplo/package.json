@@ -31,15 +31,18 @@
     "exports": {
       ".": {
         "types": "./dist/index.d.mts",
-        "import": "./dist/index.mjs"
+        "import": "./dist/index.mjs",
+        "default": "./dist/index.mjs"
       },
       "./node": {
         "types": "./dist/node.d.mts",
-        "import": "./dist/node.mjs"
+        "import": "./dist/node.mjs",
+        "default": "./dist/node.mjs"
       },
       "./vite-plugin": {
         "types": "./dist/vite-plugin.d.mts",
-        "import": "./dist/vite-plugin.mjs"
+        "import": "./dist/vite-plugin.mjs",
+        "default": "./dist/vite-plugin.mjs"
       }
     }
   },

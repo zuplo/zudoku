@@ -2,11 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { deepEqual } from "fast-equals";
 import type { Plugin } from "vite";
-import { ZuploEnv } from "../app/env.js";
-import { logger } from "../cli/common/logger.js";
 import { getCurrentConfig } from "../config/loader.js";
 import { getBuildConfig } from "../config/validators/BuildSchema.js";
-import { selectPluginConfigs } from "../lib/core/plugin-config.js";
 import { getAllTags } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
@@ -25,18 +22,6 @@ const viteApiPlugin = async (): Promise<Plugin> => {
   const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
   const initialConfig = getCurrentConfig();
-
-  if (
-    ZuploEnv.isZuplo &&
-    selectPluginConfigs(initialConfig.plugins ?? [], "zuplo").length === 0
-  ) {
-    logger.warn(
-      "Running in Zuplo mode without the Zuplo plugin. " +
-        "Install `@zuplo/zudoku` and add `zuploPlugin()` to the `plugins` in your Zudoku config " +
-        "to set up your APIs and apply Zuplo-specific OpenAPI processing.",
-      { timestamp: true },
-    );
-  }
 
   const buildConfig = await getBuildConfig();
   const buildProcessors = buildConfig?.processors ?? [];

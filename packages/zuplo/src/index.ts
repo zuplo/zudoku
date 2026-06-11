@@ -2,7 +2,8 @@
 // module with an empty stub; there the baked virtual context is used instead.
 import { getProcessors, inspectZuploContext } from "@zuplo/zudoku/node";
 import { zuploContext } from "virtual:zuplo-context";
-import { createPlugin } from "zudoku";
+import { createPlugin, type ZudokuConfig } from "zudoku";
+import { selectPluginConfigs } from "zudoku/plugins";
 import { applyZuploConfig } from "./apply-config.js";
 import type { ZuploPluginOptions } from "./options.js";
 
@@ -50,6 +51,18 @@ export const zuploPlugin = createPlugin(
     },
   }),
 );
+
+/**
+ * Adds the Zuplo plugin to a config unless one is already configured.
+ *
+ * Zudoku applies this automatically when running in Zuplo mode, so the config
+ * is built on the fly without any setup. Add `zuploPlugin()` to the config's
+ * `plugins` yourself only to pass options.
+ */
+export const withZuploPlugin = <T extends ZudokuConfig>(config: T): T =>
+  selectPluginConfigs(config.plugins ?? [], "zuplo").length > 0
+    ? config
+    : { ...config, plugins: [...(config.plugins ?? []), zuploPlugin()] };
 
 export type { ZuploPluginOptions } from "./options.js";
 export type {

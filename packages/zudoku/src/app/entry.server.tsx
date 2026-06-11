@@ -29,6 +29,9 @@ import { getSsrCacheControl } from "./ssrCacheControl.js";
 import { wrapProtectedRoutes } from "./wrapProtectedRoutes.js";
 
 export { getRoutesByConfig };
+// The fully transformed config (plugins' `transformConfig` applied), so
+// consumers like the prerenderer don't re-run the transform themselves.
+export { config };
 export type { Adapter, AdapterContext } from "./adapter.js";
 
 // Shared cached verifier for session handler, SSR render, and protected-chunk gate.

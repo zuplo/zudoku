@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as esbuild } from "esbuild";
-import { createBuilder, type Rolldown } from "vite";
+import { createBuilder } from "vite";
 import { ZuploEnv } from "../app/env.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { type ConfigWithMeta, loadZudokuConfig } from "../config/loader.js";
@@ -128,7 +128,6 @@ export async function runBuild(options: BuildOptions) {
       html,
       clientOutDir,
       serverOutDir,
-      serverResult,
     });
   }
 }
@@ -139,30 +138,17 @@ type PrerenderOptions = {
   html: string;
   clientOutDir: string;
   serverOutDir: string;
-  serverResult: Rolldown.RolldownOutput;
-};
-
-const findServerConfigFilename = (result: Rolldown.RolldownOutput) => {
-  const entry = result.output.find(
-    (o) => o.type === "chunk" && o.isEntry && o.fileName === "zudoku.config.js",
-  );
-  invariant(entry, "Could not find zudoku.config entry in server build output");
-
-  return entry.fileName;
 };
 
 const runPrerender = async (options: PrerenderOptions) => {
-  const { dir, config, html, clientOutDir, serverOutDir, serverResult } =
-    options;
+  const { dir, config, html, clientOutDir, serverOutDir } = options;
   const issuer = await getIssuer(config);
-  const serverConfigFilename = findServerConfigFilename(serverResult);
 
   try {
     const { workerResults, rewrites } = await prerender({
       html,
       dir,
       basePath: config.basePath,
-      serverConfigFilename,
       writeRedirects: process.env.VERCEL === undefined,
     });
 

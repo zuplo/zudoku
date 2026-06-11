@@ -1,11 +1,10 @@
-import { zuploPlugin } from "@zuplo/zudoku";
 import type { ZudokuConfig } from "zudoku";
 
+// In Zuplo mode the `@zuplo/zudoku` dependency is applied automatically: it
+// sets up an OpenAPI reference for each OpenAPI file in ../config and a
+// GraphQL reference for each GraphQL endpoint, enriched with the project's
+// policies. Add `zuploPlugin()` to `plugins` yourself only to pass options.
 const config: ZudokuConfig = {
-  // Sets up the APIs of this Zuplo project: an OpenAPI reference for each
-  // OpenAPI file in ../config and a GraphQL reference for each GraphQL
-  // endpoint, enriched with the project's policies
-  plugins: [zuploPlugin()],
   site: {
     title: "My Developer Portal",
     banner: {
