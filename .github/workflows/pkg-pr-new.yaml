@@ -68,4 +68,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r --filter "./packages/*" build
 
-      - run: pnpm dlx pkg-pr-new publish --pnpm --comment=update "./packages/zudoku" "./packages/create-zudoku" "./packages/plugin-zuplo-monetization" "./packages/plugin-search-algolia"
+      - run: pnpm dlx pkg-pr-new publish --pnpm --comment=update "./packages/zudoku" "./packages/create-zudoku" "./packages/plugin-zuplo-monetization" "./packages/plugin-search-algolia" "./packages/plugin-graphql"
