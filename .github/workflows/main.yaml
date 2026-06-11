@@ -75,7 +75,7 @@ jobs:
         with:
           version: pnpm run version-packages
           publish: pnpm exec changeset publish
-          commit: "chore(release): publish [skip ci]"
+          commit: "chore(release): publish"
           title: "chore(release): version packages"
         env:
           GITHUB_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
