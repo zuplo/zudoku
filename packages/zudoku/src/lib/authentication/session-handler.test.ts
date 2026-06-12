@@ -233,6 +233,77 @@ describe("sessionHandler POST", () => {
   });
 });
 
+describe("sessionHandler GET", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const get = (extraHeaders: Record<string, string> = {}) =>
+    new Request("http://localhost/", {
+      method: "GET",
+      headers: { "Sec-Fetch-Site": "same-origin", ...extraHeaders },
+    });
+
+  test("rejects cross-site GET", async () => {
+    const res = await handler.fetch(get({ "Sec-Fetch-Site": "cross-site" }));
+    expect(res.status).toBe(403);
+  });
+
+  test("returns 501 when provider has no verifier", async () => {
+    const res = await noProviderHandler.fetch(get());
+    expect(res.status).toBe(501);
+  });
+
+  test("returns 401 without a session cookie", async () => {
+    const res = await handler.fetch(get());
+    expect(res.status).toBe(401);
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  test("returns the access token and expiry from the cookie", async () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    verifyAccessToken.mockResolvedValueOnce(verifierResult(nowSec + 120));
+    const res = await handler.fetch(
+      get({ cookie: "zudoku-access-token=tok123" }),
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(await res.json()).toEqual({
+      accessToken: "tok123",
+      expiresAt: nowSec + 120,
+    });
+  });
+
+  test("never returns the refresh token", async () => {
+    verifyAccessToken.mockResolvedValueOnce(verifierResult());
+    const res = await handler.fetch(
+      get({ cookie: "zudoku-access-token=tok123; zudoku-refresh-token=rt" }),
+    );
+    expect(res.status).toBe(200);
+    expect(JSON.stringify(await res.json())).not.toContain("rt");
+  });
+
+  test("clears cookies and returns 401 when the token no longer verifies", async () => {
+    verifyAccessToken.mockResolvedValueOnce(null);
+    const res = await handler.fetch(
+      get({ cookie: "zudoku-access-token=stale" }),
+    );
+    expect(res.status).toBe(401);
+    const cookies = res.headers.getSetCookie().join(";");
+    expect(cookies).toContain("zudoku-access-token=;");
+    expect(cookies).toContain("zudoku-refresh-token=;");
+    expect(cookies).toContain("zudoku-auth-profile=;");
+  });
+
+  test("returns 502 when verifier throws", async () => {
+    verifyAccessToken.mockRejectedValueOnce(new Error("jwks fetch failed"));
+    const res = await handler.fetch(
+      get({ cookie: "zudoku-access-token=tok123" }),
+    );
+    expect(res.status).toBe(502);
+  });
+});
+
 describe("sessionHandler DELETE", () => {
   test("clears all auth cookies when same-origin", async () => {
     const res = await handler.fetch(
