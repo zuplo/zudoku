@@ -273,7 +273,7 @@ export const MdxPage = ({
           centered && "xl:mx-auto",
         )}
       >
-        <header className="flow-root">
+        <header className="flow-root isolate">
           {showTocSidebar && (
             <>
               <Slot.Source name="top-navigation-side" type="append">
@@ -289,7 +289,7 @@ export const MdxPage = ({
           )}
           {(copyMarkdownConfig || showTocPopover) && (
             <div
-              className="float-end ms-4 mt-1 flex items-center gap-2"
+              className="relative z-10 float-end ms-4 mt-1 flex items-center gap-2"
               role="group"
               aria-label="Page actions"
             >
