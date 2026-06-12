@@ -325,6 +325,27 @@ describe("Usage - pay-as-you-go and included framing", () => {
     expect(screen.queryByText(/Pay as you go/)).not.toBeInTheDocument();
   });
 
+  it("shows the per-unit rate for unit-priced pay-as-you-go items", () => {
+    const unitItem = {
+      featureKey: "requests",
+      name: "API Requests",
+      included: { entitlement: { isSoftLimit: true } },
+      price: { type: "unit", amount: "0.05" },
+    } as Item;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 40, overage: 40 })}
+        isFetching={false}
+        currentItems={[unitItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(screen.getByText("40 used this billing period")).toBeInTheDocument();
+    expect(screen.getByText("$0.05/call")).toBeInTheDocument();
+    expect(screen.getByText(/Pay as you go/)).toBeInTheDocument();
+  });
+
   it("doesn't claim pay-as-you-go for price shapes the derivation can't reason about", () => {
     const volumeItem = {
       featureKey: "requests",

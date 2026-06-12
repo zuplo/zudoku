@@ -74,7 +74,12 @@ const UsageItem = ({
   const overageTier =
     item?.price?.tiers?.find((t) => !t.upToAmount) ??
     item?.price?.tiers?.at(-1);
-  const rate = overageTier?.unitPrice?.amount;
+  // The displayed per-unit rate: a unit price's own amount, otherwise the
+  // open-ended tier's unit price.
+  const rate =
+    item?.price?.type === "unit"
+      ? item.price.amount
+      : overageTier?.unitPrice?.amount;
   const hasOverage = meter.overage > 0;
   const quota = meter.balance + meter.usage - meter.overage;
   // A soft limit on a price that bills from the first unit caps nothing and

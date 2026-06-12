@@ -7,7 +7,9 @@
  * first tier is a fixed charge (its units are still marginally free), while a
  * flat on a later tier makes crossing into that tier paid. Volume-mode tiers,
  * package and dynamic prices are conservatively treated as billing from the
- * first unit. Returns Infinity when the price never charges per unit.
+ * first unit, and flat prices have no usage units at all (0). Infinity is
+ * returned only for usage prices whose free range is open-ended: a $0 unit
+ * price or graduated tiers that stay free through the last tier.
  */
 
 type PricePartLike = { amount?: string } | null | undefined;
