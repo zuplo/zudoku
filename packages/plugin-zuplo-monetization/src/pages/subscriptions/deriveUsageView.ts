@@ -160,6 +160,19 @@ export const deriveUsageView = (
         rateLabel,
       };
     }
+    // A price that never charges per unit ($0 unit price, or graduated tiers
+    // free through the last tier): quota framing — and especially the
+    // "additional usage is billed" overage warning — would be false, with or
+    // without an issued quota.
+    if (freeUnits === Number.POSITIVE_INFINITY) {
+      return {
+        kind: "meteredGeneric",
+        usage: meter.usage,
+        quota: quota > 0 ? quota : undefined,
+        caption: `Included with your plan. ${NO_CAP}`,
+        rateLabel,
+      };
+    }
     if (quota > 0) {
       // The quota mirrors a genuinely free pricing range.
       return {
@@ -175,10 +188,7 @@ export const deriveUsageView = (
     return {
       kind: "meteredGeneric",
       usage: meter.usage,
-      caption:
-        freeUnits === Number.POSITIVE_INFINITY
-          ? `Included with your plan. ${NO_CAP}`
-          : `The first ${freeUnits.toLocaleString()} ${pluralizeUnit(unitName)} are included; additional usage is billed. ${NO_CAP}`,
+      caption: `The first ${freeUnits.toLocaleString()} ${pluralizeUnit(unitName)} are included; additional usage is billed. ${NO_CAP}`,
       rateLabel,
     };
   }

@@ -160,6 +160,36 @@ describe("deriveUsageView", () => {
         /Included with your plan/,
       );
     });
+
+    it("never-billed prices stay out of included framing even with a quota and overage", () => {
+      // An issued quota + overage on a $0 unit price must not produce the
+      // "included" view — its overage warning would falsely claim additional
+      // usage is billed.
+      const view = deriveUsageView(
+        { balance: 0, usage: 1500, overage: 500 },
+        meteredItem({ isSoftLimit: true }, {
+          type: "unit",
+          amount: "0",
+        } as Item["price"]),
+      );
+      expect(view).toMatchObject({ kind: "meteredGeneric", quota: 1000 });
+      expect(view.kind === "meteredGeneric" && view.caption).toMatch(
+        /Included with your plan/,
+      );
+
+      const openEndedFree = deriveUsageView(
+        { balance: 500, usage: 500, overage: 0 },
+        meteredItem({ isSoftLimit: true }, {
+          type: "tiered",
+          mode: "graduated",
+          tiers: [{ unitPrice: { amount: "0" } }],
+        } as Item["price"]),
+      );
+      expect(openEndedFree).toMatchObject({
+        kind: "meteredGeneric",
+        quota: 1000,
+      });
+    });
   });
 
   describe("soft limit + shapes that don't support billing claims", () => {
