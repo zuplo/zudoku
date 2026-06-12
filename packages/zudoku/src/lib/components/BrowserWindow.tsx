@@ -13,7 +13,10 @@ const MAX_ZOOM = Math.max(...ZOOM_LEVELS);
 export type BrowserWindowProps = {
   /** Address displayed in the URL bar */
   url?: string;
-  /** Initial zoom applied to the content (e.g. `0.75` for 75%) */
+  /**
+   * Initial zoom applied to the content (e.g. `0.75` for 75%).
+   * The zoom control is only shown when a value is passed.
+   */
   scale?: number;
   className?: string;
   /** Additional classes for the content viewport */
@@ -23,12 +26,12 @@ export type BrowserWindowProps = {
 
 export const BrowserWindow = ({
   url = "localhost:3000",
-  scale: initialScale = 1,
+  scale: initialScale,
   className,
   contentClassName,
   children,
 }: BrowserWindowProps) => {
-  const [scale, setScale] = useState(initialScale);
+  const [scale, setScale] = useState(initialScale ?? 1);
   const [contentHeight, setContentHeight] = useState<number>();
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -66,34 +69,36 @@ export const BrowserWindow = ({
         <div className="flex h-7 min-w-0 flex-1 items-center rounded-md border bg-background px-3 text-xs text-muted-foreground">
           <span className="truncate">{url}</span>
         </div>
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={zoomOut}
-            disabled={scale <= MIN_ZOOM}
-            aria-label="Zoom out"
-          >
-            <MinusIcon />
-          </Button>
-          <button
-            type="button"
-            onClick={() => setScale(initialScale)}
-            title="Reset zoom"
-            className="w-11 text-center text-xs tabular-nums text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {Math.round(scale * 100)}%
-          </button>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={zoomIn}
-            disabled={scale >= MAX_ZOOM}
-            aria-label="Zoom in"
-          >
-            <PlusIcon />
-          </Button>
-        </div>
+        {initialScale != null && (
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={zoomOut}
+              disabled={scale <= MIN_ZOOM}
+              aria-label="Zoom out"
+            >
+              <MinusIcon />
+            </Button>
+            <button
+              type="button"
+              onClick={() => setScale(initialScale)}
+              title="Reset zoom"
+              className="w-11 text-center text-xs tabular-nums text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {Math.round(scale * 100)}%
+            </button>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={zoomIn}
+              disabled={scale >= MAX_ZOOM}
+              aria-label="Zoom in"
+            >
+              <PlusIcon />
+            </Button>
+          </div>
+        )}
       </div>
       <div
         className="overflow-hidden"

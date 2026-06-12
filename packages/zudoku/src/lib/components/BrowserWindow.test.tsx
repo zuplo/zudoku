@@ -38,9 +38,21 @@ describe("BrowserWindow", () => {
     expect(screen.getByText("75%")).toBeDefined();
   });
 
-  it("steps through zoom levels with the zoom buttons", () => {
+  it("hides the zoom control when no scale is passed", () => {
     render(
       <BrowserWindow>
+        <div>Content</div>
+      </BrowserWindow>,
+    );
+
+    expect(screen.queryByRole("button", { name: "Zoom in" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Zoom out" })).toBeNull();
+    expect(screen.queryByTitle("Reset zoom")).toBeNull();
+  });
+
+  it("steps through zoom levels with the zoom buttons", () => {
+    render(
+      <BrowserWindow scale={1}>
         <div>Content</div>
       </BrowserWindow>,
     );

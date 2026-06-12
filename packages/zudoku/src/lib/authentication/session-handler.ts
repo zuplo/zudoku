@@ -1,10 +1,11 @@
-import { Hono } from "hono";
-import { deleteCookie, setCookie } from "hono/cookie";
+import { type Context, Hono } from "hono";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import type { CookieOptions } from "hono/utils/cookie";
 import type { VerifyAccessTokenResult } from "./authentication.js";
 import {
   ACCESS_TOKEN_COOKIE,
   AUTH_PROFILE_COOKIE,
+  DEFAULT_SESSION_MAX_AGE,
   REFRESH_TOKEN_COOKIE,
 } from "./cookies.js";
 
@@ -20,7 +21,6 @@ const baseCookieOptions: Omit<CookieOptions, "maxAge"> = {
 };
 
 const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
-const DEFAULT_SESSION_MAX_AGE = 60 * 60; // 1 hour fallback when verifier omits expiresAt
 
 const cookieMaxAge = (
   expiresAt: number | undefined,
@@ -33,6 +33,12 @@ const cookieMaxAge = (
 
 const MAX_COOKIE_SIZE = 3900; // Leave margin under 4096 browser limit
 const MAX_BODY_SIZE = 64 * 1024;
+
+const clearAuthCookies = (c: Context) => {
+  deleteCookie(c, ACCESS_TOKEN_COOKIE, baseCookieOptions);
+  deleteCookie(c, REFRESH_TOKEN_COOKIE, baseCookieOptions);
+  deleteCookie(c, AUTH_PROFILE_COOKIE, baseCookieOptions);
+};
 
 const sameOriginCheck = (c: {
   req: { header: (name: string) => string | undefined };
@@ -67,6 +73,44 @@ const sameOriginCheck = (c: {
  */
 export const createSessionHandler = (verify: VerifyAccessToken | undefined) =>
   new Hono()
+    // Returns the access token to same-origin JS. In SSR mode tokens live
+    // only in httpOnly cookies, so after a full navigation this is the only
+    // way for the client to sign API requests again. The refresh token is
+    // never returned.
+    .get("/", async (c) => {
+      if (!sameOriginCheck(c)) {
+        return c.json({ error: "CSRF check failed" }, 403);
+      }
+
+      if (!verify) {
+        return c.json(
+          { error: "SSR authentication is not supported for this provider" },
+          501,
+        );
+      }
+
+      c.header("Cache-Control", "no-store");
+
+      const accessToken = getCookie(c, ACCESS_TOKEN_COOKIE);
+      if (!accessToken) {
+        return c.json({ error: "No session" }, 401);
+      }
+
+      let verified: VerifyAccessTokenResult;
+      try {
+        verified = await verify(accessToken);
+      } catch (e) {
+        // biome-ignore lint/suspicious/noConsole: Surface verifier failures
+        console.error("SSR auth verifier error:", e);
+        return c.json({ error: "Verifier error" }, 502);
+      }
+      if (!verified) {
+        clearAuthCookies(c);
+        return c.json({ error: "Invalid access token" }, 401);
+      }
+
+      return c.json({ accessToken, expiresAt: verified.expiresAt });
+    })
     .post("/", async (c) => {
       if (!sameOriginCheck(c)) {
         return c.json({ error: "CSRF check failed" }, 403);
@@ -156,9 +200,7 @@ export const createSessionHandler = (verify: VerifyAccessToken | undefined) =>
         return c.json({ error: "CSRF check failed" }, 403);
       }
 
-      deleteCookie(c, ACCESS_TOKEN_COOKIE, baseCookieOptions);
-      deleteCookie(c, REFRESH_TOKEN_COOKIE, baseCookieOptions);
-      deleteCookie(c, AUTH_PROFILE_COOKIE, baseCookieOptions);
+      clearAuthCookies(c);
 
       return c.json({ ok: true });
     });

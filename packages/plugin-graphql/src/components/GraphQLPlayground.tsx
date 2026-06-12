@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { cn } from "zudoku";
 import { GraphiQLViewer, type GraphiQLFetcher } from "zudoku/graphiql";
+import { useApiIdentitySelection } from "zudoku/hooks";
 
 const EMPTY_HEADERS: Record<string, string> = {};
 
@@ -42,6 +43,8 @@ export const GraphQLPlayground = ({
       ? JSON.stringify(headers, null, 2)
       : undefined);
 
+  const { authorizeRequest, selectedIdentity } = useApiIdentitySelection();
+
   const fetcher = useMemo<GraphiQLFetcher>(
     () => async (graphQLParams, opts) => {
       if (!endpoint) {
@@ -61,7 +64,7 @@ export const GraphQLPlayground = ({
         };
       }
 
-      const response = await fetch(endpoint, {
+      const request = new Request(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,14 +74,20 @@ export const GraphQLPlayground = ({
         body: JSON.stringify(graphQLParams),
       });
 
+      const response = await fetch(await authorizeRequest(request));
       return response.json();
     },
-    [endpoint, headers, schema],
+    [endpoint, headers, schema, authorizeRequest],
   );
 
   return (
     <GraphiQLViewer
       fetcher={fetcher}
+      footerNote={
+        selectedIdentity
+          ? `Authorized as “${selectedIdentity.label}”. Auth is applied automatically when the request is sent.`
+          : undefined
+      }
       schema={schema}
       initialQuery={initialQuery}
       initialVariables={initialVariables}

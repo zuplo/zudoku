@@ -19,7 +19,14 @@ import {
 } from "zudoku/ui/Select.js";
 import { TooltipProvider } from "zudoku/ui/Tooltip.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
+import IdentitySelector from "../../../components/IdentitySelector.js";
 import { useHotkey } from "../../../hooks/useHotkey.js";
+import {
+  identitySelectionToValue,
+  NO_IDENTITY,
+  useIdentityStore,
+  valueToIdentitySelection,
+} from "../../../hooks/useIdentityStore.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
@@ -36,15 +43,12 @@ import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
-import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./constants.js";
 import { createUrl } from "./createUrl.js";
 import { extractFileName, isBinaryContentType } from "./fileUtils.js";
 import { Headers } from "./Headers.js";
 import { IdentityDialog } from "./IdentityDialog.js";
-import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
-import { useIdentityStore } from "./rememberedIdentity.js";
 import { UrlPath } from "./request-panel/UrlPath.js";
 import { UrlQueryParams } from "./request-panel/UrlQueryParams.js";
 import RequestLoginDialog from "./RequestLoginDialog.js";
@@ -57,7 +61,10 @@ import {
 } from "./securityCredentialsStore.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
-export { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./constants.js";
+export {
+  NO_IDENTITY,
+  SECURITY_SCHEME_PREFIX,
+} from "../../../hooks/useIdentityStore.js";
 
 export type Header = {
   name: string;
@@ -277,7 +284,9 @@ export const Playground = ({
             : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
-          ...securitySchemes.map((s) => `${SECURITY_SCHEME_PREFIX}${s.name}`),
+          ...securitySchemes.map((s) =>
+            identitySelectionToValue({ type: "scheme", name: s.name }),
+          ),
           ...(identities.data?.map((i) => i.id) ?? []),
         ]),
       },
@@ -291,9 +300,9 @@ export const Playground = ({
 
   const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
 
-  const selectedSchemeName = identity?.startsWith(SECURITY_SCHEME_PREFIX)
-    ? identity.slice(SECURITY_SCHEME_PREFIX.length)
-    : undefined;
+  const identitySelection = valueToIdentitySelection(identity);
+  const selectedSchemeName =
+    identitySelection.type === "scheme" ? identitySelection.name : undefined;
 
   const securityLockedHeaders = useMemo(() => {
     const cred = selectedSchemeName
@@ -336,9 +345,9 @@ export const Playground = ({
       const upperMethod = method.toUpperCase();
       const requestUrl = createUrl(server ?? selectedServer, url, data);
 
-      const schemeName = data.identity?.startsWith(SECURITY_SCHEME_PREFIX)
-        ? data.identity.slice(SECURITY_SCHEME_PREFIX.length)
-        : undefined;
+      const dataSelection = valueToIdentitySelection(data.identity);
+      const schemeName =
+        dataSelection.type === "scheme" ? dataSelection.name : undefined;
 
       const schemeCredentials = (() => {
         if (!schemeName) return {};
@@ -644,18 +653,16 @@ export const Playground = ({
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <IdentitySelector
-                      value={identity}
+                      selection={valueToIdentitySelection(identity)}
                       identities={identities.data ?? []}
-                      setValue={(value) => {
-                        if (value.startsWith(SECURITY_SCHEME_PREFIX)) {
-                          const schemeName = value.slice(
-                            SECURITY_SCHEME_PREFIX.length,
-                          );
-                          if (!securityCredentials[schemeName]?.isAuthorized) {
-                            setShowAuthorizeDialog(true);
-                          }
+                      onSelectionChange={(next) => {
+                        if (
+                          next.type === "scheme" &&
+                          !securityCredentials[next.name]?.isAuthorized
+                        ) {
+                          setShowAuthorizeDialog(true);
                         }
-                        setValue("identity", value);
+                        setValue("identity", identitySelectionToValue(next));
                       }}
                       securitySchemes={
                         securitySchemes.length > 0 ? securitySchemes : undefined

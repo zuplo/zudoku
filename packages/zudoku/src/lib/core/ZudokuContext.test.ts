@@ -105,3 +105,33 @@ describe("ZudokuContext.getPluginNavigation", () => {
     }
   });
 });
+
+// One plugin failing to provide identities must not drop the identities of
+// the other plugins (settled individually, not Promise.all).
+describe("ZudokuContext.getApiIdentities", () => {
+  it("keeps identities from healthy plugins when one rejects", async () => {
+    const identity = {
+      id: "ok",
+      label: "OK",
+      authorizeRequest: (request: Request) => request,
+    };
+    const healthy = { getIdentities: async () => [identity] };
+    const failing = {
+      getIdentities: async () => {
+        throw new Error("boom");
+      },
+    };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const ctx = new ZudokuContext(
+        { plugins: [failing, healthy] },
+        new QueryClient(),
+        {},
+      );
+      await expect(ctx.getApiIdentities()).resolves.toEqual([identity]);
+      expect(warn).toHaveBeenCalledOnce();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});

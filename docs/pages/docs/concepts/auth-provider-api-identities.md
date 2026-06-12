@@ -107,3 +107,36 @@ export default {
 ```
 
 When implemented, this identity will appear in the Zudoku playground.
+
+## Using API Identities in custom plugins
+
+Plugins that ship their own playground (like the GraphQL plugin) can reuse the identity system
+instead of building their own authentication handling:
+
+- `useApiIdentitySelection` from `zudoku/hooks` exposes the user's identity selection. The selection
+  is shared across all playgrounds and persists for the session.
+- `<ApiIdentityPicker />` from `zudoku/components` renders the button and popover used to pick an
+  identity. It renders nothing when no identities are available.
+
+```tsx
+import { ApiIdentityPicker } from "zudoku/components";
+import { useApiIdentitySelection } from "zudoku/hooks";
+
+const Playground = ({ endpoint }: { endpoint: string }) => {
+  const { authorizeRequest } = useApiIdentitySelection();
+
+  const execute = async (body: string) => {
+    const request = new Request(endpoint, { method: "POST", body });
+    // Applies the selected identity; returns the request unchanged if none is selected
+    const response = await fetch(await authorizeRequest(request));
+    return response.json();
+  };
+
+  return (
+    <div>
+      <ApiIdentityPicker />
+      {/* ... */}
+    </div>
+  );
+};
+```

@@ -46,6 +46,7 @@ export type CdnGraphiQL = {
   createRoot: typeof CreateRoot;
   GraphiQL: ComponentType<GraphiQLComponentProps> & {
     Logo: ComponentType<PropsWithChildren>;
+    Footer: ComponentType<PropsWithChildren>;
   };
   createGraphiQLFetcher: typeof CreateGraphiQLFetcher;
 };

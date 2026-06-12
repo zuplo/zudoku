@@ -37,6 +37,10 @@ export const zuploMonetizationPlugin = createPlugin(
     },
 
     getIdentities: async (context) => {
+      // Subscriptions require auth; unexpected failures are handled by
+      // `getApiIdentities`, which settles plugins individually.
+      if (!context.getAuthState().isAuthenticated) return [];
+
       const result = await queryClient.fetchQuery(subscriptionsQuery(context));
 
       return result.items.flatMap((sub) =>

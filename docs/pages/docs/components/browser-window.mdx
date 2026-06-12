@@ -7,7 +7,7 @@ import { BrowserWindow } from "zudoku/components";
 import { Button } from "zudoku/ui/Button";
 
 A mock browser window for presenting UI previews, screenshots-as-code, or full page layouts in your
-documentation. It renders its children inside a browser-style frame with a URL bar and a working
+documentation. It renders its children inside a browser-style frame with a URL bar and an optional
 zoom control — the current scale is displayed like in a real browser and readers can zoom in and out
 themselves.
 
@@ -40,9 +40,11 @@ import { BrowserWindow } from "zudoku/components";
 ## Scale
 
 Use the `scale` prop to set the initial zoom of the content. This is useful for presenting
-full-width layouts, like a landing page, at a reduced size. The zoom control in the toolbar shows
-the current scale — readers can change it with the `+`/`-` buttons or click the percentage to reset
-it, just like in a real browser.
+full-width layouts, like a landing page, at a reduced size. Passing a `scale` enables the zoom
+control in the toolbar showing the current scale — readers can change it with the `+`/`-` buttons or
+click the percentage to reset it, just like in a real browser. Without a `scale`, the zoom control
+is hidden and the content renders at full size (pass `scale={1}` to start at 100% with the control
+enabled).
 
 <BrowserWindow scale={0.5}>
   <div className="flex flex-col items-center gap-3 p-10 text-center">
@@ -83,10 +85,10 @@ Set the `url` prop to change the address shown in the URL bar (defaults to `loca
 
 ## Props
 
-| Prop               | Type        | Description                                                         |
-| ------------------ | ----------- | ------------------------------------------------------------------- |
-| `url`              | `string`    | Address displayed in the URL bar. Defaults to `localhost:3000`.     |
-| `scale`            | `number`    | Initial zoom of the content (e.g. `0.75` for 75%). Defaults to `1`. |
-| `className`        | `string`    | Additional classes for the outer frame.                             |
-| `contentClassName` | `string`    | Additional classes for the content viewport.                        |
-| `children`         | `ReactNode` | The content rendered inside the browser window.                     |
+| Prop               | Type        | Description                                                                                                                                      |
+| ------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `url`              | `string`    | Address displayed in the URL bar. Defaults to `localhost:3000`.                                                                                  |
+| `scale`            | `number`    | Initial zoom of the content (e.g. `0.75` for 75%). Enables the zoom control; if omitted, the control is hidden and content renders at full size. |
+| `className`        | `string`    | Additional classes for the outer frame.                                                                                                          |
+| `contentClassName` | `string`    | Additional classes for the content viewport.                                                                                                     |
+| `children`         | `ReactNode` | The content rendered inside the browser window.                                                                                                  |
