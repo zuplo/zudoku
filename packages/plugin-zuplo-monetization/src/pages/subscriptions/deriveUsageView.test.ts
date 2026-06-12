@@ -90,7 +90,7 @@ describe("deriveUsageView", () => {
         included: 1000,
         remaining: 600,
         overage: 0,
-        rateLabel: "$0.02/call",
+        rateLabel: "$0.02/unit",
       });
     });
 
@@ -113,7 +113,7 @@ describe("deriveUsageView", () => {
       );
       expect(view).toMatchObject({ kind: "meteredGeneric", usage: 250 });
       expect(view.kind === "meteredGeneric" && view.caption).toMatch(
-        /first 1,?000 calls are included/,
+        /first 1,?000 units are included/,
       );
     });
   });
@@ -130,7 +130,8 @@ describe("deriveUsageView", () => {
       expect(view).toEqual({
         kind: "payAsYouGo",
         usage: 40,
-        rateLabel: "$0.05/call",
+        caption: "Pay as you go — every unit is billed; there is no usage cap.",
+        rateLabel: "$0.05/unit",
       });
     });
 
@@ -142,7 +143,7 @@ describe("deriveUsageView", () => {
       expect(view).toMatchObject({
         kind: "payAsYouGo",
         usage: 5,
-        rateLabel: "$0.01/call",
+        rateLabel: "$0.01/unit",
       });
     });
 
@@ -195,7 +196,7 @@ describe("deriveUsageView", () => {
       );
       expect(view).toMatchObject({
         kind: "meteredGeneric",
-        rateLabel: "$10.00 per 100 calls",
+        rateLabel: "$10.00 per 100 units",
       });
     });
 
@@ -258,13 +259,62 @@ describe("deriveUsageView", () => {
     });
   });
 
+  describe("configured unit names (pricing.units)", () => {
+    it("uses the configured name in rate labels and captions", () => {
+      const payg = deriveUsageView(
+        { balance: 0, usage: 40, overage: 40 },
+        meteredItem({ isSoftLimit: true }, {
+          type: "unit",
+          amount: "0.05",
+        } as Item["price"]),
+        "request",
+      );
+      expect(payg).toMatchObject({
+        rateLabel: "$0.05/request",
+        caption:
+          "Pay as you go — every request is billed; there is no usage cap.",
+      });
+
+      const trackOnly = deriveUsageView(
+        { balance: 0, usage: 250, overage: 250 },
+        meteredItem({ isSoftLimit: true }, graduatedFreeTier),
+        "request",
+      );
+      expect(trackOnly.kind === "meteredGeneric" && trackOnly.caption).toMatch(
+        /first 1,?000 requests are included/,
+      );
+
+      const pkg = deriveUsageView(
+        { balance: 0, usage: 250, overage: 250 },
+        meteredItem({ isSoftLimit: true }, {
+          type: "package",
+          amount: "10",
+          quantityPerUnit: "100",
+        } as Item["price"]),
+        "request",
+      );
+      expect(pkg.rateLabel).toBe("$10.00 per 100 requests");
+    });
+
+    it("doesn't double-pluralize names that already end in s", () => {
+      const view = deriveUsageView(
+        { balance: 0, usage: 250, overage: 250 },
+        meteredItem({ isSoftLimit: true }, graduatedFreeTier),
+        "credits",
+      );
+      expect(view.kind === "meteredGeneric" && view.caption).toMatch(
+        /first 1,?000 credits are included/,
+      );
+    });
+  });
+
   describe("rate labels", () => {
     it("uses the open-ended tier's unit price for graduated tiers", () => {
       const view = deriveUsageView(
         { balance: 600, usage: 400, overage: 0 },
         meteredItem({ isSoftLimit: true }, graduatedFreeTier),
       );
-      expect(view.rateLabel).toBe("$0.02/call");
+      expect(view.rateLabel).toBe("$0.02/unit");
     });
 
     it("omits the label for malformed amounts", () => {

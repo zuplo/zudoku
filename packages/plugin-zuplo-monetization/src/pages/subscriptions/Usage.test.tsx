@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { MonetizationContext } from "../../MonetizationContext.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import type { MeteredEntitlement } from "./Usage.js";
 import { Usage } from "./Usage.js";
@@ -63,7 +64,7 @@ describe("Usage - UsageItem", () => {
       screen.queryByText("You've reached your monthly limit"),
     ).not.toBeInTheDocument();
     expect(screen.getByText(/\+200 overage/)).toBeInTheDocument();
-    expect(screen.getByText(/\$0\.02\/call/)).toBeInTheDocument();
+    expect(screen.getByText(/\$0\.02\/unit/)).toBeInTheDocument();
   });
 
   it("shows hard limit alert when at limit", () => {
@@ -341,7 +342,7 @@ describe("Usage - pay-as-you-go and included framing", () => {
       screen.getByText("1,200 used this billing period"),
     ).toBeInTheDocument();
     expect(screen.getByText(/Pay as you go/)).toBeInTheDocument();
-    expect(screen.getByText("$0.01/call")).toBeInTheDocument();
+    expect(screen.getByText("$0.01/unit")).toBeInTheDocument();
     expect(screen.queryByText(/used your included/)).not.toBeInTheDocument();
     expect(screen.queryByText(/limit/)).not.toBeInTheDocument();
     expect(screen.queryByText(/remaining/)).not.toBeInTheDocument();
@@ -379,7 +380,7 @@ describe("Usage - pay-as-you-go and included framing", () => {
     // The price has a free leading tier, so the caption must not claim
     // per-call billing.
     expect(
-      screen.getByText(/The first 1,?000 calls are included/),
+      screen.getByText(/The first 1,?000 units are included/),
     ).toBeInTheDocument();
     expect(screen.queryByText(/Pay as you go/)).not.toBeInTheDocument();
   });
@@ -401,7 +402,7 @@ describe("Usage - pay-as-you-go and included framing", () => {
       />,
     );
     expect(screen.getByText("40 used this billing period")).toBeInTheDocument();
-    expect(screen.getByText("$0.05/call")).toBeInTheDocument();
+    expect(screen.getByText("$0.05/unit")).toBeInTheDocument();
     expect(screen.getByText(/Pay as you go/)).toBeInTheDocument();
   });
 
@@ -437,6 +438,31 @@ describe("Usage - pay-as-you-go and included framing", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText(/included/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Pay as you go/)).not.toBeInTheDocument();
+  });
+
+  it("uses the unit name from pricing.units, matching the plan views", () => {
+    render(
+      <MonetizationContext.Provider
+        value={{ pricing: { units: { requests: "request" } } }}
+      >
+        <Usage
+          usage={makeUsage({ balance: 0, usage: 40, overage: 40 })}
+          isFetching={false}
+          currentItems={[
+            {
+              key: "requests",
+              featureKey: "requests",
+              name: "API Requests",
+              included: { entitlement: { isSoftLimit: true } },
+              price: { type: "unit", amount: "0.05" },
+            } as Item,
+          ]}
+          isPendingFirstPayment={false}
+        />
+      </MonetizationContext.Provider>,
+    );
+    expect(screen.getByText("$0.05/request")).toBeInTheDocument();
+    expect(screen.getByText(/every request is billed/)).toBeInTheDocument();
   });
 
   it("renders only metered entitlements — boolean/static features are not usage", () => {

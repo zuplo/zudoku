@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
 import type { PendingCredit } from "../../hooks/usePendingCredits.js";
+import { useMonetizationConfig } from "../../MonetizationContext.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDurationAdjective } from "../../utils/formatDuration.js";
 import { deriveUsageView } from "./deriveUsageView.js";
@@ -74,11 +75,16 @@ const UsageItem = ({
   featureKey: string;
   pendingCredit?: PendingCredit;
 }) => {
+  const { pricing } = useMonetizationConfig();
   const cadence = item?.billingCadence ?? subscription?.billingCadence;
   const billingPeriod = cadence ? formatDurationAdjective(cadence) : "monthly";
+  // Unit names come from the pricing config, same resolution as the plan
+  // views (categorizeRateCards): rate-card key, then feature key, then "unit".
+  const unitName =
+    pricing?.units?.[item?.key ?? ""] ?? pricing?.units?.[featureKey] ?? "unit";
   // All entitlement/price reasoning lives in the presenter; this component
   // only renders the resulting view.
-  const view = deriveUsageView(meter, item);
+  const view = deriveUsageView(meter, item, unitName);
   const atHardLimit = view.kind === "capped" && view.atLimit;
   const overIncluded = view.kind === "included" && view.overage > 0;
 
@@ -193,11 +199,7 @@ const UsageItem = ({
                 )
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {view.kind === "payAsYouGo"
-                ? "Pay as you go — every call is billed; there is no usage cap."
-                : view.caption}
-            </p>
+            <p className="text-xs text-muted-foreground">{view.caption}</p>
           </>
         )}
       </CardContent>

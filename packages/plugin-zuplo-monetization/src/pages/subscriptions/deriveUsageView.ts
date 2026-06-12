@@ -41,7 +41,7 @@ export type UsageView =
       overage: number;
       rateLabel?: string;
     }
-  | { kind: "payAsYouGo"; usage: number; rateLabel?: string }
+  | { kind: "payAsYouGo"; usage: number; caption: string; rateLabel?: string }
   | {
       kind: "meteredGeneric";
       usage: number;
@@ -55,25 +55,34 @@ const formatAmount = (amount: string | undefined): string | undefined => {
   return Number.isFinite(value) ? `$${value.toFixed(2)}` : undefined;
 };
 
+// The unit name comes from the pricing config (`pricing.units` keyed by rate
+// card or feature key); "unit" is the configured fallback everywhere else in
+// the plugin (see categorizeRateCards), so it is here too.
+const pluralizeUnit = (unitName: string) =>
+  unitName.endsWith("s") ? unitName : `${unitName}s`;
+
 /** The label for what additional usage costs, when the shape has one number. */
-const rateLabelFor = (price: Item["price"]): string | undefined => {
+const rateLabelFor = (
+  price: Item["price"],
+  unitName: string,
+): string | undefined => {
   if (!price) return undefined;
   if (price.type === "unit") {
     const amount = formatAmount(price.amount);
-    return amount ? `${amount}/call` : undefined;
+    return amount ? `${amount}/${unitName}` : undefined;
   }
   if (price.type === "tiered") {
     const overageTier =
       price.tiers?.find((t) => !t.upToAmount) ?? price.tiers?.at(-1);
     const amount = formatAmount(overageTier?.unitPrice?.amount);
-    return amount ? `${amount}/call` : undefined;
+    return amount ? `${amount}/${unitName}` : undefined;
   }
   if (price.type === "package") {
     const amount = formatAmount(price.amount);
     if (!amount) return undefined;
     const size = parseFloat(price.quantityPerUnit ?? "");
     return Number.isFinite(size) && size > 0
-      ? `${amount} per ${size.toLocaleString()} calls`
+      ? `${amount} per ${size.toLocaleString()} ${pluralizeUnit(unitName)}`
       : amount;
   }
   // flat: no per-usage rate; volume/dynamic: not representable as one number.
@@ -85,10 +94,11 @@ const NO_CAP = "There is no usage cap.";
 export const deriveUsageView = (
   meter: MeteredValue,
   item?: Item,
+  unitName = "unit",
 ): UsageView => {
   const quota = meter.balance + meter.usage - meter.overage;
   const isSoftLimit = item?.included?.entitlement?.isSoftLimit ?? true;
-  const rateLabel = rateLabelFor(item?.price);
+  const rateLabel = rateLabelFor(item?.price, unitName);
 
   // A hard limit blocks at the quota no matter how usage is priced.
   if (!isSoftLimit) {
@@ -143,7 +153,12 @@ export const deriveUsageView = (
 
   if (derivable) {
     if (freeUnits === 0) {
-      return { kind: "payAsYouGo", usage: meter.usage, rateLabel };
+      return {
+        kind: "payAsYouGo",
+        usage: meter.usage,
+        caption: `Pay as you go — every ${unitName} is billed; there is no usage cap.`,
+        rateLabel,
+      };
     }
     if (quota > 0) {
       // The quota mirrors a genuinely free pricing range.
@@ -163,7 +178,7 @@ export const deriveUsageView = (
       caption:
         freeUnits === Number.POSITIVE_INFINITY
           ? `Included with your plan. ${NO_CAP}`
-          : `The first ${freeUnits.toLocaleString()} calls are included; additional usage is billed. ${NO_CAP}`,
+          : `The first ${freeUnits.toLocaleString()} ${pluralizeUnit(unitName)} are included; additional usage is billed. ${NO_CAP}`,
       rateLabel,
     };
   }
