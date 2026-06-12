@@ -20,7 +20,9 @@ allowBuilds:
   lefthook: false
   nx: false
   protobufjs: false
+  sharp: false
   utf-8-validate: false
+  workerd: false
 
 catalog:
   "@testing-library/dom": 10.4.1

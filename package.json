@@ -23,7 +23,7 @@
     "test:e2e": "playwright test"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=22.19",
     "pnpm": ">=11"
   },
   "devDependencies": {
@@ -54,5 +54,5 @@
       "check:other"
     ]
   },
-  "packageManager": "pnpm@11.0.0"
+  "packageManager": "pnpm@11.6.0"
 }
