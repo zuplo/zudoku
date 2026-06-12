@@ -1,7 +1,16 @@
+import { z } from "zod/mini";
 import type { StoreApi } from "zustand";
 import type { AuthState } from "./state.js";
 
-type TokenBearer = { accessToken?: string; refreshToken?: string };
+const TokenBearerSchema = z.object({
+  accessToken: z.optional(z.string()),
+  refreshToken: z.optional(z.string()),
+});
+
+const ServerSessionSchema = z.object({
+  accessToken: z.string(),
+  expiresAt: z.optional(z.number()),
+});
 
 // Latest in-flight cookie sync, so a post-login redirect can await the cookie
 // write before navigating. Resolved by default. See redirectAfterAuth.
@@ -20,16 +29,32 @@ export const waitForSessionSync = async (): Promise<void> => {
   } while (awaited !== pendingSessionSync);
 };
 
-const readTokens = (providerData: unknown): TokenBearer => {
-  if (!providerData || typeof providerData !== "object") return {};
-  const data = providerData as Record<string, unknown>;
-  return {
-    accessToken:
-      typeof data.accessToken === "string" ? data.accessToken : undefined,
-    refreshToken:
-      typeof data.refreshToken === "string" ? data.refreshToken : undefined,
-  };
+// Access token the server itself just handed out via fetchServerSession.
+// POSTing it back would only re-set the cookie it came from, so the cookie
+// sync below skips it.
+let serverProvidedAccessToken: string | undefined;
+
+// Fetch the access token from the SSR session cookie. Returns undefined if no
+// valid session exists (401/501). Transient failures throw.
+export const fetchServerSession = async (sessionEndpoint: string) => {
+  const response = await fetch(sessionEndpoint);
+  if (response.status === 401 || response.status === 501) return;
+
+  if (!response.ok) {
+    throw new Error(`Session request failed with status ${response.status}`);
+  }
+
+  const parsed = ServerSessionSchema.safeParse(await response.json());
+  if (!parsed.success) {
+    throw new Error("Session response is malformed");
+  }
+
+  serverProvidedAccessToken = parsed.data.accessToken;
+  return parsed.data;
 };
+
+const readTokens = (providerData: unknown) =>
+  TokenBearerSchema.safeParse(providerData).data ?? {};
 
 // Mirror client auth state to SSR cookies so the next HTML render is authed
 // on first paint. Reads tokens off providerData. No-op on the server.
@@ -41,12 +66,10 @@ export const setupCookieSync = (
 ) => {
   if (typeof window === "undefined") return;
 
-  // In-flight controller so a later auth event can abort an earlier request.
-  // Without this, a logout can race a slow login and the late POST would
-  // re-establish the session after the user explicitly signed out.
+  // Abort earlier requests to prevent logout racing with slow login.
   let inflight: AbortController | undefined;
 
-  const send = (init: RequestInit) => {
+  const send = async (init: RequestInit) => {
     inflight?.abort();
     const controller = new AbortController();
     inflight = controller;
@@ -54,26 +77,31 @@ export const setupCookieSync = (
       () => controller.abort(),
       SESSION_SYNC_TIMEOUT_MS,
     );
-    return fetch(sessionEndpoint, {
-      ...init,
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timeout));
+
+    try {
+      return await fetch(sessionEndpoint, {
+        ...init,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
   };
 
   const postSession = async (providerData: unknown) => {
     const { accessToken, refreshToken } = readTokens(providerData);
-    if (!accessToken) return;
+    if (!accessToken || accessToken === serverProvidedAccessToken) return;
 
     try {
-      const r = await send({
+      const response = await send({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accessToken, refreshToken }),
       });
       // 501 = provider opted out of SSR auth; any other failure is surfaced.
-      if (!r.ok && r.status !== 501) {
+      if (!response.ok && response.status !== 501) {
         // biome-ignore lint/suspicious/noConsole: Surface SSR auth failures
-        console.error("SSR auth cookie sync failed:", r.status);
+        console.error("SSR auth cookie sync failed:", response.status);
       }
     } catch (e) {
       if ((e as Error)?.name === "AbortError") return;

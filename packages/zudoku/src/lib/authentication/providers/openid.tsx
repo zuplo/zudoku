@@ -15,6 +15,8 @@ import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { LogoutCallbackHandler } from "../components/LogoutCallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
+import { fetchServerSession } from "../cookie-sync.js";
+import { DEFAULT_SESSION_MAX_AGE, SESSION_ENDPOINT_PATH } from "../cookies.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
 import { redirectToSignUpUrl } from "./util.js";
@@ -83,6 +85,8 @@ export class OpenIDAuthenticationProvider
     "acr_values",
   ];
   private readonly allowInsecureRequests: boolean;
+  private readonly sessionEndpoint: string;
+  private serverSessionHydration?: Promise<OpenIdProviderData | undefined>;
 
   constructor({
     issuer,
@@ -108,6 +112,7 @@ export class OpenIDAuthenticationProvider
     this.issuer = issuer;
     // This is the callback URL for the OAuth provider. So it needs the base path.
     this.callbackUrlPath = joinUrl(basePath, OPENID_CALLBACK_PATH);
+    this.sessionEndpoint = joinUrl(basePath, SESSION_ENDPOINT_PATH);
     this.scopes = scopes ?? ["openid", "profile", "email"];
     this.allowInsecureRequests = allowInsecureRequests ?? false;
 
@@ -414,19 +419,67 @@ export class OpenIDAuthenticationProvider
     }
   }
 
+  // In SSR mode tokens live in httpOnly cookies and don't survive a full
+  // navigation. Restore the access token from the session endpoint and cache
+  // it as providerData so subsequent calls take the regular path.
+  private async restoreServerSession(): Promise<
+    OpenIdProviderData | undefined
+  > {
+    const session = await fetchServerSession(this.sessionEndpoint);
+    if (!session) return;
+
+    const expiresAt =
+      session.expiresAt ?? (await decodeJwtExp(session.accessToken));
+
+    const providerData: OpenIdProviderData = {
+      type: "openid",
+      accessToken: session.accessToken,
+      expiresOn: expiresAt
+        ? new Date(expiresAt * 1000)
+        : new Date(Date.now() + DEFAULT_SESSION_MAX_AGE * 1000),
+      tokenType: "Bearer",
+      claims: undefined,
+    };
+
+    useAuthState.setState({ providerData });
+
+    return providerData;
+  }
+
+  // Dedupes concurrent restores only: the cache is dropped once settled. A
+  // successful restore lives on in providerData, and anything else (no
+  // session, failure, a later logout clearing providerData) must re-check the
+  // cookie-backed session instead of reusing a stale result.
+  private hydrateFromServerSession() {
+    this.serverSessionHydration ??= this.restoreServerSession().finally(() => {
+      this.serverSessionHydration = undefined;
+    });
+    return this.serverSessionHydration;
+  }
+
   async getAccessToken(): Promise<string> {
     const as = await this.getAuthServer();
     const { providerData, setLoggedOut } = useAuthState.getState();
 
+    let tokenState =
+      providerData &&
+      (providerData.type === "openid" || providerData.type === undefined)
+        ? providerData
+        : undefined;
+
     if (
-      !providerData ||
-      (providerData?.type !== "openid" && providerData?.type !== undefined)
+      !tokenState &&
+      import.meta.env.ZUDOKU_HAS_SERVER &&
+      typeof window !== "undefined"
     ) {
-      useAuthState.getState().setLoggedOut();
-      throw new AuthorizationError("Invalid or incompatible provider data");
+      tokenState = await this.hydrateFromServerSession();
     }
 
-    const tokenState = providerData;
+    // A missing session is a confirmed logout; transient failures threw above.
+    if (!tokenState) {
+      setLoggedOut();
+      throw new AuthorizationError("Invalid or incompatible provider data");
+    }
 
     if (new Date(tokenState.expiresOn) < new Date()) {
       if (!tokenState.refreshToken) {

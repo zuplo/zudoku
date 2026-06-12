@@ -8,6 +8,7 @@ export { ZudokuError } from "../util/invariant.js";
 export { CategoryHeading } from "./CategoryHeading.js";
 export { ClientOnly } from "./ClientOnly.js";
 export { Heading } from "./Heading.js";
+export { ApiIdentityPicker } from "./ApiIdentityPicker.js";
 export {
   LandingPage,
   type LandingPageAction,

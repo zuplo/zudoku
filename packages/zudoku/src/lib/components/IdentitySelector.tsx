@@ -1,31 +1,40 @@
 import { SettingsIcon } from "lucide-react";
-import { Button } from "zudoku/ui/Button.js";
-import { Label } from "zudoku/ui/Label.js";
-import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
-import type { ApiIdentity } from "../../../core/ZudokuContext.js";
-import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./constants.js";
-import type { SecurityCredential } from "./securityCredentialsStore.js";
+import type { ApiIdentity } from "../core/ZudokuContext.js";
+import {
+  type IdentitySelection,
+  identitySelectionToValue,
+  NO_IDENTITY,
+  valueToIdentitySelection,
+} from "../hooks/useIdentityStore.js";
+import { Button } from "../ui/Button.js";
+import { Label } from "../ui/Label.js";
+import { RadioGroup, RadioGroupItem } from "../ui/RadioGroup.js";
 
-const IdentitySelector = ({
+export type { IdentitySelection };
+
+const NONE: IdentitySelection = { type: "none" };
+
+export const IdentitySelector = ({
   identities,
-  setValue,
-  value,
+  selection = NONE,
+  onSelectionChange,
   securitySchemes,
   securityCredentials,
   onConfigureScheme,
 }: {
   identities?: ApiIdentity[];
-  setValue: (value: string) => void;
-  value?: string;
+  selection?: IdentitySelection;
+  onSelectionChange: (selection: IdentitySelection) => void;
   securitySchemes?: Array<{ name: string; type: string }>;
-  securityCredentials?: Record<string, SecurityCredential>;
+  securityCredentials?: Record<string, { isAuthorized: boolean }>;
   onConfigureScheme?: (schemeName: string) => void;
 }) => (
   <div className="w-full overflow-hidden">
     <RadioGroup
-      onValueChange={(value) => setValue(value)}
-      value={value}
-      defaultValue={NO_IDENTITY}
+      onValueChange={(value) =>
+        onSelectionChange(valueToIdentitySelection(value))
+      }
+      value={identitySelectionToValue(selection)}
       className="gap-0"
     >
       {[{ id: NO_IDENTITY, label: "None" }, ...(identities ?? [])].map(
@@ -40,7 +49,10 @@ const IdentitySelector = ({
         ),
       )}
       {securitySchemes?.map((scheme) => {
-        const schemeId = `${SECURITY_SCHEME_PREFIX}${scheme.name}`;
+        const schemeId = identitySelectionToValue({
+          type: "scheme",
+          name: scheme.name,
+        });
         const isAuthorized =
           securityCredentials?.[scheme.name]?.isAuthorized ?? false;
         return (

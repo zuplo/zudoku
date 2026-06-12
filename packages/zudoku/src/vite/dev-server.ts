@@ -16,6 +16,7 @@ import { printDiagnosticsToConsole } from "../cli/common/output.js";
 import { findAvailablePort } from "../cli/common/utils/ports.js";
 import type { LoadedConfig } from "../config/config.js";
 import { loadZudokuConfig } from "../config/loader.js";
+import { SESSION_ENDPOINT_PATH } from "../lib/authentication/cookies.js";
 import { createGraphQLServer } from "../lib/oas/graphql/index.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import {
@@ -136,10 +137,14 @@ export class DevServer {
     vite.middlewares.use(graphql.graphqlEndpoint, graphql);
 
     // Auth session endpoint for cookie sync
-    const sessionEndpoint = joinUrl(config.basePath, "/__z/auth/session");
+    const sessionEndpoint = joinUrl(config.basePath, SESSION_ENDPOINT_PATH);
     vite.middlewares.use(sessionEndpoint, async (req, res) => {
-      if (req.method !== "POST" && req.method !== "DELETE") {
-        res.writeHead(405, { Allow: "POST, DELETE" });
+      if (
+        req.method !== "GET" &&
+        req.method !== "POST" &&
+        req.method !== "DELETE"
+      ) {
+        res.writeHead(405, { Allow: "GET, POST, DELETE" });
         res.end();
         return;
       }
@@ -182,8 +187,7 @@ export class DevServer {
         res.appendHeader("Set-Cookie", cookie);
       }
       res.writeHead(response.status);
-      const text = await response.text();
-      res.end(text);
+      res.end(Buffer.from(await response.arrayBuffer()));
     });
 
     // Pagefind reindex endpoint (SSE)
