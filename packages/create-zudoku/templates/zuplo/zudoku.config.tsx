@@ -103,31 +103,12 @@ const config: ZudokuConfig = {
   // another plugin, place both inside a single `plugins: [...]` array.
   // plugins: [
   //   graphqlPlugin({
-  //     // How the schema is loaded: "file" reads a local SDL file at build
-  //     // time, "url" fetches it from a live endpoint (which also powers the
-  //     // playground).
-  //     type: "file",
-  //     // Path to the schema file (for type: "file") or the GraphQL endpoint
-  //     // URL (for type: "url").
-  //     input: "./schema.graphql",
-  //     // The route the GraphQL docs are served under, e.g. /graphql.
+  //     type: "url",
+  //     input: "https://api.example.com/graphql",
   //     path: "graphql",
   //     options: {
   //       title: "My GraphQL API",
   //       description: "Explore the schema and try queries in the playground.",
-  //       // Include fields/types marked with @deprecated in the reference docs.
-  //       showDeprecated: false,
-  //       playground: {
-  //         // Enable the interactive query playground.
-  //         enabled: true,
-  //         // Endpoint the playground sends operations to. Defaults to `input`
-  //         // when type is "url".
-  //         endpoint: "https://api.example.com/graphql",
-  //         // Default headers sent with every playground request.
-  //         headers: {
-  //           Authorization: "Bearer <token>",
-  //         },
-  //       },
   //     },
   //   }),
   // ],
