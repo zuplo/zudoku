@@ -123,6 +123,24 @@ describe("SubscriptionPlanDetails", () => {
     expect(screen.getByText("sub-1")).toBeInTheDocument();
   });
 
+  it("shows 'Ended' with the expiry instead of a current period for expired subscriptions", () => {
+    render(
+      <SubscriptionPlanDetails
+        subscription={makeSubscription(
+          makePlan({ phases: [phase([flatFeeCard("99")])] }),
+          // The aligned period the API reports after expiry can be a
+          // backwards range (now-anchored start, end clamped to expiry) —
+          // it must not be rendered.
+          { activeTo: "2026-06-03T21:41:00.000Z" },
+        )}
+      />,
+    );
+    expect(screen.getByText("Ended")).toBeInTheDocument();
+    expect(screen.queryByText("Current period")).not.toBeInTheDocument();
+    const ended = screen.getByText("Ended").nextElementSibling;
+    expect(ended?.textContent).toMatch(/Jun 3, 2026/);
+  });
+
   it("renders 'Active since' and 'Current period' with the time of day, not just the date", () => {
     render(
       <SubscriptionPlanDetails

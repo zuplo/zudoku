@@ -5,6 +5,7 @@ import {
   ArrowUpIcon,
   BadgePercentIcon,
   Grid2x2XIcon,
+  HistoryIcon,
   Loader2Icon,
 } from "zudoku/icons";
 import {
@@ -16,8 +17,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
 import type { PendingCredit } from "../../hooks/usePendingCredits.js";
+import { useMonetizationConfig } from "../../MonetizationContext.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDurationAdjective } from "../../utils/formatDuration.js";
+import { deriveUsageView } from "./deriveUsageView.js";
 import { SwitchPlanModal } from "./SwitchPlanModal";
 
 export type { PendingCredit };
@@ -73,20 +76,33 @@ const UsageItem = ({
   featureKey: string;
   pendingCredit?: PendingCredit;
 }) => {
+  const { pricing } = useMonetizationConfig();
   const cadence = item?.billingCadence ?? subscription?.billingCadence;
   const billingPeriod = cadence ? formatDurationAdjective(cadence) : "monthly";
-  const isSoftLimit = item?.included?.entitlement?.isSoftLimit ?? true;
-  const overageTier =
-    item?.price?.tiers?.find((t) => !t.upToAmount) ??
-    item?.price?.tiers?.at(-1);
-  const rate = overageTier?.unitPrice?.amount;
-  const hasOverage = meter.overage > 0;
-  const limit = meter.balance + meter.usage - meter.overage;
-  const isAtLimit = !isSoftLimit && meter.usage >= limit;
-  const dangerZone = hasOverage || isAtLimit;
+  // Unit names come from the pricing config, same resolution as the plan
+  // views (categorizeRateCards): rate-card key, then feature key, then "unit".
+  const unitName =
+    pricing?.units?.[item?.key ?? ""] ?? pricing?.units?.[featureKey] ?? "unit";
+  // All entitlement/price reasoning lives in the presenter; this component
+  // only renders the resulting view.
+  const view = deriveUsageView(meter, item, unitName);
+  const atHardLimit = view.kind === "capped" && view.atLimit;
+  const overIncluded = view.kind === "included" && view.overage > 0;
+
+  const upgradeAction = (variant: "outline" | "destructive") =>
+    subscription && (
+      <AlertAction>
+        <SwitchPlanModal subscription={subscription}>
+          <Button variant={variant} size="xs">
+            <ArrowUpIcon />
+            Upgrade
+          </Button>
+        </SwitchPlanModal>
+      </AlertAction>
+    );
 
   return (
-    <Card className={cn(dangerZone && "border-destructive bg-destructive/5")}>
+    <Card className={cn(atHardLimit && "border-destructive bg-destructive/5")}>
       <CardHeader>
         {/* A credit is a discount on this period's usage — shown whenever one
             exists, independent of quota or overage state. */}
@@ -102,29 +118,21 @@ const UsageItem = ({
             </AlertDescription>
           </Alert>
         )}
-        {hasOverage && isSoftLimit && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
-            <AlertTitle>You've exceeded your {billingPeriod} quota</AlertTitle>
+        {overIncluded && (
+          <Alert variant="warning" className="mb-4">
+            <AlertTriangleIcon className="size-4 shrink-0" />
+            <AlertTitle>
+              You've used your included {billingPeriod} usage
+            </AlertTitle>
             <AlertDescription>
-              Additional usage is being charged at the overage rate
-              {rate ? ` ($${Number(rate).toFixed(2)}/call)` : ""}. Upgrade to a
-              higher plan for more usage.
+              Additional usage is billed
+              {view.rateLabel ? ` at ${view.rateLabel}` : ""}. Upgrade to a
+              higher plan for more included usage.
             </AlertDescription>
-
-            {subscription && (
-              <AlertAction>
-                <SwitchPlanModal subscription={subscription}>
-                  <Button variant="destructive" size="xs">
-                    <ArrowUpIcon />
-                    Upgrade
-                  </Button>
-                </SwitchPlanModal>
-              </AlertAction>
-            )}
+            {upgradeAction("outline")}
           </Alert>
         )}
-        {isAtLimit && !isSoftLimit && (
+        {atHardLimit && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
             <AlertTitle>You've reached your {billingPeriod} limit</AlertTitle>
@@ -132,44 +140,69 @@ const UsageItem = ({
               Requests beyond your quota are blocked. Upgrade to a higher plan
               for more usage.
             </AlertDescription>
-
-            {subscription && (
-              <AlertAction>
-                <SwitchPlanModal subscription={subscription}>
-                  <Button variant="destructive" size="xs">
-                    <ArrowUpIcon />
-                    Upgrade
-                  </Button>
-                </SwitchPlanModal>
-              </AlertAction>
-            )}
+            {upgradeAction("destructive")}
           </Alert>
         )}
         <CardTitle>{item?.name ?? featureKey}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex flex-col gap-2 mb-2">
-            <span className={cn(dangerZone && "text-red-600 font-medium")}>
-              {meter.usage.toLocaleString()} used
-              {hasOverage && isSoftLimit && (
-                <span className="ml-1 text-xs">
-                  (+{meter.overage.toLocaleString()} overage)
+        {view.kind === "capped" || view.kind === "included" ? (
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex flex-col gap-2 mb-2">
+                <span className={cn(atHardLimit && "text-red-600 font-medium")}>
+                  {view.usage.toLocaleString()} used
+                  {view.kind === "included" && view.overage > 0 && (
+                    <span className="ml-1 text-xs">
+                      (+{view.overage.toLocaleString()} overage)
+                    </span>
+                  )}
                 </span>
+              </div>
+              <span className="text-foreground font-medium">
+                {view.kind === "capped"
+                  ? `${view.quota.toLocaleString()} limit`
+                  : `${view.included.toLocaleString()} included`}
+              </span>
+            </div>
+            <Progress
+              value={Math.min(
+                100,
+                (view.kind === "capped" ? view.quota : view.included) > 0
+                  ? (view.usage /
+                      (view.kind === "capped" ? view.quota : view.included)) *
+                      100
+                  : 100,
               )}
-            </span>
-          </div>
-          <span className="text-foreground font-medium">
-            {limit.toLocaleString()} limit
-          </span>
-        </div>
-        <Progress
-          value={Math.min(100, limit > 0 ? (meter.usage / limit) * 100 : 100)}
-          className={cn("mb-3 h-2", dangerZone && "bg-destructive")}
-        />
-        <p className="text-xs text-muted-foreground">
-          {meter.balance.toLocaleString()} remaining this billing period
-        </p>
+              className={cn("mb-3 h-2", atHardLimit && "bg-destructive")}
+            />
+            <p className="text-xs text-muted-foreground">
+              {view.remaining.toLocaleString()}
+              {view.kind === "included" ? " included" : ""} remaining this
+              billing period
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <span>
+                {view.usage.toLocaleString()} used this billing period
+              </span>
+              {view.kind === "meteredGeneric" && view.quota !== undefined ? (
+                <span className="text-foreground font-medium">
+                  {view.quota.toLocaleString()} quota
+                </span>
+              ) : (
+                view.rateLabel && (
+                  <span className="text-muted-foreground">
+                    {view.rateLabel}
+                  </span>
+                )
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">{view.caption}</p>
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -193,6 +226,28 @@ export const Usage = ({
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
   );
+  // An ended subscription has no current billing period: the entitlement
+  // values the usage endpoint still returns reflect a period that kept
+  // rolling after expiry, so showing them (or any quota framing) would be
+  // misleading. Keep the section as the future home of historical usage.
+  const hasEnded =
+    !!subscription?.activeTo &&
+    new Date(subscription.activeTo).getTime() < Date.now();
+
+  if (hasEnded) {
+    return (
+      <div className="space-y-4">
+        <Heading level={3}>Usage</Heading>
+        <Alert>
+          <HistoryIcon className="size-4 shrink-0" />
+          <AlertTitle>This subscription has ended</AlertTitle>
+          <AlertDescription>
+            Usage history isn't available yet.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   const creditByFeature = new Map(
     (pendingCredits ?? []).map((credit) => [credit.featureKey, credit]),

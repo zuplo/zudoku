@@ -71,6 +71,8 @@ export type Item = {
     type: string;
     amount?: string;
     paymentTerm?: string;
+    /** Package prices: how many usage units one package covers. */
+    quantityPerUnit?: string;
   };
   updatedAt: string;
   taxConfig?: Record<string, unknown>;
