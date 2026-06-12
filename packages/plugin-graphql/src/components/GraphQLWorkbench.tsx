@@ -119,6 +119,8 @@ export const useGraphQLWorkbench = () => {
 const MAX_HEIGHT_LIMIT = 900;
 const MIN_HEIGHT = 100;
 const DEFAULT_HEIGHT = 420;
+const COLLAPSED_HEIGHT = 44;
+const DRAG_THRESHOLD = 4;
 
 const getMaxHeight = () =>
   typeof window === "undefined" ? MAX_HEIGHT_LIMIT : window.innerHeight - 48;
@@ -128,39 +130,63 @@ const clampHeight = (nextHeight: number) =>
 
 const useResizableHeight = (
   drawerRef: RefObject<HTMLDivElement | null>,
-  onOpen: () => void,
+  {
+    onOpen,
+    onCollapse,
+    onTap,
+  }: { onOpen: () => void; onCollapse: () => void; onTap: () => void },
 ) => {
   const frameRef = useRef<number | undefined>(undefined);
   const currentHeightRef = useRef(DEFAULT_HEIGHT);
-  const startRef = useRef<{ clientY: number; height: number } | undefined>(
-    undefined,
-  );
+  const committedHeightRef = useRef(DEFAULT_HEIGHT);
+  const startRef = useRef<
+    { clientY: number; height: number; dragging: boolean } | undefined
+  >(undefined);
   const [isResizing, setIsResizing] = useState(false);
   const [height, setHeight] = useState(DEFAULT_HEIGHT);
+
+  const commitHeight = useCallback((nextHeight: number) => {
+    committedHeightRef.current = nextHeight;
+    setHeight(nextHeight);
+  }, []);
 
   const startResize = useCallback(
     (event: PointerEvent<HTMLElement>) => {
       event.preventDefault();
       event.currentTarget.setPointerCapture(event.pointerId);
-      const startHeight = clampHeight(
-        drawerRef.current?.getBoundingClientRect().height ?? height,
-      );
-      startRef.current = { clientY: event.clientY, height: startHeight };
+      const startHeight =
+        drawerRef.current?.getBoundingClientRect().height ??
+        committedHeightRef.current;
+      startRef.current = {
+        clientY: event.clientY,
+        height: startHeight,
+        dragging: false,
+      };
       currentHeightRef.current = startHeight;
-      drawerRef.current?.style.setProperty("height", `${startHeight}px`);
-      onOpen();
-      setIsResizing(true);
     },
-    [drawerRef, height, onOpen],
+    [drawerRef],
   );
 
   const resize = useCallback(
     (event: PointerEvent<HTMLElement>) => {
-      if (event.buttons !== 1 || !startRef.current) return;
-      const nextHeight = clampHeight(
-        startRef.current.height + startRef.current.clientY - event.clientY,
+      const start = startRef.current;
+      if (event.buttons !== 1 || !start) return;
+      const delta = start.clientY - event.clientY;
+      if (!start.dragging) {
+        if (Math.abs(delta) < DRAG_THRESHOLD) return;
+        start.dragging = true;
+        // Keep the rendered height in sync with the actual height before
+        // switching to "open", so the drawer doesn't jump to a stale height
+        setHeight(start.height);
+        setIsResizing(true);
+        onOpen();
+      }
+      // Allow dragging below MIN_HEIGHT down to the collapsed bar;
+      // stopResize snaps to collapsed when released there
+      currentHeightRef.current = Math.min(
+        Math.max(start.height + delta, COLLAPSED_HEIGHT),
+        getMaxHeight(),
       );
-      currentHeightRef.current = nextHeight;
 
       if (frameRef.current !== undefined) return;
       frameRef.current = window.requestAnimationFrame(() => {
@@ -171,19 +197,37 @@ const useResizableHeight = (
         frameRef.current = undefined;
       });
     },
-    [drawerRef],
+    [drawerRef, onOpen],
   );
 
-  const stopResize = useCallback((event: PointerEvent<HTMLElement>) => {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    setHeight(currentHeightRef.current);
-    startRef.current = undefined;
-    setIsResizing(false);
-  }, []);
+  const stopResize = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      const start = startRef.current;
+      if (!start) return;
+      startRef.current = undefined;
+      if (frameRef.current !== undefined) {
+        window.cancelAnimationFrame(frameRef.current);
+        frameRef.current = undefined;
+      }
+      if (!start.dragging) {
+        onTap();
+        return;
+      }
+      setIsResizing(false);
+      if (currentHeightRef.current < MIN_HEIGHT) {
+        setHeight(committedHeightRef.current);
+        onCollapse();
+      } else {
+        commitHeight(currentHeightRef.current);
+      }
+    },
+    [commitHeight, onCollapse, onTap],
+  );
 
-  return { height, setHeight, isResizing, startResize, resize, stopResize };
+  return { height, commitHeight, isResizing, startResize, resize, stopResize };
 };
 
 const GraphQLWorkbenchDrawer = ({
@@ -202,12 +246,18 @@ const GraphQLWorkbenchDrawer = ({
   const hasOpened = useRef(false);
   if (state !== "collapsed") hasOpened.current = true;
 
-  const { height, setHeight, isResizing, startResize, resize, stopResize } =
-    useResizableHeight(drawerRef, () => onStateChange("open"));
+  const { height, commitHeight, isResizing, startResize, resize, stopResize } =
+    useResizableHeight(drawerRef, {
+      onOpen: () => onStateChange("open"),
+      onCollapse: () => onStateChange("collapsed"),
+      onTap: () => {
+        if (state === "collapsed") onStateChange("open");
+      },
+    });
 
   const drawerHeight =
     state === "collapsed"
-      ? "44px"
+      ? `${COLLAPSED_HEIGHT}px`
       : state === "maximized"
         ? "calc(100vh - 3rem)"
         : `${height}px`;
@@ -223,24 +273,33 @@ const GraphQLWorkbenchDrawer = ({
       data-pagefind-ignore="all"
     >
       <div
-        className="absolute inset-x-3 top-0 z-20 mx-auto h-1 max-w-6xl cursor-row-resize hover:bg-border/50 after:absolute after:-top-1 after:-bottom-1 after:content-['']"
+        className="group absolute inset-x-3 top-0 z-20 mx-auto h-4 max-w-6xl cursor-row-resize after:absolute after:inset-x-0 after:-top-1 after:bottom-0 after:content-['']"
         role="separator"
         aria-label="Resize playground"
         aria-orientation="horizontal"
         aria-valuemin={MIN_HEIGHT}
+        // window-dependent, so the SSR fallback value never matches the client
+        suppressHydrationWarning
         aria-valuemax={getMaxHeight()}
         aria-valuenow={height}
         tabIndex={0}
         onKeyDown={(event) => {
           if (event.key === "ArrowUp") {
             event.preventDefault();
-            onStateChange("open");
-            setHeight(clampHeight(height + 40));
+            if (state === "collapsed") {
+              onStateChange("open");
+            } else {
+              commitHeight(clampHeight(height + 40));
+            }
           }
           if (event.key === "ArrowDown") {
             event.preventDefault();
-            onStateChange("open");
-            setHeight(clampHeight(height - 40));
+            if (state === "collapsed") return;
+            if (height - 40 < MIN_HEIGHT) {
+              onStateChange("collapsed");
+            } else {
+              commitHeight(height - 40);
+            }
           }
         }}
         onPointerDown={startResize}
@@ -248,17 +307,33 @@ const GraphQLWorkbenchDrawer = ({
         onPointerUp={stopResize}
         onPointerCancel={stopResize}
         onLostPointerCapture={stopResize}
-      />
+      >
+        <div
+          className={cn(
+            "mx-auto mt-1.5 h-1 w-10 rounded-full bg-border transition-colors group-hover:bg-foreground/30",
+            isResizing && "bg-foreground/30",
+          )}
+        />
+      </div>
       <div className="mx-auto flex h-full max-w-6xl flex-col overflow-hidden rounded-t-lg border bg-background shadow-2xl">
         <div className="flex h-11 shrink-0 items-center gap-2 border-b px-3">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <PlayIcon
-              className="size-3.5 fill-current text-primary"
-              aria-hidden="true"
-            />
-            <span className="truncate text-sm font-medium">
-              GraphQL Playground
-            </span>
+            <button
+              type="button"
+              className="flex items-center gap-2"
+              aria-expanded={state !== "collapsed"}
+              onClick={() =>
+                onStateChange(state === "collapsed" ? "open" : "collapsed")
+              }
+            >
+              <PlayIcon
+                className="size-3.5 fill-current text-primary"
+                aria-hidden="true"
+              />
+              <span className="truncate text-sm font-medium">
+                GraphQL Playground
+              </span>
+            </button>
           </div>
           <div className="flex items-center gap-1">
             <ApiIdentityPicker showLabel />
