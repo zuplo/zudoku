@@ -37,6 +37,9 @@ export const SubscriptionPlanDetails = ({
   subscription: Subscription;
 }) => {
   const { pricing } = useMonetizationConfig();
+  const hasEnded =
+    !!subscription.activeTo &&
+    new Date(subscription.activeTo).getTime() < Date.now();
   const plan = subscription.plan;
   const view = getSubscriptionPlanView(subscription, { units: pricing?.units });
   const { priceLabel } = view;
@@ -100,14 +103,21 @@ export const SubscriptionPlanDetails = ({
               </dd>
             </div>
             <div>
-              <dt className={detailLabelClassName}>Current period</dt>
+              <dt className={detailLabelClassName}>
+                {hasEnded ? "Ended" : "Current period"}
+              </dt>
               <dd className="text-foreground">
-                {subscription.alignment?.currentAlignedBillingPeriod
-                  ? formatDateTimeRange(
-                      subscription.alignment.currentAlignedBillingPeriod.from,
-                      subscription.alignment.currentAlignedBillingPeriod.to,
-                    )
-                  : "—"}
+                {/* An ended subscription has no current period — the aligned
+                    period the API reports can even be a backwards range
+                    (now-anchored start, end clamped to expiry). */}
+                {hasEnded
+                  ? formatDateTime(subscription.activeTo ?? "")
+                  : subscription.alignment?.currentAlignedBillingPeriod
+                    ? formatDateTimeRange(
+                        subscription.alignment.currentAlignedBillingPeriod.from,
+                        subscription.alignment.currentAlignedBillingPeriod.to,
+                      )
+                    : "—"}
               </dd>
             </div>
           </dl>
