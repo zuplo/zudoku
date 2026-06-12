@@ -1,6 +1,9 @@
 // Uncomment the import below to enable Zuplo monetization (pricing, checkout,
 // subscriptions). See: https://zuplo.com/docs/articles/monetization
 // import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
+// Uncomment the import below to document a GraphQL API (schema reference docs
+// and an interactive playground).
+// import { graphqlPlugin } from "@zudoku/plugin-graphql";
 import type { ZudokuConfig } from "zudoku";
 
 /**
@@ -94,6 +97,40 @@ const config: ZudokuConfig = {
   // Uncomment to enable monetization. Don't forget to also uncomment the
   // `zuploMonetizationPlugin` import at the top of this file.
   // plugins: [zuploMonetizationPlugin()],
+  //
+  // Uncomment to document a GraphQL API. Don't forget to also uncomment the
+  // `graphqlPlugin` import at the top of this file. To enable this alongside
+  // another plugin, place both inside a single `plugins: [...]` array.
+  // plugins: [
+  //   graphqlPlugin({
+  //     // How the schema is loaded: "file" reads a local SDL file at build
+  //     // time, "url" fetches it from a live endpoint (which also powers the
+  //     // playground).
+  //     type: "file",
+  //     // Path to the schema file (for type: "file") or the GraphQL endpoint
+  //     // URL (for type: "url").
+  //     input: "./schema.graphql",
+  //     // The route the GraphQL docs are served under, e.g. /graphql.
+  //     path: "graphql",
+  //     options: {
+  //       title: "My GraphQL API",
+  //       description: "Explore the schema and try queries in the playground.",
+  //       // Include fields/types marked with @deprecated in the reference docs.
+  //       showDeprecated: false,
+  //       playground: {
+  //         // Enable the interactive query playground.
+  //         enabled: true,
+  //         // Endpoint the playground sends operations to. Defaults to `input`
+  //         // when type is "url".
+  //         endpoint: "https://api.example.com/graphql",
+  //         // Default headers sent with every playground request.
+  //         headers: {
+  //           Authorization: "Bearer <token>",
+  //         },
+  //       },
+  //     },
+  //   }),
+  // ],
 };
 
 export default config;
