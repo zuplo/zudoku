@@ -257,7 +257,7 @@ describe("Usage - UsageItem", () => {
     expect(screen.getByText("requests")).toBeInTheDocument();
   });
 
-  it("shows a pending credit banner and suppresses the overage charge alert", () => {
+  it("shows the credit banner whenever a credit exists, independent of overage", () => {
     render(
       <Usage
         usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
@@ -269,21 +269,21 @@ describe("Usage - UsageItem", () => {
         isPendingFirstPayment={false}
       />,
     );
-    // Positive credit banner is shown...
-    expect(screen.getByText("A usage credit was applied")).toBeInTheDocument();
+    // The credit is a discount on this period's usage...
+    expect(screen.getByText("Usage credit applied")).toBeInTheDocument();
     expect(
-      screen.getByText(/Support credited 200 overage units/),
+      screen.getByText(/A credit of 200 units applies/),
     ).toBeInTheDocument();
-    // ...and the contradictory "you're being charged for overage" alert is hidden.
+    // ...and does not interact with the overage warning.
     expect(
-      screen.queryByText("You've exceeded your monthly quota"),
-    ).not.toBeInTheDocument();
+      screen.getByText("You've exceeded your monthly quota"),
+    ).toBeInTheDocument();
   });
 
-  it("keeps the overage charge alert when the credit only partially covers the overage", () => {
+  it("shows the credit banner when usage is under quota", () => {
     render(
       <Usage
-        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        usage={makeUsage({ balance: 500, usage: 500, overage: 0 })}
         pendingCredits={[
           { featureKey: "requests", units: 50, source: "support" },
         ]}
@@ -292,13 +292,10 @@ describe("Usage - UsageItem", () => {
         isPendingFirstPayment={false}
       />,
     );
-    // The credit banner shows for the waived units...
-    expect(screen.getByText("A usage credit was applied")).toBeInTheDocument();
-    // ...but the remaining 150 overage units are still billed, so the charge
-    // warning must stay visible.
+    expect(screen.getByText("Usage credit applied")).toBeInTheDocument();
     expect(
-      screen.getByText("You've exceeded your monthly quota"),
-    ).toBeInTheDocument();
+      screen.queryByText("You've exceeded your monthly quota"),
+    ).not.toBeInTheDocument();
   });
 
   it("does not show a credit banner for features without a pending credit", () => {
@@ -313,10 +310,7 @@ describe("Usage - UsageItem", () => {
         isPendingFirstPayment={false}
       />,
     );
-    expect(
-      screen.queryByText("A usage credit was applied"),
-    ).not.toBeInTheDocument();
-    // The overage alert still shows since this feature has no credit.
+    expect(screen.queryByText("Usage credit applied")).not.toBeInTheDocument();
     expect(
       screen.getByText("You've exceeded your monthly quota"),
     ).toBeInTheDocument();

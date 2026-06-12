@@ -83,30 +83,26 @@ const UsageItem = ({
   const hasOverage = meter.overage > 0;
   const limit = meter.balance + meter.usage - meter.overage;
   const isAtLimit = !isSoftLimit && meter.usage >= limit;
-  // A pending credit waives overage charges, but only suppress the "you're being
-  // charged for overage" warning (and the red danger styling) when the credit covers
-  // the full overage — a partial credit still leaves billable overage the user
-  // should be warned about. The credit banner itself shows for any credit.
-  const hasFullOverageCredit =
-    pendingCredit != null && pendingCredit.units >= meter.overage;
-  const dangerZone = (hasOverage && !hasFullOverageCredit) || isAtLimit;
+  const dangerZone = hasOverage || isAtLimit;
 
   return (
     <Card className={cn(dangerZone && "border-destructive bg-destructive/5")}>
       <CardHeader>
+        {/* A credit is a discount on this period's usage — shown whenever one
+            exists, independent of quota or overage state. */}
         {pendingCredit && (
           <Alert className="mb-4">
             <BadgePercentIcon className="size-4 text-green-600 shrink-0" />
-            <AlertTitle>A usage credit was applied</AlertTitle>
+            <AlertTitle>Usage credit applied</AlertTitle>
             <AlertDescription>
-              Support credited {pendingCredit.units.toLocaleString()} overage{" "}
-              {pendingCredit.units === 1 ? "unit" : "units"} for this billing
-              period — you won't be billed for them. The credit is applied to
-              your next invoice automatically.
+              A credit of {pendingCredit.units.toLocaleString()}{" "}
+              {pendingCredit.units === 1 ? "unit" : "units"} applies to this
+              billing period and will be deducted from your next invoice
+              automatically.
             </AlertDescription>
           </Alert>
         )}
-        {hasOverage && isSoftLimit && !hasFullOverageCredit && (
+        {hasOverage && isSoftLimit && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
             <AlertTitle>You've exceeded your {billingPeriod} quota</AlertTitle>

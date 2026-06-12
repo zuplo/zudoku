@@ -2,9 +2,9 @@ import { useZudoku } from "zudoku/hooks";
 import { useQuery } from "zudoku/react-query";
 
 /**
- * A usage credit (overage waiver) applied by the API owner that will be applied
- * to the next invoice automatically. Surfaced so the user understands a charge
- * was forgiven (the recorded usage/balance is unchanged).
+ * A usage credit applied by the API owner — a discount on this billing period's
+ * usage, deducted from the next invoice automatically (the recorded
+ * usage/balance is unchanged).
  */
 export type PendingCredit = {
   featureKey: string;
