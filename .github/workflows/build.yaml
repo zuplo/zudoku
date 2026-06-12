@@ -128,6 +128,14 @@ jobs:
           find "$nested/assets" -name '*.js' -type f | grep -q . || fail "no JS bundles in $nested/assets"
           [ -f "$dist/404.html" ] || fail "status page 404.html missing at dist root"
 
+          grep -q 'rel="icon" href="/your-repo/favicon.svg"' "$nested/introduction.html" \
+            || fail "favicon href missing /your-repo prefix"
+
+          grep -q 'href="/your-repo/assets/' "$nested/introduction.html" \
+            || fail "asset URLs missing /your-repo prefix"
+
+          echo "✅ with-base-path smoke test passed"
+
       # Guards the `zudoku generate` + `extends` pipeline: the example's only
       # plugin lives in the generated layer, so its routes prerendering proves
       # layer-contributed plugins reach the route tree in a real build.
@@ -141,13 +149,7 @@ jobs:
           grep -q "Shipment GraphQL API" "$dist/graphql.html" || fail "generated-layer plugin content missing in $dist/graphql.html"
           grep -q "Cosmo Cargo GraphQL" "$dist/home.html" || fail "layer metadata missing in $dist/home.html"
 
-          grep -q 'rel="icon" href="/your-repo/favicon.svg"' "$nested/introduction.html" \
-            || fail "favicon href missing /your-repo prefix"
-
-          grep -q 'href="/your-repo/assets/' "$nested/introduction.html" \
-            || fail "asset URLs missing /your-repo prefix"
-
-          echo "✅ with-base-path smoke test passed"
+          echo "✅ config-spec smoke test passed"
 
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
