@@ -3,6 +3,7 @@ import { Button, Heading, Link } from "zudoku/components";
 import {
   AlertTriangleIcon,
   ArrowUpIcon,
+  BadgePercentIcon,
   Grid2x2XIcon,
   Loader2Icon,
 } from "zudoku/icons";
@@ -14,10 +15,13 @@ import {
 } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
+import type { PendingCredit } from "../../hooks/usePendingCredits.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDurationAdjective } from "../../utils/formatDuration.js";
 import { priceIncludedUnits } from "../../utils/priceIncludedUnits.js";
 import { SwitchPlanModal } from "./SwitchPlanModal";
+
+export type { PendingCredit };
 
 export type UsageResult = {
   $schema: string;
@@ -62,11 +66,13 @@ const UsageItem = ({
   item,
   subscription,
   featureKey,
+  pendingCredit,
 }: {
   meter: MeteredEntitlement;
   item?: Item;
   subscription?: Subscription;
   featureKey: string;
+  pendingCredit?: PendingCredit;
 }) => {
   const cadence = item?.billingCadence ?? subscription?.billingCadence;
   const billingPeriod = cadence ? formatDurationAdjective(cadence) : "monthly";
@@ -115,6 +121,20 @@ const UsageItem = ({
   return (
     <Card className={cn(dangerZone && "border-destructive bg-destructive/5")}>
       <CardHeader>
+        {/* A credit is a discount on this period's usage — shown whenever one
+            exists, independent of quota or overage state. */}
+        {pendingCredit && (
+          <Alert className="mb-4">
+            <BadgePercentIcon className="size-4 text-green-600 shrink-0" />
+            <AlertTitle>Usage credit applied</AlertTitle>
+            <AlertDescription>
+              A credit of {pendingCredit.units.toLocaleString()}{" "}
+              {pendingCredit.units === 1 ? "unit" : "units"} applies to this
+              billing period and will be deducted from your next invoice
+              automatically.
+            </AlertDescription>
+          </Alert>
+        )}
         {hasOverage && isSoftLimit && !usageOnly && (
           <Alert variant="warning" className="mb-4">
             <AlertTriangleIcon className="size-4 shrink-0" />
@@ -218,15 +238,21 @@ export const Usage = ({
   currentItems,
   subscription,
   isPendingFirstPayment,
+  pendingCredits,
 }: {
   usage: UsageResult;
   isFetching: boolean;
   currentItems?: Item[];
   subscription?: Subscription;
   isPendingFirstPayment: boolean;
+  pendingCredits?: PendingCredit[];
 }) => {
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
+  );
+
+  const creditByFeature = new Map(
+    (pendingCredits ?? []).map((credit) => [credit.featureKey, credit]),
   );
 
   return (
@@ -273,6 +299,7 @@ export const Usage = ({
               meter={{ ...value }}
               subscription={subscription}
               item={currentItems?.find((item) => item.featureKey === key)}
+              pendingCredit={creditByFeature.get(key)}
             />
           ) : (
             []

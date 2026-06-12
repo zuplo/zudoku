@@ -256,6 +256,65 @@ describe("Usage - UsageItem", () => {
     );
     expect(screen.getByText("requests")).toBeInTheDocument();
   });
+
+  it("shows the credit banner whenever a credit exists, independent of overage", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        pendingCredits={[
+          { featureKey: "requests", units: 200, source: "support" },
+        ]}
+        isFetching={false}
+        currentItems={[softLimitItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    // The credit is a discount on this period's usage...
+    expect(screen.getByText("Usage credit applied")).toBeInTheDocument();
+    expect(
+      screen.getByText(/A credit of 200 units applies/),
+    ).toBeInTheDocument();
+    // ...and does not interact with the overage warning.
+    expect(
+      screen.getByText("You've exceeded your monthly quota"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the credit banner when usage is under quota", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 500, usage: 500, overage: 0 })}
+        pendingCredits={[
+          { featureKey: "requests", units: 50, source: "support" },
+        ]}
+        isFetching={false}
+        currentItems={[softLimitItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(screen.getByText("Usage credit applied")).toBeInTheDocument();
+    expect(
+      screen.queryByText("You've exceeded your monthly quota"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not show a credit banner for features without a pending credit", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        pendingCredits={[
+          { featureKey: "something-else", units: 50, source: "support" },
+        ]}
+        isFetching={false}
+        currentItems={[softLimitItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(screen.queryByText("Usage credit applied")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("You've exceeded your monthly quota"),
+    ).toBeInTheDocument();
+  });
 });
 
 const payAsYouGoItem = {
