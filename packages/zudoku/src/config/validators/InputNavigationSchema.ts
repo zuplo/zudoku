@@ -183,7 +183,6 @@ export type NavigationRemoveRule = z.infer<typeof NavigationRemoveRuleSchema>;
 export type NavigationSortRule = z.infer<typeof NavigationSortRuleSchema>;
 export type NavigationMoveRule = z.infer<typeof NavigationMoveRuleSchema>;
 
-type _InputNavigationItem = z.infer<typeof InputNavigationItemSchema>;
 
 export type InputNavigationDoc =
   | string
