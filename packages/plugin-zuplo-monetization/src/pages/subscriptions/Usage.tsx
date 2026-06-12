@@ -18,7 +18,7 @@ import { Progress } from "zudoku/ui/Progress";
 import type { PendingCredit } from "../../hooks/usePendingCredits.js";
 import type { Item, Subscription } from "../../types/SubscriptionType.js";
 import { formatDurationAdjective } from "../../utils/formatDuration.js";
-import { priceIncludedUnits } from "../../utils/priceIncludedUnits.js";
+import { deriveUsageView } from "./deriveUsageView.js";
 import { SwitchPlanModal } from "./SwitchPlanModal";
 
 export type { PendingCredit };
@@ -76,50 +76,26 @@ const UsageItem = ({
 }) => {
   const cadence = item?.billingCadence ?? subscription?.billingCadence;
   const billingPeriod = cadence ? formatDurationAdjective(cadence) : "monthly";
-  const isSoftLimit = item?.included?.entitlement?.isSoftLimit ?? true;
-  const overageTier =
-    item?.price?.tiers?.find((t) => !t.upToAmount) ??
-    item?.price?.tiers?.at(-1);
-  // The displayed per-unit rate: a unit price's own amount, otherwise the
-  // open-ended tier's unit price.
-  const rate =
-    item?.price?.type === "unit"
-      ? item.price.amount
-      : overageTier?.unitPrice?.amount;
-  const hasOverage = meter.overage > 0;
-  const quota = meter.balance + meter.usage - meter.overage;
-  // A soft limit on a price that bills from the first unit caps nothing and
-  // includes nothing — its quota is meaningless, so show plain consumption
-  // instead of quota math. Same when no quota was issued (track-usage-only).
-  // "Billed from the first call" is only a trustworthy claim for the price
-  // shapes the derivation actually understands (unit and graduated tiers);
-  // priceIncludedUnits returns 0 merely conservatively for the rest.
-  const freeUnits = priceIncludedUnits(item?.price);
-  const isGraduatedTiered =
-    item?.price?.type === "tiered" &&
-    (item.price.mode ?? "graduated") === "graduated";
-  const payAsYouGo =
-    isSoftLimit &&
-    freeUnits === 0 &&
-    (item?.price?.type === "unit" || isGraduatedTiered);
-  const usageOnly = payAsYouGo || (isSoftLimit && quota <= 0);
-  // The usage-only caption must not claim per-call billing when the price
-  // actually includes leading units (track-only quota) or is a shape we
-  // can't reason about.
-  const usageOnlyCaption = payAsYouGo
-    ? "Pay as you go — every call is billed; there is no usage cap."
-    : freeUnits === Number.POSITIVE_INFINITY
-      ? "Included with your plan — there is no usage cap."
-      : freeUnits > 0
-        ? `The first ${freeUnits.toLocaleString()} calls are included; additional usage is billed. There is no usage cap.`
-        : "Usage is billed per your plan's pricing. There is no usage cap.";
-  const isAtLimit = !isSoftLimit && meter.usage >= quota;
-  // Exceeding a soft limit is pay-per-use working as designed, not an error —
-  // only a blocking hard limit gets the destructive treatment.
-  const dangerZone = isAtLimit;
+  // All entitlement/price reasoning lives in the presenter; this component
+  // only renders the resulting view.
+  const view = deriveUsageView(meter, item);
+  const atHardLimit = view.kind === "capped" && view.atLimit;
+  const overIncluded = view.kind === "included" && view.overage > 0;
+
+  const upgradeAction = (variant: "outline" | "destructive") =>
+    subscription && (
+      <AlertAction>
+        <SwitchPlanModal subscription={subscription}>
+          <Button variant={variant} size="xs">
+            <ArrowUpIcon />
+            Upgrade
+          </Button>
+        </SwitchPlanModal>
+      </AlertAction>
+    );
 
   return (
-    <Card className={cn(dangerZone && "border-destructive bg-destructive/5")}>
+    <Card className={cn(atHardLimit && "border-destructive bg-destructive/5")}>
       <CardHeader>
         {/* A credit is a discount on this period's usage — shown whenever one
             exists, independent of quota or overage state. */}
@@ -135,7 +111,7 @@ const UsageItem = ({
             </AlertDescription>
           </Alert>
         )}
-        {hasOverage && isSoftLimit && !usageOnly && (
+        {overIncluded && (
           <Alert variant="warning" className="mb-4">
             <AlertTriangleIcon className="size-4 shrink-0" />
             <AlertTitle>
@@ -143,23 +119,13 @@ const UsageItem = ({
             </AlertTitle>
             <AlertDescription>
               Additional usage is billed
-              {rate ? ` at $${Number(rate).toFixed(2)}/call` : ""}. Upgrade to a
+              {view.rateLabel ? ` at ${view.rateLabel}` : ""}. Upgrade to a
               higher plan for more included usage.
             </AlertDescription>
-
-            {subscription && (
-              <AlertAction>
-                <SwitchPlanModal subscription={subscription}>
-                  <Button variant="outline" size="xs">
-                    <ArrowUpIcon />
-                    Upgrade
-                  </Button>
-                </SwitchPlanModal>
-              </AlertAction>
-            )}
+            {upgradeAction("outline")}
           </Alert>
         )}
-        {isAtLimit && !isSoftLimit && (
+        {atHardLimit && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
             <AlertTitle>You've reached your {billingPeriod} limit</AlertTitle>
@@ -167,63 +133,70 @@ const UsageItem = ({
               Requests beyond your quota are blocked. Upgrade to a higher plan
               for more usage.
             </AlertDescription>
-
-            {subscription && (
-              <AlertAction>
-                <SwitchPlanModal subscription={subscription}>
-                  <Button variant="destructive" size="xs">
-                    <ArrowUpIcon />
-                    Upgrade
-                  </Button>
-                </SwitchPlanModal>
-              </AlertAction>
-            )}
+            {upgradeAction("destructive")}
           </Alert>
         )}
         <CardTitle>{item?.name ?? featureKey}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {usageOnly ? (
-          <>
-            <div className="flex items-center justify-between text-sm">
-              <span>
-                {meter.usage.toLocaleString()} used this billing period
-              </span>
-              {rate && (
-                <span className="text-muted-foreground">
-                  ${Number(rate).toFixed(2)}/call
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">{usageOnlyCaption}</p>
-          </>
-        ) : (
+        {view.kind === "capped" || view.kind === "included" ? (
           <>
             <div className="flex items-center justify-between text-sm">
               <div className="flex flex-col gap-2 mb-2">
-                <span className={cn(dangerZone && "text-red-600 font-medium")}>
-                  {meter.usage.toLocaleString()} used
-                  {hasOverage && isSoftLimit && (
+                <span className={cn(atHardLimit && "text-red-600 font-medium")}>
+                  {view.usage.toLocaleString()} used
+                  {view.kind === "included" && view.overage > 0 && (
                     <span className="ml-1 text-xs">
-                      (+{meter.overage.toLocaleString()} overage)
+                      (+{view.overage.toLocaleString()} overage)
                     </span>
                   )}
                 </span>
               </div>
               <span className="text-foreground font-medium">
-                {quota.toLocaleString()} {isSoftLimit ? "included" : "limit"}
+                {view.kind === "capped"
+                  ? `${view.quota.toLocaleString()} limit`
+                  : `${view.included.toLocaleString()} included`}
               </span>
             </div>
             <Progress
               value={Math.min(
                 100,
-                quota > 0 ? (meter.usage / quota) * 100 : 100,
+                (view.kind === "capped" ? view.quota : view.included) > 0
+                  ? (view.usage /
+                      (view.kind === "capped" ? view.quota : view.included)) *
+                      100
+                  : 100,
               )}
-              className={cn("mb-3 h-2", dangerZone && "bg-destructive")}
+              className={cn("mb-3 h-2", atHardLimit && "bg-destructive")}
             />
             <p className="text-xs text-muted-foreground">
-              {meter.balance.toLocaleString()}
-              {isSoftLimit ? " included" : ""} remaining this billing period
+              {view.remaining.toLocaleString()}
+              {view.kind === "included" ? " included" : ""} remaining this
+              billing period
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <span>
+                {view.usage.toLocaleString()} used this billing period
+              </span>
+              {view.kind === "meteredGeneric" && view.quota !== undefined ? (
+                <span className="text-foreground font-medium">
+                  {view.quota.toLocaleString()} quota
+                </span>
+              ) : (
+                view.rateLabel && (
+                  <span className="text-muted-foreground">
+                    {view.rateLabel}
+                  </span>
+                )
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {view.kind === "payAsYouGo"
+                ? "Pay as you go — every call is billed; there is no usage cap."
+                : view.caption}
             </p>
           </>
         )}

@@ -428,8 +428,38 @@ describe("Usage - pay-as-you-go and included framing", () => {
         isPendingFirstPayment={false}
       />,
     );
-    // Quota framing stays; no "every call is billed" claim.
-    expect(screen.getByText(/1,?000 included/)).toBeInTheDocument();
+    // Volume re-prices all units when crossing a tier, so neither "included"
+    // nor "every call is billed" is an honest claim — the quota shows as a
+    // plain number with a neutral caption.
+    expect(screen.getByText(/1,?000 quota/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/billed per your plan's pricing/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/included/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Pay as you go/)).not.toBeInTheDocument();
+  });
+
+  it("renders only metered entitlements — boolean/static features are not usage", () => {
+    render(
+      <Usage
+        usage={{
+          $schema: "",
+          customerId: "cust-1",
+          entitlements: {
+            support: { hasAccess: true },
+            tier: { hasAccess: true, config: '{"level":"gold"}' },
+          },
+          planKey: "pro",
+          subscriptionId: "sub-1",
+          paymentStatus: { status: "paid" as const },
+        }}
+        isFetching={false}
+        currentItems={[]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(screen.getByText("No usage data available")).toBeInTheDocument();
+    expect(screen.queryByText("support")).not.toBeInTheDocument();
+    expect(screen.queryByText("tier")).not.toBeInTheDocument();
   });
 });
