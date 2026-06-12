@@ -1,6 +1,9 @@
 // Uncomment the import below to enable Zuplo monetization (pricing, checkout,
 // subscriptions). See: https://zuplo.com/docs/articles/monetization
 // import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
+// Uncomment the import below to document a GraphQL API (schema reference docs
+// and an interactive playground).
+// import { graphqlPlugin } from "@zudoku/plugin-graphql";
 import type { ZudokuConfig } from "zudoku";
 
 /**
@@ -94,6 +97,21 @@ const config: ZudokuConfig = {
   // Uncomment to enable monetization. Don't forget to also uncomment the
   // `zuploMonetizationPlugin` import at the top of this file.
   // plugins: [zuploMonetizationPlugin()],
+  //
+  // Uncomment to document a GraphQL API. Don't forget to also uncomment the
+  // `graphqlPlugin` import at the top of this file. To enable this alongside
+  // another plugin, place both inside a single `plugins: [...]` array.
+  // plugins: [
+  //   graphqlPlugin({
+  //     type: "url",
+  //     input: "https://api.example.com/graphql",
+  //     path: "graphql",
+  //     options: {
+  //       title: "My GraphQL API",
+  //       description: "Explore the schema and try queries in the playground.",
+  //     },
+  //   }),
+  // ],
 };
 
 export default config;
