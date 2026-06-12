@@ -446,19 +446,14 @@ export class OpenIDAuthenticationProvider
     return providerData;
   }
 
-  // Dedupe concurrent restores. Only a restored session stays cached: "no
-  // session" and failures clear the cache so a later call can pick up a
-  // session created in the meantime (e.g. login in another tab) or retry.
+  // Dedupes concurrent restores only: the cache is dropped once settled. A
+  // successful restore lives on in providerData, and anything else (no
+  // session, failure, a later logout clearing providerData) must re-check the
+  // cookie-backed session instead of reusing a stale result.
   private hydrateFromServerSession() {
-    this.serverSessionHydration ??= this.restoreServerSession()
-      .then((providerData) => {
-        if (!providerData) this.serverSessionHydration = undefined;
-        return providerData;
-      })
-      .catch((e) => {
-        this.serverSessionHydration = undefined;
-        throw e;
-      });
+    this.serverSessionHydration ??= this.restoreServerSession().finally(() => {
+      this.serverSessionHydration = undefined;
+    });
     return this.serverSessionHydration;
   }
 
