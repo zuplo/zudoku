@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Head } from "zudoku/components";
+import { ApiIdentityPicker, Head } from "zudoku/components";
 import { PlayIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
 import { Button } from "zudoku/ui/Button.js";
@@ -114,19 +114,22 @@ const OperationSidecar = ({
         <span className="font-medium">Example</span>
         <div className="flex items-center gap-1.5">
           {playgroundEnabled && (
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={() =>
-                openWorkbench({
-                  query: document,
-                  variables: variablesJson,
-                })
-              }
-            >
-              <PlayIcon size={14} fill="currentColor" aria-hidden="true" />
-              Test
-            </Button>
+            <>
+              <ApiIdentityPicker size="icon-xs" />
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() =>
+                  openWorkbench({
+                    query: document,
+                    variables: variablesJson,
+                  })
+                }
+              >
+                <PlayIcon size={14} fill="currentColor" aria-hidden="true" />
+                Test
+              </Button>
+            </>
           )}
         </div>
       </SidecarBox.Head>

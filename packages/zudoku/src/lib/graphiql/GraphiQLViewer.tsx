@@ -25,6 +25,11 @@ export type GraphiQLTab = {
 export type GraphiQLViewerProps = {
   endpoint?: string;
   fetcher?: GraphiQLFetcher;
+  // Custom fetch implementation for endpoint-based fetchers, e.g. to inject
+  // auth per request. Ignored when a custom `fetcher` is provided.
+  fetchFn?: typeof fetch;
+  // Plain-text note rendered in GraphiQL's footer slot, e.g. the active auth.
+  footerNote?: string;
   schema?: unknown;
   headers?: Record<string, string>;
   defaultHeaders?: string;
@@ -71,10 +76,12 @@ const setEditorTheme = (forcedTheme: ForcedTheme) => {
 
 const createFetcher = (
   { createGraphiQLFetcher }: CdnGraphiQL,
-  { fetcher, endpoint, headers }: GraphiQLViewerProps,
+  { fetcher, endpoint, headers, fetchFn }: GraphiQLViewerProps,
 ): GraphiQLFetcher => {
   if (fetcher) return fetcher;
-  if (endpoint) return createGraphiQLFetcher({ url: endpoint, headers });
+  if (endpoint) {
+    return createGraphiQLFetcher({ url: endpoint, headers, fetch: fetchFn });
+  }
 
   // No endpoint: `schema` still feeds the docs explorer, but execution rejects.
   return () =>
@@ -87,6 +94,8 @@ const createFetcher = (
 type StaticProps = Omit<
   GraphiQLViewerProps,
   | "fetcher"
+  | "fetchFn"
+  | "footerNote"
   | "endpoint"
   | "headers"
   | "schema"
@@ -100,7 +109,22 @@ const renderGraphiQL = (
   root: Root,
   key: string | number,
   graphiqlProps: GraphiQLComponentProps,
+  footerNote?: string,
 ) => {
+  // Rendered by the CDN React root, so only plain elements are allowed here.
+  // Tailwind classes still apply since styles are document-level.
+  const footer = footerNote
+    ? React.createElement(
+        GraphiQL.Footer,
+        null,
+        React.createElement(
+          "div",
+          { className: "px-2 py-1.5 text-xs text-muted-foreground" },
+          footerNote,
+        ),
+      )
+    : null;
+
   root.render(
     React.createElement(
       React.Suspense,
@@ -109,6 +133,7 @@ const renderGraphiQL = (
         GraphiQL,
         { ...graphiqlProps, key },
         React.createElement(GraphiQL.Logo, null, "GraphQL Playground"),
+        footer,
       ),
     ),
   );
@@ -161,6 +186,8 @@ const GraphiQLViewerImpl = (props: GraphiQLViewerProps) => {
     schema,
     resetKey,
     fetcher: fetcherProp,
+    fetchFn,
+    footerNote,
     endpoint,
     headers,
     hideToolbarButtons = true,
@@ -169,8 +196,9 @@ const GraphiQLViewerImpl = (props: GraphiQLViewerProps) => {
   const staticRef = useLatest<StaticProps>(staticProps);
 
   const fetcher = useMemo(
-    () => createFetcher(mod, { fetcher: fetcherProp, endpoint, headers }),
-    [mod, fetcherProp, endpoint, headers],
+    () =>
+      createFetcher(mod, { fetcher: fetcherProp, endpoint, headers, fetchFn }),
+    [mod, fetcherProp, endpoint, headers, fetchFn],
   );
 
   // Create the root once; the render effect reuses it so editor state survives.
@@ -188,14 +216,20 @@ const GraphiQLViewerImpl = (props: GraphiQLViewerProps) => {
   // Re-render on the props GraphiQL re-reads; mount-only props come from the ref.
   useEffect(() => {
     if (!rootRef.current) return;
-    renderGraphiQL(mod, rootRef.current.root, resetKey ?? "default", {
-      ...staticRef.current,
-      fetcher,
-      schema,
-      defaultQuery: staticRef.current.initialQuery,
-      forcedTheme,
-    });
-  }, [mod, fetcher, schema, forcedTheme, resetKey, staticRef]);
+    renderGraphiQL(
+      mod,
+      rootRef.current.root,
+      resetKey ?? "default",
+      {
+        ...staticRef.current,
+        fetcher,
+        schema,
+        defaultQuery: staticRef.current.initialQuery,
+        forcedTheme,
+      },
+      footerNote,
+    );
+  }, [mod, fetcher, schema, forcedTheme, resetKey, staticRef, footerNote]);
 
   useEffect(() => {
     const container = containerRef.current;

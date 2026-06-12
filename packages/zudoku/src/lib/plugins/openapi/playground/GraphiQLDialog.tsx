@@ -1,4 +1,3 @@
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { PlayIcon } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
@@ -8,6 +7,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
+import type { OperationsFragmentFragment } from "../graphql/graphql.js";
+import type { SecuritySchemeItem } from "../util/extractOperationSecuritySchemes.js";
+import { AuthSelectorPopover } from "./AuthSelectorPopover.js";
 
 const GraphiQLPanel = lazy(() => import("./GraphiQL.js"));
 
@@ -28,13 +30,15 @@ export type GraphiQLTab = {
 
 export type GraphiQLDialogProps = {
   endpoint: string;
-  defaultHeaders?: string;
+  operation: OperationsFragmentFragment;
+  securitySchemes: SecuritySchemeItem[];
   defaultTabs?: GraphiQLTab[];
 };
 
 export const GraphiQLDialog = ({
   endpoint,
-  defaultHeaders,
+  operation,
+  securitySchemes,
   defaultTabs,
 }: GraphiQLDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -57,20 +61,30 @@ export const GraphiQLDialog = ({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="max-w-7xl! w-full h-[80vh] overflow-hidden p-0"
+        className="max-w-7xl! w-full h-[80vh] overflow-hidden p-0 flex flex-col gap-0"
         aria-describedby={undefined}
         showCloseButton
       >
-        <VisuallyHidden>
-          <DialogTitle>GraphQL Playground</DialogTitle>
-        </VisuallyHidden>
+        <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b ps-10 pe-3">
+          <DialogTitle className="text-sm font-medium">
+            GraphQL Playground
+          </DialogTitle>
+          <AuthSelectorPopover
+            operation={operation}
+            url={endpoint}
+            securitySchemes={securitySchemes}
+            showLabel
+          />
+        </div>
         {open && (
           <Suspense fallback={null}>
-            <GraphiQLPanel
-              endpoint={endpoint}
-              defaultHeaders={defaultHeaders}
-              defaultTabs={defaultTabs}
-            />
+            <div className="flex-1 min-h-0">
+              <GraphiQLPanel
+                endpoint={endpoint}
+                defaultTabs={defaultTabs}
+                security={operation.security}
+              />
+            </div>
           </Suspense>
         )}
       </DialogContent>

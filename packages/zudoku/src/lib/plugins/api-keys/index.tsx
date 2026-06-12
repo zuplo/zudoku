@@ -248,6 +248,7 @@ export const apiKeyPlugin = ({
             );
             return request;
           },
+          authorizationFields: { headers: ["Authorization"] },
           id: consumer.id,
           label: consumer.label,
         }));

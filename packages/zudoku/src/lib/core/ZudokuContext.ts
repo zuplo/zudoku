@@ -231,13 +231,25 @@ export class ZudokuContext {
   }
 
   getApiIdentities = async () => {
-    const keys = await Promise.all(
+    // Settled individually so one failing plugin can't drop the identities
+    // provided by the others.
+    const results = await Promise.allSettled(
       this.plugins
         .filter(isApiIdentityPlugin)
         .map((plugin) => plugin.getIdentities(this)),
     );
 
-    return keys.flat();
+    return results.flatMap((result) => {
+      if (result.status === "rejected") {
+        // biome-ignore lint/suspicious/noConsole: Intentional warning
+        console.warn(
+          "[Zudoku] A plugin failed to provide API identities:",
+          result.reason,
+        );
+        return [];
+      }
+      return result.value;
+    });
   };
 
   addEventListener<E extends keyof ZudokuEvents>(

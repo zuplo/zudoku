@@ -10,8 +10,9 @@ import {
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
 import { Label } from "zudoku/ui/Label.js";
+import IdentitySelector from "../../../components/IdentitySelector.js";
 import type { ApiIdentity } from "../../../core/ZudokuContext.js";
-import IdentitySelector from "./IdentitySelector.js";
+import { valueToIdentitySelection } from "../../../hooks/useIdentityStore.js";
 
 const IdentityDialog = ({
   onSubmit,
@@ -43,8 +44,10 @@ const IdentityDialog = ({
         <Card className="max-h-80 overflow-auto">
           <IdentitySelector
             identities={identities}
-            setValue={setIdentity}
-            value={identity}
+            selection={valueToIdentitySelection(identity)}
+            onSelectionChange={(next) =>
+              setIdentity(next.type === "identity" ? next.id : undefined)
+            }
           />
         </Card>
         <DialogFooter className="flex flex-col gap-2">
