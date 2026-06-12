@@ -276,7 +276,7 @@ describe("Usage - UsageItem", () => {
     ).toBeInTheDocument();
     // ...and does not interact with the overage warning.
     expect(
-      screen.getByText("You've exceeded your monthly quota"),
+      screen.getByText("You've used your included monthly usage"),
     ).toBeInTheDocument();
   });
 
@@ -294,7 +294,7 @@ describe("Usage - UsageItem", () => {
     );
     expect(screen.getByText("Usage credit applied")).toBeInTheDocument();
     expect(
-      screen.queryByText("You've exceeded your monthly quota"),
+      screen.queryByText("You've used your included monthly usage"),
     ).not.toBeInTheDocument();
   });
 
@@ -312,7 +312,7 @@ describe("Usage - UsageItem", () => {
     );
     expect(screen.queryByText("Usage credit applied")).not.toBeInTheDocument();
     expect(
-      screen.getByText("You've exceeded your monthly quota"),
+      screen.getByText("You've used your included monthly usage"),
     ).toBeInTheDocument();
   });
 });
