@@ -20,8 +20,8 @@ catalog:
   "@types/react-is": 19.2.0
   happy-dom: 20.9.0
   react: 19.2.7
-  react-dom: 19.2.5
-  react-is: 19.2.5
+  react-dom: 19.2.7
+  react-is: 19.2.7
   tsdown: 0.22.0
   typescript: 6.0.3
   graphql: 16.14.0
