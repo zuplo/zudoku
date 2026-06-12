@@ -232,7 +232,7 @@ describe("Usage - UsageItem", () => {
     ).toBeInTheDocument();
   });
 
-  it("defaults to soft limit when item is missing", () => {
+  it("makes no billing claims when the item is missing", () => {
     render(
       <Usage
         usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
@@ -242,8 +242,37 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(
-      screen.getByText("You've used your included monthly usage"),
+      screen.getByText("1,200 used this billing period"),
     ).toBeInTheDocument();
+    expect(screen.getByText(/1,?000 quota/)).toBeInTheDocument();
+    expect(
+      screen.queryByText("You've used your included monthly usage"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows an ended note instead of usage for expired subscriptions", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 10, usage: 0, overage: 0 })}
+        isFetching={false}
+        currentItems={[]}
+        subscription={
+          {
+            activeTo: "2026-06-03T21:41:00Z",
+            phases: [],
+          } as unknown as Subscription
+        }
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(screen.getByText("This subscription has ended")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Usage history isn't available yet/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/used this billing period/),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/included/)).not.toBeInTheDocument();
   });
 
   it("shows feature key as title when item is not found", () => {

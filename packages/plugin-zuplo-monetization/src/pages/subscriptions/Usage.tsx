@@ -5,6 +5,7 @@ import {
   ArrowUpIcon,
   BadgePercentIcon,
   Grid2x2XIcon,
+  HistoryIcon,
   Loader2Icon,
 } from "zudoku/icons";
 import {
@@ -225,6 +226,28 @@ export const Usage = ({
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
   );
+  // An ended subscription has no current billing period: the entitlement
+  // values the usage endpoint still returns reflect a period that kept
+  // rolling after expiry, so showing them (or any quota framing) would be
+  // misleading. Keep the section as the future home of historical usage.
+  const hasEnded =
+    !!subscription?.activeTo &&
+    new Date(subscription.activeTo).getTime() < Date.now();
+
+  if (hasEnded) {
+    return (
+      <div className="space-y-4">
+        <Heading level={3}>Usage</Heading>
+        <Alert>
+          <HistoryIcon className="size-4 shrink-0" />
+          <AlertTitle>This subscription has ended</AlertTitle>
+          <AlertDescription>
+            Usage history isn't available yet.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   const creditByFeature = new Map(
     (pendingCredits ?? []).map((credit) => [credit.featureKey, credit]),

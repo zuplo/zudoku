@@ -21,8 +21,8 @@ export type MeteredValue = {
  *   call (unit, or graduated tiers with no free range): quota math is
  *   meaningless, show plain consumption.
  * - `meteredGeneric` — everything else (track-only quotas, flat/unpriced
- *   items, volume/package/dynamic shapes): show consumption without billing
- *   claims the price data can't support.
+ *   items, volume/package/dynamic shapes, missing item data): show consumption
+ *   without billing claims the price data can't support.
  */
 export type UsageView =
   | {
@@ -112,23 +112,15 @@ export const deriveUsageView = (
     };
   }
 
-  // No item data: the access values are all we have, so a positive quota
-  // reads as included allowance (long-standing behavior, pinned by tests).
+  // No item data (e.g. the feature isn't part of the current phase): the
+  // access values are all we have, so make no billing claims — we know
+  // neither the price nor whether the quota actually caps anything.
   if (!item) {
-    if (quota > 0) {
-      return {
-        kind: "included",
-        usage: meter.usage,
-        included: quota,
-        remaining: meter.balance,
-        overage: meter.overage,
-        rateLabel,
-      };
-    }
     return {
       kind: "meteredGeneric",
       usage: meter.usage,
-      caption: `Usage is billed per your plan's pricing. ${NO_CAP}`,
+      quota: quota > 0 ? quota : undefined,
+      caption: "Usage is billed per your plan's pricing.",
     };
   }
 

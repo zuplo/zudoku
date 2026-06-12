@@ -266,17 +266,21 @@ describe("deriveUsageView", () => {
   });
 
   describe("missing item data falls back to access values alone", () => {
-    it("a positive quota reads as included (long-standing behavior)", () => {
+    it("makes no billing claims — quota shows as a plain number", () => {
       const view = deriveUsageView({ balance: 0, usage: 1200, overage: 200 });
-      expect(view).toMatchObject({ kind: "included", included: 1000 });
-    });
-
-    it("no quota → meteredGeneric with the generic caption", () => {
-      const view = deriveUsageView({ balance: 0, usage: 50, overage: 50 });
-      expect(view).toMatchObject({ kind: "meteredGeneric" });
+      expect(view).toMatchObject({ kind: "meteredGeneric", quota: 1000 });
       expect(view.kind === "meteredGeneric" && view.caption).toMatch(
         /billed per your plan's pricing/,
       );
+      // The cap semantics are unknown without the item, so no cap claim.
+      expect(view.kind === "meteredGeneric" && view.caption).not.toMatch(
+        /usage cap/,
+      );
+    });
+
+    it("no quota → meteredGeneric without a quota number", () => {
+      const view = deriveUsageView({ balance: 0, usage: 50, overage: 50 });
+      expect(view).toMatchObject({ kind: "meteredGeneric", quota: undefined });
     });
 
     it("missing entitlement defaults to a soft limit", () => {
