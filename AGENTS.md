@@ -94,6 +94,25 @@ responses/request bodies is passed as `JSONSchemaScalar`, which serializes the r
 through `handleCircularRefs()`. Media-type level `example`/`examples` are resolved into
 `ExampleItem` arrays by the GraphQL resolvers before reaching the client.
 
+## SSR and Module-Level State
+
+Most of `src/lib` and `src/app` is evaluated in BOTH the client bundle and the SSR bundle. On the
+server, module-level mutable state (`let`, singletons, the zustand stores) is shared across ALL
+requests and users for the lifetime of the process — never store per-request or per-user data there.
+Rules:
+
+- Per-request server state (auth, profile, tokens) must flow through request-scoped channels:
+  `resolveSsrAuth()` → `SSRAuthState` → `RenderContext` (see `entry.server.tsx`). The `authState`
+  zustand store is NOT trusted on the server; `hook.ts` reads from `RenderContext` instead.
+- Client-only side effects (writing auth state, fetch to same-origin endpoints, storage access) must
+  sit behind a `typeof window === "undefined"` guard, like `setupCookieSync` and the
+  `hydrateFromServerSession` call in `getAccessToken`. Module-level `let`s written only behind such
+  guards are fine: on the client they are per-tab state; on the server they stay at their initial
+  value.
+- The same applies to react-query: a module-level `QueryClient` rendered during SSR leaks one user's
+  cached data into another user's HTML. Create per-request clients on the server (`entry.server.tsx`
+  does) and dehydrate/hydrate instead.
+
 ## Polyfills
 
 `polyfills.ts` is a side-effect module imported in `main.tsx` and listed in `package.json`

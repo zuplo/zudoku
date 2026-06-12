@@ -3,6 +3,7 @@ import {
   ACCESS_TOKEN_COOKIE,
   AUTH_PROFILE_COOKIE,
   REFRESH_TOKEN_COOKIE,
+  SESSION_ENDPOINT_PATH,
 } from "./authentication/cookies.js";
 import { normalizeProtectedRoutes } from "./core/ZudokuContext.js";
 import { joinUrl } from "./util/joinUrl.js";
@@ -53,7 +54,7 @@ export const buildManifest = (
       routePatterns,
     },
     auth: {
-      sessionEndpoint: joinUrl(config.basePath, "/__z/auth/session"),
+      sessionEndpoint: joinUrl(config.basePath, SESSION_ENDPOINT_PATH),
       cookies: {
         access: ACCESS_TOKEN_COOKIE,
         refresh: REFRESH_TOKEN_COOKIE,

@@ -9,13 +9,14 @@ import {
 import "vite/modulepreload-polyfill";
 import config from "virtual:zudoku-config";
 import { setupCookieSync } from "../lib/authentication/cookie-sync.js";
+import { SESSION_ENDPOINT_PATH } from "../lib/authentication/cookies.js";
 import { authState } from "../lib/authentication/state.js";
 import { BootstrapClient } from "../lib/components/Bootstrap.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getRoutesByConfig, shikiReady } from "./main.js";
 
 if (import.meta.env.ZUDOKU_HAS_SERVER) {
-  setupCookieSync(authState, joinUrl(config.basePath, "/__z/auth/session"));
+  setupCookieSync(authState, joinUrl(config.basePath, SESSION_ENDPOINT_PATH));
 }
 
 const routes = getRoutesByConfig(config);

@@ -1,7 +1,11 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { createStore } from "zustand";
-import { setupCookieSync, waitForSessionSync } from "./cookie-sync.js";
+import {
+  fetchServerSession,
+  setupCookieSync,
+  waitForSessionSync,
+} from "./cookie-sync.js";
 import type { UserProfile } from "./state.js";
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -307,5 +311,73 @@ describe("setupCookieSync", () => {
     resolveFetch(new Response(null, { status: 200 }));
     await wait;
     expect(settled).toBe(true);
+  });
+});
+
+describe("fetchServerSession", () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("returns the session on 200", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({ accessToken: "tok", expiresAt: 123 }),
+    );
+    await expect(fetchServerSession(ENDPOINT)).resolves.toEqual({
+      accessToken: "tok",
+      expiresAt: 123,
+    });
+    expect(fetchMock).toHaveBeenCalledWith(ENDPOINT);
+  });
+
+  test("handles absent expiresAt", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ accessToken: "tok" }));
+    await expect(fetchServerSession(ENDPOINT)).resolves.toEqual({
+      accessToken: "tok",
+    });
+  });
+
+  test("returns undefined on 401 (no session)", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    await expect(fetchServerSession(ENDPOINT)).resolves.toBeUndefined();
+  });
+
+  test("returns undefined on 501 (provider opted out)", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 501 }));
+    await expect(fetchServerSession(ENDPOINT)).resolves.toBeUndefined();
+  });
+
+  test("throws on malformed 200 so it isn't treated as logout", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ unexpected: true }));
+    await expect(fetchServerSession(ENDPOINT)).rejects.toThrow("malformed");
+  });
+
+  test("does not POST a token that was just restored from the server", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({ accessToken: "restored-token" }),
+    );
+    await fetchServerSession(ENDPOINT);
+
+    const store = createSlice({ isAuthenticated: true, profile: PROFILE });
+    setup(store);
+    store.setState({ providerData: { accessToken: "restored-token" } });
+    await flush();
+
+    // Only the session GET above; no cookie-sync POST for the same token.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  test("throws on transient failures so they aren't treated as logout", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 502 }));
+    await expect(fetchServerSession(ENDPOINT)).rejects.toThrow("502");
+
+    fetchMock.mockRejectedValueOnce(new TypeError("network down"));
+    await expect(fetchServerSession(ENDPOINT)).rejects.toThrow("network down");
   });
 });

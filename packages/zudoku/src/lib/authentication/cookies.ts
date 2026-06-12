@@ -1,5 +1,11 @@
 import type { UserProfile } from "./state.js";
 
+export const SESSION_ENDPOINT_PATH = "/__z/auth/session";
+
+// Session lifetime (seconds) when the verifier omits expiresAt, and the upper
+// bound for the session cookie max-age even when expiresAt is longer. Shared
+// by the session cookie (server) and the restored token's expiry (client).
+export const DEFAULT_SESSION_MAX_AGE = 60 * 60;
 export const ACCESS_TOKEN_COOKIE = "zudoku-access-token";
 export const REFRESH_TOKEN_COOKIE = "zudoku-refresh-token";
 export const AUTH_PROFILE_COOKIE = "zudoku-auth-profile";
