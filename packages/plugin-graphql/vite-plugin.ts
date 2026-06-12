@@ -74,24 +74,39 @@ const parseIntrospectionResponse = (
   return parsed.data.data as IntrospectionQuery;
 };
 
+const fetchIntrospection = async (
+  input: string,
+  options?: IntrospectionOptions,
+): Promise<IntrospectionQuery> => {
+  const response = await fetch(input, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: getIntrospectionQuery(options) }),
+  });
+  // Servers return validation errors as 400 with a GraphQL error body, so
+  // parse the body even on non-ok responses to surface the actual messages.
+  const json = await response.json().catch(() => undefined);
+  if (json === undefined) {
+    throw new Error(
+      `Failed to fetch GraphQL schema from ${input}: ${response.statusText}`,
+    );
+  }
+  return parseIntrospectionResponse(json, input);
+};
+
 const loadSchema = async (
   config: GraphQLConfig & { input: string },
   rootDir: string,
 ): Promise<IntrospectionQuery> => {
   if (config.type === "url") {
-    const response = await fetch(config.input, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: getIntrospectionQuery(sharedIntrospectionOptions),
-      }),
-    });
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch GraphQL schema from ${config.input}: ${response.statusText}`,
-      );
+    try {
+      return await fetchIntrospection(config.input, sharedIntrospectionOptions);
+    } catch {
+      // Older servers reject the modern introspection fields
+      // (specifiedByURL, schema description, input value deprecation);
+      // retry with the plain query.
+      return fetchIntrospection(config.input);
     }
-    return parseIntrospectionResponse(await response.json(), config.input);
   }
 
   const sdl = await fs.readFile(resolveInputPath(config, rootDir), "utf-8");
@@ -136,6 +151,9 @@ export const graphqlSchemaPlugin = (): Plugin => {
 
   return {
     name: "zudoku-plugin-graphql:schema",
+    config() {
+      return { optimizeDeps: { include: ["graphql"] } };
+    },
     resolveId(id) {
       if (id === MANIFEST_ID) return resolvedManifestId;
       if (id.startsWith(SCHEMA_PREFIX)) return `\0${id}`;
