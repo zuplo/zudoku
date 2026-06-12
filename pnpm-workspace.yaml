@@ -47,18 +47,10 @@ minimumReleaseAgeExclude:
   - zudoku
   - unhead
   - "@unhead/*"
+
 overrides:
-  axios: ">=1.15.0 <2"
-  bs58: ">=6"
-  defu: ">=6.1.5 <7"
-  immutable: ">=3.8.3 <4"
-  js-yaml: ">=4.1.1"
-  lodash: ">=4.18.0 <5"
-  lodash-es: ">=4.18.0 <5"
-  minimatch: ">=10.2.3 <11"
-  picomatch: ">=4.0.4 <5"
-  qs: ">=6.14.1"
-  shell-quote: ">=1.8.4"
-  tar: ">=7.5.11 <8"
+  "@grpc/grpc-js": ">=1.9.16 <2"
+  ws: ">=8.20.1 <9"
+
 patchedDependencies:
   decode-named-character-reference@1.2.0: patches/decode-named-character-reference@1.2.0.patch
