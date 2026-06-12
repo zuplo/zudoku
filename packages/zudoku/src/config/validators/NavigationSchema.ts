@@ -335,7 +335,7 @@ export class NavigationResolver {
 
         const items = (
           await Promise.all(
-            (categoryItem.items as InputNavigationItem[]).map((subItem) =>
+            categoryItem.items.map((subItem) =>
               this.resolveItem(subItem, categoryItem.label),
             ),
           )
