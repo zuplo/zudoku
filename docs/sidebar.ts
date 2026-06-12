@@ -146,6 +146,7 @@ export const docs: Navigation = [
     icon: "blocks",
     items: [
       "docs/configuration/build-configuration",
+      "docs/configuration/config-generation",
       "docs/configuration/vite-config",
       "docs/configuration/slots",
       "docs/custom-plugins",

@@ -5,5 +5,10 @@ export default defineProject({
     globals: true,
     environment: "happy-dom",
     setupFiles: ["./vitest.setup.ts"],
+    // Runs the *.test-d.ts type tests (e.g. the preset descriptor drift guard)
+    typecheck: {
+      enabled: true,
+      tsconfig: "./tsconfig.json",
+    },
   },
 });

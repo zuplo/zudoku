@@ -136,6 +136,21 @@ jobs:
 
           echo "✅ with-base-path smoke test passed"
 
+      # Guards the `zudoku generate` + `extends` pipeline: the example's only
+      # plugin lives in the generated layer, so its routes prerendering proves
+      # layer-contributed plugins reach the route tree in a real build.
+      - name: Smoke Test config-spec
+        run: |
+          dist="examples/config-spec/dist"
+          fail() { echo "::error::$1"; exit 1; }
+
+          [ -f "$dist/graphql.html" ] || fail "generated-layer plugin route missing at $dist/graphql.html"
+          [ -f "$dist/graphql/mutation/bookShipment.html" ] || fail "generated-layer plugin subroute missing at $dist/graphql/mutation/bookShipment.html"
+          grep -q "Shipment GraphQL API" "$dist/graphql.html" || fail "generated-layer plugin content missing in $dist/graphql.html"
+          grep -q "Cosmo Cargo GraphQL" "$dist/home.html" || fail "layer metadata missing in $dist/home.html"
+
+          echo "✅ config-spec smoke test passed"
+
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 

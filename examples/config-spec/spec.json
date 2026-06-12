@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schemas.zudoku.dev/config-spec/v1.json",
+  "metadata": {
+    "title": "Cosmo Cargo GraphQL",
+    "description": "Interstellar shipping, one mutation away."
+  },
+  "redirects": [{ "from": "/", "to": "/home" }],
+  "plugins": [
+    {
+      "id": "graphql",
+      "options": {
+        "type": "file",
+        "input": "./schema.graphql",
+        "path": "graphql",
+        "options": {
+          "title": "Shipment GraphQL API",
+          "description": "Track and book interstellar shipments."
+        }
+      }
+    }
+  ]
+}

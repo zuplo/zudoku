@@ -1,0 +1,31 @@
+{
+  "name": "config-spec",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm generate && zudoku dev",
+    "build": "pnpm generate && zudoku build",
+    "generate": "zudoku generate spec.json -o zudoku.base.ts",
+    "preview": "zudoku preview"
+  },
+  "nx": {
+    "tags": [
+      "example"
+    ],
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "zudoku:build"
+        ]
+      }
+    }
+  },
+  "dependencies": {
+    "@zudoku/plugin-graphql": "workspace:*",
+    "zudoku": "workspace:*"
+  },
+  "devDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  }
+}

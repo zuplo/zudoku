@@ -11,7 +11,10 @@ import type {
   ZudokuContext,
   ZudokuEvents,
 } from "./ZudokuContext.js";
-export { runPluginTransformConfig } from "./transform-config.js";
+export {
+  resolveExtends,
+  runPluginTransformConfig,
+} from "./transform-config.js";
 
 export type ZudokuPlugin =
   | CommonPlugin

@@ -69,7 +69,8 @@ export const prerender = async ({
     path.join(distDir, "server/entry.server.js"),
   ).href;
 
-  // Same order as the loader: transform the raw bundle config, then parse.
+  // The bundle entry is `virtual:zudoku-raw-config`: extends layers are
+  // already merged in. Same order as the loader: transform, then parse.
   const rawConfig = await import(serverConfigPath).then((m) => m.default);
   const config = validateConfig(await runPluginTransformConfig(rawConfig));
 

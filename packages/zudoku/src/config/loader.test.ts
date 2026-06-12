@@ -19,6 +19,7 @@ vi.mock("../cli/common/package-json.js", () => ({
 
 vi.mock("../lib/core/transform-config.js", () => ({
   runPluginTransformConfig: vi.fn((config) => config),
+  resolveExtends: vi.fn((config) => config),
 }));
 
 vi.mock("./file-exists.js", () => ({
@@ -27,6 +28,7 @@ vi.mock("./file-exists.js", () => ({
 
 import { runnerImport } from "vite";
 import { logger } from "../cli/common/logger.js";
+import { resolveExtends } from "../lib/core/transform-config.js";
 import { fileExists } from "./file-exists.js";
 import { loadZudokuConfig } from "./loader.js";
 
@@ -123,6 +125,62 @@ describe("loadZudokuConfig", () => {
     expect(logger.error).toHaveBeenCalledWith(
       expect.stringContaining("using last valid config"),
       expect.objectContaining({ timestamp: true }),
+    );
+  });
+});
+
+describe("loadZudokuConfig string extends", () => {
+  it("loads string layers lazily, relative to the config file", async () => {
+    const layerPlugin = { getRoutes: () => [] };
+    const topConfig = {
+      extends: ["./zudoku.base"],
+      metadata: { title: "Top" },
+    };
+    const layerConfig = { plugins: [layerPlugin] };
+
+    vi.mocked(fileExists).mockResolvedValue(true);
+    vi.mocked(runnerImport)
+      .mockResolvedValueOnce({
+        module: { default: topConfig },
+        dependencies: ["/lazy-project/shared.ts"],
+      } as never)
+      .mockResolvedValueOnce({
+        module: { default: layerConfig },
+        dependencies: ["/lazy-project/schema.graphql"],
+      } as never);
+
+    const { config } = await loadZudokuConfig(configEnv, "/lazy-project");
+
+    // The layer is imported through the same pipeline as the config itself
+    // (extensionless specifier resolves via probing; "" matches first here).
+    expect(runnerImport).toHaveBeenNthCalledWith(
+      2,
+      "/lazy-project/zudoku.base",
+      expect.anything(),
+    );
+    expect(resolveExtends).toHaveBeenCalledWith(topConfig, [layerConfig]);
+
+    // Recorded for the config virtual module and for dev watching.
+    expect(config.__meta.configLayers).toEqual(["/lazy-project/zudoku.base"]);
+    expect(config.__meta.dependencies).toEqual([
+      "/lazy-project/shared.ts",
+      "/lazy-project/zudoku.base",
+      "/lazy-project/schema.graphql",
+    ]);
+  });
+
+  it("fails with a generate hint when a string layer does not exist", async () => {
+    vi.mocked(fileExists).mockImplementation((filepath) =>
+      // Only the config file itself exists; all layer candidates are missing.
+      Promise.resolve(filepath === "/missing-layer/zudoku.config.js"),
+    );
+    vi.mocked(runnerImport).mockResolvedValue({
+      module: { default: { extends: ["./zudoku.base"] } },
+      dependencies: [],
+    } as never);
+
+    await expect(loadZudokuConfig(configEnv, "/missing-layer")).rejects.toThrow(
+      /Config layer "\.\/zudoku\.base" not found[\s\S]*zudoku generate/,
     );
   });
 });

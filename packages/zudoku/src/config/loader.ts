@@ -1,4 +1,5 @@
 import { stat } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import colors from "picocolors";
 import {
@@ -9,7 +10,10 @@ import {
 } from "vite";
 import { logger } from "../cli/common/logger.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
-import { runPluginTransformConfig } from "../lib/core/transform-config.js";
+import {
+  resolveExtends,
+  runPluginTransformConfig,
+} from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
 import { fileExists } from "./file-exists.js";
 import type {
@@ -25,6 +29,13 @@ export type ConfigWithMeta = ResolvedZudokuConfig & {
     configPath: string;
     mode: typeof process.env.ZUDOKU_ENV;
     dependencies: string[];
+    /**
+     * Module specifiers of all string `extends` entries, resolved and ordered
+     * by the depth-first walk of the extends chain. `virtual:zudoku-raw-config`
+     * emits a static import per entry and replays the same walk, so layer
+     * instances are created in the config module's realm.
+     */
+    configLayers: string[];
   };
 };
 
@@ -74,6 +85,143 @@ const virtualModuleStubPlugin: VitePlugin = {
 
 type RawConfigWithMeta = ZudokuConfig & { __meta: ConfigWithMeta["__meta"] };
 
+// Layers must load through the same pipeline as the config itself so raw-TS
+// plugin packages and virtual module stubs behave identically.
+const importConfigModule = (moduleId: string) =>
+  runnerImport<{ default: ZudokuConfig }>(moduleId, {
+    plugins: [virtualModuleStubPlugin],
+    environments: {
+      inline: {
+        resolve: {
+          // Prevent Node.js from trying to load zudoku's raw .ts source
+          // directly, which fails with ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING
+          // when --experimental-strip-types is enabled. Uses regex to also
+          // catch plugins that re-export from zudoku (e.g. @zuplo/zudoku-plugin-*).
+          noExternal: [/zudoku/],
+        },
+      },
+    },
+    server: {
+      // this allows us to 'load' CSS files in the config
+      // see https://github.com/vitejs/vite/pull/19577
+      perEnvironmentStartEndDuringDev: true,
+    },
+  });
+
+const LAYER_EXTENSIONS = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs"];
+
+// Resolves a string `extends` entry like tsconfig does: relative to the file
+// that declares it, extension optional. Bare specifiers are left to the module
+// runner / Vite resolution; their file path is best-effort for watching.
+const resolveLayerPath = async (
+  specifier: string,
+  containingDir: string | undefined,
+  containingPath: string,
+): Promise<{ importPath: string; filePath?: string }> => {
+  const isRelative = specifier.startsWith("./") || specifier.startsWith("../");
+
+  if (!isRelative && !path.isAbsolute(specifier)) {
+    try {
+      const require = createRequire(containingPath);
+      return { importPath: specifier, filePath: require.resolve(specifier) };
+    } catch {
+      return { importPath: specifier };
+    }
+  }
+
+  if (isRelative && !containingDir) {
+    throw new Error(
+      `Cannot resolve relative config layer "${specifier}" from ${containingPath}: the location of the declaring module is unknown.`,
+    );
+  }
+
+  const base = isRelative
+    ? path.resolve(containingDir ?? "", specifier)
+    : specifier;
+
+  for (const extension of LAYER_EXTENSIONS) {
+    const candidate = base + extension;
+    if (await fileExists(candidate)) {
+      return { importPath: candidate, filePath: candidate };
+    }
+  }
+
+  throw new Error(
+    `Config layer "${specifier}" not found (from ${colors.dim(containingPath)}).\nLooked for ${base}{${LAYER_EXTENSIONS.filter(Boolean).join(",")}}. If the layer is generated, run \`zudoku generate\` first.`,
+  );
+};
+
+type CollectedLayers = { layers: ConfigLayer[]; dependencies: string[] };
+type ConfigLayer = { importPath: string; config: ZudokuConfig };
+
+// Walks the `extends` chain depth-first (the exact order `resolveExtends`
+// consumes layer modules in) and imports every string entry.
+const collectConfigLayers = async (
+  config: ZudokuConfig,
+  containingDir: string | undefined,
+  containingPath: string,
+  seen: string[],
+  acc: CollectedLayers,
+): Promise<void> => {
+  if (!config || typeof config !== "object" || !Array.isArray(config.extends))
+    return;
+
+  for (const entry of config.extends) {
+    if (typeof entry !== "string") {
+      // Inline object layers can have string extends of their own; those
+      // resolve relative to the file the object was declared in.
+      await collectConfigLayers(
+        entry,
+        containingDir,
+        containingPath,
+        seen,
+        acc,
+      );
+      continue;
+    }
+
+    const { importPath, filePath } = await resolveLayerPath(
+      entry,
+      containingDir,
+      containingPath,
+    );
+    const layerId = filePath ?? importPath;
+    if (seen.includes(layerId)) {
+      throw new Error(
+        `Circular \`extends\` detected:\n${[...seen, layerId].join(" ->\n")}`,
+      );
+    }
+
+    let module: { default: ZudokuConfig };
+    let dependencies: string[];
+    try {
+      ({ module, dependencies } = await importConfigModule(importPath));
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Failed to load config layer "${entry}" (from ${colors.dim(containingPath)}):\n${detail}`,
+        { cause: error },
+      );
+    }
+    if (module.default === undefined) {
+      throw new Error(
+        `Config layer "${entry}" (from ${colors.dim(containingPath)}) must have a default export.`,
+      );
+    }
+
+    acc.layers.push({ importPath, config: module.default });
+    acc.dependencies.push(...(filePath ? [filePath] : []), ...dependencies);
+
+    await collectConfigLayers(
+      module.default,
+      filePath ? path.dirname(filePath) : undefined,
+      layerId,
+      [...seen, layerId],
+      acc,
+    );
+  }
+};
+
 async function loadZudokuConfigWithMeta(
   rootDir: string,
 ): Promise<RawConfigWithMeta> {
@@ -83,27 +231,7 @@ async function loadZudokuConfigWithMeta(
   let dependencies: string[];
 
   try {
-    ({ module, dependencies } = await runnerImport<{
-      default: ZudokuConfig;
-    }>(configPath, {
-      plugins: [virtualModuleStubPlugin],
-      environments: {
-        inline: {
-          resolve: {
-            // Prevent Node.js from trying to load zudoku's raw .ts source
-            // directly, which fails with ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING
-            // when --experimental-strip-types is enabled. Uses regex to also
-            // catch plugins that re-export from zudoku (e.g. @zuplo/zudoku-plugin-*).
-            noExternal: [/zudoku/],
-          },
-        },
-      },
-      server: {
-        // this allows us to 'load' CSS files in the config
-        // see https://github.com/vitejs/vite/pull/19577
-        perEnvironmentStartEndDuringDev: true,
-      },
-    }));
+    ({ module, dependencies } = await importConfigModule(configPath));
   } catch (error) {
     // A failed import (bad/missing import, syntax error, throwing top-level
     // code) is not a "missing config file". Surface the underlying cause inline
@@ -124,13 +252,34 @@ async function loadZudokuConfigWithMeta(
     );
   }
 
+  const collected: CollectedLayers = { layers: [], dependencies: [] };
+  try {
+    await collectConfigLayers(
+      module.default,
+      path.dirname(configPath),
+      configPath,
+      [configPath],
+      collected,
+    );
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Invalid Zudoku configuration at ${colors.dim(configPath)}:\n\n${detail}`,
+      { cause: error },
+    );
+  }
+
   return {
-    ...module.default,
+    ...resolveExtends(
+      module.default,
+      collected.layers.map((layer) => layer.config),
+    ),
     __meta: {
       rootDir,
       moduleDir: getZudokuRootDir(),
       mode: process.env.ZUDOKU_ENV,
-      dependencies,
+      dependencies: [...dependencies, ...collected.dependencies],
+      configLayers: collected.layers.map((layer) => layer.importPath),
       configPath,
     },
   };
@@ -275,6 +424,7 @@ export const setStandaloneConfig = (rootDir: string) => {
       moduleDir: getZudokuRootDir(),
       mode: "standalone",
       dependencies: [],
+      configLayers: [],
       configPath: "",
     },
   });
