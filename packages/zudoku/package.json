@@ -192,7 +192,7 @@
     "remark-frontmatter": "5.0.0",
     "remark-gfm": "4.0.1",
     "remark-mdx-frontmatter": "5.2.0",
-    "semver": "7.8.2",
+    "semver": "7.8.3",
     "shiki": "4.2.0",
     "sitemap": "9.0.1",
     "strip-ansi": "7.2.0",
