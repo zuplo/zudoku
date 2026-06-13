@@ -42,7 +42,7 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.zudoku-release-token.outputs.token }}
 
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
           run_install: false
 
@@ -71,7 +71,7 @@ jobs:
 
       - name: Create Release Pull Request or Publish
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1
         with:
           version: pnpm run version-packages
           # --no-git-tag so create-zudoku (version-locked to zudoku, but an
@@ -115,7 +115,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         if: steps.zudoku-release.outputs.version != ''
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
           token_format: access_token
           workload_identity_provider: ${{ vars.GCP_ACTIONS_IDENTITY_PROVIDER }}
@@ -124,7 +124,7 @@ jobs:
 
       - name: Upload CSS
         if: steps.zudoku-release.outputs.version != ''
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -136,7 +136,7 @@ jobs:
 
       - name: Upload Javascript
         if: steps.zudoku-release.outputs.version != ''
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -149,7 +149,7 @@ jobs:
 
       - name: Upload HTML (Latest)
         if: steps.zudoku-release.outputs.version != ''
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone/index.html
@@ -160,7 +160,7 @@ jobs:
 
       - name: Upload CSS (Latest)
         if: steps.zudoku-release.outputs.version != ''
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -172,7 +172,7 @@ jobs:
 
       - name: Upload Javascript (Latest)
         if: steps.zudoku-release.outputs.version != ''
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
