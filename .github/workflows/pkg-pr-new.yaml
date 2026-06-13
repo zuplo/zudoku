@@ -3,6 +3,17 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      package:
+        description: "Package to publish"
+        type: choice
+        default: zudoku
+        options:
+          - zudoku
+          - create-zudoku
+          - plugin-graphql
+          - plugin-zuplo-monetization
+          - plugin-search-algolia
   issue_comment:
     types: [created]
 
@@ -25,6 +36,9 @@ jobs:
       contents: read
       issues: write
       pull-requests: read
+    env:
+      # workflow_dispatch picks the package; push and `/prerelease` use zudoku.
+      PACKAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.package || 'zudoku' }}
     steps:
       - name: Acknowledge command
         if: github.event_name == 'issue_comment'
@@ -68,4 +82,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r --filter "./packages/*" build
 
-      - run: pnpm dlx pkg-pr-new publish --pnpm --comment=update "./packages/zudoku" "./packages/create-zudoku" "./packages/plugin-zuplo-monetization" "./packages/plugin-search-algolia" "./packages/plugin-graphql"
+      - name: Publish to pkg.pr.new
+        run: |
+          set -o pipefail
+          pnpm dlx pkg-pr-new publish --pnpm --comment=update "./packages/$PACKAGE" | tee publish-output.txt
+          {
+            echo "### pkg.pr.new: \`$PACKAGE\`"
+            echo ''
+            echo '```'
+            cat publish-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
