@@ -1,2 +1,5 @@
-// Lazy-loaded animation features for LazyMotion (keeps the main bundle small).
-export { domAnimation as default } from "motion/react";
+// Lazy load motion features
+// See: https://motion.dev/docs/react-lazy-motion
+import { domAnimation } from "motion/react";
+
+export default domAnimation;
