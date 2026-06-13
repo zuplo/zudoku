@@ -7,16 +7,16 @@ import {
   loadEnv as viteLoadEnv,
   type Plugin as VitePlugin,
 } from "vite";
-import { logger } from "../cli/common/logger.js";
-import { getZudokuRootDir } from "../cli/common/package-json.js";
-import { runPluginTransformConfig } from "../lib/core/transform-config.js";
-import invariant from "../lib/util/invariant.js";
-import { fileExists } from "./file-exists.js";
+import { logger } from "../cli/common/logger.ts";
+import { getZudokuRootDir } from "../cli/common/package-json.ts";
+import { runPluginTransformConfig } from "../lib/core/transform-config.ts";
+import invariant from "../lib/util/invariant.ts";
+import { fileExists } from "./file-exists.ts";
 import type {
   ResolvedZudokuConfig,
   ZudokuConfig,
 } from "./validators/ZudokuConfig.js";
-import { validateConfig } from "./validators/ZudokuConfig.js";
+import { validateConfig } from "./validators/ZudokuConfig.ts";
 
 export type ConfigWithMeta = ResolvedZudokuConfig & {
   __meta: {

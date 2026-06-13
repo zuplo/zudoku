@@ -18,13 +18,13 @@ import { getSingletonHighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { Pluggable } from "unified";
 import { visit } from "unist-util-visit";
-import { HIGHLIGHT_CODE_BLOCK_CLASS } from "./shiki-constants.js";
-import { cn } from "./util/cn.js";
+import { HIGHLIGHT_CODE_BLOCK_CLASS } from "./shiki-constants.ts";
+import { cn } from "./util/cn.ts";
 
 export {
   HIGHLIGHT_CODE_BLOCK_CLASS,
   defaultLanguages,
-} from "./shiki-constants.js";
+} from "./shiki-constants.ts";
 
 export const highlighterPromise = getSingletonHighlighterCore({
   engine: createJavaScriptRegexEngine({ forgiving: true }),
