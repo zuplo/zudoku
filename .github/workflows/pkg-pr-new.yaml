@@ -56,7 +56,7 @@ jobs:
         with:
           ref: ${{ steps.pr.outputs.result || github.sha }}
 
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
           run_install: false
 
