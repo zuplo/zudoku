@@ -9,7 +9,7 @@ import type { NavigationFrame } from "./useNavigationFrame.js";
 import { navigationItemKey, navigationListItem } from "./utils.js";
 
 const loadFeatures = () =>
-  import("./motionFeatures.js").then((mod) => mod.default ?? {});
+  import("./motionFeatures.js").then((mod) => mod.default);
 
 const variants = {
   enter: (direction: number) => ({
