@@ -14,61 +14,22 @@ on:
           - plugin-graphql
           - plugin-zuplo-monetization
           - plugin-search-algolia
-  issue_comment:
-    types: [created]
 
 concurrency:
-  group: pkg-pr-new-${{ github.event.issue.number || github.ref }}
+  group: pkg-pr-new-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   publish:
     name: Publish to pkg.pr.new
-    if: |
-      github.event_name == 'push' ||
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request &&
-       contains(github.event.comment.body, '/prerelease') &&
-       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: write
-      pull-requests: read
     env:
-      # workflow_dispatch picks the package; push and `/prerelease` use zudoku.
+      # workflow_dispatch picks the package; push to main publishes zudoku.
       PACKAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.package || 'zudoku' }}
     steps:
-      - name: Acknowledge command
-        if: github.event_name == 'issue_comment'
-        uses: actions/github-script@v9
-        with:
-          script: |
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: "eyes",
-            });
-
-      - name: Get PR ref
-        id: pr
-        if: github.event_name == 'issue_comment'
-        uses: actions/github-script@v9
-        with:
-          result-encoding: string
-          script: |
-            const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-            });
-            return pr.data.head.sha;
-
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ steps.pr.outputs.result || github.sha }}
 
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
@@ -80,16 +41,27 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm -r --filter "./packages/*" build
+      - run: pnpm --filter "./packages/$PACKAGE..." build
 
       - name: Publish to pkg.pr.new
         run: |
           set -o pipefail
-          pnpm dlx pkg-pr-new publish --pnpm --comment=update "./packages/$PACKAGE" | tee publish-output.txt
+          pnpm exec pkg-pr-new publish --pnpm --comment=off "./packages/$PACKAGE" 2>&1 | tee publish-output.txt
+          urls=$(grep -oE 'https://pkg\.pr\.new/[^ )]+' publish-output.txt | sort -u)
           {
-            echo "### pkg.pr.new: \`$PACKAGE\`"
+            echo "## 📦 pkg.pr.new: \`$PACKAGE\`"
+            echo ''
+            if [ -n "$urls" ]; then
+              while IFS= read -r u; do echo "- \`pnpm i $u\`"; done <<< "$urls"
+            else
+              echo "_No published URLs found in output — see log below._"
+            fi
+            echo ''
+            echo '<details><summary>Publish log</summary>'
             echo ''
             echo '```'
             cat publish-output.txt
             echo '```'
+            echo ''
+            echo '</details>'
           } >> "$GITHUB_STEP_SUMMARY"
