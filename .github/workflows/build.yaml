@@ -156,6 +156,19 @@ jobs:
       - run: pnpm -r --filter "./packages/*" build
       - run: pnpm -r --filter "./examples/**" --filter "!mermaid" --filter "!many-apis" build
 
+  # Aggregate status for branch protection: one required check covering the
+  # jobs that replaced the former monolithic "Build & Test" job.
+  build-and-test:
+    name: Build & Test
+    needs: [quality, integration, build-examples]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: echo "::error::a required job did not succeed" && exit 1
+      - run: echo "all required jobs passed"
+
   check-links:
     name: Check Links
     runs-on: ubuntu-latest
