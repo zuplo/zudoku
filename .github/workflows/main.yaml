@@ -19,11 +19,9 @@ jobs:
     runs-on:
       group: ubuntu-large-runners
     permissions:
-      actions: write
       contents: write
       id-token: write
       pull-requests: write
-      issues: read
 
     steps:
       - name: Generate zudoku release token
@@ -53,6 +51,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
+      # OIDC trusted publishing needs npm >= 11.5.1; the pinned Node ships npm 10.
       - run: npm install -g npm@latest
 
       - name: Install dependencies

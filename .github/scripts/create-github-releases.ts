@@ -13,8 +13,12 @@ if (!GITHUB_TOKEN || !GITHUB_REPOSITORY || !GITHUB_SHA || !PUBLISHED) {
   );
 }
 
-const published: Array<{ name: string; version: string }> =
-  JSON.parse(PUBLISHED);
+let published: Array<{ name: string; version: string }>;
+try {
+  published = JSON.parse(PUBLISHED);
+} catch (error) {
+  throw new Error(`PUBLISHED env is not valid JSON: ${error}`);
+}
 
 const { packages } = await getPackages(process.cwd());
 const dirByName = new Map(
@@ -31,7 +35,12 @@ for (const { name, version } of published) {
   const dir = dirByName.get(name);
   if (!dir) throw new Error(`No workspace package found for ${name}`);
 
-  const changelog = await readFile(join(dir, "CHANGELOG.md"), "utf8");
+  const changelogPath = join(dir, "CHANGELOG.md");
+  const changelog = await readFile(changelogPath, "utf8").catch((error) => {
+    throw new Error(
+      `Failed to read changelog for ${name}@${version} at ${changelogPath}: ${error}`,
+    );
+  });
   const entry = getChangelogEntry(changelog, version);
   if (!entry) throw new Error(`No changelog entry for ${name}@${version}`);
 

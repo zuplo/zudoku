@@ -17,11 +17,10 @@ const isInternal = fs.existsSync(new URL("./.gitignore", import.meta.url));
 
 process.env.ZUDOKU_ENV ??= isInternal ? "internal" : "module";
 
-const tsx = isInternal
-  ? await import("tsx/esm/api").catch(() => undefined)
-  : undefined;
-
-if (tsx) {
+if (isInternal) {
+  // Workspace dev: run from source. Let tsx throw if it can't load rather than
+  // falling back to dist, which doesn't exist here.
+  const tsx = await import("tsx/esm/api");
   await tsx.tsImport("./src/cli/cli.ts", import.meta.url);
 } else {
   await import(new URL("./dist/cli/cli.js", import.meta.url).href);
