@@ -8,18 +8,6 @@
     "build": "zudoku build --zuplo",
     "preview": "zudoku preview --zuplo"
   },
-  "nx": {
-    "tags": [
-      "example"
-    ],
-    "targets": {
-      "build": {
-        "dependsOn": [
-          "zudoku:build"
-        ]
-      }
-    }
-  },
   "dependencies": {
     "react": "catalog:",
     "react-dom": "catalog:",

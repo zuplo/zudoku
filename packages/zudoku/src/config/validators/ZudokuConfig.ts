@@ -8,7 +8,7 @@ import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { AuthState } from "../../lib/authentication/state.js";
 import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
-import { mergeConfig } from "../../lib/core/transform-config.js";
+import { mergeConfig } from "../../lib/core/transform-config.ts";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { FilterCatalogItemsFn } from "../../lib/plugins/api-catalog/index.js";
 import type { ApiConsumer } from "../../lib/plugins/api-keys/index.js";
@@ -20,13 +20,13 @@ import type { InkeepSearchPluginOptions } from "../../lib/plugins/search-inkeep/
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
-import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
-import { HeaderNavigationSchema } from "./HeaderNavigationSchema.js";
+import { GOOGLE_FONTS } from "../../vite/plugin-theme.ts";
+import { HeaderNavigationSchema } from "./HeaderNavigationSchema.ts";
 import {
   InputNavigationSchema,
   NavigationRulesSchema,
-} from "./InputNavigationSchema.js";
-import { ProtectedRoutesSchema } from "./ProtectedRoutesSchema.js";
+} from "./InputNavigationSchema.ts";
+import { ProtectedRoutesSchema } from "./ProtectedRoutesSchema.ts";
 
 const ThemeSchema = z
   .object({

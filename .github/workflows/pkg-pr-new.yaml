@@ -1,0 +1,67 @@
+name: pkg.pr.new
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Package to publish"
+        type: choice
+        default: zudoku
+        options:
+          - zudoku
+          - create-zudoku
+          - plugin-graphql
+          - plugin-zuplo-monetization
+          - plugin-search-algolia
+
+concurrency:
+  group: pkg-pr-new-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    name: Publish to pkg.pr.new
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      # workflow_dispatch picks the package; push to main publishes zudoku.
+      PACKAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.package || 'zudoku' }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/$PACKAGE..." build
+
+      - name: Publish to pkg.pr.new
+        run: |
+          set -o pipefail
+          pnpm exec pkg-pr-new publish --pnpm --comment=off "./packages/$PACKAGE" 2>&1 | tee publish-output.txt
+          urls=$(grep -oE 'https://pkg\.pr\.new/[^ )]+' publish-output.txt | sort -u)
+          {
+            echo "## 📦 pkg.pr.new: \`$PACKAGE\`"
+            echo ''
+            if [ -n "$urls" ]; then
+              while IFS= read -r u; do echo "- \`pnpm i $u\`"; done <<< "$urls"
+            else
+              echo "_No published URLs found in output — see log below._"
+            fi
+            echo ''
+            echo '<details><summary>Publish log</summary>'
+            echo ''
+            echo '```'
+            cat publish-output.txt
+            echo '```'
+            echo ''
+            echo '</details>'
+          } >> "$GITHUB_STEP_SUMMARY"

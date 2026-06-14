@@ -11,12 +11,16 @@ const formatError = (error: unknown) => {
   return `ZUPLO_BUILD_CONFIG is invalid: ${error}`;
 };
 
-const getZuploBuildConfig = () => {
-  if (!process.env.ZUPLO_BUILD_CONFIG) return undefined;
+// Memoized on the raw env value (not once at first access) so values loaded
+// after module init (e.g. dotenv) are still picked up.
+let cached: {
+  raw: string;
+  value: ReturnType<typeof parseBuildConfig> | undefined;
+};
 
+const parseRawBuildConfig = (raw: string) => {
   try {
-    const parsed = JSON.parse(process.env.ZUPLO_BUILD_CONFIG);
-    return parseBuildConfig(parsed);
+    return parseBuildConfig(JSON.parse(raw));
   } catch (error) {
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.error(formatError(error));
@@ -36,5 +40,13 @@ export const ZuploEnv = {
     return process.env.ZUPLO_SERVER_URL;
   },
 
-  buildConfig: getZuploBuildConfig(),
+  get buildConfig() {
+    const raw = process.env.ZUPLO_BUILD_CONFIG;
+    if (!raw) return undefined;
+    if (cached?.raw !== raw) {
+      cached = { raw, value: parseRawBuildConfig(raw) };
+    }
+
+    return cached.value;
+  },
 };

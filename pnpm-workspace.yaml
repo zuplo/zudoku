@@ -54,3 +54,15 @@ overrides:
 
 patchedDependencies:
   decode-named-character-reference@1.2.0: patches/decode-named-character-reference@1.2.0.patch
+
+# These plugins type-import `unified` without declaring it, so they resolve it
+# from pnpm's hidden hoist. That breaks when another dependency tree pulls in
+# an old unified major (e.g. @changesets/release-utils -> unified@8) and wins
+# the hoist slot. Declare the missing dep so they always get unified@11 types.
+packageExtensions:
+  remark-directive-rehype:
+    dependencies:
+      unified: "^11.0.0"
+  "@lekoarts/rehype-meta-as-attributes":
+    dependencies:
+      unified: "^11.0.0"

@@ -19,13 +19,13 @@ import type {
   FooterSchema,
 } from "../../config/validators/ZudokuConfig.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
-import { type AuthState, useAuthState } from "../authentication/state.js";
+import { type AuthState, useAuthState } from "../authentication/state.ts";
 import type { SSRAuthState } from "../components/context/RenderContext.js";
 import type { SlotType } from "../components/context/SlotProvider.js";
-import { joinUrl } from "../util/joinUrl.js";
+import { joinUrl } from "../util/joinUrl.ts";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
-import { objectEntries } from "../util/objectEntries.js";
-import { matchesAnyProtectedPattern } from "../util/url.js";
+import { objectEntries } from "../util/objectEntries.ts";
+import { matchesAnyProtectedPattern } from "../util/url.ts";
 import {
   isApiIdentityPlugin,
   isAuthenticationPlugin,
@@ -35,7 +35,7 @@ import {
   needsInitialization,
   type ProfileNavigationItem,
   type ZudokuPlugin,
-} from "./plugins.js";
+} from "./plugins.ts";
 
 export interface ZudokuEvents {
   location: (event: { from?: Location; to: Location }) => void;
