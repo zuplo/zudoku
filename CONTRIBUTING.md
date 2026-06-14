@@ -54,11 +54,9 @@ Pick the affected package(s), the semver bump, and a one-line summary. Commit th
 `.changeset/*.md` file with your PR. A bot opens a "Version Packages" PR that, when merged, releases
 to npm.
 
-To preview a PR's build on npm without releasing, comment `/prerelease` on the PR (members /
-collaborators / owners only); the bot replies with install URLs via [pkg.pr.new](https://pkg.pr.new)
-for `zudoku`. To preview a different package, or any branch, run the **pkg.pr.new** workflow
-manually (Actions → pkg.pr.new → Run workflow) and pick the package; the run summary shows the
-published URLs.
+To preview a build on npm without releasing, run the **pkg.pr.new** workflow manually (Actions →
+pkg.pr.new → Run workflow), pick the branch and package; the run summary shows the install URLs via
+[pkg.pr.new](https://pkg.pr.new). Every push to `main` also publishes a `zudoku` preview.
 
 # Submitting Contributions
 
