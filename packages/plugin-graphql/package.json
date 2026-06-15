@@ -21,7 +21,7 @@
     "build": "tsdown",
     "dev": "tsdown --watch",
     "prepublishOnly": "pnpm typecheck && pnpm build",
-    "typecheck": "tsc --project tsconfig.json"
+    "typecheck": "tsgo --project tsconfig.json"
   },
   "publishConfig": {
     "main": "./dist/index.mjs",
@@ -45,6 +45,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsdown": "catalog:",
