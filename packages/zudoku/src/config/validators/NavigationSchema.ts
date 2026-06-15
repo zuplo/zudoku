@@ -29,7 +29,8 @@ import type {
 } from "./InputNavigationSchema.js";
 
 type ReplaceFields<Base, Overrides> = Omit<Base, keyof Overrides> & Overrides;
-// string icons will be transformed to `LucideIcon` in `vite/plugin-navigation.ts`
+// Icons are iconify `prefix:name` strings (rendered via `<Icon>`). A `LucideIcon`
+// component is still accepted for backwards compatibility (deprecated, not serializable).
 type ResolvedIcon = { icon?: LucideIcon | string };
 
 // `doc` items can have string shorthands, but this resolver will resolve them to the full type

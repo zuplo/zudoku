@@ -731,6 +731,16 @@ const BaseConfigSchema = z.object({
   navigation: InputNavigationSchema,
   navigationRules: NavigationRulesSchema.optional(),
   theme: ThemeConfigSchema,
+  icons: z
+    .object({
+      runtimeFetch: z
+        .boolean()
+        .optional()
+        .describe(
+          "Fetch unregistered icons from api.iconify.design at runtime. Enabled by default in dev only; set true to allow in production builds.",
+        ),
+    })
+    .optional(),
   syntaxHighlighting: z
     .object({
       languages: z.array(z.custom<BundledLanguage>()),

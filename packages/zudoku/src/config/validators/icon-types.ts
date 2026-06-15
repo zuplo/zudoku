@@ -1962,3 +1962,6 @@ export const IconNames = [
   "zoom-out",
 ] as const;
 export type IconNames = (typeof IconNames)[number];
+export type LucideName = IconNames;
+// Any iconify `prefix:name` string; lucide names (bare or `lucide:` prefixed) autocomplete.
+export type IconName = LucideName | `lucide:${LucideName}` | (string & {});
