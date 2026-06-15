@@ -16,6 +16,7 @@ import {
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import "virtual:zudoku-theme.css";
 import { Zudoku } from "zudoku/components";
+import { configureIconRuntimeFetch } from "zudoku/icons";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
 import { authState } from "../lib/authentication/state.js";
@@ -47,6 +48,9 @@ export const shikiReady: Promise<HighlighterCore> =
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
 ): ZudokuContextOptions => {
+  // Off by default in production (icons render a fallback), dev-only convenience.
+  configureIconRuntimeFetch(config.icons?.runtimeFetch);
+
   return {
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,

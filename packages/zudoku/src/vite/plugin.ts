@@ -10,6 +10,7 @@ import viteConfigPlugin from "./plugin-config.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
 import { viteDocMetadataPlugin } from "./plugin-doc-metadata.js";
 import viteDocsPlugin from "./plugin-docs.js";
+import { viteIconsPlugin } from "./plugin-icons.js";
 import viteMarkdownExportPlugin from "./plugin-markdown-export.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import { viteNavigationPlugin } from "./plugin-navigation.js";
@@ -30,6 +31,7 @@ export default function vitePlugin(): PluginOption {
     viteDocsPlugin(),
     viteDocMetadataPlugin(),
     viteNavigationPlugin(),
+    viteIconsPlugin(),
     viteApiPlugin(),
     viteSearchPlugin(),
     viteMarkdownExportPlugin(),
