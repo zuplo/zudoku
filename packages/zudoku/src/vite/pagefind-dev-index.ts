@@ -1,5 +1,5 @@
 import path from "node:path";
-import { createIndex, type PagefindIndex } from "pagefind";
+import { close, createIndex, type PagefindIndex } from "pagefind";
 import { isRunnableDevEnvironment, type ViteDevServer } from "vite";
 import type { LoadedConfig } from "../config/config.js";
 import invariant from "../lib/util/invariant.js";
@@ -25,6 +25,18 @@ export type IndexComplete = {
 };
 
 export type IndexEvent = IndexProgress | IndexComplete;
+
+/**
+ * Shuts down the Pagefind backend service and its child process.
+ *
+ * `createIndex()` lazily spawns a long-lived backend process that is reused
+ * across dev-server reindex requests. If it isn't closed before the dev server
+ * exits, that process is orphaned (most visibly on Windows, where there is no
+ * process-tree kill on `process.exit`).
+ */
+export const closePagefindService = async () => {
+  await close();
+};
 
 export async function* buildPagefindDevIndex(
   vite: ViteDevServer,

@@ -26,7 +26,10 @@ import {
   type ZudokuConfigEnv,
 } from "./config.js";
 import { getDevHtml } from "./html.js";
-import { buildPagefindDevIndex } from "./pagefind-dev-index.js";
+import {
+  buildPagefindDevIndex,
+  closePagefindService,
+} from "./pagefind-dev-index.js";
 
 const DEFAULT_DEV_PORT = 3000;
 
@@ -43,6 +46,7 @@ export class DevServer {
   resolvedPort = 0;
   protocol = "http";
   #terminator: HttpTerminator | undefined;
+  #vite: ViteDevServer | undefined;
   #options: DevServerOptions;
 
   constructor(options: DevServerOptions) {
@@ -117,6 +121,7 @@ export class DevServer {
     });
 
     const vite = await createViteServer(mergedViteConfig);
+    this.#vite = vite;
     const graphql = createGraphQLServer({ graphqlEndpoint: "/__z/graphql" });
 
     // Handle base path redirect
@@ -357,6 +362,15 @@ export class DevServer {
   }
 
   async stop() {
-    await this.#terminator?.terminate();
+    // Gracefully shut down everything that holds an open handle or owns a
+    // child process. Without this, `process.exit()` hard-kills the CLI and
+    // orphans the children Vite (esbuild) and Pagefind spawned — leaving node
+    // processes behind, one still bound to the dev port (most visibly on
+    // Windows, which has no process-tree kill on exit).
+    await Promise.allSettled([
+      this.#terminator?.terminate(),
+      this.#vite?.close(),
+      closePagefindService(),
+    ]);
   }
 }
