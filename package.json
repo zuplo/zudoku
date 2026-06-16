@@ -33,7 +33,7 @@
     "@playwright/test": "^1.60.0",
     "@size-limit/file": "^12.1.0",
     "@vitest/coverage-v8": "4.1.8",
-    "lefthook": "2.1.8",
+    "lefthook": "2.1.9",
     "nx": "22.7.5",
     "oxfmt": "0.36.0",
     "publint": "^0.3.21",
