@@ -104,6 +104,7 @@ const NavigationCategoryInner = ({
       defaultOpen={isDefaultOpen}
       open={open}
       onOpenChange={(value) => {
+        if (!isCollapsible) return;
         // Categories with a link navigate on row click, so they only open here
         // (closing is done via the chevron). Without a link the row toggles.
         const nextOpen = category.link ? true : value;
