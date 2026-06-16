@@ -8,14 +8,13 @@ const ramp = [
     key: "main",
     label: "After that",
     price: { type: "priced", amount: 750 } as const,
+    billingCadence: "P1M",
   },
 ];
 
 describe("PlanPriceSchedule", () => {
   it("renders one row per schedule entry with label and price", () => {
-    render(
-      <PlanPriceSchedule schedule={ramp} currency="USD" billingCadence="P1M" />,
-    );
+    render(<PlanPriceSchedule schedule={ramp} currency="USD" />);
 
     expect(screen.getByText("First 3 months")).toBeInTheDocument();
     expect(screen.getByText("Free")).toBeInTheDocument();
@@ -28,17 +27,48 @@ describe("PlanPriceSchedule", () => {
     render(
       <PlanPriceSchedule
         schedule={[
-          { ...ramp[0], price: { type: "priced", amount: 375 } },
+          {
+            ...ramp[0],
+            price: { type: "priced", amount: 375 },
+            billingCadence: "P1M",
+          },
           ramp[1],
         ]}
         currency="USD"
-        billingCadence="P1M"
       />,
     );
 
     expect(screen.getByText("$375")).toBeInTheDocument();
     expect(screen.getByText("$750")).toBeInTheDocument();
     expect(screen.getAllByText("/month")).toHaveLength(2);
+  });
+
+  it("suffixes each row with its own cadence", () => {
+    // An hourly trial ramping into a daily plan: rows carry different
+    // cadences, so the suffixes must differ ("/hour" vs "/day").
+    render(
+      <PlanPriceSchedule
+        schedule={[
+          {
+            key: "trial",
+            label: "First hour",
+            price: { type: "priced", amount: 1 },
+            billingCadence: "PT1H",
+          },
+          {
+            key: "main",
+            label: "After that",
+            price: { type: "priced", amount: 2.99 },
+            billingCadence: "P1D",
+          },
+        ]}
+        currency="USD"
+      />,
+    );
+
+    expect(screen.getByText("/hour")).toBeInTheDocument();
+    expect(screen.getByText("/day")).toBeInTheDocument();
+    expect(screen.queryByText("/month")).not.toBeInTheDocument();
   });
 
   it("renders 'Pay as you go' for a payg row", () => {
@@ -57,7 +87,6 @@ describe("PlanPriceSchedule", () => {
           ramp[1],
         ]}
         currency="USD"
-        billingCadence="P1M"
       />,
     );
 
@@ -66,16 +95,26 @@ describe("PlanPriceSchedule", () => {
   });
 
   it("gives every row's price equal visual weight", () => {
-    render(
-      <PlanPriceSchedule schedule={ramp} currency="USD" billingCadence="P1M" />,
-    );
+    render(<PlanPriceSchedule schedule={ramp} currency="USD" />);
 
     expect(screen.getByText("Free")).toHaveClass("font-semibold");
     expect(screen.getByText("$750")).toHaveClass("font-semibold");
   });
 
-  it("omits the cadence suffix when no billingCadence is given", () => {
-    render(<PlanPriceSchedule schedule={ramp} currency="USD" />);
+  it("omits the cadence suffix when a row has no billingCadence", () => {
+    render(
+      <PlanPriceSchedule
+        schedule={[
+          ramp[0],
+          {
+            key: "main",
+            label: "After that",
+            price: { type: "priced", amount: 750 },
+          },
+        ]}
+        currency="USD"
+      />,
+    );
 
     expect(screen.getByText("$750")).toBeInTheDocument();
     expect(screen.queryByText(/^\//)).not.toBeInTheDocument();

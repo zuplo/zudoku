@@ -112,11 +112,7 @@ export const PlanSummaryCard = ({
         </CardTitle>
         {schedule && (
           <div className="mt-3 font-normal">
-            <PlanPriceSchedule
-              schedule={schedule}
-              currency={plan.currency}
-              billingCadence={plan.billingCadence}
-            />
+            <PlanPriceSchedule schedule={schedule} currency={plan.currency} />
             <div className="text-right">
               {taxLine}
               {billedLine}

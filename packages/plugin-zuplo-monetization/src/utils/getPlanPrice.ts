@@ -15,6 +15,33 @@ export const sumFlatFeeAmounts = (rateCards: RateCard[]): number => {
 };
 
 /**
+ * The billing cadence to pair with a phase's flat-fee price: the cadence of
+ * the FIRST recurring flat-fee rate card — the same cards
+ * {@link sumFlatFeeAmounts} totals. Returns `undefined` when the phase has no
+ * recurring flat fee (a free or pay-as-you-go phase), where no `/cadence`
+ * suffix is rendered anyway.
+ *
+ * This is the phase's OWN cadence, which can differ from the plan's
+ * `billingCadence` (e.g. an hourly `PT1H` trial inside a daily `P1D` plan).
+ * Pairing the amount with the rate card's cadence keeps the suffix truthful
+ * instead of borrowing the plan-level cadence.
+ *
+ * When a phase has several recurring flat fees on different cadences, the
+ * summed amount is shown against this first card's cadence — a deliberate
+ * simplification, since one suffix can't represent mixed cadences.
+ */
+export const getFlatFeeBillingCadence = (
+  rateCards: RateCard[],
+): string | undefined => {
+  for (const rc of rateCards) {
+    if (rc.type === "flat_fee" && rc.price && rc.billingCadence !== null) {
+      return rc.billingCadence;
+    }
+  }
+  return undefined;
+};
+
+/**
  * The plan's headline recurring price: the sum of every recurring `flat_fee`
  * rate-card amount on the plan's steady-state (last) phase, expressed in the
  * plan's own `billingCadence`. One-time fees (`flat_fee` with

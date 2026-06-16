@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Plan, PlanPhase } from "../types/PlanType.js";
-import { getPlanPrice } from "./getPlanPrice.js";
+import { getFlatFeeBillingCadence, getPlanPrice } from "./getPlanPrice.js";
 
 const phase = (overrides: Partial<PlanPhase> = {}): PlanPhase => ({
   key: "p",
@@ -142,5 +142,50 @@ describe("getPlanPrice", () => {
         }),
       ),
     ).toBe(20);
+  });
+});
+
+describe("getFlatFeeBillingCadence", () => {
+  it("returns the first recurring flat-fee rate card's cadence", () => {
+    expect(getFlatFeeBillingCadence([flatFee("1", "PT1H")])).toBe("PT1H");
+  });
+
+  it("skips one-time (null cadence) and price-less flat fees", () => {
+    expect(
+      getFlatFeeBillingCadence([
+        // one-time setup fee — excluded
+        {
+          type: "flat_fee",
+          key: "setup",
+          name: "Setup fee",
+          billingCadence: null,
+          price: { type: "flat", amount: "100" },
+        },
+        // free intro fee (price: null) — excluded
+        {
+          type: "flat_fee",
+          key: "intro",
+          name: "Intro",
+          billingCadence: "P1M",
+          price: null,
+        },
+        flatFee("2.99", "P1D"),
+      ]),
+    ).toBe("P1D");
+  });
+
+  it("returns undefined when there is no recurring flat fee", () => {
+    expect(
+      getFlatFeeBillingCadence([
+        {
+          type: "usage_based",
+          key: "api",
+          name: "API Calls",
+          billingCadence: "P1M",
+          price: { type: "unit", amount: "0.01" },
+        },
+      ]),
+    ).toBeUndefined();
+    expect(getFlatFeeBillingCadence([])).toBeUndefined();
   });
 });

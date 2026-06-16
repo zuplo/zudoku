@@ -249,7 +249,6 @@ export const PlanChangeCard = ({
         <PlanPriceSchedule
           schedule={schedule}
           currency={plan.currency}
-          billingCadence={plan.billingCadence}
           className="mb-2"
         />
       )}
@@ -259,11 +258,7 @@ export const PlanChangeCard = ({
           {phaseChangeGroups.map((group, idx) => (
             <div key={group.phase?.key ?? String(idx)} className="space-y-1.5">
               {group.phase && (
-                <PlanPhaseHeader
-                  phase={group.phase}
-                  currency={plan.currency}
-                  billingCadence={plan.billingCadence}
-                />
+                <PlanPhaseHeader phase={group.phase} currency={plan.currency} />
               )}
               {group.changes.map((change) => (
                 <ChangeRow

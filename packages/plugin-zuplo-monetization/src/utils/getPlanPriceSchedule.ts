@@ -2,6 +2,7 @@ import type { Plan, PlanPhase } from "../types/PlanType.js";
 import { formatDuration } from "./formatDuration.js";
 import type { PlanPriceLabel } from "./formatPlanPrice.js";
 import { getPhasePriceLabel } from "./getPhasePriceLabel.js";
+import { getFlatFeeBillingCadence } from "./getPlanPrice.js";
 
 export type PlanPriceScheduleRow = {
   /** Stable row key — the phase key, falling back to the phase index. */
@@ -10,6 +11,13 @@ export type PlanPriceScheduleRow = {
   label: string;
   /** The phase's own price, derived from its rate cards alone. */
   price: PlanPriceLabel;
+  /**
+   * The cadence to suffix this row's price with — the phase's own first
+   * recurring flat-fee rate card (see {@link getFlatFeeBillingCadence}), NOT
+   * the plan-level cadence. `undefined` for free / pay-as-you-go rows, which
+   * carry no `/cadence` suffix.
+   */
+  billingCadence?: string;
 };
 
 const samePriceLabel = (a: PlanPriceLabel, b: PlanPriceLabel): boolean => {
@@ -53,5 +61,6 @@ export const getPlanPriceSchedule = (
     key: phase.key ?? String(index),
     label: rowLabel(phase, index, phases.length - 1),
     price: prices[index],
+    billingCadence: getFlatFeeBillingCadence(phase.rateCards ?? []),
   }));
 };

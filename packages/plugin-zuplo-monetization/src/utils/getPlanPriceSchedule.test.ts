@@ -103,6 +103,7 @@ describe("getPlanPriceSchedule", () => {
         key: "phase_2",
         label: "After that",
         price: { type: "priced", amount: 750 },
+        billingCadence: "P1M",
       },
     ]);
   });
@@ -124,11 +125,47 @@ describe("getPlanPriceSchedule", () => {
         key: "intro",
         label: "First 3 months",
         price: { type: "priced", amount: 375 },
+        billingCadence: "P1M",
       },
       {
         key: "main",
         label: "After that",
         price: { type: "priced", amount: 750 },
+        billingCadence: "P1M",
+      },
+    ]);
+  });
+
+  it("suffixes each row with its phase's own cadence, not the plan cadence", () => {
+    // Mirrors the "Free Trial then Fixed Quota" plan: a P1D plan whose trial
+    // phase bills hourly (PT1H). The trial row must read "$1/hour", not
+    // "$1/day" borrowed from the plan-level cadence.
+    const rows = getPlanPriceSchedule(
+      plan({
+        billingCadence: "P1D",
+        phases: [
+          phase({
+            key: "trial",
+            name: "Trial",
+            duration: "PT1H",
+            rateCards: [flatFee("1", "PT1H")],
+          }),
+          phase({ key: "main", rateCards: [flatFee("2.99", "P1D")] }),
+        ],
+      }),
+    );
+    expect(rows).toEqual([
+      {
+        key: "trial",
+        label: "First hour",
+        price: { type: "priced", amount: 1 },
+        billingCadence: "PT1H",
+      },
+      {
+        key: "main",
+        label: "After that",
+        price: { type: "priced", amount: 2.99 },
+        billingCadence: "P1D",
       },
     ]);
   });

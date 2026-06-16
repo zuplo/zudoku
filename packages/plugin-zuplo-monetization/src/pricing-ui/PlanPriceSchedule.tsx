@@ -42,6 +42,10 @@ const RowPrice = ({
  * Every row gets equal visual weight — the intro price is part of the plan's
  * price, not a footnote.
  *
+ * Each priced row is suffixed with its own phase's cadence (carried on the
+ * row), not a single plan-level cadence — so an hourly trial inside a daily
+ * plan reads "$1/hour", not "$1/day".
+ *
  * Callers derive the rows via {@link getPlanPriceSchedule} and fall back to
  * the single-price rendering when it returns `undefined`. `size` picks the
  * typographic treatment: `"lg"` for a card's headline area, `"sm"` for
@@ -50,14 +54,11 @@ const RowPrice = ({
 export const PlanPriceSchedule = ({
   schedule,
   currency,
-  billingCadence,
   size = "sm",
   className,
 }: {
   schedule: PlanPriceScheduleRow[];
   currency?: string;
-  /** Render each priced row with the `/cadence` suffix (the plan's billing cadence). */
-  billingCadence?: string;
   size?: "sm" | "lg";
   className?: string;
 }) => (
@@ -68,7 +69,7 @@ export const PlanPriceSchedule = ({
         <RowPrice
           price={row.price}
           currency={currency}
-          billingCadence={billingCadence}
+          billingCadence={row.billingCadence}
           className={size === "lg" ? "text-lg" : undefined}
         />
       </div>

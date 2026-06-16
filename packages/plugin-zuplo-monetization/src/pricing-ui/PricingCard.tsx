@@ -59,7 +59,6 @@ export const PricingCard = ({
           <PlanPriceSchedule
             schedule={schedule}
             currency={plan.currency}
-            billingCadence={plan.billingCadence}
             size="lg"
           />
         ) : (

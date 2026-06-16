@@ -8,6 +8,7 @@ import { formatDuration } from "../utils/formatDuration.js";
 import type { PlanPriceLabel } from "../utils/formatPlanPrice.js";
 import { formatPrice } from "../utils/formatPrice.js";
 import { getPhasePriceLabel } from "../utils/getPhasePriceLabel.js";
+import { getFlatFeeBillingCadence } from "../utils/getPlanPrice.js";
 import { EntitlementList } from "./EntitlementList.js";
 
 const priceLabelText = (
@@ -27,15 +28,17 @@ const priceLabelText = (
  * Section header for one phase of a multi-phase plan: the phase name, its
  * duration, and the phase's own price. Shared by {@link PlanEntitlements} and
  * the plan-change card so per-phase sections read identically everywhere.
+ *
+ * The price is suffixed with the phase's OWN cadence (its first recurring
+ * flat-fee rate card), not the plan-level cadence — so an hourly trial reads
+ * "$1/hour", consistent with the {@link PlanPriceSchedule} rows.
  */
 export const PlanPhaseHeader = ({
   phase,
   currency,
-  billingCadence,
 }: {
   phase: PlanPhase;
   currency?: string;
-  billingCadence?: string;
 }) => (
   <div className="text-sm font-medium text-card-foreground">
     {phase.name}
@@ -48,7 +51,11 @@ export const PlanPhaseHeader = ({
     <span className="text-muted-foreground font-normal">
       {" "}
       &middot;{" "}
-      {priceLabelText(getPhasePriceLabel(phase), currency, billingCadence)}
+      {priceLabelText(
+        getPhasePriceLabel(phase),
+        currency,
+        getFlatFeeBillingCadence(phase.rateCards ?? []),
+      )}
     </span>
   </div>
 );
@@ -57,26 +64,18 @@ const PhaseSection = ({
   phase,
   set,
   currency,
-  billingCadence,
   itemClassName,
 }: {
   phase: PlanPhase;
   set: EntitlementSet;
   currency?: string;
-  billingCadence?: string;
   itemClassName?: string;
 }) => (
   <EntitlementList
     quotas={set.quotas}
     features={set.features}
     itemClassName={itemClassName}
-    header={
-      <PlanPhaseHeader
-        phase={phase}
-        currency={currency}
-        billingCadence={billingCadence}
-      />
-    }
+    header={<PlanPhaseHeader phase={phase} currency={currency} />}
   />
 );
 
@@ -137,7 +136,6 @@ export const PlanEntitlements = ({
           phase={phase}
           set={sets[idx]}
           currency={currency}
-          billingCadence={billingCadence}
           itemClassName={itemClassName}
         />
       ))}
