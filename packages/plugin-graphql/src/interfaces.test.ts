@@ -93,7 +93,7 @@ describe("playground endpoint default", () => {
     resolveEndpointUrl(endpoint, gatewayUrl) ??
     (gatewayUrl ? joinUrl(gatewayUrl, "graphql") : undefined);
 
-  it("defaults to ${gateway}/graphql when nothing is configured", () => {
+  it("defaults to the gateway URL with a /graphql suffix when unconfigured", () => {
     expect(resolve(undefined, GATEWAY)).toBe(`${GATEWAY}/graphql`);
   });
 
