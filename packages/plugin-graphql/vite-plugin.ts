@@ -24,13 +24,6 @@ import { buildManifest } from "./src/util/manifest.js";
 const MANIFEST_ID = "virtual:@zudoku/plugin-graphql/schema";
 const SCHEMA_PREFIX = `${MANIFEST_ID}/`;
 
-// Runtime guard: config arrives untyped from getPluginConfigs, so skip any
-// instance whose schema isn't a string before baking it.
-const hasStringSchema = (
-  config: GraphQLConfig,
-): config is GraphQLConfig & { schema: string } =>
-  typeof config.schema === "string";
-
 const slugify = (value: string) =>
   value.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "schema";
 
@@ -98,7 +91,7 @@ const fetchIntrospection = async (
   return parseIntrospectionResponse(json, input);
 };
 
-const loadSchema = async (
+const loadSchemaSource = async (
   config: GraphQLConfig & { schema: string },
   rootDir: string,
 ): Promise<IntrospectionQuery> => {
@@ -118,6 +111,20 @@ const loadSchema = async (
 
   const sdl = await fs.readFile(resolveSchemaPath(config, rootDir), "utf-8");
   return introspectionFromSchema(buildSchema(sdl), sharedIntrospectionOptions);
+};
+
+const loadSchema = async (
+  config: GraphQLConfig & { schema: string },
+  rootDir: string,
+): Promise<IntrospectionQuery> => {
+  try {
+    return await loadSchemaSource(config, rootDir);
+  } catch (cause) {
+    throw new Error(
+      `Failed to load GraphQL schema "${config.schema}" for path "${config.path}".`,
+      { cause },
+    );
+  }
 };
 
 type Instance = {
@@ -144,12 +151,10 @@ const loadInstanceSchema = (
 
 const getInstances = (): Instance[] => {
   const rootDir = getZudokuConfig().__meta.rootDir;
-  return getPluginConfigs<GraphQLConfig>(GRAPHQL_PLUGIN_NAME)
-    .filter(hasStringSchema)
-    .map((config) => {
-      const basePath = joinUrl(config.path);
-      return { config, basePath, slug: slugify(basePath), rootDir };
-    });
+  return getPluginConfigs<GraphQLConfig>(GRAPHQL_PLUGIN_NAME).map((config) => {
+    const basePath = joinUrl(config.path);
+    return { config, basePath, slug: slugify(basePath), rootDir };
+  });
 };
 
 export const graphqlSchemaPlugin = (): Plugin => {
@@ -189,6 +194,11 @@ export const graphqlSchemaPlugin = (): Plugin => {
 
         const manifests: Record<string, ReturnType<typeof buildManifest>> = {};
         for (const instance of instances) {
+          // Load first so a missing/unloadable schema throws the wrapped error
+          // before resolveSchemaPath can fail on an invalid schema value.
+          manifests[instance.basePath] = buildManifest(
+            await loadInstanceSchema(instance),
+          );
           // Vite reloads both the client and the SSR module runner when a
           // watched file changes; a manual watcher would only reach the client.
           if (!isSchemaUrl(instance.config.schema)) {
@@ -196,9 +206,6 @@ export const graphqlSchemaPlugin = (): Plugin => {
               resolveSchemaPath(instance.config, instance.rootDir),
             );
           }
-          manifests[instance.basePath] = buildManifest(
-            await loadInstanceSchema(instance),
-          );
         }
 
         const loaders = instances.map(
@@ -223,12 +230,12 @@ export const graphqlSchemaPlugin = (): Plugin => {
         const instance = getInstances().find((i) => i.slug === slug);
         if (!instance) return;
 
+        const introspection = await loadInstanceSchema(instance);
         if (!isSchemaUrl(instance.config.schema)) {
           this.addWatchFile(
             resolveSchemaPath(instance.config, instance.rootDir),
           );
         }
-        const introspection = await loadInstanceSchema(instance);
 
         return `export default JSON.parse(${JSON.stringify(
           JSON.stringify(introspection),
