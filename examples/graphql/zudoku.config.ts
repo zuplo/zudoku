@@ -109,8 +109,7 @@ const config: ZudokuConfig = {
   plugins: [
     demoApiIdentityPlugin,
     graphqlPlugin({
-      type: "file",
-      input: "./schema.graphql",
+      schema: "./schema.graphql",
       path: "graphql/default",
       options: {
         title: "E-Commerce GraphQL API",
@@ -119,8 +118,7 @@ const config: ZudokuConfig = {
       },
     }),
     graphqlPlugin({
-      type: "file",
-      input: "./schema.graphql",
+      schema: "./schema.graphql",
       path: "graphql/dev",
       options: {
         title: "Developer GraphQL API",
@@ -129,8 +127,7 @@ const config: ZudokuConfig = {
       },
     }),
     graphqlPlugin({
-      type: "file",
-      input: "./schema.graphql",
+      schema: "./schema.graphql",
       path: "graphql/analytics",
       options: {
         title: "Analytics GraphQL API",

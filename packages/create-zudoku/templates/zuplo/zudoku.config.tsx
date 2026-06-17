@@ -103,8 +103,7 @@ const config: ZudokuConfig = {
   // another plugin, place both inside a single `plugins: [...]` array.
   // plugins: [
   //   graphqlPlugin({
-  //     type: "url",
-  //     input: "https://api.example.com/graphql",
+  //     schema: "https://api.example.com/graphql",
   //     path: "graphql",
   //     options: {
   //       title: "My GraphQL API",
