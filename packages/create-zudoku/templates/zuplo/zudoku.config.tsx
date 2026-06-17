@@ -4,7 +4,11 @@
 // Uncomment the import below to document a GraphQL API (schema reference docs
 // and an interactive playground).
 // import { graphqlPlugin } from "@zudoku/plugin-graphql";
-import type { ZudokuConfig } from "zudoku";
+import { createPath, type ZudokuConfig } from "zudoku";
+
+// Define the path once and reference it from both the navigation link and the
+// API plugin below so the two cannot drift apart.
+const apiReference = createPath("/api");
 
 /**
  * Developer Portal Configuration
@@ -67,16 +71,16 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "/api",
+      to: apiReference,
       label: "API Reference",
     },
   ],
-  redirects: [{ from: "/", to: "/api" }],
+  redirects: [{ from: "/", to: apiReference }],
   apis: [
     {
       type: "file",
       input: "../config/routes.oas.json",
-      path: "api",
+      path: apiReference,
     },
   ],
   authentication: {

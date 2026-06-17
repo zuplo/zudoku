@@ -1,4 +1,6 @@
-import type { ZudokuConfig } from "zudoku";
+import { createPath, type ZudokuConfig } from "zudoku";
+
+const apiReference = createPath("/api");
 
 const config: ZudokuConfig = {
   site: {
@@ -8,12 +10,12 @@ const config: ZudokuConfig = {
       width: 130,
     },
   },
-  navigation: [{ label: "Rick & Morty API", type: "link", to: "/api" }],
-  redirects: [{ from: "/", to: "/api" }],
+  navigation: [{ label: "Rick & Morty API", type: "link", to: apiReference }],
+  redirects: [{ from: "/", to: apiReference }],
   apis: {
     type: "file",
     input: "./openapi.json",
-    path: "api",
+    path: apiReference,
   },
   docs: {
     files: "/pages/**/*.mdx",

@@ -146,13 +146,17 @@ declare global {
 ### Navigation Plugin
 
 ```tsx
-import { ZudokuPlugin, RouteObject } from "zudoku";
+import { createPath, ZudokuPlugin, RouteObject } from "zudoku";
+
+// Define the mount path once and reference it from both the route and the
+// navigation link so they cannot drift apart.
+const customPage = createPath("/custom");
 
 const navigationPlugin: ZudokuPlugin = {
   getRoutes: (): RouteObject[] => {
     return [
       {
-        path: "/custom",
+        path: customPage,
         element: <CustomPage />,
       },
     ];
@@ -162,7 +166,7 @@ const navigationPlugin: ZudokuPlugin = {
     return [
       {
         type: "link",
-        to: "/custom",
+        to: customPage,
         label: "Custom Page",
       },
     ];

@@ -1,5 +1,7 @@
-import type { ZudokuConfig } from "zudoku";
+import { createPath, type ZudokuConfig } from "zudoku";
 import VerifiedPage from "./src/VerifiedPage";
+
+const apiReference = createPath("/api");
 
 const config: ZudokuConfig = {
   site: {
@@ -17,7 +19,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "/api",
+      to: apiReference,
       label: "Rick & Morty API",
     },
     {
@@ -28,7 +30,11 @@ const config: ZudokuConfig = {
     },
   ],
 
-  protectedRoutes: ["/documentation/installation", "/api/*", "/verified"],
+  protectedRoutes: [
+    "/documentation/installation",
+    `${apiReference}/*`,
+    "/verified",
+  ],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
   docs: {
     files: "/pages/**/*.mdx",
@@ -43,7 +49,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "file",
     input: "./openapi.json",
-    path: "api",
+    path: apiReference,
   },
 };
 

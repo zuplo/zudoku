@@ -14,45 +14,58 @@ file to include additional APIs.
 Using multiple APIs is a configuration setting that you can add in the
 [Zudoku Configuration](../configuration/overview.md) file.
 
-### Step 1: Add your APIs
+### Step 1: Define your API paths
 
-First, create a new array in your configuration file that lists each API you want to include:
+Each API is mounted at a `path` and linked from the navigation with a matching `to`. Define those
+paths once with `createPath` so the two references can never drift apart:
+
+```typescript
+import { createPath } from "zudoku";
+
+const firstApi = createPath("/my-first-api");
+const secondApi = createPath("/my-second-api");
+```
+
+### Step 2: Add your APIs
+
+Create a new array in your configuration file that lists each API you want to include, using the
+paths you defined above:
 
 ```typescript
 const apis = [
   {
     type: "file",
     input: "apis/my-first-api.json",
-    path: "/my-first-api",
+    path: firstApi,
   },
   {
     type: "file",
     input: "apis/my-second-api.json",
-    path: "/my-second-api",
+    path: secondApi,
   },
 ] as const;
 ```
 
-### Step 2: Add navigation
+### Step 3: Add navigation
 
-Create a navigation array for your sidebar:
+Create a navigation array for your sidebar, referencing the same paths:
 
 ```typescript
 const navigation = [
   {
     type: "link",
     label: "My First API",
-    to: "/my-first-api",
+    to: firstApi,
   },
   {
     type: "link",
     label: "My Second API",
-    to: "/my-second-api",
+    to: secondApi,
   },
 ] as const;
 ```
 
-### Step 3: Update your config
+### Step 4: Update your config
 
 Modify your [Zudoku Configuration](../configuration/overview.md) file to include these arrays:
 
@@ -79,9 +92,11 @@ export default config;
 
 Make sure that:
 
-1. The `path` in each API config matches the `to` in the navigation
-2. Your OpenAPI files are placed in the correct location as specified in the `input` field
-3. The `label` in navigation matches what you want to display in the sidebar
+1. Your OpenAPI files are placed in the correct location as specified in the `input` field
+2. The `label` in navigation matches what you want to display in the sidebar
+
+Because each `path` and its matching `to` reference the same `createPath` value, you no longer have
+to keep the two in sync by hand.
 
 You don't necessarily need to add the APIs to your sidebar, you can also put them into the top
 navigation or link to them from your docs.
