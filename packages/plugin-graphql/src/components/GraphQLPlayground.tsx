@@ -57,7 +57,8 @@ export const GraphQLPlayground = ({
         return {
           errors: [
             {
-              message: "Configure options.endpoint to run GraphQL operations.",
+              message:
+                "Configure the plugin's endpoint to run GraphQL operations.",
             },
           ],
         };

@@ -243,11 +243,11 @@ const GraphQLWorkbenchDrawer = ({
   onStateChange: (state: WorkbenchState) => void;
   updateWorkbenchOperation: GraphQLWorkbenchContextValue["updateWorkbenchOperation"];
 }) => {
-  const { options, schema } = useGraphQLSchema();
+  const { options, schema, endpoint: configuredEndpoint } = useGraphQLSchema();
   const { env } = useZudoku();
   const gatewayUrl = env.ZUPLO_GATEWAY_SERVICE_URL;
   const endpoint =
-    resolveEndpointUrl(options.endpoint, gatewayUrl) ??
+    resolveEndpointUrl(configuredEndpoint, gatewayUrl) ??
     (gatewayUrl ? joinUrl(gatewayUrl, "graphql") : undefined);
   const drawerRef = useRef<HTMLDivElement>(null);
   const hasOpened = useRef(false);

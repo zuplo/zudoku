@@ -18,6 +18,7 @@ import {
   type GraphQLConfig,
   GRAPHQL_PLUGIN_NAME,
   isSchemaUrl,
+  resolveSchemaSource,
 } from "./src/interfaces.js";
 import { buildManifest } from "./src/util/manifest.js";
 
@@ -152,8 +153,19 @@ const loadInstanceSchema = (
 const getInstances = (): Instance[] => {
   const rootDir = getZudokuConfig().__meta.rootDir;
   return getPluginConfigs<GraphQLConfig>(GRAPHQL_PLUGIN_NAME).map((config) => {
+    const schema = resolveSchemaSource(config);
+    if (!schema) {
+      throw new Error(
+        `GraphQL plugin for path "${config.path}" has no schema to load. Set "schema" to a file path or URL, or set "endpoint" to a GraphQL URL to introspect.`,
+      );
+    }
     const basePath = joinUrl(config.path);
-    return { config, basePath, slug: slugify(basePath), rootDir };
+    return {
+      config: { ...config, schema },
+      basePath,
+      slug: slugify(basePath),
+      rootDir,
+    };
   });
 };
 

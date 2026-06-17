@@ -9,6 +9,7 @@ import { ROOT_TYPES, type RootType } from "../util/types.js";
 type RouteConfig = {
   basePath: string;
   manifest: GraphQLManifest;
+  endpoint: string | undefined;
   options: GraphQLPluginOptions;
   loadSchema: () => Promise<IntrospectionQuery>;
 };
@@ -31,6 +32,7 @@ const createGraphQLProvider = (
             schema,
             index: buildSchemaIndex(schema),
             basePath: config.basePath,
+            endpoint: config.endpoint,
             options: config.options,
           }}
         >
