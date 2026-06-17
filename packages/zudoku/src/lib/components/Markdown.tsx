@@ -3,6 +3,8 @@ import type { Root } from "hast";
 import { memo, useMemo } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import remarkDirective from "remark-directive";
+import remarkDirectiveRehype from "remark-directive-rehype";
 import remarkGfm from "remark-gfm";
 import type { Plugin } from "unified";
 import { visit } from "unist-util-visit";
@@ -11,7 +13,7 @@ import { createConfiguredShikiRehypePlugins } from "../shiki.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { Typography } from "./Typography.js";
 
-const remarkPlugins = [remarkGfm];
+const remarkPlugins = [remarkGfm, remarkDirective, remarkDirectiveRehype];
 
 // rehype-raw parses HTML per the HTML spec which lowercases all tag names.
 // This plugin restores the original casing so react-markdown can match them

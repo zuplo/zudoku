@@ -23,7 +23,8 @@ export { type ApiIdentity, ZudokuContext } from "./lib/core/ZudokuContext.js";
 /** @deprecated Import from `zudoku/hooks` instead */
 export { useEvent } from "./lib/hooks/index.js";
 export type { MDXImport } from "./lib/plugins/markdown/index.js";
-export { defaultLanguages } from "./lib/shiki.js";
+export { defaultLanguages, highlight } from "./lib/shiki.js";
+export { useHighlighter } from "./lib/hooks/useHighlighter.js";
 export { cn } from "./lib/ui/util.js";
 export { joinUrl } from "./lib/util/joinUrl.js";
 export {
@@ -31,3 +32,5 @@ export {
   throwIfProblemJson,
 } from "./lib/util/problemJson.js";
 export type { MdxComponentsType } from "./lib/util/MdxComponents.js";
+export { useSchemaViewContext } from "./lib/plugins/openapi/schema/SchemaViewContext.js";
+export { useResponseContext } from "./lib/plugins/openapi/components/ResponseContext.js";

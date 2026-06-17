@@ -18,6 +18,7 @@ type EncodingItem {
 
 type ExampleItem {
   description: String
+  extensions: JSONObject
   externalValue: String
   name: String!
   summary: String

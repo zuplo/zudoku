@@ -9,6 +9,7 @@ import {
 } from "zudoku/ui/Frame.js";
 import { ItemGroup, ItemSeparator } from "zudoku/ui/Item.js";
 import { Markdown } from "../../../components/Markdown.js";
+import { Slot } from "../../../components/Slot.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
@@ -16,6 +17,7 @@ import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { SchemaRefLink } from "./SchemaRefLink.js";
+import { SchemaViewContext } from "./SchemaViewContext.js";
 import { UnionView } from "./UnionView.js";
 import { getSchemaRefName, isArrayType, isBasicType } from "./utils.js";
 
@@ -46,6 +48,19 @@ const renderBasicSchema = (
       {schema.enum && <EnumValues values={schema.enum} />}
       {renderMarkdown(schema.description)}
       <SchemaExampleAndDefault schema={schema} />
+      {schema.externalDocs && (
+        <div>
+          <span className="text-muted-foreground">Documentation: </span>
+          <a
+            href={schema.externalDocs.url}
+            className="underline opacity-65 hover:opacity-100"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {schema.externalDocs.description ?? schema.externalDocs.url}
+          </a>
+        </div>
+      )}
     </>
   );
 
@@ -223,6 +238,7 @@ const ObjectSchemaView = ({
           {additionalObjectProperties}
         </FramePanel>
       )}
+      <Slot.Target name="schema-view-body" />
       {(schema.additionalProperties === true || deprecatedProperties) && (
         <FrameFooter className="flex-row items-center justify-between">
           {schema.additionalProperties === true ? (
@@ -305,13 +321,15 @@ export const SchemaView = ({
     const rootRefName =
       !embedded && !hideRootRef ? getSchemaRefName(schema) : undefined;
     return (
-      <ObjectSchemaView
-        schema={schema}
-        defaultOpen={defaultOpen}
-        cardHeader={cardHeader}
-        embedded={embedded}
-        rootRefName={rootRefName}
-      />
+      <SchemaViewContext.Provider value={schema}>
+        <ObjectSchemaView
+          schema={schema}
+          defaultOpen={defaultOpen}
+          cardHeader={cardHeader}
+          embedded={embedded}
+          rootRefName={rootRefName}
+        />
+      </SchemaViewContext.Provider>
     );
   }
 };

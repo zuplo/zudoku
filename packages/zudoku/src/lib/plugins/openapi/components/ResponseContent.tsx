@@ -4,14 +4,11 @@ import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { cn } from "zudoku/ui/util.js";
 import { Markdown } from "../../../components/Markdown.js";
-import type { MediaTypeObject } from "../graphql/graphql.js";
+import { Slot } from "../../../components/Slot.js";
 import { SchemaView } from "../schema/SchemaView.js";
+import { ResponseContext, type ResponseItem } from "./ResponseContext.js";
 
-type Response = {
-  statusCode: string;
-  description?: string | null;
-  content?: MediaTypeObject[] | null;
-};
+type Response = ResponseItem;
 
 export const ResponseContent = ({
   responses,
@@ -36,7 +33,9 @@ export const ResponseContent = ({
       <div
         className={cn(
           "flex flex-row items-center gap-2 justify-between",
-          !hideTabs && "px-4 py-1.5 border-b",
+          (!hideTabs ||
+            (currentResponse?.content && currentResponse.content.length > 1)) &&
+            "px-4 py-1.5 border-b",
         )}
       >
         {!hideTabs && (
@@ -83,6 +82,7 @@ export const ResponseContent = ({
           />
         )}
       </div>
+      <Slot.Target name="response-header" />
     </div>
   );
 
@@ -98,14 +98,16 @@ export const ResponseContent = ({
       >
         {responses.map((response) => (
           <Tabs.Content key={response.statusCode} value={response.statusCode}>
-            <SchemaView
-              schema={
-                response.content?.find(
-                  (content) => content.mediaType === selectedMediaType,
-                )?.schema
-              }
-              cardHeader={cardHeader}
-            />
+            <ResponseContext.Provider value={response}>
+              <SchemaView
+                schema={
+                  response.content?.find(
+                    (content) => content.mediaType === selectedMediaType,
+                  )?.schema
+                }
+                cardHeader={cardHeader}
+              />
+            </ResponseContext.Provider>
           </Tabs.Content>
         ))}
       </Tabs.Root>

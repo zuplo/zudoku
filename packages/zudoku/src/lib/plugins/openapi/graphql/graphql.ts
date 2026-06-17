@@ -54,6 +54,7 @@ export type EncodingItem = {
 export type ExampleItem = {
   __typename?: "ExampleItem";
   description?: Maybe<Scalars["String"]["output"]>;
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   externalValue?: Maybe<Scalars["String"]["output"]>;
   name: Scalars["String"]["output"];
   summary?: Maybe<Scalars["String"]["output"]>;
@@ -425,6 +426,7 @@ export type OperationsFragmentFragment = {
     statusCode: string;
     links?: any | null;
     description?: string | null;
+    headers?: any | null;
     content?: Array<{
       __typename?: "MediaTypeObject";
       mediaType: string;
@@ -436,6 +438,7 @@ export type OperationsFragmentFragment = {
         externalValue?: string | null;
         value?: any | null;
         summary?: string | null;
+        extensions?: any | null;
       }> | null;
       encoding?: Array<{ __typename?: "EncodingItem"; name: string }> | null;
     }> | null;
@@ -794,6 +797,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
     statusCode
     links
     description
+    headers
     content {
       examples {
         name
@@ -801,6 +805,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
         externalValue
         value
         summary
+        extensions
       }
       mediaType
       encoding {
@@ -957,6 +962,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
     statusCode
     links
     description
+    headers
     content {
       examples {
         name
@@ -964,6 +970,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
         externalValue
         value
         summary
+        extensions
       }
       mediaType
       encoding {

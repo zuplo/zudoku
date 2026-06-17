@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
+import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
@@ -44,6 +45,10 @@ export const OperationListItem = ({
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
   const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
+  const requestContent = operation.requestBody?.content;
+  const [selectedRequestMediaType, setSelectedRequestMediaType] = useState(
+    requestContent?.at(0)?.mediaType ?? "",
+  );
 
   return (
     <div>
@@ -127,33 +132,64 @@ export const OperationListItem = ({
                   []
                 ),
               )}
-            {renderIf(operation.requestBody?.content?.at(0)?.schema, () => (
+            {renderIf(requestContent?.at(0), () => (
               <Separator className="my-4" />
             ))}
             {renderIf(
-              operation.requestBody?.content?.at(0)?.schema,
-              (schema) => (
-                <div className="flex flex-col gap-4">
-                  <Heading
-                    level={3}
-                    className="capitalize flex items-center gap-2"
-                    id={`${operation.slug}/request-body`}
-                  >
-                    {operation.summary && (
-                      <PagefindSearchMeta>
-                        {operation.summary} &rsaquo;{" "}
-                      </PagefindSearchMeta>
-                    )}
-                    Request Body{" "}
-                    {operation.requestBody?.required === false ? (
-                      <Badge variant="muted">optional</Badge>
-                    ) : (
-                      ""
-                    )}
-                  </Heading>
-                  <SchemaView schema={schema} />
-                </div>
-              ),
+              requestContent?.length ? requestContent : undefined,
+              (content) => {
+                const selectedSchema = (
+                  content.find(
+                    (c) => c.mediaType === selectedRequestMediaType,
+                  ) ?? content.at(0)
+                )?.schema;
+                const requestCardHeader =
+                  content.length > 1 ? (
+                    <div className="flex flex-row items-center gap-2 px-4 py-1.5 border-b">
+                      <NativeSelect
+                        value={selectedRequestMediaType}
+                        onChange={(e) =>
+                          setSelectedRequestMediaType(e.target.value)
+                        }
+                        className="text-xs h-fit py-1 bg-background"
+                      >
+                        {content.map((c) => (
+                          <NativeSelectOption
+                            key={c.mediaType}
+                            value={c.mediaType}
+                          >
+                            {c.mediaType}
+                          </NativeSelectOption>
+                        ))}
+                      </NativeSelect>
+                    </div>
+                  ) : undefined;
+                return (
+                  <div className="flex flex-col gap-4">
+                    <Heading
+                      level={3}
+                      className="capitalize flex items-center gap-2"
+                      id={`${operation.slug}/request-body`}
+                    >
+                      {operation.summary && (
+                        <PagefindSearchMeta>
+                          {operation.summary} &rsaquo;{" "}
+                        </PagefindSearchMeta>
+                      )}
+                      Request Body{" "}
+                      {operation.requestBody?.required === false ? (
+                        <Badge variant="muted">optional</Badge>
+                      ) : (
+                        ""
+                      )}
+                    </Heading>
+                    <SchemaView
+                      schema={selectedSchema}
+                      cardHeader={requestCardHeader}
+                    />
+                  </div>
+                );
+              },
             )}
             <Separator className="my-4" />
             {operation.responses.length > 0 && (

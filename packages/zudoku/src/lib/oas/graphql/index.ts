@@ -586,6 +586,11 @@ const ExampleItem = builder
       description: t.exposeString("description", { nullable: true }),
       value: t.expose("value", { type: JSONScalar, nullable: true }),
       externalValue: t.exposeString("externalValue", { nullable: true }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        nullable: true,
+        resolve: (parent) => resolveExtensions(parent as Record<string, any>),
+      }),
     }),
   });
 

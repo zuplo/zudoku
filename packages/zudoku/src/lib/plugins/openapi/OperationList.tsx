@@ -117,6 +117,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
       statusCode
       links
       description
+      headers
       content {
         examples {
           name
@@ -124,6 +125,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
           externalValue
           value
           summary
+          extensions
         }
         mediaType
         encoding {

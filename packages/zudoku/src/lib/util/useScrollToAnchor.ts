@@ -57,6 +57,13 @@ export const useScrollToAnchor = () => {
       return;
     }
 
+    // Try scrolling immediately; element may already be in the DOM.
+    if (scrollToHash(location.hash)) {
+      initialScrolled.current = true;
+      return;
+    }
+
+    // Element not yet in DOM — watch for mutations and retry.
     const observer = new MutationObserver((_, obs) => {
       if (!scrollToHash(location.hash)) return;
       initialScrolled.current = true;
