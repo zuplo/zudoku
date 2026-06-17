@@ -55,6 +55,29 @@ To deploy your Zudoku documentation to Zuplo:
 For detailed setup instructions, see the
 [Zuplo Developer Portal documentation](https://zuplo.com/docs/dev-portal/introduction).
 
+## Referencing the Gateway URL
+
+When your portal is deployed to Zuplo, you can reference the gateway URL directly in your Zudoku
+config instead of hardcoding it. Import `Gateway` from `zudoku/zuplo`:
+
+```ts
+import type { ZudokuConfig } from "zudoku";
+import { Gateway } from "zudoku/zuplo";
+
+const config: ZudokuConfig = {
+  apis: {
+    type: "url",
+    input: `${Gateway.URL}/openapi.json`,
+  },
+};
+
+export default config;
+```
+
+`Gateway.URL` resolves to the deployed gateway URL (e.g. `https://my-project-main-abc123.zuplo.app`)
+and is injected at build time, so it works during both server-side rendering and in the browser.
+Outside of a Zuplo build (for example, when running `zudoku dev` locally) it is `undefined`.
+
 ## Custom Domains
 
 You can configure custom domains for your developer portal in the Zuplo Portal:
