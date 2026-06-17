@@ -128,17 +128,16 @@ const config = {
     {
       type: "link",
       label: "Track a shipment",
-      to: joinUrl(shipmentsApi, createPath("track-shipment")),
+      to: joinUrl(shipmentsApi, "track-shipment"),
     },
   ],
   apis: { type: "file", input: "./shipments.json", path: shipmentsApi },
 };
 ```
 
-`joinUrl` handles the slashes between segments, so
-`joinUrl(shipmentsApi, createPath("track-shipment"))` resolves to `"/api-shipments/track-shipment"`.
-Since a `PathReference` is just a string, a template literal
-(`` `${shipmentsApi}/track-shipment` ``) works too for quick cases.
+`joinUrl` handles the slashes between segments, so `joinUrl(shipmentsApi, "track-shipment")`
+resolves to `"/api-shipments/track-shipment"`. Since a `PathReference` is just a string, a template
+literal (`` `${shipmentsApi}/track-shipment` ``) works too for quick cases.
 
 ### API Catalog
 
@@ -157,7 +156,7 @@ const config = {
     {
       type: "file",
       input: "./users.json",
-      path: joinUrl(catalog, createPath("api-users")),
+      path: joinUrl(catalog, "api-users"),
       categories: [{ label: "General", tags: ["Users"] }],
     },
   ],

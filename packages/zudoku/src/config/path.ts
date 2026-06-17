@@ -36,7 +36,7 @@ export type PathReference = string & { readonly [pathReferenceBrand]: never };
  * import { createPath, joinUrl } from "zudoku";
  *
  * const catalog = createPath("/catalog");
- * const usersApi = joinUrl(catalog, createPath("api-users")); // "/catalog/api-users"
+ * const usersApi = joinUrl(catalog, "api-users"); // "/catalog/api-users"
  * ```
  *
  * @param path A non-empty path string (an absolute path or a relative segment).

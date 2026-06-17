@@ -64,7 +64,7 @@ const config: ZudokuConfig = {
             label: "Warp Logistics",
             icon: "zap",
             description: "FTL delivery for time-critical cargo",
-            to: joinUrl(shipmentsApi, createPath("shipment-management")),
+            to: joinUrl(shipmentsApi, "shipment-management"),
           },
           {
             label: "API Catalog",
@@ -101,7 +101,7 @@ const config: ZudokuConfig = {
                 label: "Shipment API",
                 icon: "code",
                 description: "Integrate shipping into your apps",
-                to: joinUrl(shipmentsApi, createPath("shipment-management")),
+                to: joinUrl(shipmentsApi, "shipment-management"),
               },
               {
                 label: "Webhooks",
@@ -487,7 +487,7 @@ const config: ZudokuConfig = {
         "./schema/label-v2.json",
         "./schema/label-v1.json",
       ],
-      path: joinUrl(catalog, createPath("api-label")),
+      path: joinUrl(catalog, "api-label"),
       categories: [
         { label: "Core", tags: ["Labels"] },
         { label: "Printing", tags: ["Labels"] },
@@ -496,7 +496,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/webhooks.json",
-      path: joinUrl(catalog, createPath("api-webhooks")),
+      path: joinUrl(catalog, "api-webhooks"),
       categories: [
         { label: "Platform", tags: ["Events", "Developer"] },
         { label: "Integrations", tags: ["Developer"] },
@@ -525,13 +525,13 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/interplanetary.json",
-      path: joinUrl(catalog, createPath("api-interplanetary")),
+      path: joinUrl(catalog, "api-interplanetary"),
       categories: [{ label: "Interplanetary", tags: ["Routes", "Transit"] }],
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
-      path: joinUrl(catalog, createPath("api-tracking")),
+      path: joinUrl(catalog, "api-tracking"),
       categories: [
         { label: "Core", tags: ["Tracking", "Events"] },
         { label: "Insights", tags: ["Tracking"] },
@@ -540,7 +540,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/ai-cargo.json",
-      path: joinUrl(catalog, createPath("api-ai-cargo")),
+      path: joinUrl(catalog, "api-ai-cargo"),
       categories: [
         {
           label: "AI & Automation",
@@ -551,7 +551,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/docs.json",
-      path: joinUrl(catalog, createPath("api-docs")),
+      path: joinUrl(catalog, "api-docs"),
       categories: [
         {
           label: "Platform",
@@ -562,7 +562,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/cargo-containers.json",
-      path: joinUrl(catalog, createPath("api-cargo-containers")),
+      path: joinUrl(catalog, "api-cargo-containers"),
       categories: [
         { label: "Core", tags: ["Containers", "Booking"] },
         { label: "Storage", tags: ["Containers"] },
@@ -587,7 +587,7 @@ const config: ZudokuConfig = {
           label: "v1 (Sublight)",
         },
       ],
-      path: joinUrl(catalog, createPath("api-fleet-ops")),
+      path: joinUrl(catalog, "api-fleet-ops"),
       categories: [
         { label: "Core", tags: ["Fleet Command"] },
         { label: "Operations", tags: ["Fleet Command"] },
