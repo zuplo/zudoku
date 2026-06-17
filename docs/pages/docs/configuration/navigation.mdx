@@ -143,7 +143,10 @@ type NavigationCategory = {
   collapsible?: boolean;
   collapsed?: boolean;
   stack?: boolean; // open the category's items as a stacked sub-nav
-  link?: string | { type: "doc"; file: string; label?: string; path?: string };
+  link?:
+    | string
+    | { type: "doc"; file: string; label?: string; path?: string }
+    | { type: "link"; to: string; label?: string };
   display?:
     | "auth"
     | "anon"
@@ -160,7 +163,8 @@ type NavigationCategory = {
 A category can have a `link` property that makes the category label itself clickable, navigating to
 a document. This is useful when you want a category that acts as both a group and a landing page.
 
-The `link` can be a simple string pointing to a file path, or an object for more control:
+The `link` can be a simple string pointing to a file path, a `doc` object for more control, or a
+`link` object that points the category label at an arbitrary path or external URL:
 
 ```tsx title="String shorthand"
 {
@@ -190,7 +194,7 @@ The `link` can be a simple string pointing to a file path, or an object for more
 }
 ```
 
-The object form supports these properties:
+The `doc` object form supports these properties:
 
 | Property | Type     | Description                                              |
 | -------- | -------- | -------------------------------------------------------- |
@@ -198,6 +202,29 @@ The object form supports these properties:
 | `file`   | `string` | Path to the markdown file                                |
 | `label`  | `string` | Override the label (defaults to the document title)      |
 | `path`   | `string` | Custom URL path (overrides the default file-based route) |
+
+```tsx title="Link form pointing to a path or external URL"
+{
+  type: "category",
+  label: "API Reference",
+  link: {
+    type: "link",
+    to: "/api",
+  },
+  items: [
+    "guides/authentication",
+    "guides/rate-limits",
+  ],
+}
+```
+
+The `link` object form supports these properties:
+
+| Property | Type     | Description                         |
+| -------- | -------- | ----------------------------------- |
+| `type`   | `"link"` | Must be `"link"`                    |
+| `to`     | `string` | Path or external URL to navigate to |
+| `label`  | `string` | Override the category label         |
 
 ### `type: doc`
 
