@@ -37,7 +37,7 @@ Define the catalog path once with `createPath` and derive each API path from it,
 stay consistent with the catalog automatically:
 
 ```ts title=zudoku.config.ts
-import { createPath } from "zudoku";
+import { createPath, joinUrl } from "zudoku";
 
 const catalog = createPath("/catalog");
 
@@ -50,19 +50,19 @@ const config = {
     {
       type: "file",
       input: "./operational.json",
-      path: createPath(`${catalog}/api-operational`), // Nested under the catalog
+      path: createPath(joinUrl(catalog, "api-operational")), // Nested under the catalog
       categories: [{ label: "General", tags: ["Operational"] }],
     },
     {
       type: "file",
       input: "./enduser.json",
-      path: createPath(`${catalog}/api-enduser`),
+      path: createPath(joinUrl(catalog, "api-enduser")),
       categories: [{ label: "General", tags: ["End-User"] }],
     },
     {
       type: "file",
       input: "./openapi.json",
-      path: createPath(`${catalog}/api-auth`),
+      path: createPath(joinUrl(catalog, "api-auth")),
       categories: [{ label: "Other", tags: ["Authentication"] }],
     },
   ],

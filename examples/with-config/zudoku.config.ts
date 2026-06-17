@@ -1,4 +1,4 @@
-import { createPath, type ZudokuConfig } from "zudoku";
+import { createPath, joinUrl, type ZudokuConfig } from "zudoku";
 
 const rickAndMortyApi = createPath("/api/rick-and-morty");
 const adyenBalanceApi = createPath("/api/adyen-balance");
@@ -31,7 +31,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: `${adyenBalanceApi}/v2`,
+      to: joinUrl(adyenBalanceApi, "v2"),
       label: "Versioned API",
     },
   ],

@@ -146,7 +146,7 @@ When using an [API Catalog](./api-catalog.md), define the catalog path once and 
 path from it so the nested paths stay consistent with the catalog:
 
 ```ts title=zudoku.config.ts
-import { createPath } from "zudoku";
+import { createPath, joinUrl } from "zudoku";
 
 const catalog = createPath("/catalog");
 
@@ -157,7 +157,7 @@ const config = {
     {
       type: "file",
       input: "./users.json",
-      path: createPath(`${catalog}/api-users`),
+      path: createPath(joinUrl(catalog, "api-users")),
       categories: [{ label: "General", tags: ["Users"] }],
     },
   ],
