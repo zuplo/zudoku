@@ -9,20 +9,15 @@ export type GraphQLPluginOptions = {
   };
 };
 
-type GraphQLUrlConfig = {
-  type: "url";
-  input: string;
+export type GraphQLConfig = {
+  /** A URL to a GraphQL endpoint or a path to a GraphQL SDL file. */
+  schema: string;
   path: string;
   options?: GraphQLPluginOptions;
 };
-
-type GraphQLFileConfig = {
-  type: "file";
-  input: string;
-  path: string;
-  options?: GraphQLPluginOptions;
-};
-
-export type GraphQLConfig = GraphQLUrlConfig | GraphQLFileConfig;
 
 export const GRAPHQL_PLUGIN_NAME = "graphql";
+
+/** Treat the schema as a remote endpoint when it's an http(s) URL. */
+export const isSchemaUrl = (schema: string): boolean =>
+  /^https?:\/\//i.test(schema);

@@ -6,6 +6,7 @@ import {
   type GraphQLConfig,
   GRAPHQL_PLUGIN_NAME,
   type GraphQLPluginOptions,
+  isSchemaUrl,
 } from "./interfaces.js";
 import { getRoutes } from "./routes/getRoutes.js";
 import type { GraphQLManifest } from "./util/manifest.js";
@@ -16,9 +17,7 @@ const resolveOptions = (
 ): { basePath: string; options: GraphQLPluginOptions } => {
   const playgroundEndpoint =
     config.options?.playground?.endpoint ??
-    (config.type === "url" && typeof config.input === "string"
-      ? config.input
-      : undefined);
+    (isSchemaUrl(config.schema) ? config.schema : undefined);
 
   const options: GraphQLPluginOptions = {
     ...config.options,
