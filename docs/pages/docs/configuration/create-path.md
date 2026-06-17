@@ -57,10 +57,10 @@ drift out of sync.
 
 ## How it works
 
-`createPath` returns the path string unchanged — it only validates that the path starts with a `/`
-(throwing a helpful error if it doesn't, which catches the common `"api"` vs `"/api"` mistake). The
-returned value is a `PathReference`, a string under the hood, so you can use it **anywhere a path
-string is expected**:
+`createPath` returns the path string unchanged — it only validates that the path is non-empty. The
+value can be an absolute path (`"/api"`) or a relative segment (`"api-users"`) that you compose with
+[`joinUrl`](#sub-paths). The returned value is a `PathReference`, a string under the hood, so you
+can use it **anywhere a path string is expected**:
 
 ```ts title=zudoku.config.ts
 import { createPath, type ZudokuConfig } from "zudoku";
@@ -81,9 +81,8 @@ export default config;
 
 :::note
 
-`createPath` does not normalize the path beyond requiring a leading slash. A value like
-`createPath("/api/")` is returned as-is. Whatever value you pass is used consistently in every place
-that references it.
+`createPath` does not normalize the path. A value like `createPath("/api/")` is returned as-is.
+Whatever value you pass is used consistently in every place that references it.
 
 :::
 
@@ -114,31 +113,32 @@ See [Multiple APIs](../guides/using-multiple-apis.md) for the full configuration
 
 ### Sub-paths
 
-Since a `PathReference` is a string, you can compose deeper paths from it — for example to link
-directly to an operation or a specific version. Use a template literal:
+To build a deeper path from a base — for example a nested API mount or a link to a specific version
+— compose it with the `joinUrl` helper (also exported from `zudoku`), wrapping the new segment in
+`createPath`:
 
 ```ts title=zudoku.config.ts
-import { createPath } from "zudoku";
+import { createPath, joinUrl } from "zudoku";
 
 const shipmentsApi = createPath("/api-shipments");
 
 const config = {
   navigation: [
     // Links to a page nested under the API
-    { type: "link", label: "Track a shipment", to: `${shipmentsApi}/track-shipment` },
+    {
+      type: "link",
+      label: "Track a shipment",
+      to: joinUrl(shipmentsApi, createPath("track-shipment")),
+    },
   ],
   apis: { type: "file", input: "./shipments.json", path: shipmentsApi },
 };
 ```
 
-Or use the `joinUrl` helper (also exported from `zudoku`) when you want slashes handled for you:
-
-```ts
-import { createPath, joinUrl } from "zudoku";
-
-const shipmentsApi = createPath("/api-shipments");
-const trackShipment = joinUrl(shipmentsApi, "track-shipment"); // "/api-shipments/track-shipment"
-```
+`joinUrl` handles the slashes between segments, so
+`joinUrl(shipmentsApi, createPath("track-shipment"))` resolves to `"/api-shipments/track-shipment"`.
+Since a `PathReference` is just a string, a template literal
+(`` `${shipmentsApi}/track-shipment` ``) works too for quick cases.
 
 ### API Catalog
 
@@ -157,7 +157,7 @@ const config = {
     {
       type: "file",
       input: "./users.json",
-      path: createPath(joinUrl(catalog, "api-users")),
+      path: joinUrl(catalog, createPath("api-users")),
       categories: [{ label: "General", tags: ["Users"] }],
     },
   ],

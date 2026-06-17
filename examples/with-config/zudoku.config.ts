@@ -31,7 +31,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: joinUrl(adyenBalanceApi, "v2"),
+      to: joinUrl(adyenBalanceApi, createPath("v2")),
       label: "Versioned API",
     },
   ],

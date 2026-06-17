@@ -50,19 +50,19 @@ const config = {
     {
       type: "file",
       input: "./operational.json",
-      path: createPath(joinUrl(catalog, "api-operational")), // Nested under the catalog
+      path: joinUrl(catalog, createPath("api-operational")), // Nested under the catalog
       categories: [{ label: "General", tags: ["Operational"] }],
     },
     {
       type: "file",
       input: "./enduser.json",
-      path: createPath(joinUrl(catalog, "api-enduser")),
+      path: joinUrl(catalog, createPath("api-enduser")),
       categories: [{ label: "General", tags: ["End-User"] }],
     },
     {
       type: "file",
       input: "./openapi.json",
-      path: createPath(joinUrl(catalog, "api-auth")),
+      path: joinUrl(catalog, createPath("api-auth")),
       categories: [{ label: "Other", tags: ["Authentication"] }],
     },
   ],

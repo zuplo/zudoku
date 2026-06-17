@@ -29,13 +29,23 @@ export type PathReference = string & { readonly [pathReferenceBrand]: never };
  * };
  * ```
  *
- * @param path An absolute path starting with `/`.
+ * The value can be an absolute path (`"/api"`) or a relative segment
+ * (`"api-users"`) that is composed with {@link joinUrl}:
+ *
+ * ```ts
+ * import { createPath, joinUrl } from "zudoku";
+ *
+ * const catalog = createPath("/catalog");
+ * const usersApi = joinUrl(catalog, createPath("api-users")); // "/catalog/api-users"
+ * ```
+ *
+ * @param path A non-empty path string (an absolute path or a relative segment).
  */
 export const createPath = (path: string): PathReference => {
-  if (!path.startsWith("/")) {
-    throw new ZudokuError(`Path "${path}" must start with a "/".`, {
+  if (path.length === 0) {
+    throw new ZudokuError("createPath requires a non-empty path.", {
       developerHint:
-        "createPath expects an absolute path, e.g. createPath('/api').",
+        "Pass an absolute path like createPath('/api') or a segment like createPath('api-users').",
     });
   }
 
