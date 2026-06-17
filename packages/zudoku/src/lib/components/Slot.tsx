@@ -8,7 +8,7 @@ import {
 // This is to augment the type of the Slot component with custom slot names
 // This is useful for plugins to add custom slots to the Zudoku context
 // and for the user to use them in their own components
-export type CustomSlotNames = "schema-view-body" | "response-header";
+export type CustomSlotNames = never;
 
 type PredefinedSlotNames =
   | "api-keys-list-page"
@@ -25,7 +25,9 @@ type PredefinedSlotNames =
   | "content-before"
   | "content-after"
   | "navigation-after"
-  | "navigation-before";
+  | "navigation-before"
+  | "schema-view-body"
+  | "response-header";
 
 export type SlotName = PredefinedSlotNames | CustomSlotNames;
 

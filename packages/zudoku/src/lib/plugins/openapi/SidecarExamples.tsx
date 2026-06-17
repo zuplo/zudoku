@@ -64,9 +64,13 @@ export const SidecarExamples = ({
   const formattedExample = formatForDisplay(selectedExample?.value);
   const language = getLanguage(selectedContent?.mediaType);
 
-  const exampleHeaders = selectedExample?.extensions?.["x-headers"] as
-    | Record<string, string>
-    | undefined;
+  const rawHeaders = selectedExample?.extensions?.["x-headers"];
+  // `x-headers` comes from arbitrary OpenAPI JSON, so guard against non-object
+  // shapes (null, arrays, primitives) before treating it as a header map.
+  const exampleHeaders =
+    rawHeaders && typeof rawHeaders === "object" && !Array.isArray(rawHeaders)
+      ? (rawHeaders as Record<string, unknown>)
+      : undefined;
   const hasHeaders = exampleHeaders && Object.keys(exampleHeaders).length > 0;
 
   return (
@@ -77,7 +81,7 @@ export const SidecarExamples = ({
             {Object.entries(exampleHeaders).map(([name, value]) => (
               <div key={name}>
                 <span className="text-foreground">{name}</span>
-                <span className="text-muted-foreground">: {value}</span>
+                <span className="text-muted-foreground">: {String(value)}</span>
               </div>
             ))}
           </div>

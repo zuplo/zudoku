@@ -418,6 +418,7 @@ export type OperationsFragmentFragment = {
         externalValue?: string | null;
         value?: any | null;
         summary?: string | null;
+        extensions?: any | null;
       }> | null;
     }> | null;
   } | null;
@@ -787,6 +788,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
         externalValue
         value
         summary
+        extensions
       }
       schema
     }
@@ -952,6 +954,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
         externalValue
         value
         summary
+        extensions
       }
       schema
     }

@@ -107,6 +107,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
           externalValue
           value
           summary
+          extensions
         }
         schema
       }
