@@ -15,16 +15,13 @@ import { ROOT_TYPES, type RootType, typeMetadata } from "./util/types.js";
 const resolveOptions = (
   config: GraphQLConfig,
 ): { basePath: string; options: GraphQLPluginOptions } => {
-  const playgroundEndpoint =
-    config.options?.playground?.endpoint ??
+  const endpoint =
+    config.options?.endpoint ??
     (isSchemaUrl(config.schema) ? config.schema : undefined);
 
   const options: GraphQLPluginOptions = {
     ...config.options,
-    playground: {
-      ...config.options?.playground,
-      endpoint: playgroundEndpoint,
-    },
+    endpoint,
   };
 
   return {

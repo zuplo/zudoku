@@ -9,8 +9,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { cn } from "zudoku";
+import { cn, joinUrl } from "zudoku";
 import { ApiIdentityPicker } from "zudoku/components";
+import { useZudoku } from "zudoku/hooks";
 import {
   ChevronsDownIcon,
   ChevronsUpIcon,
@@ -20,6 +21,7 @@ import {
 } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
 import { useGraphQLSchema } from "../context.js";
+import { resolveEndpointUrl } from "../interfaces.js";
 import {
   GraphQLPlayground,
   type GraphQLPlaygroundOperation,
@@ -242,6 +244,11 @@ const GraphQLWorkbenchDrawer = ({
   updateWorkbenchOperation: GraphQLWorkbenchContextValue["updateWorkbenchOperation"];
 }) => {
   const { options, schema } = useGraphQLSchema();
+  const { env } = useZudoku();
+  const gatewayUrl = env.ZUPLO_GATEWAY_SERVICE_URL;
+  const endpoint =
+    resolveEndpointUrl(options.endpoint, gatewayUrl) ??
+    (gatewayUrl ? joinUrl(gatewayUrl, "graphql") : undefined);
   const drawerRef = useRef<HTMLDivElement>(null);
   const hasOpened = useRef(false);
   if (state !== "collapsed") hasOpened.current = true;
@@ -367,7 +374,7 @@ const GraphQLWorkbenchDrawer = ({
         </div>
         {hasOpened.current && (
           <GraphQLPlayground
-            endpoint={options.playground?.endpoint}
+            endpoint={endpoint}
             headers={options.playground?.headers}
             schema={{ __schema: schema }}
             operation={operation}
