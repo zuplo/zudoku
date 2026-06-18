@@ -105,7 +105,9 @@ export const getRoutesByOptions = (
     isNavigationPlugin(plugin) ? plugin.getRoutes() : [],
   );
 
-  const conflicts = detectRouteConflicts(pluginRoutes);
+  const conflicts = import.meta.env.DEV
+    ? detectRouteConflicts(pluginRoutes)
+    : [];
   if (conflicts.length > 0) {
     throw new ZudokuError(
       `Multiple plugins registered the same route${
