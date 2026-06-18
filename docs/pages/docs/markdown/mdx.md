@@ -57,6 +57,16 @@ const config: ZudokuConfig = {
 export default config;
 ```
 
+## Built-in Components
+
+Zudoku ships with a set of components that are always available in any `.md` or `.mdx` file without
+importing or registering them. This includes [`Badge`](../components/badge.mdx),
+[`Callout`](../components/callout.mdx), [`Stepper`](../components/stepper.mdx) and others.
+
+```mdx
+<Badge variant="secondary">New</Badge>
+```
+
 ## JSX in Headings
 
 JSX components in headings render in both the sidebar navigation and table of contents:
@@ -65,4 +75,5 @@ JSX components in headings render in both the sidebar navigation and table of co
 # My Page <Badge>New</Badge>
 ```
 
-Components must be registered via [`mdx.components`](#custom-components) to work in headings.
+Built-in components like `<Badge>` work in headings out of the box. Custom components must be
+registered via [`mdx.components`](#custom-components) to work in headings.
