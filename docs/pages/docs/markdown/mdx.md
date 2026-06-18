@@ -59,8 +59,8 @@ export default config;
 
 ## Built-in Components
 
-Zudoku ships with a set of components that are always available in any `.md` or `.mdx` file without
-importing or registering them:
+Zudoku ships with a set of components that are always available in your MDX pages without importing
+or registering them:
 
 | Component                                                  | Description                                                                                                                        |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
