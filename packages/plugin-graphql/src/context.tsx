@@ -7,6 +7,7 @@ type GraphQLContextValue = {
   schema: GraphQLSchema;
   index: SchemaIndex;
   basePath: string;
+  endpoint: string | undefined;
   options: GraphQLPluginOptions;
 };
 

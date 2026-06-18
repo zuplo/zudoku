@@ -14,29 +14,26 @@ import { ROOT_TYPES, type RootType, typeMetadata } from "./util/types.js";
 
 const resolveOptions = (
   config: GraphQLConfig,
-): { basePath: string; options: GraphQLPluginOptions } => {
-  const playgroundEndpoint =
-    config.options?.playground?.endpoint ??
-    (isSchemaUrl(config.schema) ? config.schema : undefined);
-
-  const options: GraphQLPluginOptions = {
-    ...config.options,
-    playground: {
-      ...config.options?.playground,
-      endpoint: playgroundEndpoint,
-    },
-  };
+): {
+  basePath: string;
+  endpoint: string | undefined;
+  options: GraphQLPluginOptions;
+} => {
+  const endpoint =
+    config.endpoint ??
+    (config.schema && isSchemaUrl(config.schema) ? config.schema : undefined);
 
   return {
     basePath: joinUrl(config.path),
-    options,
+    endpoint,
+    options: config.options ?? {},
   };
 };
 
 export const graphqlPlugin = createPlugin(
   GRAPHQL_PLUGIN_NAME,
   (config: GraphQLConfig): ZudokuPlugin => {
-    const { basePath, options } = resolveOptions(config);
+    const { basePath, endpoint, options } = resolveOptions(config);
 
     return {
       getRoutes: () => {
@@ -46,6 +43,7 @@ export const graphqlPlugin = createPlugin(
         return getRoutes({
           basePath,
           manifest,
+          endpoint,
           options,
           loadSchema: () => loadSchema().then((module) => module.default),
         });
