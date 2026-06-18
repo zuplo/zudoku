@@ -101,14 +101,14 @@ const config: ZudokuConfig = {
   // Uncomment to document a GraphQL API. Don't forget to also uncomment the
   // `graphqlPlugin` import at the top of this file. To enable this alongside
   // another plugin, place both inside a single `plugins: [...]` array.
+  //
+  // `schema` is introspected at build time to generate the reference docs.
+  // The interactive playground sends operations to your Zuplo gateway's
+  // `/graphql` route automatically.
   // plugins: [
   //   graphqlPlugin({
-  //     schema: "https://api.example.com/graphql",
+  //     schema: "https://your-gateway.zuplo.app/graphql",
   //     path: "graphql",
-  //     options: {
-  //       title: "My GraphQL API",
-  //       description: "Explore the schema and try queries in the playground.",
-  //     },
   //   }),
   // ],
 };
