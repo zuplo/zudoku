@@ -68,4 +68,22 @@ describe("detectRouteConflicts", () => {
 
     expect(detectRouteConflicts([a, b])).toEqual([]);
   });
+
+  it("detects a top-level index route conflicting with an explicit root path", () => {
+    // An index route with no path matches the root "/".
+    const a: RouteObject[] = [{ index: true, element: null }];
+    const b: RouteObject[] = [{ path: "/", element: null }];
+
+    expect(detectRouteConflicts([a, b])).toEqual(["/"]);
+  });
+
+  it("detects a nested index route conflicting with its parent path", () => {
+    // Mirrors the OpenAPI plugin's `{ index: true }` redirect under a version.
+    const a: RouteObject[] = [
+      { path: "/api", children: [{ index: true, element: null }] },
+    ];
+    const b: RouteObject[] = [{ path: "/api", element: null }];
+
+    expect(detectRouteConflicts([a, b])).toEqual(["/api"]);
+  });
 });

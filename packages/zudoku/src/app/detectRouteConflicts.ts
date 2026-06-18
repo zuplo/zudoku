@@ -1,9 +1,11 @@
 import type { RouteObject } from "react-router";
 import { joinUrl } from "../lib/util/joinUrl.js";
 
-// Collect the absolute path of every route that declares one. Child paths in
+// Collect the absolute path of every route that resolves to one. Child paths in
 // zudoku plugins are authored as absolute (already basePath-joined), so only
-// join with the parent when the child path is relative.
+// join with the parent when the child path is relative. Index routes
+// (`{ index: true }`) carry no `path` but match their parent path (or `/` at the
+// top level), so they're recorded against that path too.
 const collectPaths = (
   routes: RouteObject[],
   parent = "",
@@ -18,6 +20,7 @@ const collectPaths = (
         : parent;
 
     if (route.path != null) acc.add(fullPath);
+    else if (route.index) acc.add(joinUrl(parent));
     if (route.children) collectPaths(route.children, fullPath, acc);
   }
 
