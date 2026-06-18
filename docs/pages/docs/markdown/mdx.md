@@ -39,7 +39,7 @@ export default function MyCustomComponent() {
 ```
 
 In [Zudoku Configuration](./overview.md) you will need to import the component and add it to the
-`customComponents` option in the configuration.
+`mdx.components` option in the configuration.
 
 ```ts title=zudoku.config.ts
 import MyCustomComponent from "./src/MyCustomComponent";
@@ -60,8 +60,20 @@ export default config;
 ## Built-in Components
 
 Zudoku ships with a set of components that are always available in any `.md` or `.mdx` file without
-importing or registering them. This includes [`Badge`](../components/badge.mdx),
-[`Callout`](../components/callout.mdx), [`Stepper`](../components/stepper.mdx) and others.
+importing or registering them:
+
+| Component                                                  | Description                                                                                                                        |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| [`Alert`](../components/alert.mdx)                         | Inline alert message.                                                                                                              |
+| [`Badge`](../components/badge.mdx)                         | Small label for status or metadata.                                                                                                |
+| [`Button`](../components/button.mdx)                       | Button, optionally rendered as a link via `asChild`.                                                                               |
+| [`Callout`](../components/callout.mdx)                     | Highlighted note. Also available as [admonitions](./admonitions.md) (`tip`, `info`, `note`, `caution`, `warning`, `danger`, etc.). |
+| [`CodeTabs` / `CodeTabPanel`](../components/code-tabs.mdx) | Tabbed code blocks.                                                                                                                |
+| [`Framed`](../components/framed.mdx)                       | Frames content such as screenshots and images.                                                                                     |
+| [`Link`](../components/link.mdx)                           | Client-side router link for internal navigation.                                                                                   |
+| [`Mermaid`](../components/mermaid.mdx)                     | Renders Mermaid diagrams.                                                                                                          |
+| [`Stepper`](../components/stepper.mdx)                     | Numbered step-by-step instructions.                                                                                                |
+| [`SyntaxHighlight`](../components/syntax-highlight.mdx)    | Syntax-highlighted code.                                                                                                           |
 
 ```mdx
 <Badge variant="secondary">New</Badge>

@@ -1,0 +1,67 @@
+---
+title: Framed
+sidebar_icon: frame
+---
+
+A presentational wrapper that renders its content inside a subtle, rounded frame with an optional
+caption. It's commonly used to frame screenshots and images so they stand out from the surrounding
+text.
+
+`Framed` is a [built-in component](../markdown/mdx.md#built-in-components) and is always available
+in `.md` and `.mdx` files — no import or registration required.
+
+## Usage
+
+<Framed caption="A framed piece of content">
+  <div className="flex flex-col items-center gap-3 p-10 text-center">
+    <span className="text-2xl font-bold">Hello, world!</span>
+    <p className="text-muted-foreground">Any content renders inside the frame.</p>
+  </div>
+</Framed>
+
+```mdx
+<Framed caption="A framed piece of content">
+  <div className="...">Any content renders inside the frame.</div>
+</Framed>
+```
+
+Framing an image works the same way:
+
+```mdx
+<Framed caption="The dashboard overview">![Dashboard screenshot](./dashboard.png)</Framed>
+```
+
+## Size
+
+Use the `size` prop to constrain the maximum width of the frame (defaults to `xl`):
+
+<Framed size="sm" caption="A small frame">
+  <p className="p-6 text-center text-muted-foreground">size="sm"</p>
+</Framed>
+
+```mdx
+<Framed size="sm" caption="A small frame">
+  <p>size="sm"</p>
+</Framed>
+```
+
+## Alignment
+
+Use the `align` prop to position a frame that is narrower than the content area (defaults to
+`center`):
+
+```mdx
+<Framed size="sm" align="start">
+  <p>Aligned to the start</p>
+</Framed>
+```
+
+## Props
+
+| Prop        | Type                                              | Description                                              |
+| ----------- | ------------------------------------------------- | -------------------------------------------------------- |
+| `caption`   | `string`                                          | Optional caption rendered below the frame.               |
+| `size`      | `"sm" \| "md" \| "lg" \| "xl" \| "2xl" \| "full"` | Maximum width of the frame. Defaults to `xl`.            |
+| `align`     | `"center" \| "start" \| "end"`                    | Horizontal alignment of the frame. Defaults to `center`. |
+| `className` | `string`                                          | Additional classes for the outer frame.                  |
+| `children`  | `ReactNode`                                       | The content rendered inside the frame.                   |
