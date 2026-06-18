@@ -63,7 +63,7 @@ value can be an absolute path (`"/api"`) or a relative segment (`"api-users"`) t
 can use it **anywhere a path string is expected**:
 
 ```ts title=zudoku.config.ts
-import { createPath, type ZudokuConfig } from "zudoku";
+import { createPath, joinUrl, type ZudokuConfig } from "zudoku";
 
 const apiReference = createPath("/api");
 
@@ -73,7 +73,7 @@ const config: ZudokuConfig = {
   // Works in redirects...
   redirects: [{ from: "/", to: apiReference }],
   // ...and anywhere else a path is accepted, e.g. protected routes.
-  protectedRoutes: [`${apiReference}/*`],
+  protectedRoutes: [joinUrl(apiReference, "*")],
 };
 
 export default config;
@@ -154,8 +154,8 @@ const config = {
 ```
 
 `joinUrl` handles the slashes between segments, so `joinUrl(shipmentsApi, "track-shipment")`
-resolves to `"/api-shipments/track-shipment"`. Since a `PathReference` is just a string, a template
-literal (`` `${shipmentsApi}/track-shipment` ``) works too for quick cases.
+resolves to `"/api-shipments/track-shipment"`. Prefer `joinUrl` over string interpolation so the
+base path stays the single source of truth.
 
 ### API Catalog
 

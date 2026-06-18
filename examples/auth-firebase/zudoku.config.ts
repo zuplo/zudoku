@@ -1,4 +1,4 @@
-import { createPath, type ZudokuConfig } from "zudoku";
+import { createPath, joinUrl, type ZudokuConfig } from "zudoku";
 
 const apiReference = createPath("/api");
 
@@ -34,7 +34,7 @@ const config: ZudokuConfig = {
       label: "Rick & Morty API",
     },
   ],
-  protectedRoutes: ["/documentation/installation", `${apiReference}/*`],
+  protectedRoutes: ["/documentation/installation", joinUrl(apiReference, "*")],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
   docs: {
     files: "/pages/**/*.mdx",

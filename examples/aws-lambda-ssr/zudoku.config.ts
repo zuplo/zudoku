@@ -1,4 +1,4 @@
-import { createPath, type ZudokuConfig } from "zudoku";
+import { createPath, joinUrl, type ZudokuConfig } from "zudoku";
 
 const apiReference = createPath("/api");
 
@@ -41,7 +41,7 @@ const config: ZudokuConfig = {
     clientId: "kWQs12Q9Og4w6zzI82qJSa3klN1sMtvz",
     audience: "https://api.example.com/",
   },
-  protectedRoutes: ["/documentation/protected", `${apiReference}/*`],
+  protectedRoutes: ["/documentation/protected", joinUrl(apiReference, "*")],
   docs: {
     files: "/pages/**/*.mdx",
   },

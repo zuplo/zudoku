@@ -409,16 +409,22 @@ const config: ZudokuConfig = {
   ],
   redirects: [
     {
-      from: `${shipmentsApi}/create-shipment`,
-      to: `${shipmentsApi}/shipment-management#post-shipments`,
+      from: joinUrl(shipmentsApi, "create-shipment"),
+      to: joinUrl(shipmentsApi, "shipment-management#post-shipments"),
     },
     {
-      from: `${shipmentsApi}/get-rates`,
-      to: `${shipmentsApi}/rates-and-billing#post-shipments-shipmentid-rates`,
+      from: joinUrl(shipmentsApi, "get-rates"),
+      to: joinUrl(
+        shipmentsApi,
+        "rates-and-billing#post-shipments-shipmentid-rates",
+      ),
     },
     {
-      from: `${shipmentsApi}/track-shipment`,
-      to: `${shipmentsApi}/tracking-and-notifications#get-shipments-shipmentid-events`,
+      from: joinUrl(shipmentsApi, "track-shipment"),
+      to: joinUrl(
+        shipmentsApi,
+        "tracking-and-notifications#get-shipments-shipmentid-events",
+      ),
     },
   ],
   catalogs: {

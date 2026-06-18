@@ -1,4 +1,4 @@
-import { createPath, type ZudokuConfig } from "zudoku";
+import { createPath, joinUrl, type ZudokuConfig } from "zudoku";
 import VerifiedPage from "./src/VerifiedPage";
 
 const apiReference = createPath("/api");
@@ -32,7 +32,7 @@ const config: ZudokuConfig = {
 
   protectedRoutes: [
     "/documentation/installation",
-    `${apiReference}/*`,
+    joinUrl(apiReference, "*"),
     "/verified",
   ],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
