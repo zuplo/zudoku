@@ -21,7 +21,7 @@ import {
 } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
 import { useGraphQLSchema } from "../context.js";
-import { resolveEndpointUrl } from "../interfaces.js";
+import { resolveEndpointUrl } from "../resolveEndpointUrl.js";
 import {
   GraphQLPlayground,
   type GraphQLPlaygroundOperation,
