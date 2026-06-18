@@ -12,6 +12,26 @@ declare const pathReferenceBrand: unique symbol;
  */
 export type PathReference = string & { readonly [pathReferenceBrand]: never };
 
+const DOCS_URL = "https://zudoku.dev/docs/configuration/create-path";
+
+// Tracks the absolute paths created during a single config evaluation so the
+// same mount point can't be declared twice. This is module-level state, but it
+// is only written while the config module is being evaluated (never per
+// request) and is cleared on the next microtask — i.e. once the synchronous
+// evaluation pass finishes — so a re-evaluation (dev reload) always starts
+// clean and the registry never holds state between requests.
+const registry = new Set<string>();
+let resetScheduled = false;
+
+const scheduleReset = () => {
+  if (resetScheduled) return;
+  resetScheduled = true;
+  queueMicrotask(() => {
+    registry.clear();
+    resetScheduled = false;
+  });
+};
+
 /**
  * Defines an internal route path that can be referenced in multiple places.
  *
@@ -39,6 +59,10 @@ export type PathReference = string & { readonly [pathReferenceBrand]: never };
  * const usersApi = joinUrl(catalog, "api-users"); // "/catalog/api-users"
  * ```
  *
+ * Creating the same **absolute** path twice throws, since two things can't be
+ * mounted at the same route. Relative segments may repeat — they are building
+ * blocks meant to be composed under different bases.
+ *
  * @param path A non-empty path string (an absolute path or a relative segment).
  */
 export const createPath = (path: string): PathReference => {
@@ -47,6 +71,23 @@ export const createPath = (path: string): PathReference => {
       developerHint:
         "Pass an absolute path like createPath('/api') or a segment like createPath('api-users').",
     });
+  }
+
+  // Only absolute paths are mount points that must be unique. Relative segments
+  // are composed under a base (see `joinUrl`) and may legitimately repeat.
+  if (path.startsWith("/")) {
+    if (registry.has(path)) {
+      throw new ZudokuError(
+        `createPath("${path}") was called more than once — each route path can only be mounted once.`,
+        {
+          title: "Duplicate path",
+          developerHint: `Create the path a single time and reuse the returned value, e.g. \`const apiReference = createPath("${path}")\`, then reference \`apiReference\` everywhere. Learn more: ${DOCS_URL}`,
+        },
+      );
+    }
+
+    registry.add(path);
+    scheduleReset();
   }
 
   return path as PathReference;

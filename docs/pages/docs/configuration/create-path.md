@@ -86,6 +86,24 @@ Whatever value you pass is used consistently in every place that references it.
 
 :::
 
+## Catching duplicate paths
+
+`createPath` keeps an internal registry of the **absolute** paths created while your config is
+evaluated. Creating the same absolute path twice throws an error, because two things can't be
+mounted at the same route:
+
+```ts
+const apiReference = createPath("/api");
+const duplicate = createPath("/api"); // ❌ throws: createPath("/api") was called more than once
+```
+
+The fix is the whole point of `createPath`: create each path **once**, assign it to a variable, and
+reference that variable everywhere it's needed.
+
+Only absolute paths are checked. Relative segments — the plain strings you pass to `joinUrl` to
+build a deeper path — are not registered, since the same segment (e.g. a version like `"v1"`) can
+legitimately appear under several different bases.
+
 ## Examples
 
 ### Multiple APIs
