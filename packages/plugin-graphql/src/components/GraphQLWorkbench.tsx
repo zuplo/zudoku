@@ -245,7 +245,7 @@ const GraphQLWorkbenchDrawer = ({
 }) => {
   const { options, schema, endpoint: configuredEndpoint } = useGraphQLSchema();
   const { env } = useZudoku();
-  const gatewayUrl = env.ZUPLO_GATEWAY_SERVICE_URL;
+  const gatewayUrl = env.ZUPLO_PUBLIC_DEPLOYMENT_URL;
   const endpoint =
     resolveEndpointUrl(configuredEndpoint, gatewayUrl) ??
     (gatewayUrl ? joinUrl(gatewayUrl, "graphql") : undefined);

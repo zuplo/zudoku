@@ -101,6 +101,8 @@ export async function getViteConfig(
     getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
       ?.__ZUPLO_DEPLOYMENT_NAME;
 
+  const deploymentUrl = ZuploEnv.buildConfig?.deploymentUrl;
+
   const viteConfig: InlineConfig = {
     root: dir,
     base,
@@ -129,6 +131,8 @@ export async function getViteConfig(
       "import.meta.env.ZUDOKU_HAS_SERVER": JSON.stringify(options.ssr === true),
       "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME":
         JSON.stringify(deploymentName),
+      "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_URL":
+        JSON.stringify(deploymentUrl),
       ...defineEnvVars([
         "SENTRY_DSN",
         "ZUPLO_BUILD_ID",
