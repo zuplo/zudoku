@@ -55,7 +55,7 @@
   "peerDependencies": {
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0",
-    "zudoku": ">=0.82.0"
+    "zudoku": ">=0.82.2"
   },
   "peerDependenciesMeta": {
     "zudoku": {
