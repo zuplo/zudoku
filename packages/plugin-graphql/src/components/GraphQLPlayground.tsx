@@ -47,13 +47,15 @@ export const GraphQLPlayground = ({
 
   const fetcher = useMemo<GraphiQLFetcher>(
     () => async (graphQLParams, opts) => {
+      // Serve build-time schema for introspection to avoid hitting live endpoint.
+      if (
+        graphQLParams.operationName === "IntrospectionQuery" ||
+        graphQLParams.query?.includes("__schema")
+      ) {
+        return { data: schema };
+      }
+
       if (!endpoint) {
-        if (
-          graphQLParams.operationName === "IntrospectionQuery" ||
-          graphQLParams.query.includes("__schema")
-        ) {
-          return { data: schema };
-        }
         return {
           errors: [
             {
