@@ -403,12 +403,21 @@ export const MdxPage = ({
                     title={lastModifiedDate.toLocaleString(undefined, {
                       dateStyle: "full",
                       timeStyle: "medium",
+                      // Pin the timezone so the prerendered (UTC) markup matches
+                      // the client render and avoids a hydration mismatch.
+                      timeZone: "UTC",
                     })}
                   >
                     Last modified on{" "}
                     <time dateTime={lastModifiedDate.toISOString()}>
                       {lastModifiedDate.toLocaleDateString("en-US", {
                         dateStyle: "long",
+                        // Pin the timezone so the date formatted during prerender
+                        // (UTC) matches the client render. Without this, a doc
+                        // last modified near a UTC day boundary formats as a
+                        // different calendar day in the visitor's timezone,
+                        // causing a React hydration error (#418).
+                        timeZone: "UTC",
                       })}
                     </time>
                   </div>
