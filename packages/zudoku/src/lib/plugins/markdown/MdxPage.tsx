@@ -400,11 +400,13 @@ export const MdxPage = ({
               <div>
                 {showLastModified && lastModifiedDate && (
                   <div
-                    title={lastModifiedDate.toLocaleString(undefined, {
+                    title={lastModifiedDate.toLocaleString("en-US", {
                       dateStyle: "full",
                       timeStyle: "medium",
-                      // Pin the timezone so the prerendered (UTC) markup matches
-                      // the client render and avoids a hydration mismatch.
+                      // Pin the locale and timezone so the prerendered (UTC,
+                      // server-default-locale) markup matches the client render
+                      // and avoids a hydration mismatch, matching the visible
+                      // date below.
                       timeZone: "UTC",
                     })}
                   >
