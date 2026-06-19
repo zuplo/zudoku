@@ -8,6 +8,7 @@ import { Input } from "zudoku/ui/Input.js";
 import { useGraphQLSchema } from "../context.js";
 import type { SchemaIndex } from "../util/schemaIndex.js";
 import { kindToRootType, ROOT_TYPES, typeMetadata } from "../util/types.js";
+import { LinkSafeMarkdown } from "./LinkSafeMarkdown.js";
 
 type SearchItem = {
   id: string;
@@ -69,9 +70,10 @@ export const SchemaSearch = () => {
                 </Badge>
               </div>
               {item.detail && (
-                <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                  {item.detail}
-                </p>
+                <LinkSafeMarkdown
+                  content={item.detail}
+                  className="prose-sm mt-1 line-clamp-1 text-xs text-muted-foreground"
+                />
               )}
             </Link>
           ))}
