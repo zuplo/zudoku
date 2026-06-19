@@ -50,7 +50,7 @@ export const GraphQLPlayground = ({
       // Serve build-time schema for introspection to avoid hitting live endpoint.
       if (
         graphQLParams.operationName === "IntrospectionQuery" ||
-        graphQLParams.query.includes("__schema")
+        graphQLParams.query?.includes("__schema")
       ) {
         return { data: schema };
       }
