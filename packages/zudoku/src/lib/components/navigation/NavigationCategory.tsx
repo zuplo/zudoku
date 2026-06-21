@@ -1,8 +1,8 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { deepEqual } from "fast-equals";
-import { ChevronRightIcon } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { NavLink, useLocation, useMatch } from "react-router";
+import { Icon } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
 import type { NavigationCategory as NavigationCategoryType } from "../../../config/validators/NavigationSchema.js";
 import { cn } from "../../util/cn.js";
@@ -69,7 +69,8 @@ const NavigationCategoryInner = ({
       aria-expanded={open}
       className="size-6 hover:bg-[hsl(from_var(--accent)_h_s_calc(l+6*var(--dark)))]"
     >
-      <ChevronRightIcon
+      <Icon
+        icon="lucide:chevron-right"
         size={16}
         aria-hidden="true"
         className={cn(
@@ -81,7 +82,8 @@ const NavigationCategoryInner = ({
   );
 
   const icon = category.icon && (
-    <category.icon
+    <Icon
+      icon={category.icon}
       className={cn(
         "size-4 shrink-0 align-[-0.125em]",
         isActive && "text-primary",

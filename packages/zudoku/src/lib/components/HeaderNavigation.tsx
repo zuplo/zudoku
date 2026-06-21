@@ -1,5 +1,5 @@
-import type { LucideIcon } from "lucide-react";
 import { Link } from "react-router";
+import { Icon } from "zudoku/icons";
 import {
   isHeaderNavGroup,
   type HeaderNavGroup,
@@ -19,7 +19,6 @@ import { cn } from "../util/cn.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
 const NavLinkItem = ({ item }: { item: HeaderNavLinkItem }) => {
-  const Icon = item.icon as LucideIcon | undefined;
   return (
     <NavigationMenuLink asChild>
       <Link
@@ -29,8 +28,12 @@ const NavLinkItem = ({ item }: { item: HeaderNavLinkItem }) => {
         className="block select-none rounded-md p-3 leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
       >
         <div className="flex items-center gap-2">
-          {Icon && (
-            <Icon size={16} className="shrink-0 text-muted-foreground" />
+          {item.icon && (
+            <Icon
+              icon={item.icon}
+              size={16}
+              className="shrink-0 text-muted-foreground"
+            />
           )}
           <div className="text-sm font-medium leading-none">{item.label}</div>
         </div>
@@ -89,7 +92,6 @@ const DropdownContent = ({
 
 const HeaderNavItemComponent = ({ item }: { item: HeaderNavItem }) => {
   if ("to" in item) {
-    const Icon = item.icon as LucideIcon | undefined;
     return (
       <NavigationMenuItem>
         <NavigationMenuLink asChild>
@@ -102,7 +104,7 @@ const HeaderNavItemComponent = ({ item }: { item: HeaderNavItem }) => {
               "flex items-center gap-2",
             )}
           >
-            {Icon && <Icon size={16} />}
+            {item.icon && <Icon icon={item.icon} size={16} />}
             {item.label}
           </Link>
         </NavigationMenuLink>
