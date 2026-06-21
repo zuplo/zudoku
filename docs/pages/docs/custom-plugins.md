@@ -206,7 +206,6 @@ layouts, error boundaries, or data providers.
 
 ```tsx
 import { ZudokuPlugin, RouteObject } from "zudoku";
-import { UserIcon } from "zudoku/icons";
 
 const AccountPageNavItemPlugin: ZudokuPlugin = {
   getRoutes: (): RouteObject[] => {
@@ -223,7 +222,8 @@ const AccountPageNavItemPlugin: ZudokuPlugin = {
         label: "Account",
         path: "/account",
         category: "middle",
-        icon: UserIcon,
+        // Icons use the Iconify `prefix:name` format; see /docs/components/icons
+        icon: "lucide:user",
       },
     ];
   },

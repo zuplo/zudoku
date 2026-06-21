@@ -94,6 +94,7 @@ const config: ZudokuConfig = {
       type: "custom-page",
       path: "/docs/theme-playground",
       label: "Themes",
+      icon: "ph:palette-bold",
       element: <ThemePlayground />,
     },
   ],
