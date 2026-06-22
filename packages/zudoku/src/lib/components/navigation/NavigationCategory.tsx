@@ -1,7 +1,7 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { deepEqual } from "fast-equals";
 import { ChevronRightIcon } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useMatch } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
 import type { NavigationCategory as NavigationCategoryType } from "../../../config/validators/NavigationSchema.js";
@@ -15,6 +15,26 @@ import {
   useIsCategoryOpen,
 } from "./utils.js";
 
+// When a user expands a category whose newly revealed items fall outside the
+// sidebar's scroll area, bring them into view. Keeps the category header visible
+// when the whole section fits, otherwise aligns the header to the top.
+const scrollCategoryIntoView = (root: HTMLElement | null) => {
+  if (!root) return;
+  const container = root.closest("nav");
+  if (!container) return;
+
+  const rootRect = root.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+
+  const isFullyVisible =
+    rootRect.top >= containerRect.top &&
+    rootRect.bottom <= containerRect.bottom;
+  if (isFullyVisible) return;
+
+  const block = rootRect.height > containerRect.height ? "start" : "nearest";
+  root.scrollIntoView({ block, behavior: "smooth" });
+};
+
 const NavigationCategoryInner = ({
   category,
   onRequestClose,
@@ -24,6 +44,8 @@ const NavigationCategoryInner = ({
 }) => {
   const isCategoryOpen = useIsCategoryOpen(category);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const shouldScrollOnOpen = useRef(false);
   const location = useLocation();
   const { query: filterQuery } = useNavigationFilter();
 
@@ -60,7 +82,10 @@ const NavigationCategoryInner = ({
     <Button
       onClick={(e) => {
         e.preventDefault();
-        setOpen((prev) => !prev);
+        setOpen((prev) => {
+          if (!prev) shouldScrollOnOpen.current = true;
+          return !prev;
+        });
         setHasInteracted(true);
       }}
       variant="ghost"
@@ -100,6 +125,7 @@ const NavigationCategoryInner = ({
 
   return (
     <Collapsible.Root
+      ref={rootRef}
       className="flex flex-col"
       defaultOpen={isDefaultOpen}
       open={open}
@@ -109,6 +135,7 @@ const NavigationCategoryInner = ({
         // (closing is done via the chevron). Without a link the row toggles.
         const nextOpen = category.link ? true : value;
         if (nextOpen !== open) setHasInteracted(true);
+        if (nextOpen && !open) shouldScrollOnOpen.current = true;
         setOpen(nextOpen);
       }}
     >
@@ -124,6 +151,7 @@ const NavigationCategoryInner = ({
               // if it is the current path and closed then open it because there's no path change to trigger the open
               if (isActive && !open) {
                 setHasInteracted(true);
+                shouldScrollOnOpen.current = true;
                 setOpen(true);
               }
             }}
@@ -160,7 +188,13 @@ const NavigationCategoryInner = ({
           category.items.length === 0 && "hidden",
           "ms-6 my-1",
         )}
-        onAnimationEnd={() => setHasInteracted(false)}
+        onAnimationEnd={() => {
+          setHasInteracted(false);
+          if (open && shouldScrollOnOpen.current) {
+            shouldScrollOnOpen.current = false;
+            scrollCategoryIntoView(rootRef.current);
+          }
+        }}
       >
         <ul className="relative after:absolute after:-inset-s-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (
