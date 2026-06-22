@@ -24,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
 import type { TocEntry } from "../../../vite/mdx/rehype-extract-toc-with-jsx.js";
 import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { useIsClient } from "../../components/ClientOnly.js";
 import { useViewportAnchor } from "../../components/context/ViewportAnchorContext.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
@@ -192,6 +193,8 @@ export const MdxPage = ({
   const lastModifiedDate = frontmatter.lastModifiedTime
     ? new Date(frontmatter.lastModifiedTime)
     : null;
+
+  const isClient = useIsClient();
 
   const editConfig =
     frontmatter.suggestEdit !== false &&
@@ -400,15 +403,27 @@ export const MdxPage = ({
               <div>
                 {showLastModified && lastModifiedDate && (
                   <div
-                    title={lastModifiedDate.toLocaleString(undefined, {
-                      dateStyle: "full",
-                      timeStyle: "medium",
-                    })}
+                    // Render the tooltip (full date + time in the viewer's local
+                    // timezone) only on the client. It's omitted on the server and
+                    // the first client render, so there's no hydration mismatch,
+                    // then added after mount.
+                    title={
+                      isClient
+                        ? lastModifiedDate.toLocaleString("en-US", {
+                            dateStyle: "full",
+                            timeStyle: "medium",
+                          })
+                        : undefined
+                    }
                   >
                     Last modified on{" "}
                     <time dateTime={lastModifiedDate.toISOString()}>
                       {lastModifiedDate.toLocaleDateString("en-US", {
                         dateStyle: "long",
+                        // Pinned to UTC so the prerendered day matches the client
+                        // render; a local timezone would shift the day near a UTC
+                        // boundary and cause a hydration error (#418).
+                        timeZone: "UTC",
                       })}
                     </time>
                   </div>
