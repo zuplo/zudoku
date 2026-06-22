@@ -8,8 +8,7 @@ export {
 export * from "./MissingIcon.js";
 
 /**
- * @deprecated Import lucide components from `zudoku/icons` is deprecated. Use string icon
- * names with `<Icon icon="lucide:..." />` instead. This re-export will be removed in a
- * future major version.
+ * @deprecated Importing lucide components from `zudoku/icons` is deprecated. Use string
+ * icon names with `<Icon icon="lucide:..." />` instead. Removed in a future major version.
  */
 export * from "lucide-react";

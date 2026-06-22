@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import type { IconifyIcon, IconifyJSON } from "@iconify/types";
+import type { IconifyJSON } from "@iconify/types";
 import { getIconData } from "@iconify/utils";
 import { parseSync, Visitor } from "oxc-parser";
 import type { ObjectProperty } from "oxc-parser";
@@ -21,6 +21,12 @@ const lucideNames = new Set<string>(IconNames);
 
 const iconSetCache = new Map<string, IconifyJSON | null>();
 
+const isModuleNotFound = (err: unknown): boolean =>
+  typeof err === "object" &&
+  err !== null &&
+  "code" in err &&
+  (err.code === "MODULE_NOT_FOUND" || err.code === "ERR_MODULE_NOT_FOUND");
+
 const loadIconSet = (prefix: string, rootDir: string): IconifyJSON | null => {
   const cached = iconSetCache.get(prefix);
   if (cached !== undefined) return cached;
@@ -38,8 +44,11 @@ const loadIconSet = (prefix: string, rootDir: string): IconifyJSON | null => {
     try {
       set = require(spec) as IconifyJSON;
       break;
-    } catch {
-      // try next requirer
+    } catch (err) {
+      // "Not installed" is the expected miss — try the next requirer. Any other
+      // error (corrupt/malformed package) is a real problem, so surface it rather
+      // than caching it as an indistinguishable null.
+      if (!isModuleNotFound(err)) throw err;
     }
   }
   iconSetCache.set(prefix, set);
@@ -47,23 +56,21 @@ const loadIconSet = (prefix: string, rootDir: string): IconifyJSON | null => {
   return set;
 };
 
-const resolveIconData = (
-  rawName: string,
-  rootDir: string,
-): IconifyIcon | null => {
-  const { prefix, name } = parseIconName(rawName);
-  const set = loadIconSet(prefix, rootDir);
-  if (!set) return null;
-  return getIconData(set, name);
-};
-
-const staticKeyName = (key: ObjectProperty["key"]) => {
+const staticKeyName = (key: ObjectProperty["key"]): string | undefined => {
   if (key.type === "Identifier") return key.name;
   if (key.type === "Literal" && typeof key.value === "string") return key.value;
+  return undefined;
 };
 
-// Exported for unit testing.
-export const collectIconLiterals = (code: string, id: string) => {
+// Exported for unit testing. Only collects literal `icon: "..."` properties (the shape
+// compiled `<Icon icon="..." />` JSX takes post-react-transform); icons passed via a
+// variable, spread, or a differently-named prop aren't inlined at build time.
+// `warn` (optional) reports icon-shaped names that won't resolve and scan failures.
+export const collectIconLiterals = (
+  code: string,
+  id: string,
+  warn?: (message: string) => void,
+) => {
   const found = new Set<string>();
   try {
     const { program } = parseSync(id, code);
@@ -75,15 +82,21 @@ export const collectIconLiterals = (code: string, id: string) => {
         if (value.type !== "Literal" || typeof value.value !== "string") return;
 
         const raw = value.value;
-        if (
-          isIconNameShape(raw) &&
-          (raw.includes(":") || lucideNames.has(raw))
-        ) {
+        if (!isIconNameShape(raw)) return;
+
+        if (raw.includes(":") || lucideNames.has(raw)) {
           found.add(raw);
+        } else {
+          // Icon-shaped but a bare name that isn't a known lucide icon — almost always
+          // a typo. It would otherwise vanish with no build-time signal.
+          warn?.(
+            `Icon "${raw}" is not a known lucide icon and has no set prefix, so it won't be inlined. Check the name, or prefix it with an icon set (e.g. "ph:${raw}").`,
+          );
         }
       },
     }).visit(program);
-  } catch {
+  } catch (err) {
+    warn?.(`Failed to scan ${id} for icons: ${err}`);
     return found;
   }
   return found;
@@ -113,14 +126,21 @@ export const viteIconsPlugin = (): Plugin => {
       filter: { id: /^\0virtual:zudoku-icon\// },
       handler(id) {
         const iconId = id.slice(resolvedPrefix.length).replace("/", ":");
-        const data = resolveIconData(iconId, getRootDir());
+        const { prefix, name } = parseIconName(iconId);
+        const set = loadIconSet(prefix, getRootDir());
+        const pkg = colors.cyan(`@iconify-json/${prefix}`);
 
-        if (!data) {
-          const { prefix } = parseIconName(iconId);
+        if (!set) {
           this.warn(
-            `Icon "${iconId}" could not be resolved at build time. Install ${colors.cyan(
-              `@iconify-json/${prefix}`,
-            )} to inline it, or it will be fetched at runtime (dev) / blank (prod).`,
+            `Icon "${iconId}" could not be resolved at build time. Install ${pkg} to inline it, or it will be fetched at runtime (dev) / blank (prod).`,
+          );
+          return `export {};`;
+        }
+
+        const data = getIconData(set, name);
+        if (!data) {
+          this.warn(
+            `Icon "${iconId}" was not found in the installed ${pkg} set. Check the name; it will be fetched at runtime (dev) / blank (prod).`,
           );
           return `export {};`;
         }
@@ -142,7 +162,9 @@ export const viteIconsPlugin = (): Plugin => {
         code: { include: "icon" },
       },
       handler(code, id) {
-        const icons = collectIconLiterals(code, id);
+        const icons = collectIconLiterals(code, id, (message) =>
+          this.warn(message),
+        );
         if (icons.size === 0) return;
 
         // Appended (not prepended): ESM hoists import declarations, so the addIcon

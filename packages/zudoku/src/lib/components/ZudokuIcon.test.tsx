@@ -55,4 +55,16 @@ describe("Icon", () => {
     expect(container.querySelector(".text-red-500")).toBeTruthy();
     expect(container.innerHTML).not.toContain("M3 3h18");
   });
+
+  it("does not fall back to MissingIcon for an unresolved icon when runtime fetch is on", () => {
+    // The prod opt-in (`icons.runtimeFetch: true`): unregistered icons go to the
+    // iconify fetch path, not the MissingIcon fallback.
+    configureIconRuntimeFetch(true);
+
+    const { container } = render(
+      <Icon icon="lucide:never-registered-runtime-icon" />,
+    );
+
+    expect(container.querySelector(".text-red-500")).toBeFalsy();
+  });
 });

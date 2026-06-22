@@ -46,7 +46,7 @@ export const Icon = ({
   const name = parseIconName(icon).id;
 
   if (!iconLoaded(name) && !runtimeFetchAllowed()) {
-    return <MissingIcon size={size} className={className} />;
+    return <MissingIcon name={name} size={size} className={className} />;
   }
 
   return (

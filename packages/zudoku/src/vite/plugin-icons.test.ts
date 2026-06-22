@@ -56,4 +56,28 @@ describe("collectIconLiterals", () => {
     expect(() => collect(`const x = @@@ <<< not valid`)).not.toThrow();
     expect(collect(`const x = @@@ <<< not valid`)).toEqual(new Set());
   });
+
+  it("warns about an icon-shaped bare name that isn't a known lucide icon", () => {
+    const warnings: string[] = [];
+    const found = collectIconLiterals(
+      `const x = { icon: "totally-not-an-icon-xyz" };`,
+      "test.tsx",
+      (message) => warnings.push(message),
+    );
+
+    expect(found).toEqual(new Set());
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("totally-not-an-icon-xyz");
+  });
+
+  it("does not warn for known or prefixed icons", () => {
+    const warnings: string[] = [];
+    collectIconLiterals(
+      `[{ icon: "house" }, { icon: "ph:rocket" }];`,
+      "test.tsx",
+      (message) => warnings.push(message),
+    );
+
+    expect(warnings).toHaveLength(0);
+  });
 });
