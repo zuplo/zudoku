@@ -13,11 +13,16 @@ import { joinUrl } from "../../util/joinUrl.js";
 import { throwIfProblemJson } from "../../util/problemJson.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
-const DEFAULT_GATEWAY_URL = "https://api.zuploedge.com";
-
 const getApiKeyEndpoint = (context: ZudokuContext) => {
-  const gatewayUrl =
-    context.env.ZUPLO_GATEWAY_SERVICE_URL || DEFAULT_GATEWAY_URL;
+  const gatewayUrl = context.env.ZUPLO_GATEWAY_SERVICE_URL;
+  invariant(
+    gatewayUrl,
+    "ZUPLO_GATEWAY_SERVICE_URL is not set; refusing to fall back to the production gateway.",
+    {
+      developerHint:
+        "Set ZUPLO_GATEWAY_SERVICE_URL to your environment's gateway service (e.g. https://api.zuploedge.net for staging or https://api.zuploedge.com for production).",
+    },
+  );
   return joinUrl(gatewayUrl, "v2/client");
 };
 

@@ -25,11 +25,22 @@ declare module "zudoku/react-query" {
   }
 }
 
-const DEFAULT_GATEWAY_URL = "https://api.zuploedge.com";
-
 const getBaseUrl = (context?: ZudokuContext) => {
-  if (!context) return DEFAULT_GATEWAY_URL;
-  return context.env.ZUPLO_GATEWAY_SERVICE_URL || DEFAULT_GATEWAY_URL;
+  // Resolve the gateway from the deployment's env. `context` is intentionally
+  // omitted for unauthenticated requests (e.g. the public pricing page), so we
+  // fall back to the build-time `import.meta.env` value (which `context.env`
+  // also mirrors). We deliberately do NOT default to the production gateway: a
+  // missing value should fail loudly rather than silently route staging (or any
+  // other environment) to production.
+  const gatewayUrl: string | undefined =
+    context?.env.ZUPLO_GATEWAY_SERVICE_URL ??
+    import.meta.env.ZUPLO_GATEWAY_SERVICE_URL;
+  if (!gatewayUrl) {
+    throw new Error(
+      "ZUPLO_GATEWAY_SERVICE_URL is not set; refusing to fall back to the production gateway (https://api.zuploedge.com). Set it to your environment's gateway service (e.g. https://api.zuploedge.net for staging).",
+    );
+  }
+  return gatewayUrl;
 };
 
 const hasVariables = (value: unknown): value is Record<string, unknown> =>
