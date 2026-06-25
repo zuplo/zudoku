@@ -1,9 +1,10 @@
 import { compile, nodeTypes } from "@mdx-js/mdx";
 import rehypeRaw from "rehype-raw";
+import type { PluggableList } from "unified";
 import { describe, expect, it } from "vitest";
 
 // Mirrors how plugin-mdx wires rehype-raw so raw HTML in `.md` files survives.
-const rehypePlugins = [[rehypeRaw, { passThrough: nodeTypes }]] as const;
+const rehypePlugins: PluggableList = [[rehypeRaw, { passThrough: nodeTypes }]];
 
 describe("raw HTML handling in the mdx pipeline", () => {
   it("preserves a raw HTML anchor in a markdown (.md) file", async () => {
