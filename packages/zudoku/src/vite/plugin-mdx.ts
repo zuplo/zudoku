@@ -1,8 +1,10 @@
 import rehypeMetaAsAttributes from "@lekoarts/rehype-meta-as-attributes";
+import { nodeTypes } from "@mdx-js/mdx";
 import mdx from "@mdx-js/rollup";
 import type { Root as HastRoot } from "hast";
 import { toString as hastToString } from "hast-util-to-string";
 import rehypeMdxImportMedia from "rehype-mdx-import-media";
+import rehypeRaw from "rehype-raw";
 import rehypeSlug from "rehype-slug";
 import remarkComment from "remark-comment";
 import remarkDirective from "remark-directive";
@@ -128,6 +130,7 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
       : [...defaultRemarkPlugins, ...(buildConfig?.remarkPlugins ?? [])];
 
   const defaultRehypePlugins = [
+    [rehypeRaw, { passThrough: nodeTypes }],
     rehypeSlug,
     rehypeExtractTocWithJsx,
     rehypeExtractTocWithJsxExport,
