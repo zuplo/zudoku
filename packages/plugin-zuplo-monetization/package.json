@@ -37,6 +37,8 @@
     }
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^6.4.0",
+    "@stripe/stripe-js": "^9.7.0",
     "clsx": "2.1.1",
     "tailwind-merge": "3.6.0",
     "tinyduration": "3.4.1"
