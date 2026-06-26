@@ -1,0 +1,51 @@
+---
+title: Usage
+---
+
+# Usage
+
+## Configure the plugin
+
+```tsx title="zudoku.config.tsx"
+import { zudokuAiPlugin } from "zudoku/plugins/ai";
+
+zudokuAiPlugin({
+  api: "/api/chat",
+  greeting: "Hi! Ask me anything about the Zudoku AI plugin.",
+  shortcut: "i",
+  suggestions: ["What is the Zudoku AI plugin?", "How do I implement the backend?"],
+});
+```
+
+## Implement the backend
+
+The endpoint receives the chat `messages` and returns an AI SDK UI Message Stream. Swap
+`@ai-sdk/openai` for any [AI SDK provider](https://ai-sdk.dev/providers/ai-sdk-providers).
+
+```ts title="api/chat.ts"
+import { openai } from "@ai-sdk/openai";
+import { convertToModelMessages, streamText, type UIMessage } from "ai";
+
+export async function POST(request: Request) {
+  const { messages }: { messages: UIMessage[] } = await request.json();
+
+  const result = streamText({
+    model: openai("gpt-4o-mini"),
+    system: "You are a helpful assistant for the documentation.",
+    messages: convertToModelMessages(messages),
+  });
+
+  return result.toUIMessageStreamResponse();
+}
+```
+
+## Open the chat from your own components
+
+```tsx
+import { useAskAi } from "zudoku/plugins/ai";
+
+export const AskButton = () => {
+  const { open } = useAskAi();
+  return <button onClick={open}>Ask the assistant</button>;
+};
+```

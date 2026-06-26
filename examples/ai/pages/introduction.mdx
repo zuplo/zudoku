@@ -1,0 +1,23 @@
+---
+title: Introduction
+---
+
+# Zudoku AI
+
+This example enables the **Zudoku AI** plugin. Notice the **Ask AI** button in the top‑right of the
+header (and the floating button on small screens) — clicking it opens a chat panel powered by
+[`@ai-sdk/react`](https://ai-sdk.dev).
+
+```tsx title="zudoku.config.tsx"
+import { zudokuAiPlugin } from "zudoku/plugins/ai";
+
+export default {
+  plugins: [zudokuAiPlugin({ api: "/api/chat" })],
+};
+```
+
+The plugin only renders the chat UI — answers are streamed from a backend endpoint that you control.
+See [Usage](/usage) for how to wire it up.
+
+> This example points at `/api/chat`, which is not implemented here, so sending a message will show
+> an error. Add an endpoint (or point `api` at one) to see streamed answers.

@@ -50,6 +50,7 @@
     "./auth/firebase": "./src/lib/authentication/providers/firebase.tsx",
     "./graphiql": "./src/lib/graphiql/index.ts",
     "./plugins": "./src/lib/core/plugins.ts",
+    "./plugins/ai": "./src/lib/plugins/ai/index.tsx",
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.tsx",
     "./plugins/openapi": "./src/lib/plugins/openapi/index.tsx",
@@ -210,8 +211,10 @@
     "zustand": "5.0.14"
   },
   "devDependencies": {
+    "@ai-sdk/react": "3.0.210",
     "@graphql-codegen/cli": "7.1.1",
     "@inkeep/cxkit-types": "0.5.119",
+    "ai": "6.0.208",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
@@ -238,16 +241,24 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
+    "@ai-sdk/react": "^2.0.0 || ^3.0.0 || ^4.0.0",
     "@azure/msal-browser": "^4.13.0",
     "@sentry/react": "^10.0.0",
     "@supabase/supabase-js": "^2.49.4",
+    "ai": "^5.0.0 || ^6.0.0 || ^7.0.0",
     "firebase": "^12.6.0",
     "mermaid": "^11.0.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
   },
   "peerDependenciesMeta": {
+    "@ai-sdk/react": {
+      "optional": true
+    },
     "@azure/msal-browser": {
+      "optional": true
+    },
+    "ai": {
       "optional": true
     },
     "@sentry/react": {
