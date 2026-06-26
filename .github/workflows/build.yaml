@@ -71,7 +71,7 @@ jobs:
       - name: Restore base coverage
         if: github.event_name == 'pull_request'
         id: base-coverage
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: coverage-base/coverage-summary.json
           key: coverage-base-
@@ -83,7 +83,7 @@ jobs:
 
       - name: Save base coverage cache
         if: github.ref == 'refs/heads/main'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: coverage-base/coverage-summary.json
           key: coverage-base-${{ github.sha }}
@@ -173,7 +173,7 @@ jobs:
 
       - name: Restore lychee cache
         id: restore-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: .lycheecache
           key: cache-lychee-v4-${{ github.sha }}
@@ -193,7 +193,7 @@ jobs:
             ./docs/dist
       - name: Save lychee cache
         if: always()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: .lycheecache
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}
