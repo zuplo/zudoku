@@ -103,11 +103,26 @@ describe("getZuploDeploymentUrl", () => {
     expect(getZuploDeploymentUrl()).toBeUndefined();
   });
 
-  it("reads the deployment URL from ZUPLO_BUILD_CONFIG", () => {
+  it("reads the dev portal URL from ZUPLO_BUILD_CONFIG urls.devPortal", () => {
+    // Core sends a DeploymentUrlConfig ({ api, devPortal }); the dev portal URL
+    // is the deployed Zudoku site, while `api` is the gateway URL.
+    vi.stubEnv(
+      "ZUPLO_BUILD_CONFIG",
+      JSON.stringify({
+        urls: {
+          api: { defaultUrl: "https://gateway.zuplo.dev", urls: [] },
+          devPortal: { defaultUrl: "https://portal.zuplo.dev", urls: [] },
+        },
+      }),
+    );
+    expect(getZuploDeploymentUrl()).toBe("https://portal.zuplo.dev");
+  });
+
+  it("ignores a top-level deploymentUrl that core never sends", () => {
     vi.stubEnv(
       "ZUPLO_BUILD_CONFIG",
       JSON.stringify({ deploymentUrl: "https://portal.zuplo.dev" }),
     );
-    expect(getZuploDeploymentUrl()).toBe("https://portal.zuplo.dev");
+    expect(getZuploDeploymentUrl()).toBeUndefined();
   });
 });
