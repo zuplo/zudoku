@@ -18,15 +18,21 @@ export const isLocalhostHostname = (hostname: string): boolean =>
  *
  * The reference must be the exact `import.meta.env.ZUPLO_BUILD_CONFIG` form so
  * the consuming Zudoku/Vite build replaces it (see `defineEnvVars` in core).
+ *
+ * The deployed dev portal URL lives at `urls.devPortal.defaultUrl` — core sends
+ * a `DeploymentUrlConfig` (`{ api, devPortal }`), not a top-level
+ * `deploymentUrl`. `urls.api.defaultUrl` is the gateway URL (a.k.a.
+ * `ZUPLO_SERVER_URL`), so it must NOT be used here.
  */
 export const getZuploDeploymentUrl = (): string | undefined => {
   const raw = import.meta.env.ZUPLO_BUILD_CONFIG;
   if (typeof raw !== "string") return undefined;
   try {
-    const config = JSON.parse(raw) as { deploymentUrl?: unknown };
-    return typeof config.deploymentUrl === "string" && config.deploymentUrl
-      ? config.deploymentUrl
-      : undefined;
+    const config = JSON.parse(raw) as {
+      urls?: { devPortal?: { defaultUrl?: unknown } };
+    };
+    const url = config.urls?.devPortal?.defaultUrl;
+    return typeof url === "string" && url ? url : undefined;
   } catch {
     return undefined;
   }
