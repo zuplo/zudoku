@@ -127,14 +127,17 @@ requests.
 
 ### The `docs` field
 
-Every request automatically includes a `docs` field containing the current site's domain and base
-URL (for example `https://docs.example.com` or `https://example.com/docs`). Use it on the backend to
-scope retrieval to the right documentation — for instance to pick the correct knowledge base or to
-fetch that site's [`llms.txt`](./llms.md).
+Every request automatically includes a `docs` field containing the documentation site's domain and
+base URL (for example `https://docs.example.com` or `https://example.com/docs`). Use it on the
+backend to scope retrieval to the right documentation — for instance to pick the correct knowledge
+base or to fetch that site's [`llms.txt`](./llms.md).
 
-Because that URL has to be reachable by your service, the assistant is **disabled on `localhost`**:
-the panel shows a short notice instead of the input, so you don't get confusing failures while
-developing locally. Deploy your site (or use a public tunnel) to try it end to end.
+For **Zuplo projects** the dev portal's deployment URL is read from the Zuplo environment and used
+automatically — even on `localhost` — so the assistant works while you develop locally.
+
+Otherwise the URL has to be reachable by your service, so the assistant is **disabled on
+`localhost`**: the panel shows a short notice instead of the input, so you don't get confusing
+failures while developing locally. Deploy your site (or use a public tunnel) to try it end to end.
 
 ## Opening the chat programmatically
 

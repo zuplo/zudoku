@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { isValidElement } from "react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ZudokuConfig } from "zudoku";
 import {
   isTransformConfigPlugin,
@@ -8,7 +8,11 @@ import {
 } from "zudoku/plugins";
 import { AskAiTrigger } from "./AskAiTrigger.js";
 import { zudokuAiPlugin } from "./index.js";
-import { isLocalhostHostname } from "./site.js";
+import {
+  getZuploDeploymentUrl,
+  isLocalhostHostname,
+  resolveDocsContext,
+} from "./site.js";
 import { askAiStore } from "./store.js";
 import type { ZudokuAiPluginOptions } from "./types.js";
 
@@ -70,5 +74,40 @@ describe("isLocalhostHostname", () => {
     for (const hostname of ["docs.example.com", "zudoku.dev", "example.org"]) {
       expect(isLocalhostHostname(hostname)).toBe(false);
     }
+  });
+});
+
+describe("resolveDocsContext", () => {
+  it("uses a deployment URL even on localhost", () => {
+    // happy-dom serves from localhost, yet the deployment URL wins.
+    const ctx = resolveDocsContext("/", "https://portal.example.dev");
+    expect(ctx).toEqual({
+      docs: "https://portal.example.dev",
+      isUnavailable: false,
+    });
+  });
+
+  it("is unavailable on localhost without a deployment URL", () => {
+    const ctx = resolveDocsContext("/");
+    expect(ctx.isUnavailable).toBe(true);
+    expect(ctx.docs).toBe("");
+  });
+});
+
+describe("getZuploDeploymentUrl", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("returns undefined outside of Zuplo projects", () => {
+    expect(getZuploDeploymentUrl()).toBeUndefined();
+  });
+
+  it("reads the deployment URL from ZUPLO_BUILD_CONFIG", () => {
+    vi.stubEnv(
+      "ZUPLO_BUILD_CONFIG",
+      JSON.stringify({ deploymentUrl: "https://portal.zuplo.dev" }),
+    );
+    expect(getZuploDeploymentUrl()).toBe("https://portal.zuplo.dev");
   });
 });

@@ -23,7 +23,7 @@ import {
   XIcon,
 } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
-import { resolveDocsContext } from "./site.js";
+import { getZuploDeploymentUrl, resolveDocsContext } from "./site.js";
 import type { ResolvedZudokuAiOptions } from "./types.js";
 
 const getMessageText = (message: UIMessage) =>
@@ -98,10 +98,12 @@ export const AskAiChat = ({
 
   const basePath = useZudoku().options.basePath;
 
-  // The current domain + base URL is forwarded to the backend as `docs` so the
-  // service knows which documentation site the question is about.
-  const { docs, isLocalhost } = useMemo(
-    () => resolveDocsContext(basePath),
+  // The docs site URL is forwarded to the backend as `docs` so the service
+  // knows which documentation the question is about. Zuplo projects expose a
+  // deployment URL that is used even on localhost; otherwise we fall back to the
+  // current origin + base path (and disable the chat on localhost).
+  const { docs, isUnavailable } = useMemo(
+    () => resolveDocsContext(basePath, getZuploDeploymentUrl()),
     [basePath],
   );
 
@@ -129,7 +131,7 @@ export const AskAiChat = ({
 
   const submit = (value: string) => {
     const text = value.trim();
-    if (!text || isBusy || isLocalhost) return;
+    if (!text || isBusy || isUnavailable) return;
     setInput("");
     void sendMessage({ text });
   };
@@ -206,7 +208,7 @@ export const AskAiChat = ({
         ref={scrollRef}
         className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4"
       >
-        {isLocalhost ? (
+        {isUnavailable ? (
           <div className="flex items-start gap-2.5 rounded-lg border bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground">
             <InfoIcon className="mt-0.5 size-4 shrink-0" />
             <p>
@@ -277,8 +279,10 @@ export const AskAiChat = ({
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={onKeyDown}
             rows={1}
-            disabled={isLocalhost}
-            placeholder={isLocalhost ? "Unavailable on localhost" : placeholder}
+            disabled={isUnavailable}
+            placeholder={
+              isUnavailable ? "Unavailable on localhost" : placeholder
+            }
             className="max-h-32 flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed field-sizing-content"
           />
           {isBusy ? (
@@ -295,7 +299,7 @@ export const AskAiChat = ({
             <Button
               type="submit"
               size="icon-sm"
-              disabled={!input.trim() || isLocalhost}
+              disabled={!input.trim() || isUnavailable}
               aria-label="Send message"
             >
               <ArrowUpIcon />
