@@ -16,8 +16,9 @@ export default {
 };
 ```
 
-The plugin only renders the chat UI — answers are streamed from a backend endpoint that you control.
-See [Usage](/usage) for how to wire it up.
+The plugin only renders the chat UI — answers are streamed from a backend endpoint that you control,
+and the current site URL is sent along as `docs`. See [Usage](/usage) for how to wire it up.
 
-> This example points at `/api/chat`, which is not implemented here, so sending a message will show
-> an error. Add an endpoint (or point `api` at one) to see streamed answers.
+> Running locally? The assistant is disabled on `localhost` (the site URL it sends as `docs` has to
+> be publicly reachable), so the panel shows a notice instead of the input. Deploy the site and
+> implement the `/api/chat` endpoint to see streamed answers.

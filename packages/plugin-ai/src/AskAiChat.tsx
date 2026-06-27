@@ -12,8 +12,10 @@ import {
 import { createPortal } from "react-dom";
 import { cn } from "zudoku";
 import { Markdown } from "zudoku/components";
+import { useZudoku } from "zudoku/hooks";
 import {
   ArrowUpIcon,
+  InfoIcon,
   RefreshCwIcon,
   SparklesIcon,
   SquareIcon,
@@ -21,6 +23,7 @@ import {
   XIcon,
 } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
+import { resolveDocsContext } from "./site.js";
 import type { ResolvedZudokuAiOptions } from "./types.js";
 
 const getMessageText = (message: UIMessage) =>
@@ -93,9 +96,19 @@ export const AskAiChat = ({
     credentials,
   } = options;
 
+  const basePath = useZudoku().options.basePath;
+
+  // The current domain + base URL is forwarded to the backend as `docs` so the
+  // service knows which documentation site the question is about.
+  const { docs, isLocalhost } = useMemo(
+    () => resolveDocsContext(basePath),
+    [basePath],
+  );
+
   const transport = useMemo(
-    () => new DefaultChatTransport({ api, headers, credentials }),
-    [api, headers, credentials],
+    () =>
+      new DefaultChatTransport({ api, headers, credentials, body: { docs } }),
+    [api, headers, credentials, docs],
   );
 
   const {
@@ -116,7 +129,7 @@ export const AskAiChat = ({
 
   const submit = (value: string) => {
     const text = value.trim();
-    if (!text || isBusy) return;
+    if (!text || isBusy || isLocalhost) return;
     setInput("");
     void sendMessage({ text });
   };
@@ -193,7 +206,18 @@ export const AskAiChat = ({
         ref={scrollRef}
         className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4"
       >
-        {messages.length === 0 ? (
+        {isLocalhost ? (
+          <div className="flex items-start gap-2.5 rounded-lg border bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground">
+            <InfoIcon className="mt-0.5 size-4 shrink-0" />
+            <p>
+              The assistant isn't available on{" "}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                localhost
+              </code>
+              . Deploy your documentation to a public URL to start chatting.
+            </p>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="flex flex-col gap-4">
             <div className="flex gap-2.5">
               <Avatar />
@@ -253,8 +277,9 @@ export const AskAiChat = ({
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={onKeyDown}
             rows={1}
-            placeholder={placeholder}
-            className="max-h-32 flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground field-sizing-content"
+            disabled={isLocalhost}
+            placeholder={isLocalhost ? "Unavailable on localhost" : placeholder}
+            className="max-h-32 flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed field-sizing-content"
           />
           {isBusy ? (
             <Button
@@ -270,7 +295,7 @@ export const AskAiChat = ({
             <Button
               type="submit"
               size="icon-sm"
-              disabled={!input.trim()}
+              disabled={!input.trim() || isLocalhost}
               aria-label="Send message"
             >
               <ArrowUpIcon />

@@ -8,6 +8,7 @@ import {
 } from "zudoku/plugins";
 import { AskAiTrigger } from "./AskAiTrigger.js";
 import { zudokuAiPlugin } from "./index.js";
+import { isLocalhostHostname } from "./site.js";
 import { askAiStore } from "./store.js";
 import type { ZudokuAiPluginOptions } from "./types.js";
 
@@ -48,5 +49,26 @@ describe("zudokuAiPlugin", () => {
     expect(askAiStore.getState()).toBe(true);
     fireEvent.click(button);
     expect(askAiStore.getState()).toBe(false);
+  });
+});
+
+describe("isLocalhostHostname", () => {
+  it("detects local dev hostnames", () => {
+    for (const hostname of [
+      "localhost",
+      "127.0.0.1",
+      "0.0.0.0",
+      "::1",
+      "[::1]",
+      "my-app.local",
+    ]) {
+      expect(isLocalhostHostname(hostname)).toBe(true);
+    }
+  });
+
+  it("treats public hostnames as available", () => {
+    for (const hostname of ["docs.example.com", "zudoku.dev", "example.org"]) {
+      expect(isLocalhostHostname(hostname)).toBe(false);
+    }
   });
 });

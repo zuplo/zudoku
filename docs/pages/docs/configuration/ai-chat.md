@@ -86,7 +86,8 @@ zudokuAiPlugin({
 ## The backend endpoint
 
 The plugin is frontend-only — you provide the endpoint named by `api`. It must accept a `POST`
-request whose body contains the chat `messages` and respond with an AI SDK UI Message Stream.
+request whose body contains the chat `messages` (plus a [`docs`](#the-docs-field) field) and respond
+with an AI SDK UI Message Stream.
 
 The example below uses the [AI SDK](https://ai-sdk.dev) `streamText` helper. It runs in any
 environment that can return a `Response` (a Zudoku [server deployment](../deployment.md), a
@@ -97,11 +98,12 @@ import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 
 export async function POST(request: Request) {
-  const { messages }: { messages: UIMessage[] } = await request.json();
+  // `docs` is the public URL of the documentation site that asked the question.
+  const { messages, docs }: { messages: UIMessage[]; docs: string } = await request.json();
 
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: "You are a helpful assistant for the ACME documentation.",
+    system: `You are a helpful assistant for the documentation at ${docs}.`,
     messages: convertToModelMessages(messages),
   });
 
@@ -122,6 +124,17 @@ server sends the appropriate CORS headers. Use `headers` and `credentials` for a
 requests.
 
 :::
+
+### The `docs` field
+
+Every request automatically includes a `docs` field containing the current site's domain and base
+URL (for example `https://docs.example.com` or `https://example.com/docs`). Use it on the backend to
+scope retrieval to the right documentation — for instance to pick the correct knowledge base or to
+fetch that site's [`llms.txt`](./llms.md).
+
+Because that URL has to be reachable by your service, the assistant is **disabled on `localhost`**:
+the panel shows a short notice instead of the input, so you don't get confusing failures while
+developing locally. Deploy your site (or use a public tunnel) to try it end to end.
 
 ## Opening the chat programmatically
 
