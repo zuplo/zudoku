@@ -1,7 +1,7 @@
-import { SparklesIcon } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef } from "react";
-import { Button } from "../../ui/Button.js";
-import { useAskAiStore } from "./store.js";
+import { SparklesIcon } from "zudoku/icons";
+import { Button } from "zudoku/ui/Button.js";
+import { askAiStore, useAskAi } from "./store.js";
 import type { ResolvedZudokuAiOptions } from "./types.js";
 
 // Lazily loaded so that the AI SDK, the chat panel and the Markdown renderer
@@ -16,8 +16,7 @@ export const AskAiRoot = ({
 }: {
   options: ResolvedZudokuAiOptions;
 }) => {
-  const isOpen = useAskAiStore((state) => state.isOpen);
-  const toggle = useAskAiStore((state) => state.toggle);
+  const { isOpen, toggle } = useAskAi();
 
   // Once the panel has been opened we keep it mounted (but render nothing when
   // closed) so the conversation is preserved when the visitor reopens it.
@@ -26,7 +25,7 @@ export const AskAiRoot = ({
     hasOpened.current = true;
   }
 
-  const { shortcut, label } = options;
+  const { shortcut } = options;
   useEffect(() => {
     const key = shortcut ? shortcut.toLowerCase() : null;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -36,11 +35,11 @@ export const AskAiRoot = ({
         (event.metaKey || event.ctrlKey)
       ) {
         event.preventDefault();
-        useAskAiStore.getState().toggle();
+        askAiStore.toggle();
         return;
       }
-      if (event.key === "Escape" && useAskAiStore.getState().isOpen) {
-        useAskAiStore.getState().close();
+      if (event.key === "Escape" && askAiStore.getState()) {
+        askAiStore.close();
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -55,9 +54,9 @@ export const AskAiRoot = ({
           type="button"
           size="icon"
           onClick={toggle}
-          aria-label={label}
+          aria-label={options.label}
           aria-haspopup="dialog"
-          title={label}
+          title={options.label}
           className="fixed inset-e-4 bottom-4 z-40 size-12 rounded-full shadow-lg lg:hidden"
         >
           <SparklesIcon className="size-5" />
@@ -68,7 +67,7 @@ export const AskAiRoot = ({
           <AskAiChat
             options={options}
             open={isOpen}
-            onClose={() => useAskAiStore.getState().close()}
+            onClose={askAiStore.close}
           />
         </Suspense>
       )}

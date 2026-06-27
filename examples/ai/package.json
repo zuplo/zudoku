@@ -20,10 +20,7 @@
     }
   },
   "dependencies": {
-    "@ai-sdk/react": "3.0.210",
-    "ai": "6.0.208"
-  },
-  "devDependencies": {
+    "@zudoku/plugin-ai": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zudoku": "workspace:*"

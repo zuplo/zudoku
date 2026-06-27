@@ -1,5 +1,5 @@
+import { zudokuAiPlugin } from "@zudoku/plugin-ai";
 import type { ZudokuConfig } from "zudoku";
-import { zudokuAiPlugin } from "zudoku/plugins/ai";
 
 const config: ZudokuConfig = {
   site: {

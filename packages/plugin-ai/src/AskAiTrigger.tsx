@@ -1,7 +1,7 @@
-import { SparklesIcon } from "lucide-react";
-import { Button } from "../../ui/Button.js";
-import { cn } from "../../util/cn.js";
-import { useAskAiStore } from "./store.js";
+import { cn } from "zudoku";
+import { SparklesIcon } from "zudoku/icons";
+import { Button } from "zudoku/ui/Button.js";
+import { useAskAi } from "./store.js";
 
 export const AskAiTrigger = ({
   label,
@@ -10,8 +10,7 @@ export const AskAiTrigger = ({
   label: string;
   className?: string;
 }) => {
-  const toggle = useAskAiStore((state) => state.toggle);
-  const isOpen = useAskAiStore((state) => state.isOpen);
+  const { isOpen, toggle } = useAskAi();
 
   return (
     <Button

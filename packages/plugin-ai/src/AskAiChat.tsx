@@ -1,14 +1,6 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import {
-  ArrowUpIcon,
-  RefreshCwIcon,
-  SparklesIcon,
-  SquareIcon,
-  Trash2Icon,
-  XIcon,
-} from "lucide-react";
-import {
   type FormEvent,
   type KeyboardEvent,
   Suspense,
@@ -18,9 +10,17 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { Markdown } from "../../components/Markdown.js";
-import { Button } from "../../ui/Button.js";
-import { cn } from "../../util/cn.js";
+import { cn } from "zudoku";
+import { Markdown } from "zudoku/components";
+import {
+  ArrowUpIcon,
+  RefreshCwIcon,
+  SparklesIcon,
+  SquareIcon,
+  Trash2Icon,
+  XIcon,
+} from "zudoku/icons";
+import { Button } from "zudoku/ui/Button.js";
 import type { ResolvedZudokuAiOptions } from "./types.js";
 
 const getMessageText = (message: UIMessage) =>

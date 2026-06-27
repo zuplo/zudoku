@@ -1,4 +1,4 @@
-import type { SlotName } from "../../components/Slot.js";
+import type { SlotName } from "zudoku";
 
 export type ZudokuAiPluginOptions = {
   /**
@@ -60,12 +60,13 @@ export type ZudokuAiPluginOptions = {
   shortcut?: string | false;
 };
 
-export type ResolvedZudokuAiOptions = Required<
-  Pick<ZudokuAiPluginOptions, "api" | "label" | "greeting" | "placeholder">
-> &
-  ZudokuAiPluginOptions & {
-    title: string;
-  };
+export type ResolvedZudokuAiOptions = ZudokuAiPluginOptions & {
+  api: string;
+  label: string;
+  title: string;
+  greeting: string;
+  placeholder: string;
+};
 
 export const resolveOptions = (
   options: ZudokuAiPluginOptions,

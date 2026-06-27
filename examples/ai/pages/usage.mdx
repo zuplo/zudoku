@@ -7,7 +7,7 @@ title: Usage
 ## Configure the plugin
 
 ```tsx title="zudoku.config.tsx"
-import { zudokuAiPlugin } from "zudoku/plugins/ai";
+import { zudokuAiPlugin } from "@zudoku/plugin-ai";
 
 zudokuAiPlugin({
   api: "/api/chat",
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 ## Open the chat from your own components
 
 ```tsx
-import { useAskAi } from "zudoku/plugins/ai";
+import { useAskAi } from "@zudoku/plugin-ai";
 
 export const AskButton = () => {
   const { open } = useAskAi();

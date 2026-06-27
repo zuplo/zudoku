@@ -21,10 +21,10 @@ in-page chat experience.
 
 ## Installation
 
-The AI SDK packages are optional peer dependencies, so install them alongside Zudoku:
+Install the plugin package:
 
 ```bash npm2yarn
-npm install @ai-sdk/react ai
+npm install @zudoku/plugin-ai
 ```
 
 ## Usage
@@ -33,7 +33,7 @@ Add the plugin to the `plugins` array in your Zudoku configuration:
 
 ```tsx title="zudoku.config.tsx"
 import type { ZudokuConfig } from "zudoku";
-import { zudokuAiPlugin } from "zudoku/plugins/ai";
+import { zudokuAiPlugin } from "@zudoku/plugin-ai";
 
 const config: ZudokuConfig = {
   // ...your other configuration
@@ -129,7 +129,7 @@ Use the `useAskAi` hook to control the panel from your own components — for ex
 in an MDX page:
 
 ```tsx
-import { useAskAi } from "zudoku/plugins/ai";
+import { useAskAi } from "@zudoku/plugin-ai";
 
 export const AskButton = () => {
   const { open } = useAskAi();
