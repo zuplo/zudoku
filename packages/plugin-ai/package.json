@@ -23,6 +23,7 @@
     "typecheck": "tsgo --project tsconfig.json"
   },
   "publishConfig": {
+    "access": "public",
     "main": "./dist/index.mjs",
     "types": "./dist/index.d.mts",
     "exports": {
