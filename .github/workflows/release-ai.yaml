@@ -1,0 +1,116 @@
+name: Release AI Plugin
+on:
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: "Version bump type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release-ai
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Update npm for OIDC trusted publishing support
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync to npm latest
+        working-directory: packages/plugin-ai
+        run: |
+          PUBLISHED=$(npm view @zudoku/plugin-ai version 2>/dev/null || true)
+          if [ -n "$PUBLISHED" ]; then
+            npm version "$PUBLISHED" --allow-same-version --no-git-tag-version
+          fi
+
+      - name: Typecheck
+        run: pnpm --filter @zudoku/plugin-ai run typecheck
+
+      - name: Build
+        run: pnpm --filter @zudoku/plugin-ai run build
+
+      - name: Bump version
+        working-directory: packages/plugin-ai
+        run: npm version ${{ github.event.inputs.releaseType }} --no-git-tag-version
+
+      - name: Get version
+        id: version
+        run: echo "version=$(node --print 'require(`./packages/plugin-ai/package.json`).version')" >> $GITHUB_OUTPUT
+
+      - name: Publish
+        working-directory: packages/plugin-ai
+        run: pnpm publish --provenance --access public --tag latest --no-git-checks
+
+      - name: Generate zudoku release token
+        id: zudoku-release-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.ZUDOKU_RELEASE_APP_ID }}
+          private-key: ${{ secrets.ZUDOKU_RELEASE_APP_PRIVATE_KEY }}
+          owner: zuplo
+          repositories: zudoku
+          permission-contents: write
+
+      - name: Commit and tag
+        run: |
+          git config user.email "integrations@zuplo.com"
+          git config user.name "Zuplo Integrations"
+          git add packages/plugin-ai/package.json
+          git commit -m "chore(release): @zudoku/plugin-ai v${{ steps.version.outputs.version }} [skip ci]"
+          git tag -a "ai-v${{ steps.version.outputs.version }}" -m "Release AI plugin v${{ steps.version.outputs.version }}"
+
+      - name: Push Git Changes
+        env:
+          ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
+          REMOTE="https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git"
+          TAG="ai-v${VERSION}"
+          for i in 1 2 3; do
+            if git pull --rebase "$REMOTE" main; then
+              git tag -f -a "$TAG" -m "Release AI plugin v${VERSION}"
+              git push "$REMOTE" main --follow-tags && exit 0
+            else
+              git rebase --abort || true
+            fi
+            sleep $((i * 5))
+          done
+          exit 1

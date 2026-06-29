@@ -32,6 +32,7 @@ export const docs: Navigation = [
       "docs/configuration/navigation",
       "docs/configuration/site",
       "docs/configuration/search",
+      "docs/configuration/ai-chat",
       "docs/configuration/footer",
       "docs/configuration/llms",
     ],

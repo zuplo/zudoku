@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "useDefineForClassFields": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "useUnknownInCatchVariables": false,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src", "vitest.setup.ts"]
+}

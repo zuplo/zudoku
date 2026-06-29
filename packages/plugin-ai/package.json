@@ -1,0 +1,63 @@
+{
+  "name": "@zudoku/plugin-ai",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuplo/zudoku",
+    "directory": "packages/plugin-ai"
+  },
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "files": [
+    "dist",
+    "vite.config.ts"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "prepublishOnly": "pnpm typecheck && pnpm build",
+    "typecheck": "tsgo --project tsconfig.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.mts",
+        "import": "./dist/index.mjs"
+      }
+    }
+  },
+  "dependencies": {
+    "@ai-sdk/react": "3.0.210",
+    "ai": "6.0.208"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "happy-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsdown": "catalog:",
+    "zudoku": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0",
+    "zudoku": ">=0.82.0"
+  },
+  "peerDependenciesMeta": {
+    "zudoku": {
+      "optional": true
+    }
+  }
+}
