@@ -11,10 +11,12 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "zudoku";
-import { Markdown } from "zudoku/components";
+import { Link, Markdown } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
 import {
   ArrowUpIcon,
+  ArrowUpRightIcon,
+  FileTextIcon,
   InfoIcon,
   RefreshCwIcon,
   SparklesIcon,
@@ -23,11 +25,60 @@ import {
   XIcon,
 } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
+import {
+  getAssistantBlocks,
+  prettifyUrl,
+  toInternalPath,
+} from "./messageBlocks.js";
 import { getZuploDeploymentUrl, resolveDocsContext } from "./site.js";
 import type { ResolvedZudokuAiOptions } from "./types.js";
 
 const getMessageText = (message: UIMessage) =>
   message.parts.map((part) => (part.type === "text" ? part.text : "")).join("");
+
+const linkClassName =
+  "inline-flex max-w-full items-center gap-1.5 self-start rounded-md border bg-muted/40 px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
+
+const SourceLink = ({ url, title }: { url: string; title?: string }) => {
+  const internal = toInternalPath(url);
+  const content = (
+    <>
+      <FileTextIcon className="size-3.5 shrink-0" />
+      <span className="truncate">{title ?? prettifyUrl(url)}</span>
+    </>
+  );
+  return internal ? (
+    <Link to={internal} className={linkClassName}>
+      {content}
+    </Link>
+  ) : (
+    <a href={url} target="_blank" rel="noreferrer" className={linkClassName}>
+      {content}
+    </a>
+  );
+};
+
+const LinkButton = ({
+  url,
+  label,
+  description,
+}: {
+  url: string;
+  label: string;
+  description?: string;
+}) => (
+  <div className="flex flex-col items-start gap-1.5">
+    {description && (
+      <p className="text-sm text-muted-foreground">{description}</p>
+    )}
+    <Button asChild size="sm" variant="outline">
+      <a href={url} target="_blank" rel="noreferrer">
+        {label}
+        <ArrowUpRightIcon />
+      </a>
+    </Button>
+  </div>
+);
 
 const ThinkingIndicator = () => (
   <div className="flex gap-1" role="status" aria-label="Assistant is thinking">
@@ -48,13 +99,11 @@ const Avatar = () => (
 );
 
 const ChatMessage = ({ message }: { message: UIMessage }) => {
-  const text = getMessageText(message);
-
   if (message.role === "user") {
     return (
       <div className="flex justify-end">
         <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-primary px-3.5 py-2 text-sm text-primary-foreground">
-          {text}
+          {getMessageText(message)}
         </div>
       </div>
     );
@@ -63,15 +112,37 @@ const ChatMessage = ({ message }: { message: UIMessage }) => {
   return (
     <div className="flex gap-2.5">
       <Avatar />
-      <div className="min-w-0 flex-1 pt-0.5">
-        <Suspense
-          fallback={<div className="whitespace-pre-wrap text-sm">{text}</div>}
-        >
-          <Markdown
-            content={text}
-            className="prose-sm max-w-none break-words text-sm"
-          />
-        </Suspense>
+      <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
+        {getAssistantBlocks(message).map((block) => {
+          if (block.kind === "source") {
+            return (
+              <SourceLink key={block.key} url={block.url} title={block.title} />
+            );
+          }
+          if (block.kind === "link") {
+            return (
+              <LinkButton
+                key={block.key}
+                url={block.url}
+                label={block.label}
+                description={block.description}
+              />
+            );
+          }
+          return (
+            <Suspense
+              key={block.key}
+              fallback={
+                <div className="whitespace-pre-wrap text-sm">{block.text}</div>
+              }
+            >
+              <Markdown
+                content={block.text}
+                className="prose-sm max-w-none break-words text-sm"
+              />
+            </Suspense>
+          );
+        })}
       </div>
     </div>
   );
