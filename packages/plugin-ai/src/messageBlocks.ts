@@ -24,6 +24,23 @@ export type AssistantBlock =
     };
 
 /**
+ * Tool/model output is untrusted, so only same-origin relative paths and
+ * http(s) URLs are allowed to become links — a `javascript:` or `data:` URL
+ * must never reach an `<a href>`.
+ */
+export const isSafeLinkUrl = (url: string): boolean => {
+  // Relative path; reject protocol-relative ("//host") and "/\" variants that
+  // browsers may treat as protocol-relative.
+  if (url.startsWith("/")) return !/^\/[/\\]/.test(url);
+  try {
+    const { protocol } = new URL(url);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+/**
  * Turns an assistant message into an ordered list of renderable blocks:
  * adjacent text parts are coalesced into one Markdown block, and the agent's
  * link tool calls (`present-source`, `present-link`) become link blocks.
@@ -47,7 +64,7 @@ export const getAssistantBlocks = (message: UIMessage): AssistantBlock[] => {
     if (!isToolOrDynamicToolUIPart(part)) return;
 
     const input = part.input as ToolLinkInput | undefined;
-    if (typeof input?.url !== "string" || !input.url) return;
+    if (typeof input?.url !== "string" || !isSafeLinkUrl(input.url)) return;
 
     const name = getToolOrDynamicToolName(part);
     if (name === "present-source") {

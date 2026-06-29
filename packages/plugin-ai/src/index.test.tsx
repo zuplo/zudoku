@@ -11,6 +11,7 @@ import { AskAiTrigger } from "./AskAiTrigger.js";
 import { zudokuAiPlugin } from "./index.js";
 import {
   getAssistantBlocks,
+  isSafeLinkUrl,
   prettifyUrl,
   toInternalPath,
 } from "./messageBlocks.js";
@@ -204,6 +205,35 @@ describe("getAssistantBlocks", () => {
       ]),
     );
     expect(blocks).toHaveLength(0);
+  });
+
+  it("drops links with an unsafe url scheme", () => {
+    const blocks = getAssistantBlocks(
+      assistantMessage([
+        {
+          type: "tool-present-source",
+          toolCallId: "t5",
+          state: "output-available",
+          input: { url: "javascript:alert(1)", title: "Bad" },
+        },
+      ]),
+    );
+    expect(blocks).toHaveLength(0);
+  });
+});
+
+describe("isSafeLinkUrl", () => {
+  it("allows same-origin paths and http(s) urls", () => {
+    expect(isSafeLinkUrl("/docs/quickstart")).toBe(true);
+    expect(isSafeLinkUrl("https://docs.example.com/x")).toBe(true);
+    expect(isSafeLinkUrl("http://example.com")).toBe(true);
+  });
+
+  it("rejects dangerous or protocol-relative urls", () => {
+    expect(isSafeLinkUrl("javascript:alert(1)")).toBe(false);
+    expect(isSafeLinkUrl("data:text/html,<script>")).toBe(false);
+    expect(isSafeLinkUrl("//evil.example.com")).toBe(false);
+    expect(isSafeLinkUrl("/\\evil.example.com")).toBe(false);
   });
 });
 

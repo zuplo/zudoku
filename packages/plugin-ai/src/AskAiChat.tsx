@@ -52,7 +52,12 @@ const SourceLink = ({ url, title }: { url: string; title?: string }) => {
       {content}
     </Link>
   ) : (
-    <a href={url} target="_blank" rel="noreferrer" className={linkClassName}>
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={linkClassName}
+    >
       {content}
     </a>
   );
@@ -72,7 +77,7 @@ const LinkButton = ({
       <p className="text-sm text-muted-foreground">{description}</p>
     )}
     <Button asChild size="sm" variant="outline">
-      <a href={url} target="_blank" rel="noreferrer">
+      <a href={url} target="_blank" rel="noopener noreferrer">
         {label}
         <ArrowUpRightIcon />
       </a>
