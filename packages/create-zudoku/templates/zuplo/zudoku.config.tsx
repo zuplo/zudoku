@@ -94,7 +94,7 @@ const config: ZudokuConfig = {
     // Uncomment to document a GraphQL API:
     // graphqlPlugin({
     //   schema: "./schema.graphql",
-    //   endpoint: "/mygraph", // (optional, default: "/graphql")
+    //   endpoint: "/graphql", // (optional, default: "/graphql")
     // }),
     // Uncomment to enable monetization:
     // zuploMonetizationPlugin(),
