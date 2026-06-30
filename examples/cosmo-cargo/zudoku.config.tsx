@@ -1,3 +1,4 @@
+import { zudokuAiPlugin } from "@zudoku/plugin-ai";
 import type { ReactNode } from "react";
 import type {
   ApiIdentity,
@@ -208,6 +209,23 @@ const config: ZudokuConfig = {
         </>
       ),
     },
+    // Point `api` at your own endpoint that speaks the AI SDK UI Message
+    // Stream protocol. On localhost (no public docs URL) the assistant shows
+    // an "unavailable" notice instead of calling the backend.
+    zudokuAiPlugin({
+      api: "/api/chat",
+      label: "Ask AI",
+      title: "Cosmo Cargo Assistant",
+      greeting:
+        "Greetings, cosmonaut! Ask me anything about shipping cargo across the galaxy.",
+      placeholder: "Ask about warp routes, cargo, billing…",
+      shortcut: "i",
+      suggestions: [
+        "How do I track a shipment in real time?",
+        "What are the warp drive maintenance intervals?",
+        "How do I ship hazardous or anomalous cargo?",
+      ],
+    }),
   ],
   protectedRoutes: {
     "/only-members": ({ auth, reasonCode }) =>

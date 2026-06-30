@@ -255,6 +255,9 @@ importers:
 
   examples/cosmo-cargo:
     dependencies:
+      '@zudoku/plugin-ai':
+        specifier: workspace:*
+        version: link:../../packages/plugin-ai
       react:
         specifier: 'catalog:'
         version: 19.2.7
