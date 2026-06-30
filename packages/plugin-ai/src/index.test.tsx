@@ -71,7 +71,7 @@ describe("resolveOptions", () => {
   it("defaults the api to the production agent-z deployment", () => {
     expect(resolveOptions({}).api).toBe(DEFAULT_CHAT_API);
     expect(DEFAULT_CHAT_API).toBe(
-      "https://agent-z.zuplo-exp.workers.dev/agent-z/chat",
+      "https://agent-z.zuplo-exp.workers.dev/agent-z/zudoku-ai/chat",
     );
   });
 

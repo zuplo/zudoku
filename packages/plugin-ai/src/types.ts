@@ -1,20 +1,20 @@
 import type { SlotName } from "zudoku";
 
 /**
- * Default chat endpoint: the production agent-z deployment, which speaks the
- * AI SDK UI Message Stream protocol. Override via
- * {@link ZudokuAiPluginOptions.api} to point at your own backend.
+ * Default chat endpoint: the Zudoku AI agent on the production agent-z
+ * deployment, exposed as an AI SDK UI Message Stream (v6) chatRoute. Override
+ * via {@link ZudokuAiPluginOptions.api} to point at your own backend.
  */
 export const DEFAULT_CHAT_API =
-  "https://agent-z.zuplo-exp.workers.dev/agent-z/chat";
+  "https://agent-z.zuplo-exp.workers.dev/agent-z/zudoku-ai/chat";
 
 export type ZudokuAiPluginOptions = {
   /**
    * The endpoint that implements the AI SDK UI Message Stream protocol. Your
    * backend should pipe a `streamText` result through `toUIMessageStreamResponse()`.
    *
-   * Defaults to the production agent-z deployment
-   * (`https://agent-z.zuplo-exp.workers.dev/agent-z/chat`).
+   * Defaults to the Zudoku AI agent on the production agent-z deployment
+   * (`https://agent-z.zuplo-exp.workers.dev/agent-z/zudoku-ai/chat`).
    *
    * @default DEFAULT_CHAT_API
    */

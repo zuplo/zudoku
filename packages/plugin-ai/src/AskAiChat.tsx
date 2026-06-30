@@ -174,19 +174,25 @@ export const AskAiChat = ({
 
   const basePath = useZudoku().options.basePath;
 
-  // The docs site URL is forwarded to the backend as `docs` so the service
-  // knows which documentation the question is about. Zuplo projects expose a
-  // deployment URL that is used even on localhost; otherwise we fall back to the
-  // current origin + base path (and disable the chat on localhost).
-  const { docs, isUnavailable } = useMemo(
+  // The docs site URL is forwarded to the backend as `zudokuUrl` so the agent
+  // knows which documentation to answer from (agent-z fetches that site's
+  // llms.txt index and reads pages from it). Zuplo projects expose a deployment
+  // URL that is used even on localhost; otherwise we fall back to the current
+  // origin + base path (and disable the chat on localhost).
+  const { docs: zudokuUrl, isUnavailable } = useMemo(
     () => resolveDocsContext(basePath, getZuploDeploymentUrl()),
     [basePath],
   );
 
   const transport = useMemo(
     () =>
-      new DefaultChatTransport({ api, headers, credentials, body: { docs } }),
-    [api, headers, credentials, docs],
+      new DefaultChatTransport({
+        api,
+        headers,
+        credentials,
+        body: { zudokuUrl },
+      }),
+    [api, headers, credentials, zudokuUrl],
   );
 
   const {
