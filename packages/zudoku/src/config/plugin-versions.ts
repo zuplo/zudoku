@@ -4,12 +4,8 @@ import { findPackageRoot } from "../vite/package-root.js";
 
 export type PluginVersion = { name: string; version: string };
 
-// Resolves the npm package `name`@`version` for each plugin directory recorded
-// by `createPlugin` in `config.__pluginDirs`. This lets core surface which
-// plugin versions a build is running (e.g. in the build logs) without every
-// plugin having to log its own version. Reads each plugin's nearest
-// package.json and dedupes by package name (a plugin used multiple times
-// records its directory more than once).
+// Reads the `name`@`version` from each plugin dir's nearest package.json,
+// deduped by package name.
 export const getPluginVersions = async (
   pluginDirs: readonly string[],
 ): Promise<PluginVersion[]> => {
