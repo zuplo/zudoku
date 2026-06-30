@@ -21,7 +21,11 @@ import {
   resolveDocsContext,
 } from "./site.js";
 import { askAiStore } from "./store.js";
-import type { ZudokuAiPluginOptions } from "./types.js";
+import {
+  DEFAULT_CHAT_API,
+  resolveOptions,
+  type ZudokuAiPluginOptions,
+} from "./types.js";
 
 const transform = (options: ZudokuAiPluginOptions = {}) => {
   const config: ZudokuConfig = { plugins: [zudokuAiPlugin(options)] };
@@ -60,6 +64,19 @@ describe("zudokuAiPlugin", () => {
     expect(askAiStore.getState()).toBe(true);
     fireEvent.click(button);
     expect(askAiStore.getState()).toBe(false);
+  });
+});
+
+describe("resolveOptions", () => {
+  it("defaults the api to the production agent-z deployment", () => {
+    expect(resolveOptions({}).api).toBe(DEFAULT_CHAT_API);
+    expect(DEFAULT_CHAT_API).toBe(
+      "https://agent-z.zuplo-exp.workers.dev/agent-z/chat",
+    );
+  });
+
+  it("lets the api be overridden", () => {
+    expect(resolveOptions({ api: "/api/chat" }).api).toBe("/api/chat");
   });
 });
 

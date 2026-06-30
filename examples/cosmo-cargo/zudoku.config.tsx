@@ -209,11 +209,10 @@ const config: ZudokuConfig = {
         </>
       ),
     },
-    // Point `api` at your own endpoint that speaks the AI SDK UI Message
-    // Stream protocol. On localhost (no public docs URL) the assistant shows
-    // an "unavailable" notice instead of calling the backend.
+    // No `api` override, so the assistant talks to the default production
+    // agent-z deployment. On localhost (no public docs URL) it shows an
+    // "unavailable" notice instead of calling the backend.
     zudokuAiPlugin({
-      api: "/api/chat",
       label: "Ask AI",
       title: "Cosmo Cargo Assistant",
       greeting:
