@@ -4,7 +4,6 @@ export interface MonetizationConfig {
   pricing?: {
     subtitle?: string;
     title?: string;
-    showYearlyPrice?: boolean;
     units?: Record<string, string>;
   };
 }

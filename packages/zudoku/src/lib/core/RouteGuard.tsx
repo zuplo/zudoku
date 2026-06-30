@@ -1,12 +1,6 @@
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import { use, useCallback, useEffect, useMemo } from "react";
-import {
-  matchPath,
-  Outlet,
-  useBlocker,
-  useLocation,
-  useNavigate,
-} from "react-router";
+import { Outlet, useBlocker, useLocation } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
 import {
   Dialog,
@@ -22,11 +16,11 @@ import { RenderContext } from "../components/context/RenderContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { Layout } from "../components/Layout.js";
 import { ZudokuError } from "../util/invariant.js";
-import { stripBasePath } from "../util/url.js";
+import { matchesProtectedPattern, stripBasePath } from "../util/url.js";
 
 export const SEARCH_PROTECTED_SECTION = "protected";
 
-type LoginDialogProps = {
+export type LoginDialogProps = {
   open: boolean;
   onCancel: () => void;
   onLogin: () => void;
@@ -34,7 +28,7 @@ type LoginDialogProps = {
   showRegister: boolean;
 };
 
-const LoginDialog = ({
+export const LoginDialog = ({
   open,
   onCancel,
   onLogin,
@@ -66,13 +60,13 @@ const LoginDialog = ({
 const BypassRoute = ({ isProtectedRoute }: { isProtectedRoute: boolean }) => (
   <>
     {isProtectedRoute && (
-      <Helmet>
+      <Head>
         <meta
           name="pagefind"
           data-pagefind-filter={`section:${SEARCH_PROTECTED_SECTION}`}
           content="true"
         />
-      </Helmet>
+      </Head>
     )}
     <Outlet />
   </>
@@ -94,10 +88,38 @@ const ForbiddenPage = () => {
   );
 };
 
+// Inline sign-in prompt for initial page loads. Not a Dialog because those
+// portal to document.body and would leave SSR output empty.
+export const SignInRequiredPage = ({ redirectTo }: { redirectTo: string }) => {
+  const auth = useAuth();
+  return (
+    <Layout>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <h1 className="text-2xl font-bold">Sign in to continue</h1>
+        <p className="text-muted-foreground">
+          Please sign in to access this page.
+        </p>
+        <div className="flex gap-2">
+          <Button onClick={() => void auth.login({ redirectTo })}>
+            Sign in
+          </Button>
+          {auth.isAuthEnabled && !auth.disableSignUp && (
+            <Button
+              variant="outline"
+              onClick={() => void auth.signup({ redirectTo })}
+            >
+              Register
+            </Button>
+          )}
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
 export const RouteGuard = () => {
   const auth = useAuth();
   const zudoku = useZudoku();
-  const navigate = useNavigate();
   const location = useLocation();
   const renderContext = use(RenderContext);
   const shouldBypass = renderContext.bypassProtection;
@@ -112,7 +134,7 @@ export const RouteGuard = () => {
     (pathname: string) => {
       if (!protectedRoutes) return;
       for (const [pattern, check] of Object.entries(protectedRoutes)) {
-        if (matchPath({ path: pattern, end: true }, pathname)) {
+        if (matchesProtectedPattern(pattern, pathname)) {
           return check;
         }
       }
@@ -122,8 +144,11 @@ export const RouteGuard = () => {
 
   const currentAuthCheck = getAuthCheck(location.pathname);
   const isProtectedRoute = currentAuthCheck !== undefined;
-  const rawResult = currentAuthCheck?.(authCheckContext) ?? true;
-  // Normalize: false is equivalent to UNAUTHORIZED
+  // Fail-closed: an unprotected route returns true; a protected route whose
+  // check returns undefined is treated as UNAUTHORIZED, not authorized.
+  const rawResult = isProtectedRoute
+    ? (currentAuthCheck(authCheckContext) ?? REASON_CODES.UNAUTHORIZED)
+    : true;
   const authResult =
     rawResult === false ? REASON_CODES.UNAUTHORIZED : rawResult;
   const isForbidden = authResult === REASON_CODES.FORBIDDEN;
@@ -139,7 +164,6 @@ export const RouteGuard = () => {
   });
   const isBlocked = blocker.state === "blocked";
 
-  // Proceed after successful login
   useEffect(() => {
     if (!auth.isAuthenticated || !isBlocked) return;
     const check = getAuthCheck(blocker.location.pathname);
@@ -160,13 +184,8 @@ export const RouteGuard = () => {
     getAuthCheck,
   ]);
 
-  if (isForbidden) {
-    return <ForbiddenPage />;
-  }
-
-  if (shouldBypass) {
-    return <BypassRoute isProtectedRoute={isProtectedRoute} />;
-  }
+  if (isForbidden) return <ForbiddenPage />;
+  if (shouldBypass) return <BypassRoute isProtectedRoute={isProtectedRoute} />;
 
   if (isProtectedRoute && !auth.isAuthEnabled) {
     throw new ZudokuError("Authentication is not enabled", {
@@ -176,11 +195,13 @@ export const RouteGuard = () => {
     });
   }
 
-  if (needsToSignIn && auth.isPending && typeof window !== "undefined") {
-    return null;
+  if (needsToSignIn) {
+    if (typeof window === "undefined") renderContext.status = 401;
+    if (auth.isPending) return null;
+    return (
+      <SignInRequiredPage redirectTo={location.pathname + location.search} />
+    );
   }
-
-  const showDialog = needsToSignIn || isBlocked;
 
   // Workaround: `blocker.location.pathname` includes basename, but `useLocation` does not.
   // Remove this when React Router fixes the issue. The canary test
@@ -192,10 +213,10 @@ export const RouteGuard = () => {
 
   return (
     <>
-      {!needsToSignIn && <Outlet />}
+      <Outlet />
       <LoginDialog
-        open={showDialog}
-        onCancel={needsToSignIn ? () => navigate(-1) : () => blocker.reset?.()}
+        open={isBlocked}
+        onCancel={() => blocker.reset?.()}
         onLogin={() => void auth.login({ redirectTo })}
         onRegister={() => void auth.signup({ redirectTo })}
         showRegister={!auth.disableSignUp}

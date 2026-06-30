@@ -10,7 +10,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "useUnknownInCatchVariables": false,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["zudoku/client"]
   },
   "include": ["src", "zudoku.config.tsx"]
 }

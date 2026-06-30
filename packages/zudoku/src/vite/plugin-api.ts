@@ -20,6 +20,8 @@ import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
+const PROCESSED_STORE_SUBPATH = "node_modules/.zudoku/processed";
+
 const viteApiPlugin = async (): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = `\0${virtualModuleId}`;
@@ -38,7 +40,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
   const tmpStoreDir = path.posix.join(
     initialConfig.__meta.rootDir,
-    "node_modules/.zudoku/processed",
+    PROCESSED_STORE_SUBPATH,
   );
 
   const processors = [...buildProcessors, ...zuploProcessors];
@@ -92,8 +94,24 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.log(`Re-processing schema ${id}`);
 
-        for (const inputConfig of mainFiles) {
-          await schemaManager.processSchema(inputConfig);
+        try {
+          for (const inputConfig of mainFiles) {
+            await schemaManager.processSchema(inputConfig);
+          }
+        } catch (error) {
+          const err = error instanceof Error ? error : new Error(String(error));
+          server.config.logger.error(
+            `Failed to re-process schema ${id}. Fix the error and save again.`,
+            { error: err },
+          );
+          server.ws.send({
+            type: "error",
+            err: {
+              message: `Failed to re-process schema ${id}: ${err.message}`,
+              stack: err.stack ?? "",
+            },
+          });
+          return;
         }
         schemaManager
           .getAllTrackedFiles()
@@ -237,7 +255,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
-              `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,
+              `    showInfoPage: config.defaults?.apis?.showInfoPage,`,
               `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    transformExamples: config.defaults?.apis?.transformExamples,`,
               `    generateCodeSnippet: config.defaults?.apis?.generateCodeSnippet,`,
@@ -263,7 +281,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? false,`,
-              `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,
+              `    showInfoPage: config.defaults?.apis?.showInfoPage,`,
               `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    ...${JSON.stringify(apiConfig.options ?? {})},`,
               "  },",

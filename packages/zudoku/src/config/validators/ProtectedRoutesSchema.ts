@@ -19,7 +19,7 @@ type ProtectedRouteCallback = (c: CallbackContext) => ProtectedRouteResult;
 export type ProtectedRoutesInput = z.input<typeof ProtectedRoutesInputSchema>;
 export type ProtectedRoutes = z.output<typeof ProtectedRoutesInputSchema>;
 
-export const ProtectedRoutesInputSchema = z.optional(
+const ProtectedRoutesInputSchema = z.optional(
   z.union([
     z.array(z.string()),
     z.record(

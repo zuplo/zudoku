@@ -108,6 +108,12 @@ const pkg = JSON.parse(await readFile(pkgPath, "utf-8"));
 // Exports that don't point to source files
 const IGNORED_EXPORTS = new Set(["./package.json", "./main.css", "./client"]);
 
+// Entries that ship as bundled JS, not raw source: external plugins import
+// these from Node at build time (e.g. a vite.config), where .ts can't load.
+const BUILT_ENTRIES: Record<string, string> = {
+  "./vite": "./dist/vite/index.js",
+};
+
 const isSource = (p: string) =>
   p.startsWith("./src/") && (/\.tsx?$/.test(p) || p.endsWith("*"));
 
@@ -164,10 +170,18 @@ const addTypes = (value: unknown): unknown => {
     : { ...(value as Record<string, unknown>), types };
 };
 
+const toBuiltEntry = (value: unknown, built: string): unknown => {
+  const src = getSourcePath(value);
+  return { types: src ? toDts(src) : undefined, import: built, default: built };
+};
+
 pkg.publishConfig = {
   ...pkg.publishConfig,
   exports: Object.fromEntries(
-    Object.entries(pkg.exports).map(([k, v]) => [k, addTypes(v)]),
+    Object.entries(pkg.exports).map(([k, v]) => [
+      k,
+      BUILT_ENTRIES[k] ? toBuiltEntry(v, BUILT_ENTRIES[k]) : addTypes(v),
+    ]),
   ),
 };
 

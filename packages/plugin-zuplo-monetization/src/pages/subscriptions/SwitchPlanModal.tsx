@@ -1,13 +1,6 @@
 import { type PropsWithChildren, useMemo, useState } from "react";
-import { cn } from "zudoku";
 import { useZudoku } from "zudoku/hooks";
-import {
-  ArrowDownIcon,
-  ArrowLeftRightIcon,
-  ArrowUpIcon,
-  CheckIcon,
-  XIcon,
-} from "zudoku/icons";
+import { ArrowDownIcon, ArrowLeftRightIcon, ArrowUpIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { Alert, AlertDescription } from "zudoku/ui/Alert";
 import { Button } from "zudoku/ui/Button";
@@ -18,423 +11,66 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "zudoku/ui/Dialog";
-import { Item, ItemContent, ItemDescription, ItemTitle } from "zudoku/ui/Item";
 import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import { usePlans } from "../../hooks/usePlans.js";
 import { useUrlUtils } from "../../hooks/useUrlUtils.js";
 import { useMonetizationConfig } from "../../MonetizationContext";
 import type { Plan } from "../../types/PlanType.js";
 import type { Subscription } from "../../types/SubscriptionType.js";
+import { getActivePhase } from "../../utils/billables.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
-import { formatDuration } from "../../utils/formatDuration.js";
-import { formatPrice } from "../../utils/formatPrice.js";
-import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
-
-type PlanComparison = {
-  plan: Plan;
-  isUpgrade: boolean;
-  quotaChanges: QuotaChange[];
-  featureChanges: FeatureChange[];
-};
-
-type QuotaChange = {
-  key: string;
-  name: string;
-  currentValue: number | null;
-  newValue: number | null;
-  period: string;
-  change: "increase" | "decrease" | "same" | "added" | "removed";
-};
-
-type FeatureChange = {
-  key: string;
-  name: string;
-  currentValue: string | boolean | null;
-  newValue: string | boolean | null;
-  change: "added" | "removed" | "upgraded" | "downgraded" | "same";
-};
-
-// Collect all feature keys across ALL phases to detect cross-category matches
-// (e.g. a key that's a boolean feature in one plan but a metered quota in another)
-const getAllKeysAcrossPhases = (
-  plan: Plan,
-  units?: Record<string, string>,
-): { quotaKeys: Set<string>; featureKeys: Set<string> } => {
-  const quotaKeys = new Set<string>();
-  const featureKeys = new Set<string>();
-
-  for (const phase of plan.phases) {
-    const { quotas, features } = categorizeRateCards(phase.rateCards, {
-      currency: plan.currency,
-      units,
-      planBillingCadence: plan.billingCadence,
-    });
-    for (const q of quotas) quotaKeys.add(q.key);
-    for (const f of features) featureKeys.add(f.key);
-  }
-
-  return { quotaKeys, featureKeys };
-};
-
-const comparePlans = (
-  currentPlan: Plan | undefined,
-  targetPlan: Plan,
-  currentIndex: number,
-  targetIndex: number,
-  units?: Record<string, string>,
-): PlanComparison => {
-  const isUpgrade = targetIndex > currentIndex;
-
-  // Use the last phase (permanent steady state) for comparison values
-  const currentPhase = currentPlan?.phases.at(-1);
-  const targetPhase = targetPlan.phases.at(-1);
-
-  const { quotas: currentQuotas, features: currentFeatures } = currentPhase
-    ? categorizeRateCards(currentPhase.rateCards, {
-        currency: currentPlan?.currency,
-        units,
-        planBillingCadence: currentPlan?.billingCadence,
-      })
-    : { quotas: [], features: [] };
-
-  const { quotas: targetQuotas, features: targetFeatures } = targetPhase
-    ? categorizeRateCards(targetPhase.rateCards, {
-        currency: targetPlan.currency,
-        units,
-        planBillingCadence: targetPlan.billingCadence,
-      })
-    : { quotas: [], features: [] };
-
-  // Look across ALL phases to detect cross-category keys
-  const currentAllKeys = currentPlan
-    ? getAllKeysAcrossPhases(currentPlan, units)
-    : { quotaKeys: new Set<string>(), featureKeys: new Set<string>() };
-  const targetAllKeys = getAllKeysAcrossPhases(targetPlan, units);
-
-  const quotaChanges: QuotaChange[] = [];
-  const allQuotaKeys = new Set([
-    ...currentQuotas.map((q) => q.key),
-    ...targetQuotas.map((q) => q.key),
-  ]);
-
-  for (const key of allQuotaKeys) {
-    const current = currentQuotas.find((q) => q.key === key);
-    const target = targetQuotas.find((q) => q.key === key);
-
-    if (current && target) {
-      let change: QuotaChange["change"] = "same";
-      if (target.limit > current.limit) change = "increase";
-      else if (target.limit < current.limit) change = "decrease";
-
-      quotaChanges.push({
-        key: key ?? "",
-        name: target.name,
-        currentValue: current.limit,
-        newValue: target.limit,
-        period: target.period,
-        change,
-      });
-    } else if (target && !current) {
-      // Cross-category: feature in current plan becomes quota in target, show value
-      if (currentAllKeys.featureKeys.has(key)) {
-        quotaChanges.push({
-          key: key ?? "",
-          name: target.name,
-          currentValue: null,
-          newValue: target.limit,
-          period: target.period,
-          change: "same",
-        });
-        continue;
-      }
-      quotaChanges.push({
-        key: key ?? "",
-        name: target.name,
-        currentValue: null,
-        newValue: target.limit,
-        period: target.period,
-        change: "added",
-      });
-    } else if (current && !target) {
-      // Cross-category: quota in current becomes feature in target, show as feature
-      if (targetAllKeys.featureKeys.has(key)) continue;
-      quotaChanges.push({
-        key: key ?? "",
-        name: current.name,
-        currentValue: current.limit,
-        newValue: null,
-        period: current.period,
-        change: "removed",
-      });
-    }
-  }
-
-  const featureChanges: FeatureChange[] = [];
-  const allFeatureKeys = new Set([
-    ...currentFeatures.map((f) => f.key),
-    ...targetFeatures.map((f) => f.key),
-  ]);
-
-  for (const key of allFeatureKeys) {
-    const current = currentFeatures.find((f) => f.key === key);
-    const target = targetFeatures.find((f) => f.key === key);
-
-    if (current && target) {
-      let change: FeatureChange["change"] = "same";
-      if (
-        current.value !== undefined &&
-        target.value !== undefined &&
-        current.value !== target.value
-      ) {
-        change = isUpgrade ? "upgraded" : "downgraded";
-      }
-      featureChanges.push({
-        key: key ?? "",
-        name: target.name,
-        currentValue: current.value ?? true,
-        newValue: target.value ?? true,
-        change,
-      });
-    } else if (target && !current) {
-      // Cross-category: quota in current becomes feature in target, show as "same"
-      if (currentAllKeys.quotaKeys.has(key)) {
-        featureChanges.push({
-          key: key ?? "",
-          name: target.name,
-          currentValue: true,
-          newValue: target.value ?? true,
-          change: "same",
-        });
-        continue;
-      }
-      featureChanges.push({
-        key: key ?? "",
-        name: target.name,
-        currentValue: null,
-        newValue: target.value ?? true,
-        change: "added",
-      });
-    } else if (current && !target) {
-      // Cross-category: feature in current becomes quota in target, handled in quota loop
-      if (targetAllKeys.quotaKeys.has(key)) continue;
-      featureChanges.push({
-        key: key ?? "",
-        name: current.name,
-        currentValue: current.value ?? true,
-        newValue: null,
-        change: "removed",
-      });
-    }
-  }
-
-  return { plan: targetPlan, isUpgrade, quotaChanges, featureChanges };
-};
-
-const ChangeIndicator = ({
-  change,
-}: {
-  change: QuotaChange["change"] | FeatureChange["change"];
-}) => {
-  if (change === "increase" || change === "added" || change === "upgraded") {
-    return <ArrowUpIcon className="w-4 h-4 text-primary shrink-0" />;
-  }
-  if (
-    change === "decrease" ||
-    change === "removed" ||
-    change === "downgraded"
-  ) {
-    return <ArrowDownIcon className="w-4 h-4 text-amber-600 shrink-0" />;
-  }
-  return <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />;
-};
+import type { EntitlementSet } from "../../utils/comparePlanEntitlements.js";
+import { categorizeSubscriptionItems } from "../../utils/subscriptionEntitlements.js";
+import { CurrentPlanBaseline } from "../components/CurrentPlanBaseline.js";
+import {
+  type PlanChangeMode,
+  PlanChangeCard,
+} from "../components/PlanChangeCard.js";
 
 const isPrivatePlan = (plan: Plan) =>
   plan.metadata?.zuplo_private_plan === "true";
 
-const modeLabelMap: Record<SwitchPlanTarget["mode"], string> = {
-  upgrade: "Upgrade",
-  downgrade: "Downgrade",
-  private: "Switch",
-};
+const planVersion = (plan: Pick<Plan, "version">) => plan.version ?? 1;
 
-const isSwitchPlanTarget = (value: unknown): value is SwitchPlanTarget => {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
+const isNewerPlanVersion = (subscribedPlan: Plan, target: Plan): boolean =>
+  target.key === subscribedPlan.key &&
+  planVersion(target) > planVersion(subscribedPlan);
 
-  if (
-    !("subscriptionId" in value) ||
-    !("plan" in value) ||
-    !("mode" in value)
-  ) {
-    return false;
-  }
-
-  return true;
-};
-
-const PlanComparisonItem = ({
-  comparison,
-  subscriptionId,
-  mode,
-  onRequestChange,
-  isSwitching,
+const resolveIsUpgrade = ({
+  target,
+  targetIndex,
+  subscribedPlan,
+  currentIndex,
 }: {
-  comparison: PlanComparison;
-  subscriptionId: string;
-  mode: SwitchPlanTarget["mode"];
-  onRequestChange: (switchTo: SwitchPlanTarget) => void;
-  isSwitching: boolean;
-}) => {
-  const price = getPriceFromPlan(comparison.plan);
-  const isCustom = comparison.plan.key === "enterprise";
-  const displayPrice = price.monthly;
-
-  const hasChanges =
-    comparison.quotaChanges.length > 0 || comparison.featureChanges.length > 0;
-
-  return (
-    <div className="border rounded-lg p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-baseline gap-2">
-          <h4 className="font-semibold text-foreground">
-            {comparison.plan.name}
-          </h4>
-          {isCustom ? (
-            <span className="text-primary font-medium">Custom</span>
-          ) : displayPrice === 0 ? (
-            <span className="text-primary font-medium">Free</span>
-          ) : (
-            <span className="text-primary font-medium text-lg">
-              {formatPrice(displayPrice, comparison.plan.currency)}/
-              {formatDuration(comparison.plan.billingCadence)}
-            </span>
-          )}
-        </div>
-        {isCustom ? (
-          <Button variant="default" size="sm">
-            Contact Sales
-          </Button>
-        ) : (
-          <Button
-            variant={mode === "upgrade" ? "default" : "outline"}
-            onClick={() =>
-              onRequestChange({
-                subscriptionId,
-                plan: comparison.plan,
-                mode,
-              })
-            }
-            size="sm"
-            disabled={isSwitching}
-          >
-            {modeLabelMap[mode]}
-          </Button>
-        )}
-      </div>
-
-      {hasChanges && (
-        <div className="space-y-1.5">
-          {comparison.quotaChanges.map((quota) => (
-            <div key={quota.key} className="flex items-center gap-2 text-sm">
-              <ChangeIndicator change={quota.change} />
-              <span className="font-medium">{quota.name}:</span>
-              {quota.change === "same" ? (
-                <span className="text-muted-foreground">
-                  {(quota.newValue ?? quota.currentValue)?.toLocaleString()}/
-                  {quota.period}
-                </span>
-              ) : quota.change === "added" ? (
-                <span className="text-green-600">Now included</span>
-              ) : quota.change === "removed" ? (
-                <span className="text-destructive">No longer included</span>
-              ) : (
-                <>
-                  <span className="text-muted-foreground">
-                    {quota.currentValue?.toLocaleString()}/{quota.period}
-                  </span>
-                  <span className="text-muted-foreground">→</span>
-                  <span
-                    className={cn(
-                      "font-medium",
-                      quota.change === "increase"
-                        ? "text-primary"
-                        : "text-amber-600",
-                    )}
-                  >
-                    {quota.newValue?.toLocaleString()}/{quota.period}
-                  </span>
-                </>
-              )}
-            </div>
-          ))}
-
-          {comparison.featureChanges.map((feature) => (
-            <div key={feature.key} className="flex items-center gap-2 text-sm">
-              {feature.change === "same" ? (
-                <>
-                  <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
-                  <span className="text-muted-foreground">
-                    {feature.name}
-                    {typeof feature.newValue === "string"
-                      ? `: ${feature.newValue}`
-                      : typeof feature.currentValue === "string"
-                        ? `: ${feature.currentValue}`
-                        : ""}
-                  </span>
-                </>
-              ) : feature.change === "added" ? (
-                <>
-                  <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
-                  <span className="text-muted-foreground font-medium">
-                    {feature.name}
-                  </span>
-                  <span className="text-green-600">—</span>
-                  <span className="text-green-600">Now included</span>
-                </>
-              ) : feature.change === "removed" ? (
-                <>
-                  <XIcon className="w-4 h-4 text-destructive shrink-0" />
-                  <span className="font-medium">{feature.name}</span>
-                  <span className="text-destructive">—</span>
-                  <span className="text-destructive">No longer included</span>
-                </>
-              ) : (
-                <>
-                  <ChangeIndicator change={feature.change} />
-                  <span className="">{feature.name}:</span>
-                  <span className="text-muted-foreground">
-                    {typeof feature.currentValue === "string"
-                      ? feature.currentValue
-                      : "Included"}
-                  </span>
-                  <span className="text-muted-foreground">→</span>
-                  <span
-                    className={cn(
-                      feature.change === "upgraded"
-                        ? "text-green-600"
-                        : "text-destructive",
-                    )}
-                  >
-                    {typeof feature.newValue === "string"
-                      ? feature.newValue
-                      : "Included"}
-                  </span>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  target: Plan;
+  targetIndex: number;
+  subscribedPlan: Plan;
+  currentIndex: number;
+}): boolean => {
+  if (target.key === subscribedPlan.key) {
+    return planVersion(target) > planVersion(subscribedPlan);
+  }
+  // Mirror the backend's planOrder rule (`newOrder >= currentOrder`). The
+  // catalog is sorted by the same planOrder, so index is a faithful proxy;
+  // the modal's timing copy is a prediction the confirm page confirms via the
+  // server's authoritative `activeFrom`.
+  return targetIndex >= currentIndex;
 };
 
 export type SwitchPlanTarget = {
   subscriptionId: string;
   plan: Plan;
-  mode: "upgrade" | "downgrade" | "private";
+  mode: PlanChangeMode;
 };
+
+const isSwitchPlanTarget = (value: unknown): value is SwitchPlanTarget =>
+  typeof value === "object" &&
+  value !== null &&
+  "subscriptionId" in value &&
+  "plan" in value &&
+  "mode" in value;
+
+type PlanEntry = { plan: Plan; isNewerVersion: boolean };
 
 export const SwitchPlanModal = ({
   subscription,
@@ -489,92 +125,102 @@ export const SwitchPlanModal = ({
     },
   });
 
-  const currentPlan = plansData?.items.find(
-    (p) => p.key === subscription.plan.key,
-  );
+  const subscribedPlan = subscription.plan;
+
+  // The current plan's entitlements, sourced from the subscription's actual
+  // provisioned items (real included quotas), with the catalog plan as a
+  // fallback. Used by each target card's "what changes" summary.
+  const currentEntitlements: EntitlementSet = useMemo(() => {
+    const currency = subscription.currency ?? subscribedPlan.currency;
+    const activePhase = getActivePhase(subscription);
+    if (activePhase && (activePhase.items?.length ?? 0) > 0) {
+      return categorizeSubscriptionItems(activePhase.items, {
+        currency,
+        units: pricing?.units,
+      });
+    }
+    const lastPhase = subscribedPlan.phases?.at(-1);
+    return lastPhase
+      ? categorizeRateCards(lastPhase.rateCards, {
+          currency,
+          units: pricing?.units,
+          planBillingCadence: subscribedPlan.billingCadence,
+        })
+      : { quotas: [], features: [] };
+  }, [subscription, subscribedPlan, pricing?.units]);
 
   const { upgrades, downgrades, privatePlans } = useMemo(() => {
-    if (!plansData?.items) {
+    const catalogItems = plansData?.items;
+    if (!catalogItems?.length) {
       return {
-        upgrades: [],
-        downgrades: [],
-        privatePlans: [],
+        upgrades: [] as PlanEntry[],
+        downgrades: [] as PlanEntry[],
+        privatePlans: [] as PlanEntry[],
       };
     }
 
-    // If the current plan isn't present in the pricing page response (common for
-    // private/unlisted plans), we still want to allow switching to visible plans.
-    if (!currentPlan) {
-      const currentIndex = -1;
-      const allComparisons = plansData.items.map((plan, targetIndex) =>
-        comparePlans(
-          undefined,
-          plan,
-          currentIndex,
-          targetIndex,
-          pricing?.units,
-        ),
-      );
-
-      return {
-        upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
-        downgrades: [],
-        privatePlans: [],
-      };
-    }
-
-    // If the user is currently on a private plan, treat all available targets as a "switch"
-    // (not an upgrade/downgrade) to avoid an empty modal and confusing labels.
-    if (isPrivatePlan(currentPlan)) {
-      const currentIndex = plansData.items.findIndex(
-        (p) => p.id === currentPlan.id,
-      );
-      const allComparisons = plansData.items
-        .filter((p) => p.id !== currentPlan.id)
-        .map((plan) => {
-          const targetIndex = plansData.items.indexOf(plan);
-          return comparePlans(
-            currentPlan,
-            plan,
-            currentIndex,
-            targetIndex,
-            pricing?.units,
-          );
-        });
-
-      return {
-        upgrades: allComparisons.filter((c) => !isPrivatePlan(c.plan)),
-        downgrades: [],
-        privatePlans: [],
-      };
-    }
-
-    const currentIndex = plansData.items.findIndex(
-      (p) => p.id === currentPlan.id,
+    const subscribedOnCatalog = catalogItems.some(
+      (p) => p.id === subscribedPlan.id,
     );
-    const allComparisons = plansData.items
-      .filter((p) => p.id !== currentPlan.id)
-      .map((plan) => {
-        const targetIndex = plansData.items.indexOf(plan);
-        return comparePlans(
-          currentPlan,
+    const currentIndex = subscribedOnCatalog
+      ? catalogItems.findIndex((p) => p.id === subscribedPlan.id)
+      : -1;
+    const subscribedIsPrivate = isPrivatePlan(subscribedPlan);
+
+    const entries = catalogItems.flatMap((plan, targetIndex) => {
+      if (plan.id === subscribedPlan.id) return [];
+      return [
+        {
           plan,
-          currentIndex,
-          targetIndex,
-          pricing?.units,
-        );
-      });
+          isUpgrade: resolveIsUpgrade({
+            target: plan,
+            targetIndex,
+            subscribedPlan,
+            currentIndex,
+          }),
+          isNewerVersion: isNewerPlanVersion(subscribedPlan, plan),
+        },
+      ];
+    });
+
+    // Private subscriptions: public targets are upgrades, private targets switch.
+    if (subscribedIsPrivate) {
+      return {
+        upgrades: entries.filter((c) => !isPrivatePlan(c.plan)),
+        downgrades: [] as PlanEntry[],
+        privatePlans: entries.filter((c) => isPrivatePlan(c.plan)),
+      };
+    }
 
     return {
-      upgrades: allComparisons.filter(
-        (c) => c.isUpgrade && !isPrivatePlan(c.plan),
-      ),
-      downgrades: allComparisons.filter(
-        (c) => !c.isUpgrade && !isPrivatePlan(c.plan),
-      ),
-      privatePlans: allComparisons.filter((c) => isPrivatePlan(c.plan)),
+      upgrades: entries.filter((c) => c.isUpgrade && !isPrivatePlan(c.plan)),
+      downgrades: entries.filter((c) => !c.isUpgrade && !isPrivatePlan(c.plan)),
+      privatePlans: entries.filter((c) => isPrivatePlan(c.plan)),
     };
-  }, [plansData?.items, currentPlan, pricing?.units]);
+  }, [plansData?.items, subscribedPlan]);
+
+  const renderCards = (entries: PlanEntry[], mode: PlanChangeMode) => (
+    <div className="space-y-3">
+      {entries.map(({ plan, isNewerVersion }) => (
+        <PlanChangeCard
+          key={plan.id}
+          plan={plan}
+          mode={mode}
+          currentEntitlements={currentEntitlements}
+          isNewerVersion={isNewerVersion}
+          isSwitching={switchPlanMutation.isPending}
+          units={pricing?.units}
+          onSwitch={() =>
+            switchPlanMutation.mutate({
+              subscriptionId: subscription.id,
+              plan,
+              mode,
+            })
+          }
+        />
+      ))}
+    </div>
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -600,26 +246,11 @@ export const SwitchPlanModal = ({
                 </AlertDescription>
               </Alert>
             )}
-            {currentPlan && (
-              <Item variant="outline">
-                <ItemContent>
-                  <ItemTitle>Current Plan</ItemTitle>
-                  <ItemDescription className="text-lg font-bold">
-                    {currentPlan.name}
-                  </ItemDescription>
-                </ItemContent>
-              </Item>
-            )}
-            {!currentPlan && (
-              <Item variant="outline">
-                <ItemContent>
-                  <ItemTitle>Current Plan</ItemTitle>
-                  <ItemDescription className="text-lg font-bold">
-                    {subscription.plan.name}
-                  </ItemDescription>
-                </ItemContent>
-              </Item>
-            )}
+
+            <CurrentPlanBaseline
+              subscription={subscription}
+              units={pricing?.units}
+            />
 
             {upgrades.length > 0 && (
               <div>
@@ -634,20 +265,7 @@ export const SwitchPlanModal = ({
                     Takes effect immediately
                   </span>
                 </div>
-                <div className="space-y-3">
-                  {upgrades.map((comparison) => (
-                    <PlanComparisonItem
-                      key={comparison.plan.id}
-                      comparison={comparison}
-                      subscriptionId={subscription.id}
-                      mode="upgrade"
-                      onRequestChange={(target) =>
-                        switchPlanMutation.mutate(target)
-                      }
-                      isSwitching={switchPlanMutation.isPending}
-                    />
-                  ))}
-                </div>
+                {renderCards(upgrades, "upgrade")}
               </div>
             )}
 
@@ -661,23 +279,10 @@ export const SwitchPlanModal = ({
                     </span>
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    Takes effect next billing cycle
+                    Takes effect at your next billing cycle
                   </span>
                 </div>
-                <div className="space-y-3">
-                  {downgrades.map((comparison) => (
-                    <PlanComparisonItem
-                      key={comparison.plan.id}
-                      comparison={comparison}
-                      subscriptionId={subscription.id}
-                      mode="downgrade"
-                      onRequestChange={(target) =>
-                        switchPlanMutation.mutate(target)
-                      }
-                      isSwitching={switchPlanMutation.isPending}
-                    />
-                  ))}
-                </div>
+                {renderCards(downgrades, "downgrade")}
               </div>
             )}
 
@@ -694,20 +299,7 @@ export const SwitchPlanModal = ({
                     Takes effect immediately
                   </span>
                 </div>
-                <div className="space-y-3">
-                  {privatePlans.map((comparison) => (
-                    <PlanComparisonItem
-                      key={comparison.plan.id}
-                      comparison={comparison}
-                      subscriptionId={subscription.id}
-                      mode="private"
-                      onRequestChange={(target) =>
-                        switchPlanMutation.mutate(target)
-                      }
-                      isSwitching={switchPlanMutation.isPending}
-                    />
-                  ))}
-                </div>
+                {renderCards(privatePlans, "private")}
               </div>
             )}
           </div>

@@ -2,66 +2,56 @@ import {
   AlertTriangleIcon,
   InfoIcon,
   LightbulbIcon,
+  LockIcon,
   type LucideIcon,
+  MegaphoneIcon,
+  RocketIcon,
+  SettingsIcon,
   ShieldAlertIcon,
+  SparklesIcon,
+  ZapIcon,
 } from "lucide-react";
-import { type ReactNode, useId } from "react";
+import { type CSSProperties, type ReactNode, useId } from "react";
 import { cn } from "../util/cn.js";
 
-const stylesMap = {
-  note: {
-    border: "border-gray-300 dark:border-zinc-800",
-    bg: "bg-gray-100 dark:bg-zinc-800/50",
-    iconColor: "text-gray-600 dark:text-zinc-300",
-    titleColor: "text-gray-600 dark:text-zinc-300",
-    textColor:
-      "text-gray-600 dark:text-zinc-300 [&_a]:hover:text-gray-700 [&_a]:dark:hover:text-zinc-400",
-    Icon: InfoIcon as LucideIcon,
-  },
-  tip: {
-    border: "border-green-500 dark:border-green-800",
-    bg: "bg-green-200/25 dark:bg-green-950/70",
-    iconColor: "text-green-600 dark:text-green-200",
-    titleColor: "text-green-700 dark:text-green-200",
-    textColor:
-      "text-green-600 dark:text-green-50 [&_a]:hover:text-green-700 [&_a]:dark:hover:text-green-300",
-    Icon: LightbulbIcon as LucideIcon,
-  },
-  info: {
-    border: "border-blue-400 dark:border-blue-900/60",
-    bg: "bg-blue-50 dark:bg-blue-950/40",
-    iconColor: "text-blue-400 dark:text-blue-200",
-    titleColor: "text-blue-700 dark:text-blue-200",
-    textColor:
-      "text-blue-600 dark:text-blue-100 [&_a]:hover:text-blue-800 [&_a]:dark:hover:text-blue-300",
-    Icon: InfoIcon as LucideIcon,
-  },
+const typeMap = {
+  note: { color: "var(--callout-note)", Icon: InfoIcon as LucideIcon },
+  tip: { color: "var(--callout-tip)", Icon: LightbulbIcon as LucideIcon },
+  info: { color: "var(--callout-info)", Icon: InfoIcon as LucideIcon },
   caution: {
-    border: "border-yellow-500 dark:border-yellow-400/25",
-    bg: "bg-yellow-100/60 dark:bg-yellow-400/10",
-    iconColor: "text-yellow-700 dark:text-yellow-300",
-    titleColor: "text-yellow-800 dark:text-yellow-300",
-    textColor:
-      "text-amber-800 dark:text-yellow-200 [&_a]:hover:text-amber-900 [&_a]:dark:hover:text-yellow-300",
+    color: "var(--callout-caution)",
     Icon: AlertTriangleIcon as LucideIcon,
   },
   danger: {
-    border: "border-rose-400 dark:border-rose-800",
-    bg: "bg-rose-50 dark:bg-rose-950/40",
-    iconColor: "text-rose-400 dark:text-rose-300",
-    titleColor: "text-rose-800 dark:text-rose-300",
-    textColor:
-      "text-rose-700 dark:text-rose-100 [&_a]:hover:text-rose-800 [&_a]:dark:hover:text-rose-300",
+    color: "var(--callout-danger)",
     Icon: ShieldAlertIcon as LucideIcon,
+  },
+  sparkles: {
+    color: "var(--callout-sparkles)",
+    Icon: SparklesIcon as LucideIcon,
+  },
+  rocket: {
+    color: "var(--callout-rocket)",
+    Icon: RocketIcon as LucideIcon,
+  },
+  settings: {
+    color: "var(--callout-settings)",
+    Icon: SettingsIcon as LucideIcon,
+  },
+  zap: { color: "var(--callout-zap)", Icon: ZapIcon as LucideIcon },
+  lock: { color: "var(--callout-lock)", Icon: LockIcon as LucideIcon },
+  megaphone: {
+    color: "var(--callout-megaphone)",
+    Icon: MegaphoneIcon as LucideIcon,
   },
 } as const;
 
 type CalloutProps = {
-  type: keyof typeof stylesMap;
+  type: keyof typeof typeMap;
   title?: string;
   children: ReactNode;
   className?: string;
-  icon?: boolean;
+  icon?: boolean | ReactNode;
 };
 
 export const Callout = ({
@@ -71,49 +61,59 @@ export const Callout = ({
   className,
   icon = true,
 }: CalloutProps) => {
-  const { border, bg, iconColor, titleColor, textColor, Icon } =
-    stylesMap[type];
+  const { color, Icon } = typeMap[type];
   const titleId = useId();
+
+  const style = {
+    "--callout-color": color,
+    backgroundColor:
+      "color-mix(in oklab, var(--callout-color) 6%, var(--background))",
+    borderColor: "color-mix(in oklab, var(--callout-color) 25%, transparent)",
+  } as CSSProperties;
+
+  const headingColor =
+    "color-mix(in oklab, var(--callout-color) 70%, var(--foreground))";
 
   return (
     <div
       role="note"
       aria-labelledby={title ? titleId : undefined}
+      style={style}
       className={cn(
-        "not-prose rounded-md border p-4 text-md my-2",
-        icon &&
-          "grid grid-cols-[min-content_1fr] items-baseline grid-rows-[fit-content_1fr] gap-x-4 gap-y-2",
-        !icon && title && "flex flex-col gap-2",
+        "not-prose rounded-xl border px-4 py-3 flex gap-3 text-sm my-3 text-foreground",
         "[&_a]:underline [&_a]:decoration-current [&_a]:decoration-from-font [&_a]:underline-offset-4 hover:[&_a]:decoration-1",
         "[&_.code-block-wrapper]:border",
         "[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:ps-4 [&_ul>li]:ps-1 [&_ul>li]:my-1",
-        icon && title && "items-center",
-        border,
-        bg,
         className,
       )}
     >
-      {icon && (
+      {!icon ? null : icon === true ? (
         <Icon
-          className={cn(!title ? "translate-y-1" : "align-middle", iconColor)}
-          size={20}
+          className="shrink-0 mt-0.5"
+          style={{ color: "var(--callout-color)" }}
+          size={18}
           aria-hidden="true"
         />
+      ) : (
+        <span
+          aria-hidden="true"
+          className="shrink-0 mt-0.5 inline-flex items-center justify-center size-[18px] [&_svg]:size-full"
+          style={{ color: "var(--callout-color)" }}
+        >
+          {icon}
+        </span>
       )}
-      {title && (
-        <p id={titleId} className={cn("font-medium", titleColor)}>
-          {title}
-        </p>
-      )}
-      <div
-        className={cn(
-          icon && "col-start-2",
-          !title && icon && "row-start-1",
-          textColor,
-          "overflow-x-auto",
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        {title && (
+          <p
+            id={titleId}
+            className="font-medium leading-snug"
+            style={{ color: headingColor }}
+          >
+            {title}
+          </p>
         )}
-      >
-        {children}
+        <div className="overflow-x-auto leading-relaxed">{children}</div>
       </div>
     </div>
   );

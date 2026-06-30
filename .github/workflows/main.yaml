@@ -47,12 +47,12 @@ jobs:
       IS_RELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType != 'prerelease' }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           run_install: false
 
@@ -70,7 +70,7 @@ jobs:
 
       - run: pnpm install nx --global
 
-      - uses: nrwl/nx-set-shas@v5
+      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
 
       # This must be a real github account otherwise vercel thows ugly errors
       - run: git config --global user.email "integrations@zuplo.com"
@@ -137,7 +137,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         if: github.ref == 'refs/heads/main'
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
           token_format: access_token
           workload_identity_provider: ${{ vars.GCP_ACTIONS_IDENTITY_PROVIDER }}
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload CSS
         if: github.ref == 'refs/heads/main'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -158,7 +158,7 @@ jobs:
 
       - name: Upload Javascript
         if: github.ref == 'refs/heads/main'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -171,7 +171,7 @@ jobs:
 
       - name: Upload HTML (Latest)
         if: env.IS_RELEASE == 'true'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone/index.html
@@ -182,7 +182,7 @@ jobs:
 
       - name: Upload CSS (Latest)
         if: env.IS_RELEASE == 'true'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -194,7 +194,7 @@ jobs:
 
       - name: Upload Javascript (Latest)
         if: env.IS_RELEASE == 'true'
-        uses: google-github-actions/upload-cloud-storage@v3
+        uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a # v3
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone

@@ -1,7 +1,8 @@
-import type {
-  OperationsFragmentFragment,
-  SecuritySchemeItem,
-} from "../graphql/graphql.js";
+import type { OperationsFragmentFragment } from "../graphql/graphql.js";
+
+export type SecuritySchemeItem = NonNullable<
+  OperationsFragmentFragment["security"]
+>[number]["schemes"][number]["scheme"];
 
 export const extractOperationSecuritySchemes = (
   operation: OperationsFragmentFragment,

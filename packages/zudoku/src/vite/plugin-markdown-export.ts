@@ -1,11 +1,10 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { matchPath } from "react-router";
 import type { Plugin } from "vite";
-import { getCurrentConfig } from "../config/loader.js";
-import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
+import { type ConfigWithMeta, getCurrentConfig } from "../config/loader.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { readFrontmatter } from "../lib/util/readFrontmatter.js";
+import { matchesAnyProtectedPattern } from "../lib/util/url.js";
 import {
   globMarkdownFiles,
   resolveCustomNavigationPaths,
@@ -74,6 +73,11 @@ export const resolveMarkdownRoutePath = (
   return routePath;
 };
 
+const needsMdFiles = (config: ConfigWithMeta) =>
+  config.docs.publishMarkdown ||
+  config.docs.llms.llmsTxt ||
+  config.docs.llms.llmsTxtFull;
+
 const viteMarkdownExportPlugin = (): Plugin => {
   let markdownFiles: Record<string, string> = {};
   let markdownFileInfos: MarkdownFileInfo[] = [];
@@ -85,14 +89,8 @@ const viteMarkdownExportPlugin = (): Plugin => {
     },
     async buildStart() {
       const config = getCurrentConfig();
-      const llmsConfig = config.docs?.llms;
 
-      const needsMdFiles =
-        config.docs?.publishMarkdown ||
-        llmsConfig?.llmsTxt ||
-        llmsConfig?.llmsTxtFull;
-
-      if (config.__meta.mode === "standalone" || !needsMdFiles) {
+      if (config.__meta.mode === "standalone" || !needsMdFiles(config)) {
         return;
       }
 
@@ -102,20 +100,12 @@ const viteMarkdownExportPlugin = (): Plugin => {
       );
 
       // Filter out protected routes unless `includeProtected` is true
-      if (!llmsConfig?.includeProtected) {
-        const protectedRoutes = ProtectedRoutesSchema.parse(
-          config.protectedRoutes,
-        );
+      if (!config.docs.llms.includeProtected) {
+        const protectedRoutes = config.protectedRoutes;
         if (protectedRoutes) {
-          const isProtectedRoute = (routePath: string): boolean => {
-            return Object.keys(protectedRoutes).some((route) =>
-              matchPath({ path: route, end: true }, routePath),
-            );
-          };
-
-          // Remove protected routes from the mapping
+          const patterns = Object.keys(protectedRoutes);
           for (const routePath of Object.keys(markdownFiles)) {
-            if (isProtectedRoute(routePath)) {
+            if (matchesAnyProtectedPattern(patterns, routePath)) {
               delete markdownFiles[routePath];
             }
           }
@@ -124,15 +114,9 @@ const viteMarkdownExportPlugin = (): Plugin => {
     },
     async configureServer(server) {
       const config = getCurrentConfig();
-      const llmsConfig = config.docs?.llms;
 
       // Serve .md files if markdown export is needed
-      const needsMdFiles =
-        config.docs?.publishMarkdown ||
-        llmsConfig?.llmsTxt ||
-        llmsConfig?.llmsTxtFull;
-
-      if (!needsMdFiles) return;
+      if (!needsMdFiles(config)) return;
 
       markdownFiles = await resolveCustomNavigationPaths(
         config,
@@ -163,17 +147,11 @@ const viteMarkdownExportPlugin = (): Plugin => {
     },
     async closeBundle() {
       const config = getCurrentConfig();
-      const llmsConfig = config.docs?.llms;
-
-      const needsMdFiles =
-        config.docs?.publishMarkdown ||
-        llmsConfig?.llmsTxt ||
-        llmsConfig?.llmsTxtFull;
 
       if (
         process.env.NODE_ENV !== "production" ||
         Object.keys(markdownFiles).length === 0 ||
-        !needsMdFiles
+        !needsMdFiles(config)
       ) {
         return;
       }
@@ -214,7 +192,7 @@ const viteMarkdownExportPlugin = (): Plugin => {
         }
       }
 
-      if (config.docs?.llms?.llmsTxt || config.docs?.llms?.llmsTxtFull) {
+      if (config.docs.llms.llmsTxt || config.docs.llms.llmsTxtFull) {
         const markdownInfoPath = path.join(
           config.__meta.rootDir,
           "node_modules/.zudoku/markdown-info.json",

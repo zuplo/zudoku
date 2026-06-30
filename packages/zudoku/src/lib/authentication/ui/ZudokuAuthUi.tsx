@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from "../../ui/Form.js";
 import { cn } from "../../util/cn.js";
+import { redirectAfterAuth } from "../utils/redirectAfterAuth.js";
 import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
 import { AuthCard } from "./AuthCard.js";
 import AppleIcon from "./icons/Apple.js";
@@ -172,14 +173,14 @@ export const ZudokuSignInUi = ({
     mutationFn: ({ email, password }: FormFields) =>
       onUsernamePasswordSignIn(email, password),
     onSuccess: () => {
-      void navigate(relativeRedirectTo);
+      void redirectAfterAuth(navigate, relativeRedirectTo);
     },
   });
   const signInByProviderMutation = useMutation({
     mutationFn: ({ providerId }: { providerId: string }) =>
       onOAuthSignIn(providerId),
     onSuccess: () => {
-      void navigate(relativeRedirectTo);
+      void redirectAfterAuth(navigate, relativeRedirectTo);
     },
   });
   const form = useForm<FormFields>({
@@ -318,7 +319,7 @@ export const ZudokuSignUpUi = ({
       await onUsernamePasswordSignUp(email, password);
     },
     onSuccess: () => {
-      void navigate(relativeRedirectTo);
+      void redirectAfterAuth(navigate, relativeRedirectTo);
     },
   });
 
@@ -327,7 +328,7 @@ export const ZudokuSignUpUi = ({
       await onOAuthSignUp(providerId);
     },
     onSuccess: () => {
-      void navigate(relativeRedirectTo);
+      void redirectAfterAuth(navigate, relativeRedirectTo);
     },
   });
 

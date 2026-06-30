@@ -209,7 +209,7 @@ const config = {
       disableSecurity: true, // Disable security scheme display and playground auth (default)
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
-      showInfoPage: true, // Show API information page as the index route
+      showInfoPage: true, // Always show the info page (unset = show only if a description is set)
       schemaDownload: {
         enabled: true, // Enable schema download button
         fileName: "schema", // Set name of the schema file when downloaded
@@ -234,8 +234,9 @@ Available options:
   - `"always"`: Always show version selector (disabled if only one version)
   - `"hide"`: Never show version selector
 - `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
-- `showInfoPage`: Show the API information page as the index route (default: `true`). When disabled,
-  navigating to the API root redirects to the first tag instead
+- `showInfoPage`: Control the API information page shown as the index route. Set to `true` to always
+  show it, or `false` to always redirect the API root to the first tag. When unset, the page is
+  shown only if the API has a description, otherwise the API root redirects to the first tag
 - `schemaDownload`: Enable schema download functionality. When enabled, displays a button allowing
   users to download the OpenAPI schema, copy it to clipboard, or open in a new tab.
   - `enabled`: Enable or disable the schema download button
@@ -261,7 +262,7 @@ const config = {
       disableSecurity: true, // Disable security scheme display and playground auth (default)
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
-      showInfoPage: true, // Show API information page as the index route
+      showInfoPage: true, // Always show the info page (unset = show only if a description is set)
       schemaDownload: {
         enabled: true, // Enable schema download button
         fileName: "schema", // Set name of the schema file when downloaded

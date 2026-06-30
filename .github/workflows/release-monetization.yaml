@@ -30,12 +30,12 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           run_install: false
 
@@ -51,6 +51,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Sync to npm latest
+        working-directory: packages/plugin-zuplo-monetization
+        run: |
+          PUBLISHED=$(npm view @zuplo/zudoku-plugin-monetization version)
+          npm version "$PUBLISHED" --allow-same-version --no-git-tag-version
 
       - name: Typecheck
         run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
@@ -91,9 +97,21 @@ jobs:
       - name: Push Git Changes
         env:
           ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
-          git push "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git" main --follow-tags
+          REMOTE="https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git"
+          TAG="monetization-v${VERSION}"
+          for i in 1 2 3; do
+            if git pull --rebase "$REMOTE" main; then
+              git tag -f -a "$TAG" -m "Release monetization v${VERSION}"
+              git push "$REMOTE" main --follow-tags && exit 0
+            else
+              git rebase --abort || true
+            fi
+            sleep $((i * 5))
+          done
+          exit 1
 
       - name: Generate a token
         id: app-token

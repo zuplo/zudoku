@@ -9,17 +9,30 @@ import type {
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  VerifyAccessTokenResult,
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { LogoutCallbackHandler } from "../components/LogoutCallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
+import { fetchServerSession } from "../cookie-sync.js";
+import { DEFAULT_SESSION_MAX_AGE, SESSION_ENDPOINT_PATH } from "../cookies.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
 import { redirectToSignUpUrl } from "./util.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
+
+const decodeJwtExp = async (token: string): Promise<number | undefined> => {
+  try {
+    const { decodeJwt } = await import("jose");
+    const payload = decodeJwt(token);
+    return typeof payload.exp === "number" ? payload.exp : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 export interface OpenIdProviderData {
   // just for easy migration we also allow for undefined type. can be removed in the future.
@@ -72,6 +85,8 @@ export class OpenIDAuthenticationProvider
     "acr_values",
   ];
   private readonly allowInsecureRequests: boolean;
+  private readonly sessionEndpoint: string;
+  private serverSessionHydration?: Promise<OpenIdProviderData | undefined>;
 
   constructor({
     issuer,
@@ -97,6 +112,7 @@ export class OpenIDAuthenticationProvider
     this.issuer = issuer;
     // This is the callback URL for the OAuth provider. So it needs the base path.
     this.callbackUrlPath = joinUrl(basePath, OPENID_CALLBACK_PATH);
+    this.sessionEndpoint = joinUrl(basePath, SESSION_ENDPOINT_PATH);
     this.scopes = scopes ?? ["openid", "profile", "email"];
     this.allowInsecureRequests = allowInsecureRequests ?? false;
 
@@ -239,7 +255,42 @@ export class OpenIDAuthenticationProvider
     };
   }
 
+  public async verifyAccessToken(
+    token: string,
+  ): Promise<VerifyAccessTokenResult> {
+    const authServer = await this.getAuthServer();
+    const response = await oauth.userInfoRequest(
+      authServer,
+      this.client,
+      token,
+    );
+    if (!response.ok) return undefined;
+    const userInfo = (await response.json()) as Record<string, unknown>;
+    if (!userInfo.sub) return undefined;
+
+    // userInfoRequest authenticated the token upstream; parsing `exp` here
+    // lets us bound the cookie lifetime to the token's. Opaque tokens just
+    // yield undefined and fall back to the handler's default.
+    const expiresAt = await decodeJwtExp(token);
+
+    return {
+      profile: {
+        sub: String(userInfo.sub),
+        email: userInfo.email as string | undefined,
+        name: userInfo.name as string | undefined,
+        emailVerified: Boolean(userInfo.email_verified),
+        pictureUrl: userInfo.picture as string | undefined,
+      },
+      expiresAt,
+    };
+  }
+
   public async refreshUserProfile(): Promise<boolean> {
+    // SSR mode doesn't persist `providerData`; tokens live only in the
+    // httpOnly cookie. Without client-side tokens we can't call userInfo —
+    // the SSR-supplied profile stays authoritative.
+    if (!useAuthState.getState().providerData) return false;
+
     const accessToken = await this.getAccessToken();
     const authServer = await this.getAuthServer();
 
@@ -368,19 +419,67 @@ export class OpenIDAuthenticationProvider
     }
   }
 
+  // In SSR mode tokens live in httpOnly cookies and don't survive a full
+  // navigation. Restore the access token from the session endpoint and cache
+  // it as providerData so subsequent calls take the regular path.
+  private async restoreServerSession(): Promise<
+    OpenIdProviderData | undefined
+  > {
+    const session = await fetchServerSession(this.sessionEndpoint);
+    if (!session) return;
+
+    const expiresAt =
+      session.expiresAt ?? (await decodeJwtExp(session.accessToken));
+
+    const providerData: OpenIdProviderData = {
+      type: "openid",
+      accessToken: session.accessToken,
+      expiresOn: expiresAt
+        ? new Date(expiresAt * 1000)
+        : new Date(Date.now() + DEFAULT_SESSION_MAX_AGE * 1000),
+      tokenType: "Bearer",
+      claims: undefined,
+    };
+
+    useAuthState.setState({ providerData });
+
+    return providerData;
+  }
+
+  // Dedupes concurrent restores only: the cache is dropped once settled. A
+  // successful restore lives on in providerData, and anything else (no
+  // session, failure, a later logout clearing providerData) must re-check the
+  // cookie-backed session instead of reusing a stale result.
+  private hydrateFromServerSession() {
+    this.serverSessionHydration ??= this.restoreServerSession().finally(() => {
+      this.serverSessionHydration = undefined;
+    });
+    return this.serverSessionHydration;
+  }
+
   async getAccessToken(): Promise<string> {
     const as = await this.getAuthServer();
     const { providerData, setLoggedOut } = useAuthState.getState();
 
+    let tokenState =
+      providerData &&
+      (providerData.type === "openid" || providerData.type === undefined)
+        ? providerData
+        : undefined;
+
     if (
-      !providerData ||
-      (providerData?.type !== "openid" && providerData?.type !== undefined)
+      !tokenState &&
+      import.meta.env.ZUDOKU_HAS_SERVER &&
+      typeof window !== "undefined"
     ) {
-      useAuthState.getState().setLoggedOut();
-      throw new AuthorizationError("Invalid or incompatible provider data");
+      tokenState = await this.hydrateFromServerSession();
     }
 
-    const tokenState = providerData;
+    // A missing session is a confirmed logout; transient failures threw above.
+    if (!tokenState) {
+      setLoggedOut();
+      throw new AuthorizationError("Invalid or incompatible provider data");
+    }
 
     if (new Date(tokenState.expiresOn) < new Date()) {
       if (!tokenState.refreshToken) {

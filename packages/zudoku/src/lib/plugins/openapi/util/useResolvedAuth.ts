@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import type { ApiIdentity } from "../../../core/ZudokuContext.js";
-import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 import {
   NO_IDENTITY,
   SECURITY_SCHEME_PREFIX,
-} from "../playground/constants.js";
+} from "../../../hooks/useIdentityStore.js";
+import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 import { useSecurityCredentialsStore } from "../playground/securityCredentialsStore.js";
 import { EMPTY_RESOLVED_AUTH, type ResolvedAuth } from "./createHttpSnippet.js";
 import {

@@ -41,7 +41,7 @@ describe("validateConfig", () => {
 
     expect(() => validateConfig(configWithValidAuth0))
       .toThrowErrorMatchingInlineSnapshot(`
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
       ✖ Clerk public key invalid, must start with pk_test or pk_live
         → at authentication.clerkPubKey]
     `);
@@ -172,7 +172,7 @@ describe("validateConfig", () => {
       validateConfig(configWithInvalidAuth0Domain),
     ).toThrowErrorMatchingInlineSnapshot(
       `
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
       ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
         → at authentication.domain]
     `,
@@ -194,7 +194,29 @@ describe("validateConfig", () => {
       validateConfig(configWithInvalidAuth0Domain),
     ).toThrowErrorMatchingInlineSnapshot(
       `
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
+      ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
+        → at authentication.domain]
+    `,
+    );
+  });
+
+  it("should include the config path in the error when provided", () => {
+    process.env.NODE_ENV = "production";
+
+    const configWithInvalidAuth0Domain = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "https://example.auth0.com",
+      },
+    };
+
+    expect(() =>
+      validateConfig(configWithInvalidAuth0Domain, "zudoku.config.ts"),
+    ).toThrowErrorMatchingInlineSnapshot(
+      `
+      [Error: Invalid Zudoku configuration at zudoku.config.ts:
       ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
         → at authentication.domain]
     `,
@@ -387,5 +409,172 @@ describe("validateConfig", () => {
     };
 
     expect(() => validateConfig(config)).toThrow();
+  });
+
+  it("should warn when the deprecated UNSAFE_slotlets option is used", () => {
+    process.env.NODE_ENV = "development";
+
+    const config = {
+      UNSAFE_slotlets: {},
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "deprecated and will be removed soon: UNSAFE_slotlets",
+      ),
+    );
+  });
+
+  it("should not warn about UNSAFE_ options that are not whitelisted", () => {
+    process.env.NODE_ENV = "development";
+
+    const config = {
+      UNSAFE_somethingElse: true,
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should not warn when no deprecated option is used", () => {
+    process.env.NODE_ENV = "development";
+
+    const config = {
+      aiAssistants: ["claude"],
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should accept inkeep search with nested settings", () => {
+    const config = {
+      search: {
+        type: "inkeep" as const,
+        apiKey: "key",
+        integrationId: "integration",
+        organizationId: "org",
+        primaryBrandColor: "#26D6FF",
+        organizationDisplayName: "Example",
+        transformSource: (source: unknown) => source,
+        someFutureBaseSetting: true,
+        searchSettings: {
+          tabs: ["Docs", ["All", { isAlwaysVisible: true }]],
+          someFutureSearchSetting: true,
+        },
+        aiChatSettings: {
+          aiAssistantName: "Example Assistant",
+        },
+        modalSettings: {
+          shortcutKey: "k",
+        },
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+});
+
+describe("validateConfig parsed result", () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it("applies docs defaults when docs is omitted", () => {
+    const result = validateConfig({});
+
+    expect(result.docs.publishMarkdown).toBe(true);
+    expect(result.docs.files).toEqual(["/pages/**/*.{md,mdx}"]);
+    expect(result.docs.llms).toEqual({
+      llmsTxt: false,
+      llmsTxtFull: false,
+      includeProtected: false,
+    });
+  });
+
+  it("transforms docs.files string into an array", () => {
+    const result = validateConfig({ docs: { files: "/docs/**/*.md" } });
+
+    expect(result.docs.files).toEqual(["/docs/**/*.md"]);
+    expect(result.docs.publishMarkdown).toBe(true);
+  });
+
+  it("transforms cdnUrl string into a base/media object", () => {
+    const result = validateConfig({ cdnUrl: "https://cdn.example.com" });
+
+    expect(result.cdnUrl).toEqual({
+      base: "https://cdn.example.com",
+      media: "https://cdn.example.com",
+    });
+  });
+
+  it("normalizes protectedRoutes array into a record of callbacks", () => {
+    const result = validateConfig({ protectedRoutes: ["/private/*"] });
+
+    expect(Object.keys(result.protectedRoutes ?? {})).toEqual(["/private/*"]);
+    expect(typeof result.protectedRoutes?.["/private/*"]).toBe("function");
+  });
+
+  it("leaves clerk jwtTemplateName absent when omitted", () => {
+    const result = validateConfig({
+      authentication: { type: "clerk", clerkPubKey: "pk_test_abc" },
+    });
+
+    expect(result.authentication).not.toHaveProperty("jwtTemplateName");
+  });
+
+  it("preserves plugin instances by reference", () => {
+    const plugin = { getRoutes: () => [] };
+    const result = validateConfig({ plugins: [plugin] });
+
+    expect(result.plugins?.[0]).toBe(plugin);
+  });
+
+  it("keeps raw values for invalid sections and resolves the remainder in dev", () => {
+    process.env.NODE_ENV = "development";
+    // The file-level spy is restored by the first describe's afterAll.
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const result = validateConfig({
+      authentication: { type: "auth0", clientId: "x", domain: "invalid" },
+      basePath: "/docs",
+    });
+
+    expect(spy).toHaveBeenCalled();
+    expect(result.authentication).toMatchObject({
+      type: "auth0",
+      domain: "invalid",
+    });
+    expect(result.basePath).toBe("/docs");
+    expect(result.docs.publishMarkdown).toBe(true);
+    spy.mockRestore();
+  });
+
+  it("keeps nested defaults when an invalid section is merged back in dev", () => {
+    process.env.NODE_ENV = "development";
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const result = validateConfig({
+      docs: { publishMarkdown: "no" },
+    });
+
+    // Raw invalid value survives, but sibling defaults stay resolved so
+    // consumers like `config.docs.llms.llmsTxt` don't crash.
+    expect(result.docs.publishMarkdown).toBe("no");
+    expect(result.docs.files).toEqual(["/pages/**/*.{md,mdx}"]);
+    expect(result.docs.llms).toEqual({
+      llmsTxt: false,
+      llmsTxtFull: false,
+      includeProtected: false,
+    });
+    spy.mockRestore();
   });
 });

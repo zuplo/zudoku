@@ -152,7 +152,10 @@
   ul.contains-task-list {
     @apply list-none px-0;
     li {
-      @apply my-1 flex items-center gap-1.5;
+      @apply my-1 ps-6 -indent-6;
+    }
+    li input[type="checkbox"] {
+      @apply me-1.5 align-[-0.125em];
     }
   }
 }
@@ -218,6 +221,18 @@
       "calt" 1;
   }
 
+  code,
+  pre,
+  kbd,
+  samp,
+  .shiki,
+  .shiki span {
+    font-variant-ligatures: none;
+    font-feature-settings:
+      "liga" 0,
+      "calt" 0;
+  }
+
   ::selection {
     background: var(--color-primary);
     color: var(--color-primary-foreground);
@@ -247,7 +262,8 @@
     background-color: var(--shiki-dark-bg) !important;
   }
   .code-block .shiki {
-    @apply grid grid-rows-1 whitespace-pre;
+    @apply grid whitespace-pre;
+    align-content: start;
     grid-auto-rows: 1lh;
   }
 

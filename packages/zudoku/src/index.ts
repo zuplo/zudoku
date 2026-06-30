@@ -1,6 +1,7 @@
 export type { ZudokuBuildConfig, ZudokuConfig } from "./config/config.js";
 export { createPlugin } from "./config/create-plugin.js";
 export type { InputNavigation as Navigation } from "./config/validators/InputNavigationSchema.js";
+export type { NavigationItem } from "./config/validators/NavigationSchema.js";
 export type { SlotType } from "./lib/components/context/SlotProvider.js";
 export {
   type CustomSlotNames,

@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import {
   GlobeIcon,
   InfoIcon,
@@ -11,9 +11,10 @@ import {
   WebhookIcon,
 } from "lucide-react";
 import type { PropsWithChildren, ReactNode } from "react";
-import { Link } from "react-router";
+import { Link, Navigate, useLocation } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Markdown } from "../../components/Markdown.js";
+import { useSidebar } from "../../components/navigation/sidebarStore.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { Badge } from "../../ui/Badge.js";
 import { Button } from "../../ui/Button.js";
@@ -26,6 +27,7 @@ import {
   ItemTitle,
 } from "../../ui/Item.js";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/Popover.js";
+import { cn } from "../../util/cn.js";
 import { slugify } from "../../util/slugify.js";
 import { ApiHeader } from "./ApiHeader.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
@@ -35,6 +37,7 @@ import type {
   SecuritySchemeType,
 } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
+import { shouldShowInfoPage } from "./util/shouldShowInfoPage.js";
 import { useWarmupSchema } from "./util/useWarmupSchema.js";
 
 const SchemaInfoQuery = graphql(/* GraphQL */ `
@@ -257,15 +260,35 @@ const securitySchemeDescription = (scheme: {
   }
 };
 
-export const SchemaInfo = () => {
+export const SchemaInfo = ({
+  showInfoPage,
+  redirectTo,
+}: {
+  showInfoPage?: boolean;
+  redirectTo?: string;
+} = {}) => {
   const { input, type, options } = useOasConfig();
+  const location = useLocation();
   const query = useCreateQuery(SchemaInfoQuery, { input, type });
   const {
     data: { schema },
   } = useSuspenseQuery(query);
   const { title, description } = schema;
+  const sidebarCollapsed = useSidebar((s) => s.isCollapsed);
 
   useWarmupSchema();
+
+  // Hide the overview page when there is no description, unless it was
+  // explicitly enabled. Redirect to the first tag so the route still resolves,
+  // preserving any existing query string.
+  if (!shouldShowInfoPage(showInfoPage, !!description) && redirectTo) {
+    return (
+      <Navigate
+        to={{ pathname: redirectTo, search: location.search }}
+        replace
+      />
+    );
+  }
 
   const hasCardContent = !!(
     schema.contact?.name ||
@@ -288,13 +311,13 @@ export const SchemaInfo = () => {
       data-pagefind-meta="section:openapi"
     >
       <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
-      <Helmet>
+      <Head>
         {title && <title>{title}</title>}
         {description && <meta name="description" content={description} />}
-      </Helmet>
+      </Head>
 
       <div className="mb-8 flex flex-col gap-4">
-        <ApiHeader heading={title} headingId="description" />
+        <ApiHeader heading={title} />
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_minmax(250px,380px)] gap-8">
           {hasCardContent && (
@@ -324,11 +347,14 @@ export const SchemaInfo = () => {
             )}
             {schema.description && (
               <Markdown
-                className="prose-img:max-w-prose prose-sm max-w-full lg:max-w-2xl"
+                className={cn(
+                  "prose-img:max-w-prose prose-sm max-w-full",
+                  sidebarCollapsed ? "lg:max-w-4xl" : "lg:max-w-2xl",
+                )}
                 content={schema.description}
               />
             )}
-            {tags.length > 0 && (
+            {tags.length > 1 && (
               <div>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
                   <TagIcon size={14} />

@@ -66,7 +66,7 @@
   ],
   "servers": [
     {
-      "url": "https://8f9618f3bc0f4eec989627ceaafd5e4d_oas.api.mockbin.io/",
+      "url": "https://c1cf69108515455da09b5a33ff336111-oas.api.mockbin.io/",
       "description": "Production environment"
     },
     {
@@ -1120,6 +1120,20 @@
                       "type": "integer"
                     }
                   }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error retrieving shipments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "QUANTUM_FLUX_ERROR",
+                  "message": "Shipment manifest lost in a warp-field anomaly"
                 }
               }
             }
@@ -3801,6 +3815,45 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/graphql": {
+      "post": {
+        "tags": ["Shipment Management"],
+        "operationId": "graphqlShipmentQuery",
+        "summary": "GraphQL endpoint",
+        "description": "Query the Cosmo Cargo registry via GraphQL. Test live against the public Rick and Morty universe schema.",
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
+        "x-graphql": {
+          "endpoint": "https://rickandmortyapi.com/graphql"
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "list-characters": {
+                  "summary": "List characters",
+                  "value": {
+                    "query": "query ListCharacters($page: Int) {\n  characters(page: $page) {\n    info { count pages }\n    results { id name species }\n  }\n}",
+                    "variables": { "page": 1 }
+                  }
+                },
+                "get-character": {
+                  "summary": "Get a character",
+                  "value": {
+                    "query": "query GetCharacter($id: ID!) {\n  character(id: $id) {\n    id\n    name\n    status\n    origin { name }\n  }\n}",
+                    "variables": { "id": "1" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "GraphQL response"
           }
         }
       }

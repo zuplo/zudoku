@@ -5,11 +5,12 @@ import { Drawer, DrawerTrigger } from "zudoku/ui/Drawer.js";
 import { cn } from "../util/cn.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { Navigation } from "./navigation/Navigation.js";
+import { SidebarToggle } from "./navigation/SidebarToggle.js";
 import { Slot } from "./Slot.js";
 
 export const Main = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { navigation } = useCurrentNavigation();
+  const { navigation, topNavItem } = useCurrentNavigation();
   const hasNavigation = navigation.length > 0;
   const isNavigating = useNavigation().state === "loading";
   const { options } = useZudoku();
@@ -24,6 +25,7 @@ export const Main = ({ children }: PropsWithChildren) => {
         <Navigation
           onRequestClose={() => setDrawerOpen(false)}
           navigation={navigation}
+          topNavItem={topNavItem}
         />
       )}
       {hasNavigation && (
@@ -49,6 +51,9 @@ export const Main = ({ children }: PropsWithChildren) => {
         {children}
         <Slot.Target name="content-after" />
       </main>
+      {hasNavigation && options.site?.sidebar?.collapsible !== false && (
+        <SidebarToggle />
+      )}
     </Drawer>
   );
 };

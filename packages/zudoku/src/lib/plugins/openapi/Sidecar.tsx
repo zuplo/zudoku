@@ -1,15 +1,14 @@
-import { ShieldCheckIcon, ShieldCogCornerIcon } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
-import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
 import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
-import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { useAuthState } from "../../authentication/state.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
+import { useIdentityStore } from "../../hooks/useIdentityStore.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
@@ -19,15 +18,11 @@ import { useOasConfig } from "./context.js";
 import { GeneratedExampleSidecarBox } from "./GeneratedExampleSidecarBox.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
-import { AuthorizeDialog } from "./playground/AuthorizeDialog.js";
-import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./playground/constants.js";
-import IdentitySelector from "./playground/IdentitySelector.js";
-import { useIdentityStore } from "./playground/rememberedIdentity.js";
-import { useSecurityCredentialsStore } from "./playground/securityCredentialsStore.js";
+import { AuthSelectorPopover } from "./playground/AuthSelectorPopover.js";
+import { GraphiQLDialog } from "./playground/GraphiQLDialog.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
-import * as SidecarBox from "./SidecarBox.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 import {
@@ -35,6 +30,7 @@ import {
   getLanguageForMediaType,
 } from "./util/formatRequestBody.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
+import { getGraphQLEndpoint } from "./util/graphqlEndpoint.js";
 import { methodForColor } from "./util/methodToColor.js";
 import { useResolvedAuth } from "./util/useResolvedAuth.js";
 
@@ -187,6 +183,7 @@ export const Sidecar = ({
   // If no manual selection, fall back to operation's first server (already respects operation > path > global hierarchy)
   const selectedServer =
     globalSelectedServer || operation.servers.at(0)?.url || "";
+  const operationUrl = joinUrl(selectedServer, operation.path);
 
   const securitySchemes = useMemo(
     () =>
@@ -198,10 +195,6 @@ export const Sidecar = ({
 
   const identities = useApiIdentities();
   const rememberedIdentity = useIdentityStore((s) => s.rememberedIdentity);
-  const setRememberedIdentity = useIdentityStore(
-    (s) => s.setRememberedIdentity,
-  );
-  const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
 
   const identityList = useMemo(() => identities.data ?? [], [identities.data]);
 
@@ -209,23 +202,14 @@ export const Sidecar = ({
     operation,
     identityId: rememberedIdentity,
     identities: identityList,
-    url: joinUrl(selectedServer, operation.path),
+    url: operationUrl,
   });
-
-  const inapplicableSchemeName = useMemo(() => {
-    if (!rememberedIdentity?.startsWith(SECURITY_SCHEME_PREFIX)) return;
-    const name = rememberedIdentity.slice(SECURITY_SCHEME_PREFIX.length);
-    return securitySchemes.some((s) => s.name === name) ? undefined : name;
-  }, [rememberedIdentity, securitySchemes]);
-
-  const hasAuthOptions = securitySchemes.length > 0 || identityList.length > 0;
-  const [authPopoverOpen, setAuthPopoverOpen] = useState(false);
-  const [authorizeSchemeName, setAuthorizeSchemeName] = useState<
-    string | undefined
-  >();
 
   const hasResolvedAuth =
     resolvedAuth.headers.length > 0 || resolvedAuth.queryString.length > 0;
+
+  const graphQLEndpoint = getGraphQLEndpoint(operation);
+  const isGraphQLEndpoint = graphQLEndpoint !== undefined;
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
     if (codeSamples && !hasResolvedAuth) {
@@ -248,16 +232,17 @@ export const Sidecar = ({
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
-      exampleBody: currentExampleCode
-        ? {
-            mimeType: selectedContent?.mediaType ?? "application/json",
-            text:
-              formatRequestBodyForDisplay(
-                selectedContent?.mediaType,
-                currentExampleCode,
-              ) ?? "",
-          }
-        : { mimeType: selectedContent?.mediaType ?? "application/json" },
+      exampleBody:
+        isGraphQLEndpoint || !currentExampleCode
+          ? { mimeType: selectedContent?.mediaType ?? "application/json" }
+          : {
+              mimeType: selectedContent?.mediaType ?? "application/json",
+              text:
+                formatRequestBodyForDisplay(
+                  selectedContent?.mediaType,
+                  currentExampleCode,
+                ) ?? "",
+            },
       resolvedAuth,
     });
 
@@ -274,6 +259,7 @@ export const Sidecar = ({
     context,
     resolvedAuth,
     hasResolvedAuth,
+    isGraphQLEndpoint,
   ]);
 
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
@@ -289,6 +275,45 @@ export const Sidecar = ({
   const hasResponseExamples = operation.responses.some((response) =>
     response.content?.some((content) => (content.examples?.length ?? 0) > 0),
   );
+
+  const displayRequestBodyContent =
+    isGraphQLEndpoint && transformedRequestBodyContent
+      ? transformedRequestBodyContent.map((c) => ({
+          ...c,
+          mediaType: "application/graphql",
+          examples: c.examples?.map((ex) => {
+            const value = ex.value as { query?: unknown } | null | undefined;
+            return {
+              ...ex,
+              value:
+                value && typeof value.query === "string"
+                  ? value.query
+                  : ex.value,
+            };
+          }),
+        }))
+      : undefined;
+
+  const graphQLTabs = isGraphQLEndpoint
+    ? transformedRequestBodyContent
+        ?.flatMap((c) => c.examples ?? [])
+        .flatMap((example) => {
+          const value = example.value as
+            | { query?: unknown; variables?: unknown }
+            | null
+            | undefined;
+          if (!value || typeof value.query !== "string") return [];
+          return [
+            {
+              query: value.query,
+              variables:
+                value.variables !== undefined
+                  ? JSON.stringify(value.variables, null, 2)
+                  : undefined,
+            },
+          ];
+        })
+    : undefined;
 
   return (
     <aside
@@ -311,13 +336,25 @@ export const Sidecar = ({
               </Badge>
               {path}
             </span>
-            {showPlayground && (
-              <PlaygroundDialogWrapper
-                servers={operation.servers.map((server) => server.url)}
-                operation={operation}
-                examples={requestBodyContent ?? undefined}
-              />
-            )}
+            {showPlayground &&
+              (isGraphQLEndpoint ? (
+                <GraphiQLDialog
+                  endpoint={graphQLEndpoint?.endpoint ?? operationUrl}
+                  operation={operation}
+                  securitySchemes={securitySchemes}
+                  defaultTabs={
+                    graphQLTabs && graphQLTabs.length > 0
+                      ? graphQLTabs
+                      : undefined
+                  }
+                />
+              ) : (
+                <PlaygroundDialogWrapper
+                  servers={operation.servers.map((server) => server.url)}
+                  operation={operation}
+                  examples={requestBodyContent ?? undefined}
+                />
+              ))}
           </div>
         </SidecarBox.Head>
         <SidecarBox.Body>
@@ -328,7 +365,7 @@ export const Sidecar = ({
               embedded
               language={selectedLang}
               showLanguageIndicator={false}
-              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
+              className="[--scrollbar-color:gray] rounded-none text-xs max-h-50"
               // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
               code={httpSnippetCode!}
             />
@@ -353,79 +390,17 @@ export const Sidecar = ({
               </NativeSelectOption>
             ))}
           </NativeSelect>
-          {hasAuthOptions && (
-            <Popover open={authPopoverOpen} onOpenChange={setAuthPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label="Select authentication"
-                >
-                  {hasResolvedAuth ? (
-                    <ShieldCheckIcon className="size-4 text-green-600" />
-                  ) : (
-                    <ShieldCogCornerIcon className="size-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="p-0 w-76 overflow-hidden">
-                <div className="px-4 py-2.5 text-xs text-muted-foreground border-b bg-muted/40">
-                  Selection syncs across endpoints that support it.
-                </div>
-                {inapplicableSchemeName && (
-                  <div className="px-4 py-2.5 text-xs text-muted-foreground border-b bg-amber-500/10">
-                    Selected <code>{inapplicableSchemeName}</code> isn't
-                    supported for this endpoint.
-                  </div>
-                )}
-                <IdentitySelector
-                  value={
-                    inapplicableSchemeName
-                      ? NO_IDENTITY
-                      : (rememberedIdentity ?? NO_IDENTITY)
-                  }
-                  identities={identityList}
-                  setValue={(value) => {
-                    setRememberedIdentity(value);
-                    if (value.startsWith(SECURITY_SCHEME_PREFIX)) {
-                      const schemeName = value.slice(
-                        SECURITY_SCHEME_PREFIX.length,
-                      );
-                      if (!securityCredentials[schemeName]?.isAuthorized) {
-                        setAuthPopoverOpen(false);
-                        setAuthorizeSchemeName(schemeName);
-                      }
-                    }
-                  }}
-                  securitySchemes={
-                    securitySchemes.length > 0 ? securitySchemes : undefined
-                  }
-                  securityCredentials={securityCredentials}
-                  onConfigureScheme={(name) => {
-                    setAuthPopoverOpen(false);
-                    setAuthorizeSchemeName(name);
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
-          )}
-          {authorizeSchemeName && (
-            <AuthorizeDialog
-              securitySchemes={securitySchemes.filter(
-                (s) => s.name === authorizeSchemeName,
-              )}
-              open={Boolean(authorizeSchemeName)}
-              onOpenChange={(open) => {
-                if (!open) setAuthorizeSchemeName(undefined);
-              }}
-            />
-          )}
+          <AuthSelectorPopover
+            operation={operation}
+            url={operationUrl}
+            securitySchemes={securitySchemes}
+          />
         </SidecarBox.Footer>
       </SidecarBox.Root>
 
       {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox
-          content={transformedRequestBodyContent}
+          content={displayRequestBodyContent ?? transformedRequestBodyContent}
           onExampleChange={(selected) => {
             setSelectedRequestExample(selected);
           }}
@@ -434,7 +409,9 @@ export const Sidecar = ({
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
         />
-      ) : transformedRequestBodyContent && currentExampleCode ? (
+      ) : !isGraphQLEndpoint &&
+        transformedRequestBodyContent &&
+        currentExampleCode ? (
         <GeneratedExampleSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
@@ -448,14 +425,13 @@ export const Sidecar = ({
         />
       ) : null}
 
-      {hasResponseExamples ? (
+      {(hasResponseExamples || !isGraphQLEndpoint) && (
         <ResponsesSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
           selectedResponse={selectedResponse}
-          responses={operation.responses.map((response) => ({
-            ...response,
-            content:
+          responses={operation.responses.map((response) => {
+            const content =
               response.content && options?.transformExamples
                 ? options.transformExamples({
                     auth,
@@ -464,24 +440,25 @@ export const Sidecar = ({
                     operation,
                     content: response.content,
                   })
-                : response.content,
-          }))}
-        />
-      ) : (
-        <ResponsesSidecarBox
-          isGenerated
-          isOnScreen={isOnScreen}
-          shouldLazyHighlight={shouldLazyHighlight}
-          selectedResponse={selectedResponse}
-          responses={operation.responses.map((response) => ({
-            ...response,
-            content: response.content?.map((content) => ({
-              ...content,
-              examples: content.schema
-                ? [{ name: "", value: generateSchemaExample(content.schema) }]
-                : content.examples,
-            })),
-          }))}
+                : response.content;
+
+            return {
+              ...response,
+              // Generate an example per status only when none is provided, so
+              // an example on one status doesn't suppress generation on others.
+              content: content?.map((c) => {
+                if ((c.examples?.length ?? 0) > 0) return c;
+                if (isGraphQLEndpoint || !c.schema) return c;
+                return {
+                  ...c,
+                  examples: [
+                    { name: "", value: generateSchemaExample(c.schema) },
+                  ],
+                  isGenerated: true,
+                };
+              }),
+            };
+          })}
         />
       )}
     </aside>

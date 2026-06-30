@@ -11,12 +11,17 @@ your [Zudoku configuration](./overview.md). This requires [authentication](./aut
 be configured. The property supports two formats: a simple array of path patterns, or an advanced
 object format with custom authorization logic.
 
-:::note{title="Client-side protection only"}
+:::note{title="SSR vs SSG protection"}
 
-`protectedRoutes` are client-side only. Do not rely on `protectedRoutes` to hide sensitive
-information.
+In **SSR mode**, `protectedRoutes` is enforced both client-side (login dialog) and at the bundle
+level. Chunks containing content for protected routes are isolated into a separate, auth-gated
+directory and never served to unauthenticated clients. See the
+[Server-side Content Protection guide](../guides/server-side-content-protection.md) for the full
+mechanics and caveats.
 
-We are working on an additional offering that secures this data server-side.
+In **SSG mode** there is no server, so `protectedRoutes` is client-side only. The JavaScript chunks
+for protected routes are still fetchable by anyone who knows the URL. Don't rely on SSG
+`protectedRoutes` to hide sensitive information.
 
 :::
 
@@ -143,8 +148,20 @@ For example:
 - `/docs/*` matches `/docs/getting-started` or `/docs/api/reference`
 - `/settings` matches only the exact path `/settings`
 
+## Server-side Protection (SSR mode)
+
+In SSR mode, Zudoku additionally isolates the JavaScript chunks for protected routes into an
+auth-gated directory that unauthenticated users cannot fetch. This covers content sources that the
+build can statically analyze (MDX docs, file-based OpenAPI, user custom pages with `lazy` imports)
+and has caveats for dynamically-generated routes and inline content.
+
+See the [Server-side Content Protection guide](../guides/server-side-content-protection.md) for the
+full explanation, auto-detection rules, caveats, and pre-ship checklist.
+
 ## Next Steps
 
 - Learn about [authentication providers](./authentication.md#authentication-providers) supported by
   Zudoku
 - Configure [user data](./authentication.md#user-data) display
+- Read the [Server-side Content Protection guide](../guides/server-side-content-protection.md) if
+  you're deploying with an SSR adapter

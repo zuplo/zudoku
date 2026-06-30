@@ -34,34 +34,40 @@ describe("formatTieredPriceBreakdown", () => {
     expect(lines).toEqual(["Up to 5,000: Included", "Over 5,000: $0.05/unit"]);
   });
 
-  it("omits redundant included up-to tier when omitIncludedUpToAmount matches", () => {
+  it("renders flat price first, then unit price when both are non-zero", () => {
     const lines = formatTieredPriceBreakdown({
       tiers: [
-        { upToAmount: "5000", unitPriceAmount: "0" },
-        { unitPriceAmount: "0.05" },
+        { upToAmount: "1000000", unitPriceAmount: "0", flatPriceAmount: "499" },
+        {
+          upToAmount: "2000000",
+          unitPriceAmount: "0.05",
+          flatPriceAmount: "199",
+        },
+        { unitPriceAmount: "0.02", flatPriceAmount: "0" },
       ],
       unitLabel: "unit",
       includedLabel: "Included",
       currency: "USD",
-      omitIncludedUpToAmount: 5000,
     });
 
-    expect(lines).toEqual(["Over 5,000: $0.05/unit"]);
+    expect(lines).toEqual([
+      "Up to 1,000,000: $499",
+      "Up to 2,000,000: $199 + $0.05/unit",
+      "Over 2,000,000: $0.02/unit",
+    ]);
   });
 
-  it("does not omit included up-to tier when there is a base flat price", () => {
+  it("renders Included when both flat and unit prices are zero", () => {
     const lines = formatTieredPriceBreakdown({
       tiers: [
-        { upToAmount: "5000", unitPriceAmount: "0", flatPriceAmount: "10" },
+        { upToAmount: "1000", unitPriceAmount: "0", flatPriceAmount: "0" },
         { unitPriceAmount: "0.05" },
       ],
       unitLabel: "unit",
       includedLabel: "Included",
       currency: "USD",
-      omitIncludedUpToAmount: 5000,
     });
 
-    expect(lines?.[0]).toMatch(/^Up to 5,000:/);
-    expect(lines?.[0]).toMatch(/\$10(?:\.00)? base$/);
+    expect(lines).toEqual(["Up to 1,000: Included", "Over 1,000: $0.05/unit"]);
   });
 });

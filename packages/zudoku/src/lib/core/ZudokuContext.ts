@@ -20,10 +20,12 @@ import type {
 } from "../../config/validators/ZudokuConfig.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
+import type { SSRAuthState } from "../components/context/RenderContext.js";
 import type { SlotType } from "../components/context/SlotProvider.js";
 import { joinUrl } from "../util/joinUrl.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
+import { matchesAnyProtectedPattern } from "../util/url.js";
 import {
   isApiIdentityPlugin,
   isAuthenticationPlugin,
@@ -71,6 +73,11 @@ type Metadata = Partial<{
 type Site = Partial<{
   dir?: "ltr" | "rtl";
   showPoweredBy?: boolean;
+  sidebar?: {
+    collapsible?: boolean;
+    toggleVisibility?: "always" | "hover";
+    togglePosition?: "top" | "center" | "bottom";
+  };
   title?: string;
   logo?: {
     src: {
@@ -158,13 +165,18 @@ export class ZudokuContext {
   public readonly protectedRoutes: ReturnType<typeof normalizeProtectedRoutes>;
   private readonly plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   private readonly emitter = createNanoEvents<ZudokuEvents>();
+  // Per-request server auth. Zustand store is module-global so we can't
+  // mutate it per request.
+  readonly ssrAuth?: SSRAuthState;
   readonly initialize: Promise<void> | undefined;
 
   constructor(
     options: ZudokuContextOptions,
     queryClient: QueryClient,
     env: Record<string, string | undefined>,
+    ssrAuth?: SSRAuthState,
   ) {
+    this.ssrAuth = ssrAuth;
     this.queryClient = queryClient;
     this.env = env;
     this.options = options;
@@ -207,22 +219,37 @@ export class ZudokuContext {
       });
     });
 
-    useAuthState.subscribe((state, prevState) => {
-      this.emitEvent("auth", {
-        prev: prevState,
-        next: state,
+    // Client-only: Avoid subscribing in SSR to prevent memory leaks from persistent subscribers.
+    if (typeof window !== "undefined") {
+      useAuthState.subscribe((state, prevState) => {
+        this.emitEvent("auth", {
+          prev: prevState,
+          next: state,
+        });
       });
-    });
+    }
   }
 
   getApiIdentities = async () => {
-    const keys = await Promise.all(
+    // Settled individually so one failing plugin can't drop the identities
+    // provided by the others.
+    const results = await Promise.allSettled(
       this.plugins
         .filter(isApiIdentityPlugin)
         .map((plugin) => plugin.getIdentities(this)),
     );
 
-    return keys.flat();
+    return results.flatMap((result) => {
+      if (result.status === "rejected") {
+        // biome-ignore lint/suspicious/noConsole: Intentional warning
+        console.warn(
+          "[Zudoku] A plugin failed to provide API identities:",
+          result.reason,
+        );
+        return [];
+      }
+      return result.value;
+    });
   };
 
   addEventListener<E extends keyof ZudokuEvents>(
@@ -239,7 +266,10 @@ export class ZudokuContext {
     return this.emitter.emit(event, ...data);
   };
 
-  getPluginNavigation = async (path: string) => {
+  // Skip plugins for unauthed users on protected paths. Plugins often load
+  // protected resources inside getNavigation; that work would leak.
+  getPluginNavigation = async (path: string): Promise<Navigation> => {
+    if (this.shouldSkipNavigationForProtected(path)) return [];
     const navigations = await Promise.all(
       this.plugins
         .filter(isNavigationPlugin)
@@ -248,6 +278,18 @@ export class ZudokuContext {
 
     return navigations.flatMap((nav) => nav ?? []);
   };
+
+  private shouldSkipNavigationForProtected(path: string): boolean {
+    const patterns = Object.keys(this.protectedRoutes ?? {});
+    if (patterns.length === 0) return false;
+    if (!matchesAnyProtectedPattern(patterns, path)) return false;
+    // Server: per-request ssrAuth. Client: live zustand state.
+    const isAuthed =
+      typeof window === "undefined"
+        ? !!this.ssrAuth?.profile
+        : this.getAuthState().isAuthenticated;
+    return !isAuthed;
+  }
 
   getProfileMenuItems = () => {
     const accountItems = this.plugins
@@ -260,6 +302,14 @@ export class ZudokuContext {
   };
 
   signRequest = async (request: Request) => {
+    if (this.ssrAuth?.accessToken) {
+      request.headers.set(
+        "Authorization",
+        `Bearer ${this.ssrAuth.accessToken}`,
+      );
+      return request;
+    }
+
     if (!this.authentication) {
       throw new Error("No authentication provider configured");
     }

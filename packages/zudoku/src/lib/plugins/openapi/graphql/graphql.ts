@@ -1,269 +1,18 @@
 /* eslint-disable */
-import type { DocumentTypeDecoration } from "@graphql-typed-document-node/core";
-export type Maybe<T> = T | null;
-export type InputMaybe<T> = T | null | undefined;
-export type Exact<T extends { [key: string]: unknown }> = {
-  [K in keyof T]: T[K];
-};
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]?: Maybe<T[SubKey]>;
-};
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]: Maybe<T[SubKey]>;
-};
-export type MakeEmpty<
-  T extends { [key: string]: unknown },
-  K extends keyof T,
-> = { [_ in K]?: never };
+/** Internal type. DO NOT USE DIRECTLY. */
+type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+/** Internal type. DO NOT USE DIRECTLY. */
 export type Incremental<T> =
   | T
   | {
       [P in keyof T]?: P extends " $fragmentName" | "__typename" ? T[P] : never;
     };
-/** All built-in and custom scalars, mapped to their actual values */
-export type Scalars = {
-  ID: { input: string; output: string };
-  String: { input: string; output: string };
-  Boolean: { input: boolean; output: boolean };
-  Int: { input: number; output: number };
-  Float: { input: number; output: number };
-  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
-  JSON: { input: any; output: any };
-  /** The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
-  JSONObject: { input: any; output: any };
-  /** OpenAPI schema scalar type that handles circular references */
-  JSONSchema: { input: any; output: any };
-};
-
-export type Components = {
-  __typename?: "Components";
-  schemas?: Maybe<Array<SchemaItem>>;
-  securitySchemes?: Maybe<Array<SecuritySchemeItem>>;
-};
-
-export type EncodingItem = {
-  __typename?: "EncodingItem";
-  allowReserved?: Maybe<Scalars["Boolean"]["output"]>;
-  contentType?: Maybe<Scalars["String"]["output"]>;
-  explode?: Maybe<Scalars["Boolean"]["output"]>;
-  headers?: Maybe<Scalars["JSONObject"]["output"]>;
-  name: Scalars["String"]["output"];
-  style?: Maybe<Scalars["String"]["output"]>;
-};
-
-export type ExampleItem = {
-  __typename?: "ExampleItem";
-  description?: Maybe<Scalars["String"]["output"]>;
-  externalValue?: Maybe<Scalars["String"]["output"]>;
-  name: Scalars["String"]["output"];
-  summary?: Maybe<Scalars["String"]["output"]>;
-  value?: Maybe<Scalars["JSON"]["output"]>;
-};
-
-export type MediaTypeObject = {
-  __typename?: "MediaTypeObject";
-  encoding?: Maybe<Array<EncodingItem>>;
-  examples?: Maybe<Array<ExampleItem>>;
-  mediaType: Scalars["String"]["output"];
-  schema?: Maybe<Scalars["JSONSchema"]["output"]>;
-};
-
-export type OAuthFlowItem = {
-  __typename?: "OAuthFlowItem";
-  authorizationUrl?: Maybe<Scalars["String"]["output"]>;
-  refreshUrl?: Maybe<Scalars["String"]["output"]>;
-  scopes: Array<OAuthScopeItem>;
-  tokenUrl?: Maybe<Scalars["String"]["output"]>;
-};
-
-export type OAuthFlowsItem = {
-  __typename?: "OAuthFlowsItem";
-  authorizationCode?: Maybe<OAuthFlowItem>;
-  clientCredentials?: Maybe<OAuthFlowItem>;
-  implicit?: Maybe<OAuthFlowItem>;
-  password?: Maybe<OAuthFlowItem>;
-};
-
-export type OAuthScopeItem = {
-  __typename?: "OAuthScopeItem";
-  description: Scalars["String"]["output"];
-  name: Scalars["String"]["output"];
-};
-
-export type OperationItem = {
-  __typename?: "OperationItem";
-  contentTypes: Array<Scalars["String"]["output"]>;
-  deprecated?: Maybe<Scalars["Boolean"]["output"]>;
-  description?: Maybe<Scalars["String"]["output"]>;
-  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
-  method: Scalars["String"]["output"];
-  operationId?: Maybe<Scalars["String"]["output"]>;
-  parameters?: Maybe<Array<ParameterItem>>;
-  path: Scalars["String"]["output"];
-  requestBody?: Maybe<RequestBodyObject>;
-  responses: Array<ResponseItem>;
-  security?: Maybe<Array<SecurityRequirementItem>>;
-  servers: Array<Server>;
-  slug: Scalars["String"]["output"];
-  summary?: Maybe<Scalars["String"]["output"]>;
-  tags?: Maybe<Array<TagItem>>;
-};
-
+import type { DocumentTypeDecoration } from "@graphql-typed-document-node/core";
 export type ParameterIn = "cookie" | "header" | "path" | "query";
-
-export type ParameterItem = {
-  __typename?: "ParameterItem";
-  allowEmptyValue?: Maybe<Scalars["Boolean"]["output"]>;
-  allowReserved?: Maybe<Scalars["Boolean"]["output"]>;
-  deprecated?: Maybe<Scalars["Boolean"]["output"]>;
-  description?: Maybe<Scalars["String"]["output"]>;
-  examples?: Maybe<Array<ExampleItem>>;
-  explode?: Maybe<Scalars["Boolean"]["output"]>;
-  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
-  in: ParameterIn;
-  name: Scalars["String"]["output"];
-  required?: Maybe<Scalars["Boolean"]["output"]>;
-  schema?: Maybe<Scalars["JSONSchema"]["output"]>;
-  style?: Maybe<Scalars["String"]["output"]>;
-};
-
-export type PathItem = {
-  __typename?: "PathItem";
-  methods: Array<Scalars["String"]["output"]>;
-  path: Scalars["String"]["output"];
-};
-
-export type Query = {
-  __typename?: "Query";
-  schema: Schema;
-};
-
-export type QuerySchemaArgs = {
-  input: Scalars["JSON"]["input"];
-  type: SchemaType;
-};
-
-export type RequestBodyObject = {
-  __typename?: "RequestBodyObject";
-  content?: Maybe<Array<MediaTypeObject>>;
-  description?: Maybe<Scalars["String"]["output"]>;
-  required?: Maybe<Scalars["Boolean"]["output"]>;
-};
-
-export type ResponseItem = {
-  __typename?: "ResponseItem";
-  content?: Maybe<Array<MediaTypeObject>>;
-  description?: Maybe<Scalars["String"]["output"]>;
-  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
-  headers?: Maybe<Scalars["JSON"]["output"]>;
-  links?: Maybe<Scalars["JSON"]["output"]>;
-  statusCode: Scalars["String"]["output"];
-};
-
-export type Schema = {
-  __typename?: "Schema";
-  components?: Maybe<Components>;
-  contact?: Maybe<SchemaContact>;
-  description?: Maybe<Scalars["String"]["output"]>;
-  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
-  externalDocs?: Maybe<SchemaExternalDocs>;
-  license?: Maybe<SchemaLicense>;
-  openapi: Scalars["String"]["output"];
-  operations: Array<OperationItem>;
-  paths: Array<PathItem>;
-  security?: Maybe<Array<SecurityRequirementItem>>;
-  servers: Array<Server>;
-  summary?: Maybe<Scalars["String"]["output"]>;
-  tag?: Maybe<SchemaTag>;
-  tags: Array<SchemaTag>;
-  termsOfService?: Maybe<Scalars["String"]["output"]>;
-  title: Scalars["String"]["output"];
-  url?: Maybe<Scalars["String"]["output"]>;
-  version: Scalars["String"]["output"];
-  webhooks: Array<WebhookItem>;
-};
-
-export type SchemaOperationsArgs = {
-  method?: InputMaybe<Scalars["String"]["input"]>;
-  operationId?: InputMaybe<Scalars["String"]["input"]>;
-  path?: InputMaybe<Scalars["String"]["input"]>;
-  tag?: InputMaybe<Scalars["String"]["input"]>;
-  untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
-};
-
-export type SchemaTagArgs = {
-  name?: InputMaybe<Scalars["String"]["input"]>;
-  slug?: InputMaybe<Scalars["String"]["input"]>;
-  untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
-};
-
-export type SchemaContact = {
-  __typename?: "SchemaContact";
-  email?: Maybe<Scalars["String"]["output"]>;
-  name?: Maybe<Scalars["String"]["output"]>;
-  url?: Maybe<Scalars["String"]["output"]>;
-};
-
-export type SchemaExternalDocs = {
-  __typename?: "SchemaExternalDocs";
-  description?: Maybe<Scalars["String"]["output"]>;
-  url: Scalars["String"]["output"];
-};
-
-export type SchemaItem = {
-  __typename?: "SchemaItem";
-  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
-  name: Scalars["String"]["output"];
-  schema: Scalars["JSONSchema"]["output"];
-};
-
-export type SchemaLicense = {
-  __typename?: "SchemaLicense";
-  identifier?: Maybe<Scalars["String"]["output"]>;
-  name: Scalars["String"]["output"];
-  url?: Maybe<Scalars["String"]["output"]>;
-};
-
-export type SchemaTag = {
-  __typename?: "SchemaTag";
-  description?: Maybe<Scalars["String"]["output"]>;
-  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
-  isUntagged: Scalars["Boolean"]["output"];
-  name?: Maybe<Scalars["String"]["output"]>;
-  next?: Maybe<SchemaTag>;
-  operations: Array<OperationItem>;
-  prev?: Maybe<SchemaTag>;
-  slug?: Maybe<Scalars["String"]["output"]>;
-};
 
 export type SchemaType = "file" | "raw" | "url";
 
-export type SecurityRequirementItem = {
-  __typename?: "SecurityRequirementItem";
-  schemes: Array<SecurityRequirementScheme>;
-};
-
-export type SecurityRequirementScheme = {
-  __typename?: "SecurityRequirementScheme";
-  scheme: SecuritySchemeItem;
-  scopes: Array<Scalars["String"]["output"]>;
-};
-
 export type SecuritySchemeIn = "cookie" | "header" | "query";
-
-export type SecuritySchemeItem = {
-  __typename?: "SecuritySchemeItem";
-  bearerFormat?: Maybe<Scalars["String"]["output"]>;
-  description?: Maybe<Scalars["String"]["output"]>;
-  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
-  flows?: Maybe<OAuthFlowsItem>;
-  in?: Maybe<SecuritySchemeIn>;
-  name: Scalars["String"]["output"];
-  openIdConnectUrl?: Maybe<Scalars["String"]["output"]>;
-  paramName?: Maybe<Scalars["String"]["output"]>;
-  scheme?: Maybe<Scalars["String"]["output"]>;
-  type: SecuritySchemeType;
-};
 
 export type SecuritySchemeType =
   | "apiKey"
@@ -272,406 +21,278 @@ export type SecuritySchemeType =
   | "oauth2"
   | "openIdConnect";
 
-export type Server = {
-  __typename?: "Server";
-  description?: Maybe<Scalars["String"]["output"]>;
-  url: Scalars["String"]["output"];
-};
-
-export type TagItem = {
-  __typename?: "TagItem";
-  description?: Maybe<Scalars["String"]["output"]>;
-  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
-  name: Scalars["String"]["output"];
-};
-
-export type WebhookItem = {
-  __typename?: "WebhookItem";
-  description?: Maybe<Scalars["String"]["output"]>;
-  method: Scalars["String"]["output"];
-  name: Scalars["String"]["output"];
-  operationId?: Maybe<Scalars["String"]["output"]>;
-  summary?: Maybe<Scalars["String"]["output"]>;
-};
-
 export type ServersQueryQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
+  input: any;
   type: SchemaType;
 }>;
 
 export type ServersQueryQuery = {
-  __typename?: "Query";
-  schema: {
-    __typename?: "Schema";
-    url?: string | null;
-    servers: Array<{ __typename?: "Server"; url: string }>;
-  };
+  schema: { url: string | null; servers: Array<{ url: string }> };
 };
 
 export type OperationsFragmentFragment = {
-  __typename?: "OperationItem";
   slug: string;
-  summary?: string | null;
+  summary: string | null;
   method: string;
-  description?: string | null;
-  operationId?: string | null;
+  description: string | null;
+  operationId: string | null;
   contentTypes: Array<string>;
   path: string;
-  deprecated?: boolean | null;
-  extensions?: any | null;
-  servers: Array<{
-    __typename?: "Server";
-    url: string;
-    description?: string | null;
-  }>;
-  parameters?: Array<{
-    __typename?: "ParameterItem";
+  deprecated: boolean | null;
+  extensions: any;
+  servers: Array<{ url: string; description: string | null }>;
+  parameters: Array<{
     name: string;
     in: ParameterIn;
-    description?: string | null;
-    required?: boolean | null;
-    schema?: any | null;
-    style?: string | null;
-    explode?: boolean | null;
-    allowReserved?: boolean | null;
-    examples?: Array<{
-      __typename?: "ExampleItem";
+    description: string | null;
+    required: boolean | null;
+    schema: any;
+    style: string | null;
+    explode: boolean | null;
+    allowReserved: boolean | null;
+    examples: Array<{
       name: string;
-      description?: string | null;
-      externalValue?: string | null;
-      value?: any | null;
-      summary?: string | null;
+      description: string | null;
+      externalValue: string | null;
+      value: any;
+      summary: string | null;
     }> | null;
   }> | null;
-  security?: Array<{
-    __typename?: "SecurityRequirementItem";
+  security: Array<{
     schemes: Array<{
-      __typename?: "SecurityRequirementScheme";
       scopes: Array<string>;
       scheme: {
-        __typename?: "SecuritySchemeItem";
         name: string;
         type: SecuritySchemeType;
-        description?: string | null;
-        in?: SecuritySchemeIn | null;
-        paramName?: string | null;
-        scheme?: string | null;
-        bearerFormat?: string | null;
-        openIdConnectUrl?: string | null;
-        flows?: {
-          __typename?: "OAuthFlowsItem";
-          implicit?: {
-            __typename?: "OAuthFlowItem";
-            authorizationUrl?: string | null;
-            scopes: Array<{
-              __typename?: "OAuthScopeItem";
-              name: string;
-              description: string;
-            }>;
+        description: string | null;
+        in: SecuritySchemeIn | null;
+        paramName: string | null;
+        scheme: string | null;
+        bearerFormat: string | null;
+        openIdConnectUrl: string | null;
+        flows: {
+          implicit: {
+            authorizationUrl: string | null;
+            scopes: Array<{ name: string; description: string }>;
           } | null;
-          password?: {
-            __typename?: "OAuthFlowItem";
-            tokenUrl?: string | null;
-            scopes: Array<{
-              __typename?: "OAuthScopeItem";
-              name: string;
-              description: string;
-            }>;
+          password: {
+            tokenUrl: string | null;
+            scopes: Array<{ name: string; description: string }>;
           } | null;
-          clientCredentials?: {
-            __typename?: "OAuthFlowItem";
-            tokenUrl?: string | null;
-            scopes: Array<{
-              __typename?: "OAuthScopeItem";
-              name: string;
-              description: string;
-            }>;
+          clientCredentials: {
+            tokenUrl: string | null;
+            scopes: Array<{ name: string; description: string }>;
           } | null;
-          authorizationCode?: {
-            __typename?: "OAuthFlowItem";
-            authorizationUrl?: string | null;
-            tokenUrl?: string | null;
-            scopes: Array<{
-              __typename?: "OAuthScopeItem";
-              name: string;
-              description: string;
-            }>;
+          authorizationCode: {
+            authorizationUrl: string | null;
+            tokenUrl: string | null;
+            scopes: Array<{ name: string; description: string }>;
           } | null;
         } | null;
       };
     }>;
   }> | null;
-  requestBody?: {
-    __typename?: "RequestBodyObject";
-    description?: string | null;
-    required?: boolean | null;
-    content?: Array<{
-      __typename?: "MediaTypeObject";
+  requestBody: {
+    description: string | null;
+    required: boolean | null;
+    content: Array<{
       mediaType: string;
-      schema?: any | null;
-      encoding?: Array<{ __typename?: "EncodingItem"; name: string }> | null;
-      examples?: Array<{
-        __typename?: "ExampleItem";
+      schema: any;
+      encoding: Array<{ name: string }> | null;
+      examples: Array<{
         name: string;
-        description?: string | null;
-        externalValue?: string | null;
-        value?: any | null;
-        summary?: string | null;
+        description: string | null;
+        externalValue: string | null;
+        value: any;
+        summary: string | null;
       }> | null;
     }> | null;
   } | null;
   responses: Array<{
-    __typename?: "ResponseItem";
     statusCode: string;
-    links?: any | null;
-    description?: string | null;
-    content?: Array<{
-      __typename?: "MediaTypeObject";
+    links: any;
+    description: string | null;
+    content: Array<{
       mediaType: string;
-      schema?: any | null;
-      examples?: Array<{
-        __typename?: "ExampleItem";
+      schema: any;
+      examples: Array<{
         name: string;
-        description?: string | null;
-        externalValue?: string | null;
-        value?: any | null;
-        summary?: string | null;
+        description: string | null;
+        externalValue: string | null;
+        value: any;
+        summary: string | null;
       }> | null;
-      encoding?: Array<{ __typename?: "EncodingItem"; name: string }> | null;
+      encoding: Array<{ name: string }> | null;
     }> | null;
   }>;
 } & { " $fragmentName"?: "OperationsFragmentFragment" };
 
 export type OperationsForTagQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
+  input: any;
   type: SchemaType;
-  tag?: InputMaybe<Scalars["String"]["input"]>;
-  untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
+  tag?: string | null | undefined;
+  untagged?: boolean | null | undefined;
 }>;
 
 export type OperationsForTagQuery = {
-  __typename?: "Query";
   schema: {
-    __typename?: "Schema";
-    description?: string | null;
-    summary?: string | null;
+    description: string | null;
+    summary: string | null;
     title: string;
-    url?: string | null;
+    url: string | null;
     version: string;
-    servers: Array<{ __typename?: "Server"; url: string }>;
-    tag?: {
-      __typename?: "SchemaTag";
-      name?: string | null;
-      description?: string | null;
-      extensions?: any | null;
+    servers: Array<{ url: string }>;
+    tag: {
+      name: string | null;
+      description: string | null;
+      extensions: any;
       operations: Array<
-        { __typename?: "OperationItem"; slug: string } & {
+        { slug: string } & {
           " $fragmentRefs"?: {
             OperationsFragmentFragment: OperationsFragmentFragment;
           };
         }
       >;
-      next?: {
-        __typename?: "SchemaTag";
-        name?: string | null;
-        slug?: string | null;
-        extensions?: any | null;
+      next: {
+        name: string | null;
+        slug: string | null;
+        extensions: any;
       } | null;
-      prev?: {
-        __typename?: "SchemaTag";
-        name?: string | null;
-        slug?: string | null;
-        extensions?: any | null;
+      prev: {
+        name: string | null;
+        slug: string | null;
+        extensions: any;
       } | null;
     } | null;
   };
 };
 
 export type SchemaInfoQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
+  input: any;
   type: SchemaType;
 }>;
 
 export type SchemaInfoQuery = {
-  __typename?: "Query";
   schema: {
-    __typename?: "Schema";
-    termsOfService?: string | null;
-    description?: string | null;
-    summary?: string | null;
+    termsOfService: string | null;
+    description: string | null;
+    summary: string | null;
     title: string;
-    url?: string | null;
+    url: string | null;
     version: string;
-    servers: Array<{
-      __typename?: "Server";
-      url: string;
-      description?: string | null;
-    }>;
-    license?: {
-      __typename?: "SchemaLicense";
+    servers: Array<{ url: string; description: string | null }>;
+    license: {
       name: string;
-      url?: string | null;
-      identifier?: string | null;
+      url: string | null;
+      identifier: string | null;
     } | null;
-    externalDocs?: {
-      __typename?: "SchemaExternalDocs";
-      description?: string | null;
-      url: string;
-    } | null;
-    contact?: {
-      __typename?: "SchemaContact";
-      name?: string | null;
-      url?: string | null;
-      email?: string | null;
+    externalDocs: { description: string | null; url: string } | null;
+    contact: {
+      name: string | null;
+      url: string | null;
+      email: string | null;
     } | null;
     tags: Array<{
-      __typename?: "SchemaTag";
-      name?: string | null;
-      description?: string | null;
-      extensions?: any | null;
+      name: string | null;
+      description: string | null;
+      extensions: any;
     }>;
-    components?: {
-      __typename?: "Components";
-      securitySchemes?: Array<{
-        __typename?: "SecuritySchemeItem";
+    components: {
+      securitySchemes: Array<{
         name: string;
         type: SecuritySchemeType;
-        description?: string | null;
-        in?: SecuritySchemeIn | null;
-        paramName?: string | null;
-        scheme?: string | null;
-        bearerFormat?: string | null;
-        openIdConnectUrl?: string | null;
-        flows?: {
-          __typename?: "OAuthFlowsItem";
-          implicit?: {
-            __typename?: "OAuthFlowItem";
-            authorizationUrl?: string | null;
-            scopes: Array<{
-              __typename?: "OAuthScopeItem";
-              name: string;
-              description: string;
-            }>;
+        description: string | null;
+        in: SecuritySchemeIn | null;
+        paramName: string | null;
+        scheme: string | null;
+        bearerFormat: string | null;
+        openIdConnectUrl: string | null;
+        flows: {
+          implicit: {
+            authorizationUrl: string | null;
+            scopes: Array<{ name: string; description: string }>;
           } | null;
-          password?: {
-            __typename?: "OAuthFlowItem";
-            tokenUrl?: string | null;
-            scopes: Array<{
-              __typename?: "OAuthScopeItem";
-              name: string;
-              description: string;
-            }>;
+          password: {
+            tokenUrl: string | null;
+            scopes: Array<{ name: string; description: string }>;
           } | null;
-          clientCredentials?: {
-            __typename?: "OAuthFlowItem";
-            tokenUrl?: string | null;
-            scopes: Array<{
-              __typename?: "OAuthScopeItem";
-              name: string;
-              description: string;
-            }>;
+          clientCredentials: {
+            tokenUrl: string | null;
+            scopes: Array<{ name: string; description: string }>;
           } | null;
-          authorizationCode?: {
-            __typename?: "OAuthFlowItem";
-            authorizationUrl?: string | null;
-            tokenUrl?: string | null;
-            scopes: Array<{
-              __typename?: "OAuthScopeItem";
-              name: string;
-              description: string;
-            }>;
+          authorizationCode: {
+            authorizationUrl: string | null;
+            tokenUrl: string | null;
+            scopes: Array<{ name: string; description: string }>;
           } | null;
         } | null;
       }> | null;
     } | null;
     webhooks: Array<{
-      __typename?: "WebhookItem";
       name: string;
       method: string;
-      summary?: string | null;
-      description?: string | null;
+      summary: string | null;
+      description: string | null;
     }>;
   };
 };
 
 export type GetSchemasQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
+  input: any;
   type: SchemaType;
 }>;
 
 export type GetSchemasQuery = {
-  __typename?: "Query";
   schema: {
-    __typename?: "Schema";
     title: string;
-    description?: string | null;
-    summary?: string | null;
-    components?: {
-      __typename?: "Components";
-      schemas?: Array<{
-        __typename?: "SchemaItem";
-        name: string;
-        schema: any;
-        extensions?: any | null;
-      }> | null;
+    description: string | null;
+    summary: string | null;
+    components: {
+      schemas: Array<{ name: string; schema: any; extensions: any }> | null;
     } | null;
   };
 };
 
 export type GetServerQueryQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
+  input: any;
   type: SchemaType;
 }>;
 
 export type GetServerQueryQuery = {
-  __typename?: "Query";
-  schema: {
-    __typename?: "Schema";
-    url?: string | null;
-    servers: Array<{ __typename?: "Server"; url: string }>;
-  };
+  schema: { url: string | null; servers: Array<{ url: string }> };
 };
 
 export type GetNavigationOperationsQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
+  input: any;
   type: SchemaType;
 }>;
 
 export type GetNavigationOperationsQuery = {
-  __typename?: "Query";
   schema: {
-    __typename?: "Schema";
-    extensions?: any | null;
+    extensions: any;
+    description: string | null;
     tags: Array<{
-      __typename?: "SchemaTag";
-      slug?: string | null;
-      name?: string | null;
-      extensions?: any | null;
+      slug: string | null;
+      name: string | null;
+      extensions: any;
       operations: Array<{
-        __typename?: "OperationItem";
-        summary?: string | null;
+        summary: string | null;
         slug: string;
         method: string;
-        operationId?: string | null;
+        operationId: string | null;
         path: string;
       }>;
     }>;
-    components?: {
-      __typename?: "Components";
-      schemas?: Array<{ __typename: "SchemaItem" }> | null;
-    } | null;
+    components: { schemas: Array<{ __typename: "SchemaItem" }> | null } | null;
   };
 };
 
 export type SchemaWarmupQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
+  input: any;
   type: SchemaType;
 }>;
 
-export type SchemaWarmupQuery = {
-  __typename?: "Query";
-  schema: { __typename?: "Schema"; openapi: string };
-};
+export type SchemaWarmupQuery = { schema: { openapi: string } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -1099,6 +720,7 @@ export const GetNavigationOperationsDocument = new TypedDocumentString(`
     query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
   schema(input: $input, type: $type) {
     extensions
+    description
     tags {
       slug
       name

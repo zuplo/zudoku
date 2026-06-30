@@ -58,7 +58,10 @@ vi.mock("zudoku/router", () => ({
 
 vi.mock("zudoku/hooks", () => ({
   useAuth: () => ({ isAuthenticated: false }),
-  useZudoku: () => ({ env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test-env" } }),
+  useZudoku: () => ({
+    env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test-env" },
+    getAuthState: () => ({ isAuthenticated: false }),
+  }),
 }));
 
 const mockPricingData: { items: Plan[] } = { items: [] };
@@ -69,6 +72,7 @@ const mockSubscriptionData: {
 vi.mock("zudoku/react-query", () => ({
   useSuspenseQuery: () => ({ data: mockPricingData }),
   useQuery: () => ({ data: mockSubscriptionData }),
+  queryOptions: <T,>(opts: T) => opts,
 }));
 
 vi.mock("../hooks/useDeploymentName", () => ({
@@ -95,8 +99,6 @@ const makePlan = (id: string, key: string, name: string): Plan => ({
       ],
     },
   ],
-  monthlyPrice: "49",
-  yearlyPrice: "49",
   currency: "USD",
 });
 
@@ -162,9 +164,7 @@ describe("PricingPage", () => {
     mockPricingData.items = [
       {
         ...makePlan("1", "free", "Free"),
-        monthlyPrice: "0",
         paymentRequired: false,
-        yearlyPrice: "0",
         phases: [
           {
             key: "default",
@@ -238,7 +238,7 @@ describe("PricingPage", () => {
     expect(screen.getByText("Most Popular")).toBeInTheDocument();
   });
 
-  it("Shows custom unit label in overage price when units config is provided", () => {
+  it("Shows custom unit label in tier breakdown when units config is provided", () => {
     mockPricingData.items = [
       {
         ...makePlan("1", "pro", "Pro"),
@@ -280,23 +280,16 @@ describe("PricingPage", () => {
       pricing: { units: { "api-requests": "request" } },
     });
 
-    expect(screen.getByText(/\/request after quota/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Over 1,000: \$0\.001\/request/),
+    ).toBeInTheDocument();
   });
 
-  it("Shows yearly price by default", () => {
+  it("Does not render an annual price line", () => {
     mockPricingData.items = [makePlan("1", "starter", "Starter")];
     mockSubscriptionData.items = [];
 
     renderWithConfig();
-
-    expect(screen.getByText(/\/year/)).toBeInTheDocument();
-  });
-
-  it("Hides yearly price when showYearlyPrice is false", () => {
-    mockPricingData.items = [makePlan("1", "starter", "Starter")];
-    mockSubscriptionData.items = [];
-
-    renderWithConfig({ pricing: { showYearlyPrice: false } });
 
     expect(screen.queryByText(/\/year/)).not.toBeInTheDocument();
   });

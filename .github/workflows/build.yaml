@@ -21,10 +21,10 @@ jobs:
       ZUDOKU_INTERNAL_DEV: true
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           run_install: false
 
@@ -40,7 +40,7 @@ jobs:
 
       - run: pnpm install nx --global
 
-      - uses: nrwl/nx-set-shas@v5
+      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
 
       - name: Detect monetization plugin changes
         if: github.event_name == 'pull_request'
@@ -90,14 +90,14 @@ jobs:
 
       - name: Coverage report comment (with comparison)
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key != ''
-        uses: davelosert/vitest-coverage-report-action@v2
+        uses: davelosert/vitest-coverage-report-action@3c054a2d2e2ca45446417ad5d6d5eb33092af8f1 # v2
         with:
           json-summary-path: coverage/coverage-summary.json
           json-summary-compare-path: coverage-base/coverage-summary.json
 
       - name: Coverage report comment
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key == ''
-        uses: davelosert/vitest-coverage-report-action@v2
+        uses: davelosert/vitest-coverage-report-action@3c054a2d2e2ca45446417ad5d6d5eb33092af8f1 # v2
         with:
           json-summary-path: coverage/coverage-summary.json
 
@@ -148,10 +148,12 @@ jobs:
   check-links:
     name: Check Links
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           run_install: false
 
@@ -178,7 +180,7 @@ jobs:
           restore-keys: cache-lychee-v4-
 
       - name: Link Checker
-        uses: lycheeverse/lychee-action@v2
+        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
         with:
           args: >-
             --config ./docs/lychee.toml

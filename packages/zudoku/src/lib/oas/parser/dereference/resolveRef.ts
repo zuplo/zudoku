@@ -1,6 +1,7 @@
 import type { JSONSchema } from "./index.js";
 
-const cache = new Map<JSONSchema, Map<string, unknown>>();
+// WeakMap so cached schemas get GC'd once nothing else references them.
+const cache = new WeakMap<JSONSchema & object, Map<string, unknown>>();
 
 /**
  * Resolves a $ref pointer in a schema and returns the referenced value.

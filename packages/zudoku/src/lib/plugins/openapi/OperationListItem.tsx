@@ -16,6 +16,7 @@ import { ParameterList } from "./ParameterList.js";
 import { SchemaView } from "./schema/SchemaView.js";
 import { SecurityRequirements } from "./SecurityRequirements.js";
 import { Sidecar } from "./Sidecar.js";
+import { getGraphQLEndpoint } from "./util/graphqlEndpoint.js";
 import { methodForColor } from "./util/methodToColor.js";
 
 const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
@@ -44,6 +45,54 @@ export const OperationListItem = ({
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
   const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
+  const graphqlEndpoint = getGraphQLEndpoint(operation);
+  const isGraphQLEndpoint = graphqlEndpoint !== undefined;
+
+  const heading = (
+    <Heading
+      level={2}
+      id={operation.slug}
+      registerNavigationAnchor
+      className={cn("break-all", !isGraphQLEndpoint && "col-span-full")}
+    >
+      {operation.summary}
+    </Heading>
+  );
+
+  const methodPathBlock = !isMCPEndpoint && (
+    <div
+      className={cn(
+        "flex flex-col gap-1.5",
+        !isGraphQLEndpoint && "col-span-full",
+      )}
+    >
+      <div className="text-sm flex gap-2 font-mono">
+        <span className={methodForColor(operation.method)}>
+          {operation.method.toUpperCase()}
+        </span>
+        <SelectOnClick className="max-w-full truncate flex cursor-pointer">
+          {displayServerUrl && (
+            <div className="text-neutral-400 dark:text-neutral-500 truncate">
+              {displayServerUrl.replace(/\/$/, "")}
+            </div>
+          )}
+          <div className="text-neutral-900 dark:text-neutral-200">
+            {operation.path}
+          </div>
+        </SelectOnClick>
+      </div>
+      {!options?.disableSecurity && (
+        <SecurityRequirements security={operation.security} />
+      )}
+    </div>
+  );
+
+  const description = operation.description && (
+    <Markdown
+      className="max-w-full prose-img:max-w-prose"
+      content={operation.description}
+    />
+  );
 
   return (
     <div>
@@ -59,131 +108,114 @@ export const OperationListItem = ({
           operation.deprecated && "opacity-50 transition hover:opacity-100",
         )}
       >
-        <Heading
-          level={2}
-          id={operation.slug}
-          registerNavigationAnchor
-          className="break-all col-span-full"
-        >
-          {operation.summary}
-        </Heading>
-        {!isMCPEndpoint && (
-          <div className="flex flex-col gap-1.5 col-span-full">
-            <div className="text-sm flex gap-2 font-mono">
-              <span className={methodForColor(operation.method)}>
-                {operation.method.toUpperCase()}
-              </span>
-              <SelectOnClick className="max-w-full truncate flex cursor-pointer">
-                {displayServerUrl && (
-                  <div className="text-neutral-400 dark:text-neutral-500 truncate">
-                    {displayServerUrl.replace(/\/$/, "")}
-                  </div>
-                )}
-                <div className="text-neutral-900 dark:text-neutral-200">
-                  {operation.path}
-                </div>
-              </SelectOnClick>
-            </div>
-            {!options?.disableSecurity && (
-              <SecurityRequirements security={operation.security} />
-            )}
-          </div>
-        )}
-
-        {isMCPEndpoint ? (
-          <div className="col-span-full">
-            <MCPEndpoint
-              serverUrl={displayServerUrl}
-              operationPath={operation.path}
-              summary={operation.summary ?? undefined}
-              data={operation.extensions?.["x-mcp-server"]}
-            />
+        {isGraphQLEndpoint ? (
+          <div className="flex flex-col gap-4 min-w-0">
+            {heading}
+            {methodPathBlock}
+            {description}
           </div>
         ) : (
-          <div
-            className={cn(
-              "flex flex-col gap-4",
-              options?.disableSidecar && "col-span-full",
-            )}
-          >
-            {operation.description && (
-              <Markdown
-                className="max-w-full prose-img:max-w-prose"
-                content={operation.description}
-              />
-            )}
-            {operation.parameters &&
-              operation.parameters.length > 0 &&
-              PARAM_GROUPS.flatMap((group) =>
-                groupedParameters[group]?.length ? (
-                  <ParameterList
-                    key={group}
-                    summary={operation.summary ?? undefined}
-                    id={operation.slug}
-                    parameters={groupedParameters[group]}
-                    group={group}
-                  />
-                ) : (
-                  []
-                ),
-              )}
-            {renderIf(operation.requestBody?.content?.at(0)?.schema, () => (
-              <Separator className="my-4" />
-            ))}
-            {renderIf(
-              operation.requestBody?.content?.at(0)?.schema,
-              (schema) => (
-                <div className="flex flex-col gap-4">
-                  <Heading
-                    level={3}
-                    className="capitalize flex items-center gap-2"
-                    id={`${operation.slug}/request-body`}
-                  >
-                    {operation.summary && (
-                      <PagefindSearchMeta>
-                        {operation.summary} &rsaquo;{" "}
-                      </PagefindSearchMeta>
-                    )}
-                    Request Body{" "}
-                    {operation.requestBody?.required === false ? (
-                      <Badge variant="muted">optional</Badge>
-                    ) : (
-                      ""
-                    )}
-                  </Heading>
-                  <SchemaView schema={schema} />
-                </div>
-              ),
-            )}
-            <Separator className="my-4" />
-            {operation.responses.length > 0 && (
-              <>
-                <Heading level={3} id={`${operation.slug}/responses`}>
-                  {operation.summary && (
-                    <PagefindSearchMeta>
-                      {operation.summary} &rsaquo;{" "}
-                    </PagefindSearchMeta>
-                  )}
-                  Responses
-                </Heading>
-                <ResponseContent
-                  responses={operation.responses}
-                  selectedResponse={selectedResponse}
-                  onSelectResponse={setSelectedResponse}
+          <>
+            {heading}
+            {methodPathBlock}
+            {isMCPEndpoint ? (
+              <div className="col-span-full">
+                <MCPEndpoint
+                  serverUrl={displayServerUrl}
+                  operationPath={operation.path}
+                  summary={operation.summary ?? undefined}
+                  data={operation.extensions?.["x-mcp-server"]}
                 />
-              </>
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  "flex flex-col gap-4",
+                  options?.disableSidecar && "col-span-full",
+                )}
+              >
+                {description}
+                {operation.parameters &&
+                  operation.parameters.length > 0 &&
+                  PARAM_GROUPS.flatMap((group) =>
+                    groupedParameters[group]?.length ? (
+                      <ParameterList
+                        key={group}
+                        summary={operation.summary ?? undefined}
+                        id={operation.slug}
+                        parameters={groupedParameters[group]}
+                        group={group}
+                      />
+                    ) : (
+                      []
+                    ),
+                  )}
+                {renderIf(operation.requestBody?.content?.at(0)?.schema, () => (
+                  <Separator className="my-4" />
+                ))}
+                {renderIf(
+                  operation.requestBody?.content?.at(0)?.schema,
+                  (schema) => (
+                    <div className="flex flex-col gap-4">
+                      <Heading
+                        level={3}
+                        className="capitalize flex items-center gap-2"
+                        id={`${operation.slug}/request-body`}
+                      >
+                        {operation.summary && (
+                          <PagefindSearchMeta>
+                            {operation.summary} &rsaquo;{" "}
+                          </PagefindSearchMeta>
+                        )}
+                        Request Body{" "}
+                        {operation.requestBody?.required === false ? (
+                          <Badge variant="muted">optional</Badge>
+                        ) : (
+                          ""
+                        )}
+                      </Heading>
+                      <SchemaView schema={schema} />
+                    </div>
+                  ),
+                )}
+                <Separator className="my-4" />
+                {operation.responses.length > 0 && (
+                  <>
+                    <Heading level={3} id={`${operation.slug}/responses`}>
+                      {operation.summary && (
+                        <PagefindSearchMeta>
+                          {operation.summary} &rsaquo;{" "}
+                        </PagefindSearchMeta>
+                      )}
+                      Responses
+                    </Heading>
+                    <ResponseContent
+                      responses={operation.responses}
+                      selectedResponse={selectedResponse}
+                      onSelectResponse={setSelectedResponse}
+                    />
+                  </>
+                )}
+              </div>
             )}
-          </div>
+          </>
         )}
 
-        {renderIf(!options?.disableSidecar && !isMCPEndpoint, () => (
-          <Sidecar
-            selectedResponse={selectedResponse}
-            operation={operation}
-            globalSelectedServer={globalSelectedServer}
-            shouldLazyHighlight={shouldLazyHighlight}
-          />
-        ))}
+        {renderIf(!options?.disableSidecar && !isMCPEndpoint, () => {
+          const sidecar = (
+            <Sidecar
+              selectedResponse={selectedResponse}
+              operation={operation}
+              globalSelectedServer={globalSelectedServer}
+              shouldLazyHighlight={shouldLazyHighlight}
+            />
+          );
+          return isGraphQLEndpoint ? (
+            <div className="min-w-0">{sidecar}</div>
+          ) : (
+            sidecar
+          );
+        })}
       </div>
     </div>
   );

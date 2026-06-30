@@ -1,0 +1,81 @@
+---
+title: AWS Lambda SSR Example
+description: Zudoku running with server-side rendering on AWS Lambda.
+---
+
+The `lambda` adapter produces a native Lambda handler via `hono/aws-lambda`, so no Web Adapter layer
+is needed. The zipped `dist/` is fully self-contained.
+
+### Setting up the Lambda function (first time)
+
+<details>
+<summary>AWS Console</summary>
+
+1. **Lambda → Create function → Author from scratch.**
+2. **Runtime:** Node.js 22.x.
+3. **Permissions:** default execution role (`AWSLambdaBasicExecutionRole`).
+4. Create the function, then on its page:
+   - **Configuration → General configuration → Edit:** Memory 1024 MB, Timeout 30s.
+   - **Runtime settings → Edit:** Handler = `server/entry.handler`.
+   - **Function URL → Create function URL:** Auth type `NONE` for public access.
+5. Upload the zip: **Code → Upload from → .zip file →** select `function.zip`.
+6. Hit the Function URL.
+
+</details>
+
+<details>
+<summary>AWS CLI</summary>
+
+```bash
+REGION=eu-north-1
+FN=zudoku
+
+# Create a basic execution role (skip if you already have one)
+aws iam create-role --role-name lambda-basic-exec \
+  --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}'
+aws iam attach-role-policy --role-name lambda-basic-exec \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+ROLE_ARN=$(aws iam get-role --role-name lambda-basic-exec --query Role.Arn --output text)
+
+pnpm build && pnpm zip
+
+aws lambda create-function \
+  --region $REGION \
+  --function-name $FN \
+  --runtime nodejs22.x \
+  --role $ROLE_ARN \
+  --handler server/entry.handler \
+  --timeout 30 \
+  --memory-size 1024 \
+  --zip-file fileb://function.zip
+
+aws lambda create-function-url-config \
+  --region $REGION \
+  --function-name $FN \
+  --auth-type NONE \
+  --query FunctionUrl --output text
+
+aws lambda add-permission \
+  --region $REGION \
+  --function-name $FN \
+  --statement-id FunctionURLAllowPublicAccess \
+  --action lambda:InvokeFunctionUrl \
+  --principal "*" \
+  --function-url-auth-type NONE
+```
+
+</details>
+
+### Subsequent deploys
+
+```bash
+LAMBDA_FUNCTION_NAME=my-fn pnpm deploy
+```
+
+Runs `pnpm build && pnpm zip` then `aws lambda update-function-code`.
+
+### Protected routes
+
+The `protectedRoutes` config option gates routes behind authentication. Try visiting
+[/documentation/protected](/documentation/protected) while logged out to see the auth flow.

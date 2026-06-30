@@ -1,5 +1,5 @@
 import { useMDXComponents } from "@mdx-js/react";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import {
   ArrowUpIcon,
   CheckIcon,
@@ -24,10 +24,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
 import type { TocEntry } from "../../../vite/mdx/rehype-extract-toc-with-jsx.js";
 import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { useIsClient } from "../../components/ClientOnly.js";
 import { useViewportAnchor } from "../../components/context/ViewportAnchorContext.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
+import { useSidebar } from "../../components/navigation/sidebarStore.js";
 import { Toc, TocContent } from "../../components/navigation/Toc.js";
 import {
   useCurrentItem,
@@ -169,12 +171,14 @@ export const MdxPage = ({
   const location = useLocation();
   const { options } = useZudoku();
   const [isCopied, setIsCopied] = useState(false);
+  const sidebarCollapsed = useSidebar((s) => s.isCollapsed);
 
   const title = frontmatter.title;
   const description = frontmatter.description ?? excerpt;
   const category = frontmatter.category ?? categoryTitle;
   const tocEnabled = frontmatter.toc ?? defaultOptions?.toc ?? true;
   const fullWidth = frontmatter.fullWidth ?? defaultOptions?.fullWidth ?? false;
+  const centered = frontmatter.centered ?? defaultOptions?.centered ?? true;
   const pageTitle =
     title ?? tableOfContents.find((item) => item.depth === 1)?.text;
   const hidePager =
@@ -189,6 +193,8 @@ export const MdxPage = ({
   const lastModifiedDate = frontmatter.lastModifiedTime
     ? new Date(frontmatter.lastModifiedTime)
     : null;
+
+  const isClient = useIsClient();
 
   const editConfig =
     frontmatter.suggestEdit !== false &&
@@ -252,21 +258,25 @@ export const MdxPage = ({
       data-pagefind-filter="section:markdown"
       data-pagefind-meta="section:markdown"
     >
-      <Helmet>
+      <Head>
         <title>{pageTitle}</title>
         {description && <meta name="description" content={description} />}
         {publishMarkdown && (
           <link rel="alternate" type="text/markdown" href={markdownUrl} />
         )}
-      </Helmet>
+      </Head>
 
       <Typography
         className={cn(
           "max-w-full flex-1 shrink pt-(--padding-content-top)",
-          !fullWidth && "xl:w-full xl:max-w-3xl",
+          !fullWidth &&
+            (sidebarCollapsed
+              ? "lg:w-full lg:max-w-4xl"
+              : "xl:w-full xl:max-w-3xl"),
+          centered && "xl:mx-auto",
         )}
       >
-        <header className="flow-root">
+        <header className="flow-root isolate">
           {showTocSidebar && (
             <>
               <Slot.Source name="top-navigation-side" type="append">
@@ -282,7 +292,7 @@ export const MdxPage = ({
           )}
           {(copyMarkdownConfig || showTocPopover) && (
             <div
-              className="float-end ms-4 mt-1 flex items-center gap-2"
+              className="relative z-10 float-end ms-4 mt-1 flex items-center gap-2"
               role="group"
               aria-label="Page actions"
             >
@@ -393,15 +403,27 @@ export const MdxPage = ({
               <div>
                 {showLastModified && lastModifiedDate && (
                   <div
-                    title={lastModifiedDate.toLocaleString(undefined, {
-                      dateStyle: "full",
-                      timeStyle: "medium",
-                    })}
+                    // Render the tooltip (full date + time in the viewer's local
+                    // timezone) only on the client. It's omitted on the server and
+                    // the first client render, so there's no hydration mismatch,
+                    // then added after mount.
+                    title={
+                      isClient
+                        ? lastModifiedDate.toLocaleString("en-US", {
+                            dateStyle: "full",
+                            timeStyle: "medium",
+                          })
+                        : undefined
+                    }
                   >
                     Last modified on{" "}
                     <time dateTime={lastModifiedDate.toISOString()}>
                       {lastModifiedDate.toLocaleDateString("en-US", {
                         dateStyle: "long",
+                        // Pinned to UTC so the prerendered day matches the client
+                        // render; a local timezone would shift the day near a UTC
+                        // boundary and cause a hydration error (#418).
+                        timeZone: "UTC",
                       })}
                     </time>
                   </div>

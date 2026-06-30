@@ -16,7 +16,7 @@ export const NotFoundPage = () => {
 
   return (
     <Typography
-      className="h-full pt-(--padding-content-top)"
+      className="h-full pt-(--padding-content-top) mx-auto w-full max-w-5xl"
       data-pagefind-ignore="all"
     >
       <CategoryHeading>404</CategoryHeading>
