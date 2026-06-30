@@ -74,3 +74,19 @@ export const routesToPaths = (routes: RouteObject[]): string[] =>
 
 export const routesToRewrites = (routes: RouteObject[]): RouteRewrite[] =>
   collectRewrites(resolveRoutes(routes));
+
+type IndexablePage = { indexStatusCode: number; html: string };
+
+// Selects which prerendered pages get added to the search index, keyed by their
+// path. `indexStatusCode` is the status of the render whose HTML is indexed —
+// for protected routes that's the bypass render (200), not the gated main
+// render (401), so protected pages aren't silently dropped (issue #2672).
+export const selectPagesToIndex = (
+  pages: IndexablePage[],
+  paths: string[],
+): { url: string; html: string }[] =>
+  pages.flatMap(({ indexStatusCode, html }, i) => {
+    const url = paths[i];
+    if (url === undefined || indexStatusCode >= 400) return [];
+    return [{ url, html }];
+  });
