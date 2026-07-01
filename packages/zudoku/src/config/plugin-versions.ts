@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { findPackageRoot } from "../vite/package-root.js";
+import { findPackageRoot } from "../vite/package-root.ts";
 
 export type PluginVersion = { name: string; version: string };
 

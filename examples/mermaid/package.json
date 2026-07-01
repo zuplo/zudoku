@@ -1,23 +1,12 @@
 {
   "name": "mermaid",
   "version": "0.0.1",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "zudoku dev",
     "build": "zudoku build",
     "preview": "zudoku preview"
-  },
-  "nx": {
-    "tags": [
-      "example"
-    ],
-    "targets": {
-      "build": {
-        "dependsOn": [
-          "zudoku:build"
-        ]
-      }
-    }
   },
   "dependencies": {
     "mermaid": "^11.0.0",

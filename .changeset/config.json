@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config/schema.json",
+  "changelog": ["changesets-changelog-clean", { "repo": "zuplo/zudoku" }],
+  "commit": false,
+  "fixed": [["zudoku", "create-zudoku"]],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}

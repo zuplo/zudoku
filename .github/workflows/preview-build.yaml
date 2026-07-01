@@ -20,35 +20,61 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: ".tool-versions"
+          cache: "pnpm"
 
-      - name: Install global dependencies
-        run: npm install -g --ignore-scripts verdaccio nx npm-auth-to-token
-
-      - name: Start local NPM registry
-        run: |
-          tmp_registry_log=$(mktemp)
-          nohup verdaccio &>$tmp_registry_log &
-          grep -q 'http address' <(tail -f $tmp_registry_log)
-          npm-auth-to-token -u test -p test -e test@test.com -r http://localhost:4873
-
-      - name: Run first pnpm install
+      # Install + build from the real registry before verdaccio exists, so the
+      # full dependency tree is fetched normally (fast) and cached in the pnpm
+      # store. The later reinstall is --prefer-offline, so it serves everything
+      # from that store and only pulls zudoku@local from verdaccio.
+      - name: Install workspace dependencies
         run: pnpm install --ignore-scripts
 
-      - name: Build and publish package
-        run: nx run zudoku:publish:local
+      - name: Build zudoku
+        run: pnpm -F zudoku build
 
-      - name: Update package.json
+      # publish: $all allows anonymous publish; the dummy authToken is only
+      # there because npm requires a token to be present regardless.
+      - name: Start local npm registry
+        run: |
+          cat > "$RUNNER_TEMP/verdaccio.yaml" <<'EOF'
+          storage: /tmp/verdaccio-storage
+          uplinks:
+            npmjs:
+              url: https://registry.npmjs.org/
+          packages:
+            "**":
+              access: $all
+              publish: $all
+              proxy: npmjs
+          log: { type: stdout, format: pretty, level: warn }
+          EOF
+          log=$(mktemp)
+          pnpm dlx verdaccio --config "$RUNNER_TEMP/verdaccio.yaml" &>"$log" &
+          grep -q 'http address' <(tail -f "$log")
+          echo "//localhost:4873/:_authToken=fake" >> ~/.npmrc
+
+      # Mutates packages/zudoku/package.json in-place for the runner. Any step
+      # after this that re-runs `pnpm install --frozen-lockfile` will fail.
+      # --no-git-checks: the build above leaves generated files in the tree, and
+      # pnpm 11's `pnpm version` refuses to run on an unclean tree otherwise.
+      - name: Publish zudoku to local registry
+        working-directory: packages/zudoku
+        run: |
+          pnpm version prerelease --preid local --git-tag-version=false --commit-hooks=false --no-git-checks
+          pnpm publish --tag local --registry http://localhost:4873 --no-git-checks
+
+      - name: Point cosmo-cargo at locally-published zudoku
         run: |
           VERSION=$(pnpm view zudoku@local version --registry http://localhost:4873)
           echo "Using locally-published zudoku version: $VERSION"
           cd examples/cosmo-cargo
           npm pkg set "devDependencies.zudoku=$VERSION"
 
-      - name: Run second pnpm install
+      - name: Reinstall against local registry
         run: pnpm install --no-frozen-lockfile --prefer-offline --ignore-scripts --registry http://localhost:4873
 
       - name: Build Cosmo Cargo example
-        run: nx run cosmo-cargo:build
+        run: pnpm -F cosmo-cargo build
 
       - name: Smoke Test
         run: |

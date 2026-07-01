@@ -6,20 +6,15 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    name: Build & Test
+  quality:
+    name: Lint, Typecheck & Test
     runs-on:
       group: ubuntu-large-runners
     permissions:
-      actions: read
       contents: read
-      id-token: write
       pull-requests: write
-
     env:
       COREPACK_ENABLE_STRICT: 0
-      ZUDOKU_INTERNAL_DEV: true
-
     steps:
       - uses: actions/checkout@v7
         with:
@@ -27,38 +22,15 @@ jobs:
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           run_install: false
-
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: ".tool-versions"
-          registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - run: pnpm install nx --global
-
-      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
-
-      - name: Detect monetization plugin changes
-        if: github.event_name == 'pull_request'
-        id: monetization-changes
-        # Pinned to commit SHA for security. Tag: v3
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
-        with:
-          filters: |
-            monetization:
-              - 'packages/plugin-zuplo-monetization/**'
+      - run: pnpm install --frozen-lockfile
 
       - run: pnpm check
-
-      - name: Typecheck monetization plugin
-        if: github.event_name == 'pull_request' && steps.monetization-changes.outputs.monetization == 'true'
-        run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
-
-      - run: nx run-many -t build:ci
+      - run: pnpm -r --filter "./packages/*" run --if-present typecheck
       - run: pnpm test:coverage
 
       - name: Upload coverage report
@@ -101,20 +73,30 @@ jobs:
         with:
           json-summary-path: coverage/coverage-summary.json
 
-      - name: Get Variables
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+  integration:
+    name: E2E, Smoke & Bundle Size
+    runs-on:
+      group: ubuntu-large-runners
+    permissions:
+      contents: read
+    env:
+      COREPACK_ENABLE_STRICT: 0
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
 
-      - name: Version (Canary)
-        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
-        run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
-
-      - name: Publish Modules
-        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
-        run: pnpm publish --provenance --filter zudoku --filter create-zudoku --filter config --tag canary --no-git-checks
-
-      - name: Build Examples
-        run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
+      - run: pnpm -r --filter "./packages/*" build
+      - run: pnpm -F zudoku build:standalone
+      # E2E previews cosmo-cargo's build; with-base-path/bundle-size need their dist.
+      - run: pnpm -F cosmo-cargo -F with-base-path build
 
       - name: Smoke Test with-base-path
         run: |
@@ -136,6 +118,14 @@ jobs:
 
           echo "✅ with-base-path smoke test passed"
 
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: playwright-${{ runner.os }}-
+
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
@@ -144,6 +134,42 @@ jobs:
 
       - name: Check Bundle Size
         run: pnpm size
+
+  build-examples:
+    name: Build Examples
+    runs-on:
+      group: ubuntu-large-runners
+    permissions:
+      contents: read
+    env:
+      COREPACK_ENABLE_STRICT: 0
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm -r --filter "./packages/*" build
+      - run: pnpm -r --filter "./examples/**" --filter "!mermaid" --filter "!many-apis" build
+
+  # Aggregate status for branch protection: one required check covering the
+  # jobs that replaced the former monolithic "Build & Test" job.
+  build-and-test:
+    name: Build & Test
+    needs: [quality, integration, build-examples]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: echo "::error::a required job did not succeed" && exit 1
+      - run: echo "all required jobs passed"
 
   check-links:
     name: Check Links
@@ -161,15 +187,12 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".tool-versions"
-          registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - run: pnpm install nx --global
-
-      - run: nx run docs:build
+      - run: pnpm -F 'docs...' build
 
       - name: Restore lychee cache
         id: restore-cache

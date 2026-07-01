@@ -1,24 +1,13 @@
 {
   "name": "auth-firebase",
   "version": "0.0.1",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "zudoku dev",
     "build": "zudoku build",
     "preview": "zudoku preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
-  },
-  "nx": {
-    "tags": [
-      "example"
-    ],
-    "targets": {
-      "build": {
-        "dependsOn": [
-          "zudoku:build"
-        ]
-      }
-    }
   },
   "dependencies": {
     "firebase": "^12.13.0"
