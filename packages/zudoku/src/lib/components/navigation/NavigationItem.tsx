@@ -1,6 +1,6 @@
-import { ExternalLinkIcon } from "lucide-react";
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigation } from "react-router";
+import { Icon } from "zudoku/icons";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
@@ -113,7 +113,10 @@ export const NavigationItem = ({
           end
         >
           {item.icon && (
-            <item.icon className="size-4 shrink-0 align-[-0.125em]" />
+            <Icon
+              icon={item.icon}
+              className="size-4 shrink-0 align-[-0.125em]"
+            />
           )}
           {item.rich ? (
             <Suspense fallback={<span>{item.label}</span>}>
@@ -135,7 +138,11 @@ export const NavigationItem = ({
         return (
           <StackDrillRow to={joinUrl(item.to)} onRequestClose={onRequestClose}>
             {item.icon && (
-              <item.icon size={16} className="align-[-0.125em] shrink-0" />
+              <Icon
+                icon={item.icon}
+                size={16}
+                className="align-[-0.125em] shrink-0"
+              />
             )}
             <TruncatedLabel label={item.label} />
             {item.badge && <NavigationBadge {...item.badge} />}
@@ -161,7 +168,10 @@ export const NavigationItem = ({
           onClick={onRequestClose}
         >
           {item.icon && (
-            <item.icon className="size-4 shrink-0 align-[-0.125em]" />
+            <Icon
+              icon={item.icon}
+              className="size-4 shrink-0 align-[-0.125em]"
+            />
           )}
           {item.label && <TruncatedLabel label={item.label} />}
           {item.badge && <NavigationBadge {...item.badge} />}
@@ -175,12 +185,19 @@ export const NavigationItem = ({
           onClick={onRequestClose}
         >
           {item.icon && (
-            <item.icon className="size-4 shrink-0 align-[-0.125em]" />
+            <Icon
+              icon={item.icon}
+              className="size-4 shrink-0 align-[-0.125em]"
+            />
           )}
           <span className="whitespace-normal">{item.label}</span>
           {/* This prevents that the icon would be positioned in its own line if the text fills a line entirely */}
           <span className="whitespace-nowrap">
-            <ExternalLinkIcon className="inline size-3 -translate-y-0.5" />
+            <Icon
+              icon="lucide:external-link"
+              size={12}
+              className="inline size-3 -translate-y-0.5"
+            />
           </span>
         </a>
       );

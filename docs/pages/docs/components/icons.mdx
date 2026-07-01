@@ -1,27 +1,128 @@
 ---
 title: Icons
-sidebar_icon: flag
+sidebar_icon: ph:circle-half-tilt-bold
 ---
 
-import { AtomIcon, PackagePlusIcon } from "zudoku/icons";
+import { Icon } from "zudoku/icons";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "zudoku/ui/Tooltip";
 
-Icons are a great way to add visual elements to your content. They can be used to represent actions,
-objects, or ideas. They can also be used to add visual interest to your content.
+export const IconSample = ({ icon }) => (
+  <Tooltip>
+    <TooltipTrigger className="flex size-12 items-center justify-center rounded-lg border bg-card text-foreground transition-colors hover:border-primary hover:text-primary">
+      <Icon icon={icon} size={24} />
+    </TooltipTrigger>
+    <TooltipContent>
+      <code>{icon}</code>
+    </TooltipContent>
+  </Tooltip>
+);
 
-You can use any of the icons from [lucide-react](https://lucide.dev/icons/) in your content. To use
-an icon, you can import it from the Zudoku re-export `zudoku/icons`:
+An icon is an [Iconify](https://iconify.design) `prefix:name` string, rendered with the `Icon`
+component from `zudoku/icons`. You can mix icon sets freely. Hover any of these to see its name:
 
-<div className="flex gap-2">
-  <AtomIcon size={42} className="text-primary" />
-  <PackagePlusIcon size={42} className="text-neutral-300" />
-</div>
+<TooltipProvider>
+  <div className="not-prose my-6 flex flex-wrap gap-2">
+    <IconSample icon="lucide:rocket" />
+    <IconSample icon="ph:rocket-launch-duotone" />
+    <IconSample icon="lucide:atom" />
+    <IconSample icon="ph:acorn-duotone" />
+    <IconSample icon="lucide:sparkles" />
+    <IconSample icon="ph:sparkle-duotone" />
+    <IconSample icon="lucide:heart" />
+    <IconSample icon="ph:heart-duotone" />
+    <IconSample icon="lucide:flame" />
+    <IconSample icon="ph:flame-duotone" />
+  </div>
+</TooltipProvider>
+
+## Usage
+
+Pass the `prefix:name` to `icon`, with an optional `size` (pixels) and `className`:
 
 ```tsx
-import { AtomIcon, PackagePlusIcon } from "zudoku/icons";
+import { Icon } from "zudoku/icons";
 
-<AtomIcon size={42} className="text-primary" />;
-<PackagePlusIcon size={42} className="text-neutral-300" />;
+<Icon icon="lucide:rocket" />;
+<Icon icon="ph:rocket-launch-duotone" size={32} className="text-primary" />;
 ```
 
-More infos how to use icons in React can be found in the
-[documentation of `lucide-react`](https://lucide.dev/guide/packages/lucide-react#how-to-use).
+## Lucide is built in
+
+The [Lucide](https://lucide.dev/icons) set ships with Zudoku, so it needs no installation. It is
+also the default set: a bare name with no prefix resolves to it.
+
+```tsx
+<Icon icon="rocket" /> // same as "lucide:rocket"
+```
+
+## Adding another icon set
+
+Every other set is opt-in. Install it, then reference its icons by prefix:
+
+<Stepper>
+
+1. Find the set's prefix on [icon-sets.iconify.design](https://icon-sets.iconify.design) (Phosphor
+   is `ph`, Material Design Icons is `mdi`, Tabler is `tabler`, …).
+2. Install its `@iconify-json/<prefix>` package as a dev dependency:
+
+   ```sh
+   npm install --save-dev @iconify-json/ph
+   ```
+
+3. Reference icons from it with `prefix:name`:
+
+   ```tsx
+   <Icon icon="ph:rocket-launch-duotone" />
+   ```
+
+</Stepper>
+
+The `@iconify-json` package is read only at build time, never shipped to the browser. Only the icons
+you reference are inlined.
+
+:::info
+
+Lucide is the only set bundled by default. Any `prefix:name` from a set you haven't installed will
+be treated as [unresolved](#unresolved-icons).
+
+:::
+
+## Icons in configuration
+
+The same `prefix:name` string works wherever navigation accepts an `icon`, including the
+[navigation config](/docs/configuration/navigation#icons) and document
+[frontmatter](/docs/markdown/frontmatter#sidebar_icon):
+
+```ts
+{ type: "category", label: "Getting Started", icon: "lucide:book" }
+```
+
+## Unresolved icons
+
+If an icon can't be resolved at build time (a typo, or a set that isn't installed):
+
+- In development it is fetched from the Iconify API, and the build logs a warning naming the
+  unresolved icon.
+- In production it renders a placeholder "missing icon" fallback by default. Install the relevant
+  `@iconify-json/*` package, or opt into runtime fetching:
+
+```ts
+// zudoku.config.tsx
+export default {
+  icons: { runtimeFetch: true },
+};
+```
+
+## Lucide components (deprecated)
+
+For backwards compatibility, `zudoku/icons` still re-exports the
+[lucide-react](https://lucide.dev/icons/) components:
+
+```tsx
+import { AtomIcon } from "zudoku/icons";
+
+<AtomIcon size={42} />;
+```
+
+This is deprecated and will be removed in a future major version. Prefer the string-based `Icon`
+component.

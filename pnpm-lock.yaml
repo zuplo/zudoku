@@ -130,6 +130,9 @@ importers:
         specifier: 'catalog:'
         version: 19.2.7(react@19.2.7)
     devDependencies:
+      '@iconify-json/ph':
+        specifier: 1.2.2
+        version: 1.2.2
       '@types/mdast':
         specifier: 4.0.4
         version: 4.0.4
@@ -247,6 +250,9 @@ importers:
         specifier: 'catalog:'
         version: 19.2.7(react@19.2.7)
     devDependencies:
+      '@iconify-json/ph':
+        specifier: 1.2.2
+        version: 1.2.2
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.17
@@ -647,6 +653,15 @@ importers:
       '@hono/node-server':
         specifier: 2.0.3
         version: 2.0.3(hono@4.12.25)
+      '@iconify-json/lucide':
+        specifier: 1.2.111
+        version: 1.2.111
+      '@iconify/react':
+        specifier: 6.0.2
+        version: 6.0.2(react@19.2.7)
+      '@iconify/utils':
+        specifier: 3.1.3
+        version: 3.1.3
       '@lekoarts/rehype-meta-as-attributes':
         specifier: 3.0.3
         version: 3.0.3
@@ -902,6 +917,9 @@ importers:
       openapi-types:
         specifier: 12.1.3
         version: 12.1.3
+      oxc-parser:
+        specifier: 0.135.0
+        version: 0.135.0
       pagefind:
         specifier: 1.5.2
         version: 1.5.2
@@ -1011,6 +1029,9 @@ importers:
       '@graphql-codegen/cli':
         specifier: 7.1.3
         version: 7.1.3(@types/node@22.19.1)(bufferutil@4.1.0)(graphql-sock@1.0.1(graphql@16.14.0))(graphql@16.14.0)(typescript@6.0.3)(utf-8-validate@6.0.6)
+      '@iconify/types':
+        specifier: 2.0.0
+        version: 2.0.0
       '@inkeep/cxkit-types':
         specifier: 0.5.119
         version: 0.5.119
@@ -1071,9 +1092,6 @@ importers:
       happy-dom:
         specifier: 'catalog:'
         version: 20.10.2(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      oxc-parser:
-        specifier: ^0.135.0
-        version: 0.135.0
       react:
         specifier: 'catalog:'
         version: 19.2.7
@@ -2679,6 +2697,17 @@ packages:
     peerDependencies:
       hono: ^4
 
+  '@iconify-json/lucide@1.2.111':
+    resolution: {integrity: sha512-S6oXom2YOKuXFxWofhHa2oq++Z3WeZ78dRFDA7aEEJqyNCJlQd1UGAfN8u2gD2NzvYotmm+j5kH678viWfZbGQ==}
+
+  '@iconify-json/ph@1.2.2':
+    resolution: {integrity: sha512-PgkEZNtqa8hBGjHXQa4pMwZa93hmfu8FUSjs/nv4oUU6yLsgv+gh9nu28Kqi8Fz9CCVu4hj1MZs9/60J57IzFw==}
+
+  '@iconify/react@6.0.2':
+    resolution: {integrity: sha512-SMmC2sactfpJD427WJEDN6PMyznTFMhByK9yLW0gOTtnjzzbsi/Ke/XqsumsavFPwNiXs8jSiYeZTmLCLwO+Fg==}
+    peerDependencies:
+      react: '>=16'
+
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
 
@@ -3157,12 +3186,6 @@ packages:
 
   '@napi-rs/wasm-runtime@0.2.4':
     resolution: {integrity: sha512-9zESzOO5aDByvhIAsOy9TbpZ0Ur2AJbUI7UT73kcUTS2mxAMHOBaa1st/jAymNoCtvrit99kkzT1FZuXVcgfIQ==}
-
-  '@napi-rs/wasm-runtime@1.1.4':
-    resolution: {integrity: sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==}
-    peerDependencies:
-      '@emnapi/core': ^1.7.1
-      '@emnapi/runtime': ^1.7.1
 
   '@napi-rs/wasm-runtime@1.1.5':
     resolution: {integrity: sha512-AWPoBRJ9tsnVhor4sjO7rkni+7p+2IAEFj6cx06UgP10jkQHqay/36uRV/bFkgrh18D9vb4cr8Q0Pthskgzy+Q==}
@@ -11407,6 +11430,19 @@ snapshots:
     dependencies:
       hono: 4.12.25
 
+  '@iconify-json/lucide@1.2.111':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/ph@1.2.2':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify/react@6.0.2(react@19.2.7)':
+    dependencies:
+      '@iconify/types': 2.0.0
+      react: 19.2.7
+
   '@iconify/types@2.0.0': {}
 
   '@iconify/utils@3.1.3':
@@ -11813,13 +11849,6 @@ snapshots:
       '@emnapi/runtime': 1.10.0
       '@tybys/wasm-util': 0.9.0
 
-  '@napi-rs/wasm-runtime@1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
-    dependencies:
-      '@emnapi/core': 1.10.0
-      '@emnapi/runtime': 1.10.0
-      '@tybys/wasm-util': 0.10.2
-    optional: true
-
   '@napi-rs/wasm-runtime@1.1.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
       '@emnapi/core': 1.10.0
@@ -12193,7 +12222,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.10.0
       '@emnapi/runtime': 1.10.0
-      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-runtime': 1.1.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     optional: true
 
   '@oxc-parser/binding-win32-arm64-msvc@0.132.0':
@@ -13082,7 +13111,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.10.0
       '@emnapi/runtime': 1.10.0
-      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-runtime': 1.1.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     optional: true
 
   '@rolldown/binding-wasm32-wasi@1.0.3':

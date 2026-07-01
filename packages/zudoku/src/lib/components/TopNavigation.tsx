@@ -1,6 +1,7 @@
 import { cx } from "class-variance-authority";
 import { deepEqual } from "fast-equals";
 import { NavLink, type NavLinkProps } from "react-router";
+import { Icon } from "zudoku/icons";
 import { Separator } from "zudoku/ui/Separator.js";
 import type { NavigationItem } from "../../config/validators/NavigationSchema.js";
 import { useAuth } from "../authentication/hook.js";
@@ -92,7 +93,9 @@ export const TopNavItem = (
     // We don't use isActive here because it has to be inside the navigation,
     // the top nav id doesn't necessarily start with the navigation id
     <TopNavLink to={path} isActive={isActiveTopNavItem}>
-      {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
+      {item.icon && (
+        <Icon icon={item.icon} size={16} className="align-[-0.125em]" />
+      )}
       {item.label}
     </TopNavLink>
   );

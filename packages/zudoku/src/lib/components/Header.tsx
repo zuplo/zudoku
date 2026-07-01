@@ -1,7 +1,7 @@
 import { Head } from "@unhead/react";
-import { LogOutIcon } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router";
+import { Icon } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
@@ -49,9 +49,7 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
       rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
     >
       <DropdownMenuItem key={item.label} className="flex gap-2">
-        {item.icon && (
-          <item.icon size={16} strokeWidth={1} absoluteStrokeWidth />
-        )}
+        {item.icon && <Icon icon={item.icon} size={16} />}
         {item.label}
       </DropdownMenuItem>
     </Link>
@@ -116,7 +114,7 @@ const ProfileMenu = () => {
         <DropdownMenuSeparator />
         <Link to="/signout">
           <DropdownMenuItem className="flex gap-2">
-            <LogOutIcon size={16} strokeWidth={1} absoluteStrokeWidth />
+            <Icon icon="lucide:log-out" size={16} />
             Logout
           </DropdownMenuItem>
         </Link>

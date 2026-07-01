@@ -1,7 +1,5 @@
 import { z } from "zod";
-import { IconNames } from "./icon-types.js";
-
-const IconSchema = z.enum(IconNames);
+import { IconSchema } from "./IconSchema.js";
 
 const HeaderNavLinkItemSchema = z.object({
   label: z.string(),

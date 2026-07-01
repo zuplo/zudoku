@@ -2,13 +2,10 @@ import { stringify } from "javascript-stringify";
 import { isElement } from "react-is";
 import type { Plugin, ViteDevServer } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
-import { IconNames } from "../config/validators/icon-types.js";
 import { NavigationResolver } from "../config/validators/NavigationSchema.js";
 import invariant from "../lib/util/invariant.js";
 import { writePluginDebugCode } from "./debug.js";
-
-const toPascalCase = (str: string) =>
-  str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
+import { IconRegistry } from "./icon-registry.js";
 
 const virtualModuleId = "virtual:zudoku-navigation";
 export const resolvedVirtualModuleId = `\0${virtualModuleId}`;
@@ -39,41 +36,26 @@ export const viteNavigationPlugin = (): Plugin => {
         config.navigationRules ?? [],
       );
 
-      const collectedIcons = new Set<string>();
-      let hasMissingIcon = false;
+      const icons = new IconRegistry();
 
-      const stringifyWithIcons = (value: unknown) =>
+      const stringifyNavigation = (value: unknown) =>
         stringify(
           value,
           (value, _indent, next, key) => {
-            // Skip non-serializable React elements
             if (isElement(value)) return undefined;
-
             if (key === "icon" && typeof value === "string") {
-              const iconName = toPascalCase(value);
-
-              if (!IconNames.includes(value as IconNames)) {
-                // biome-ignore lint/suspicious/noConsole: Logging allowed here
-                console.warn(
-                  `Icon "${value}" not found, see: https://lucide.dev/icons/`,
-                );
-                hasMissingIcon = true;
-                return "MissingIcon";
-              } else {
-                collectedIcons.add(iconName);
-                return iconName;
-              }
+              icons.add(value);
             }
             return next(value);
           },
           2,
         );
 
-      const headerNavigationCode = stringifyWithIcons(
+      const headerNavigationCode = stringifyNavigation(
         config.header?.navigation ?? [],
       );
-      const navigationCode = stringifyWithIcons(resolvedNavigation);
-      const rulesCode = stringifyWithIcons(resolvedRules);
+      const navigationCode = stringifyNavigation(resolvedNavigation);
+      const rulesCode = stringifyNavigation(resolvedRules);
 
       invariant(headerNavigationCode, "Failed to stringify header navigation");
       invariant(navigationCode, "Failed to stringify navigation");
@@ -86,17 +68,8 @@ export const viteNavigationPlugin = (): Plugin => {
         "js",
       );
 
-      if (hasMissingIcon) {
-        collectedIcons.add("MissingIcon");
-      }
-
-      const importStatement =
-        collectedIcons.size > 0
-          ? `import { ${[...collectedIcons].join(", ")} } from "zudoku/icons";\n`
-          : "";
-
       return [
-        importStatement,
+        icons.toImports(),
         `export const configuredHeaderNavigation = ${headerNavigationCode};`,
         `export const configuredNavigation = ${navigationCode};`,
         `export const configuredNavigationRules = ${rulesCode};`,

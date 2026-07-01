@@ -25,6 +25,7 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@iconify-json/ph": "1.2.2",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "zudoku": "workspace:*"

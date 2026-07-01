@@ -1,10 +1,8 @@
 import { z } from "zod";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
-import type { IconNames } from "./icon-types.js";
+import { IconSchema } from "./IconSchema.js";
 import type { SortableNavigationItem } from "./NavigationSchema.js";
-
-const IconSchema = z.custom<IconNames>((f) => typeof f === "string");
 
 const BadgeSchema = z.object({
   label: z.string(),

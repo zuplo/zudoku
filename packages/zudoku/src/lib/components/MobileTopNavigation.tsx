@@ -1,13 +1,9 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { deepEqual } from "fast-equals";
-import {
-  ChevronDownIcon,
-  LogOutIcon,
-  MenuIcon,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDownIcon, LogOutIcon, MenuIcon } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router";
+import { Icon } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
@@ -41,7 +37,6 @@ const MobileHeaderNavLink = ({
   item: HeaderNavLinkItem;
   onClick: () => void;
 }) => {
-  const Icon = item.icon as LucideIcon | undefined;
   return (
     <Link
       to={item.to}
@@ -50,7 +45,7 @@ const MobileHeaderNavLink = ({
       onClick={onClick}
       className="flex items-center font-medium gap-2 py-2 text-foreground/80 hover:text-foreground"
     >
-      {Icon && <Icon size={16} />}
+      {item.icon && <Icon icon={item.icon} size={16} />}
       {item.label}
     </Link>
   );
@@ -64,7 +59,6 @@ const MobileHeaderNavItem = ({
   onNavigate: () => void;
 }) => {
   if ("to" in item) {
-    const Icon = item.icon as LucideIcon | undefined;
     return (
       <li className="w-full">
         <Link
@@ -74,7 +68,7 @@ const MobileHeaderNavItem = ({
           onClick={onNavigate}
           className="flex items-center gap-2 py-2 text-base font-medium"
         >
-          {Icon && <Icon size={16} />}
+          {item.icon && <Icon icon={item.icon} size={16} />}
           {item.label}
         </Link>
       </li>
@@ -184,7 +178,7 @@ export const MobileTopNavigation = () => {
                       onClick={() => setDrawerOpen(false)}
                       className={`flex items-center gap-2 py-2 text-base font-medium ${isActive ? "text-foreground" : "text-foreground/75 hover:text-foreground"}`}
                     >
-                      {item.icon && <item.icon size={16} />}
+                      {item.icon && <Icon icon={item.icon} size={16} />}
                       {item.label}
                     </Link>
                   </li>

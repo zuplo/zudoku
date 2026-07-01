@@ -5,8 +5,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/Tooltip.js";
+import { parseIconName } from "./util/iconName.js";
 
-export const MissingIcon = (props: LucideProps) => {
+export const MissingIcon = ({
+  name,
+  ...props
+}: LucideProps & { name?: string }) => {
+  // Link to the set the icon belongs to (lucide, ph, mdi, …), not always lucide.
+  const href = name
+    ? `https://icon-sets.iconify.design/${parseIconName(name).prefix}/`
+    : "https://icon-sets.iconify.design/";
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -14,7 +23,7 @@ export const MissingIcon = (props: LucideProps) => {
           <CircleDashed {...props} />
         </TooltipTrigger>
         <TooltipContent>
-          Icon not found, see: https://lucide.dev/icons/
+          {name ? `Icon "${name}" not found` : "Icon not found"}, see: {href}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

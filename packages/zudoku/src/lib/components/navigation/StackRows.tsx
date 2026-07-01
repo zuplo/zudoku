@@ -1,6 +1,7 @@
 import { ChevronRightIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
+import { Icon } from "zudoku/icons";
 import type { NavigationCategory as NavigationCategoryType } from "../../../config/validators/NavigationSchema.js";
 import { cn } from "../../util/cn.js";
 import { NavigationCategory } from "./NavigationCategory.js";
@@ -57,7 +58,11 @@ export const StackCategoryRow = ({
       className="font-medium"
     >
       {category.icon && (
-        <category.icon size={16} className="shrink-0 align-[-0.125em]" />
+        <Icon
+          icon={category.icon}
+          size={16}
+          className="shrink-0 align-[-0.125em]"
+        />
       )}
       <span className="truncate">{category.label}</span>
     </StackDrillRow>

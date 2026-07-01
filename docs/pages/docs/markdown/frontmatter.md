@@ -62,12 +62,13 @@ The legacy name `navigation_label` is also supported but `sidebar_label` is pref
 
 ### `sidebar_icon`
 
-Specifies a [Lucide icon](https://lucide.dev/icons) to display next to the page in the sidebar
-navigation.
+Specifies an icon to display next to the page in the sidebar navigation. The value is an
+[Iconify](https://iconify.design) `prefix:name` string; a bare name defaults to the `lucide` set.
+See the [Icons reference](/docs/components/icons) for available sets.
 
 ```md
 ---
-sidebar_icon: compass
+sidebar_icon: lucide:compass
 ---
 ```
 

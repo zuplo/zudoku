@@ -61,7 +61,11 @@ export type ProfileNavigationItem = {
   weight?: number;
   category?: "top" | "middle" | "bottom";
   children?: ProfileNavigationItem[];
-  icon?: LucideIcon;
+  /**
+   * An iconify `prefix:name` string (e.g. `"lucide:settings"`), or — deprecated — a
+   * lucide component reference. Prefer string icons; component refs are not serializable.
+   */
+  icon?: string | LucideIcon;
 };
 
 export interface ConfigHookContext {

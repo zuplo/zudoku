@@ -7,7 +7,7 @@ description:
   paths.
 ---
 
-import { Book, Code, FileText } from "zudoku/icons";
+import { Icon } from "zudoku/icons";
 
 Zudoku uses a single `navigation` array to control both the top navigation tabs and the sidebar.
 Items at the root of this array appear as tabs, and nested items build the sidebar tree. Navigation
@@ -610,16 +610,21 @@ property for styling:
 
 ## Icons
 
-Icons can be added to categories and documents by specifying an `icon` property. The value should be
-the name of a [Lucide icon](https://lucide.dev/icons) (e.g., `book` <Book size={16}
-style={{ display: 'inline' }} />, `code` <Code size={16} style={{ display: 'inline' }} />,
-`file-text` <FileText size={16} style={{ display: 'inline' }} />).
+Add an icon to any category or document with the `icon` property. The value is an
+[Iconify](https://iconify.design) `prefix:name` string, for example `lucide:book` <Icon
+icon="lucide:book" width={16} style={{ display: 'inline' }} />, `lucide:code` <Icon
+icon="lucide:code" width={16} style={{ display: 'inline' }} />, or `lucide:file-text` <Icon
+icon="lucide:file-text" width={16} style={{ display: 'inline' }} />.
+
+The default prefix is `lucide`, so a bare name like `"book"` resolves to `"lucide:book"`. To use
+other icon sets (e.g. `ph:`, `mdi:`), install the matching `@iconify-json/*` package. See the
+[Icons reference](/docs/components/icons) for details.
 
 ```json
 {
   "type": "category",
   "label": "Getting Started",
-  "icon": "book"
+  "icon": "lucide:book"
 }
 ```
 
@@ -628,7 +633,7 @@ They can also be set on individual documents in their front matter:
 ```md
 ---
 title: My Document
-sidebar_icon: book
+sidebar_icon: lucide:book
 ---
 ```
 

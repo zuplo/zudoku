@@ -290,7 +290,7 @@ const config: ZudokuConfig = {
         },
         {
           type: "category",
-          icon: "library-big",
+          icon: "ph:book-open-user",
           label: "Shipping Guides",
           items: ["global", "interstellar", "intergalactic"],
         },
@@ -375,7 +375,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      icon: "ship",
+      icon: "ph:sailboat-duotone",
       to: "/api-shipments",
       label: "Shipments",
     },
