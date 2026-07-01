@@ -93,6 +93,7 @@ const config: ZudokuConfig = {
   plugins: [
     // Uncomment to document a GraphQL API:
     // graphqlPlugin({
+    //   path: "/graphql",
     //   schema: "./schema.graphql",
     //   endpoint: "/graphql", // (optional, default: "/graphql")
     // }),
