@@ -49,9 +49,32 @@ minimumReleaseAgeExclude:
   - zudoku
   - unhead
   - "@unhead/*"
+  - tmp@0.2.7
+  - protobufjs@7.6.3
+  - form-data@4.0.6
+  - protobufjs@7.6.1
+  - dompurify@3.4.7
+  - dompurify@3.4.6
+  - dompurify@3.4.9
+  - dompurify@3.4.8
+  - dompurify@3.4.11
+  - js-yaml@3.15.0
+  - js-yaml@4.1.2
 
 overrides:
   "@grpc/grpc-js": ">=1.9.16 <2"
+  dompurify@<3.4.7: ^3.4.7
+  dompurify@<3.4.9: ^3.4.9
+  dompurify@<=3.4.10: ^3.4.11
+  dompurify@<=3.4.5: ^3.4.6
+  dompurify@<=3.4.6: ^3.4.7
+  dompurify@>=3.0.0 <=3.4.7: ^3.4.8
+  form-data@>=4.0.0 <4.0.6: ^4.0.6
+  js-yaml@<3.15.0: ^3.15.0
+  js-yaml@>=4.0.0 <=4.1.1: ^4.1.2
+  protobufjs@<=7.6.0: ^7.6.1
+  protobufjs@<=7.6.2: ^7.6.3
+  tmp@>=0.2.6 <0.2.7: ^0.2.7
   ws: ">=8.20.1 <9"
 
 patchedDependencies:
