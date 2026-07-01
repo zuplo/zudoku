@@ -103,8 +103,8 @@ If an icon can't be resolved at build time (a typo, or a set that isn't installe
 
 - In development it is fetched from the Iconify API, and the build logs a warning naming the
   unresolved icon.
-- In production it renders nothing by default. Install the relevant `@iconify-json/*` package, or
-  opt into runtime fetching:
+- In production it renders a placeholder "missing icon" fallback by default. Install the relevant
+  `@iconify-json/*` package, or opt into runtime fetching:
 
 ```ts
 // zudoku.config.tsx

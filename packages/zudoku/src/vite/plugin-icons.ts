@@ -132,7 +132,7 @@ export const viteIconsPlugin = (): Plugin => {
 
         if (!set) {
           this.warn(
-            `Icon "${iconId}" could not be resolved at build time. Install ${pkg} to inline it, or it will be fetched at runtime (dev) / blank (prod).`,
+            `Icon "${iconId}" could not be resolved at build time. Install ${pkg} to inline it, or it will be fetched at runtime (dev) / render the missing-icon fallback (prod).`,
           );
           return `export {};`;
         }
@@ -140,7 +140,7 @@ export const viteIconsPlugin = (): Plugin => {
         const data = getIconData(set, name);
         if (!data) {
           this.warn(
-            `Icon "${iconId}" was not found in the installed ${pkg} set. Check the name; it will be fetched at runtime (dev) / blank (prod).`,
+            `Icon "${iconId}" was not found in the installed ${pkg} set. Check the name; it will be fetched at runtime (dev) / render the missing-icon fallback (prod).`,
           );
           return `export {};`;
         }
