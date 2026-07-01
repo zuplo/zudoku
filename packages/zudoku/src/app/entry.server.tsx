@@ -26,7 +26,7 @@ import type { Adapter } from "./adapter.js";
 import { getRoutesByConfig } from "./main.js";
 import { protectChunks as rawProtectChunks } from "./protectChunks.js";
 import { getSsrCacheControl } from "./ssrCacheControl.js";
-import { wrapProtectedRoutes } from "./wrapProtectedRoutes.js";
+import { wrapProtectedRoutesForRender } from "./wrapProtectedRoutes.js";
 
 export { getRoutesByConfig };
 export type { Adapter, AdapterContext } from "./adapter.js";
@@ -104,12 +104,16 @@ export const handleRequest = async ({
   const ssrAuth = await resolveSsrAuth(request);
 
   // No-op lazy() on protected subtrees for unauthed requests so loaders
-  // don't run for a 401 render.
-  const effectiveRoutes = wrapProtectedRoutes(
+  // don't run for a 401 render. A bypass render (search-index pass) keeps the
+  // real content so Pagefind can index protected routes.
+  const effectiveRoutes = wrapProtectedRoutesForRender(
     routes,
     config.protectedRoutes,
-    !!ssrAuth?.profile,
-    basePath,
+    {
+      isAuthenticated: !!ssrAuth?.profile,
+      bypassProtection,
+      basePath,
+    },
   );
 
   const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {

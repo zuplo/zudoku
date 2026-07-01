@@ -74,3 +74,36 @@ export const routesToPaths = (routes: RouteObject[]): string[] =>
 
 export const routesToRewrites = (routes: RouteObject[]): RouteRewrite[] =>
   collectRewrites(resolveRoutes(routes));
+
+type IndexablePage = { indexStatusCode: number; html: string };
+
+type IndexSelection = {
+  include: { url: string; html: string }[];
+  exclude: { url: string; status: number }[];
+};
+
+// Splits prerendered pages into those added to the search index and those
+// skipped because their indexed render failed. `indexStatusCode` is the status
+// of the render whose HTML is indexed: for protected routes that's the bypass
+// render (200), not the gated main render (401), so protected pages aren't
+// silently dropped (issue #2672). Excluded pages are returned rather than
+// dropped in silence so the caller can warn about them, since a protected page
+// missing from the index is exactly the symptom this fix targets.
+export const selectPagesToIndex = (
+  pages: IndexablePage[],
+  paths: string[],
+): IndexSelection => {
+  const withUrl = pages.flatMap(({ indexStatusCode, html }, i) => {
+    const url = paths[i];
+    return url === undefined ? [] : [{ url, html, indexStatusCode }];
+  });
+
+  return {
+    include: withUrl
+      .filter((p) => p.indexStatusCode < 400)
+      .map(({ url, html }) => ({ url, html })),
+    exclude: withUrl
+      .filter((p) => p.indexStatusCode >= 400)
+      .map(({ url, indexStatusCode }) => ({ url, status: indexStatusCode })),
+  };
+};

@@ -20,7 +20,11 @@ import {
 } from "../plugin-markdown-export.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
-import { routesToPaths, routesToRewrites } from "./utils.js";
+import {
+  routesToPaths,
+  routesToRewrites,
+  selectPagesToIndex,
+} from "./utils.js";
 import type { StaticWorkerData, WorkerData } from "./worker.js";
 
 const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
@@ -28,7 +32,13 @@ const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
 export type WorkerResult = {
   outputPath: string;
   html: string;
+  // Status of the page as served statically (the file written to disk). For a
+  // protected route during SSG this is 401 (the sign-in page).
   statusCode: number;
+  // Status of the render whose HTML is fed to the search index. Equals
+  // `statusCode` for normal routes; for protected routes it's the bypass
+  // render (200) so the full content gets indexed (issue #2672).
+  indexStatusCode: number;
   redirect?: { from: string; to: string };
 };
 
@@ -173,9 +183,24 @@ export const prerender = async ({
   }
 
   if (pagefindIndex) {
-    const pagesToIndex = workerResults.flatMap(({ statusCode, html }, i) =>
-      statusCode < 400 ? { url: paths[i], html } : [],
+    const { include: pagesToIndex, exclude } = selectPagesToIndex(
+      workerResults,
+      paths,
     );
+
+    // Surface anything dropped from the index (e.g. a protected route whose
+    // bypass render returned >= 400). A page silently missing from the index
+    // is the exact symptom of #2672, so make it visible rather than quiet.
+    if (exclude.length > 0) {
+      const details = exclude
+        .map(({ url, status }) => `${url} (${status})`)
+        .join(", ");
+      logger.warn(
+        colors.yellow(
+          `⚠ ${exclude.length} route(s) excluded from the search index (render status >= 400): ${details}`,
+        ),
+      );
+    }
     // Batch size caps concurrent IPC writes to the pagefind child process;
     // higher values can overflow its pipe buffer and trigger ENOBUFS.
     const BATCH_SIZE = 40;

@@ -1,6 +1,10 @@
 import type { RouteObject } from "react-router";
 import { describe, expect, it } from "vitest";
-import { routesToPaths, routesToRewrites } from "./utils.js";
+import {
+  routesToPaths,
+  routesToRewrites,
+  selectPagesToIndex,
+} from "./utils.js";
 
 describe("routesToPaths", () => {
   it("returns paths for simple routes", () => {
@@ -118,5 +122,64 @@ describe("routesToRewrites", () => {
 
   it("returns empty for empty input", () => {
     expect(routesToRewrites([])).toEqual([]);
+  });
+});
+
+describe("selectPagesToIndex", () => {
+  it("indexes successful pages", () => {
+    const pages = [
+      { indexStatusCode: 200, html: "<p>home</p>" },
+      { indexStatusCode: 200, html: "<p>about</p>" },
+    ];
+    const { include, exclude } = selectPagesToIndex(pages, ["/", "/about"]);
+    expect(include).toEqual([
+      { url: "/", html: "<p>home</p>" },
+      { url: "/about", html: "<p>about</p>" },
+    ]);
+    expect(exclude).toEqual([]);
+  });
+
+  // Regression for #2672: a protected route's static file is the 401 sign-in
+  // page, but its indexed HTML comes from the 200 bypass render. It must be
+  // indexed, keyed on `indexStatusCode` (200), not the page status (401).
+  it("indexes protected routes via their bypass-render status", () => {
+    const pages = [
+      { indexStatusCode: 200, html: "<p>public</p>" },
+      { indexStatusCode: 200, html: "<p>protected content</p>" },
+    ];
+    const { include } = selectPagesToIndex(pages, [
+      "/public",
+      "/introduction/secret",
+    ]);
+    expect(include).toEqual([
+      { url: "/public", html: "<p>public</p>" },
+      { url: "/introduction/secret", html: "<p>protected content</p>" },
+    ]);
+  });
+
+  // A protected route whose bypass render failed (e.g. a check returning
+  // FORBIDDEN) must not vanish from the index silently — it's reported so the
+  // build can warn about it, which is the whole point of #2672.
+  it("excludes pages whose indexed render failed (4xx/5xx) and reports them", () => {
+    const pages = [
+      { indexStatusCode: 200, html: "<p>ok</p>" },
+      { indexStatusCode: 404, html: "<p>not found</p>" },
+      { indexStatusCode: 500, html: "<p>error</p>" },
+    ];
+    const { include, exclude } = selectPagesToIndex(pages, [
+      "/ok",
+      "/missing",
+      "/boom",
+    ]);
+    expect(include).toEqual([{ url: "/ok", html: "<p>ok</p>" }]);
+    expect(exclude).toEqual([
+      { url: "/missing", status: 404 },
+      { url: "/boom", status: 500 },
+    ]);
+  });
+
+  it("skips entries without a matching path", () => {
+    const pages = [{ indexStatusCode: 200, html: "<p>orphan</p>" }];
+    expect(selectPagesToIndex(pages, [])).toEqual({ include: [], exclude: [] });
   });
 });
