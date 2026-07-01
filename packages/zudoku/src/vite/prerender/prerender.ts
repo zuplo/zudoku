@@ -183,7 +183,24 @@ export const prerender = async ({
   }
 
   if (pagefindIndex) {
-    const pagesToIndex = selectPagesToIndex(workerResults, paths);
+    const { include: pagesToIndex, exclude } = selectPagesToIndex(
+      workerResults,
+      paths,
+    );
+
+    // Surface anything dropped from the index (e.g. a protected route whose
+    // bypass render returned >= 400). A page silently missing from the index
+    // is the exact symptom of #2672, so make it visible rather than quiet.
+    if (exclude.length > 0) {
+      const details = exclude
+        .map(({ url, status }) => `${url} (${status})`)
+        .join(", ");
+      logger.warn(
+        colors.yellow(
+          `⚠ ${exclude.length} route(s) excluded from the search index (render status >= 400): ${details}`,
+        ),
+      );
+    }
     // Batch size caps concurrent IPC writes to the pagefind child process;
     // higher values can overflow its pipe buffer and trigger ENOBUFS.
     const BATCH_SIZE = 40;
