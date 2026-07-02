@@ -51,7 +51,8 @@ export const queryClient = new QueryClient({
           throw new Error("URL is required");
         }
 
-        const request = new Request(joinUrl(getBaseUrl(q.meta?.context), url), {
+        const context = q.meta?.context;
+        const request = new Request(joinUrl(getBaseUrl(context), url), {
           ...q.meta?.request,
           headers: {
             "Content-Type": "application/json",
@@ -59,8 +60,13 @@ export const queryClient = new QueryClient({
           },
         });
 
+        // Sign only when authenticated: signRequest throws for anonymous
+        // users, but the context is still needed to resolve the gateway URL
+        // on endpoints that support anonymous access (e.g. pricing page).
         const response = await fetch(
-          q.meta?.context ? await q.meta.context.signRequest(request) : request,
+          context?.getAuthState().isAuthenticated
+            ? await context.signRequest(request)
+            : request,
         );
 
         await throwIfProblemJson(response);
