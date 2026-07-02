@@ -32,6 +32,16 @@ const getBaseUrl = (context?: ZudokuContext) => {
   return context.env.ZUPLO_GATEWAY_SERVICE_URL || DEFAULT_GATEWAY_URL;
 };
 
+// Sign only when authenticated: signRequest throws for anonymous users,
+// but the context is still needed to resolve the gateway URL on endpoints
+// that support anonymous access (e.g. pricing page). The zustand auth state
+// is not request-scoped on the server, so SSR checks per-request ssrAuth
+// (same signal signRequest uses).
+const shouldSignRequest = (context: ZudokuContext) =>
+  typeof window === "undefined"
+    ? !!context.ssrAuth?.accessToken
+    : context.getAuthState().isAuthenticated;
+
 const hasVariables = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value != null;
 
@@ -60,11 +70,8 @@ export const queryClient = new QueryClient({
           },
         });
 
-        // Sign only when authenticated: signRequest throws for anonymous
-        // users, but the context is still needed to resolve the gateway URL
-        // on endpoints that support anonymous access (e.g. pricing page).
         const response = await fetch(
-          context?.getAuthState().isAuthenticated
+          context && shouldSignRequest(context)
             ? await context.signRequest(request)
             : request,
         );
