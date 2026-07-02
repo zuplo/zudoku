@@ -32,7 +32,7 @@
     "@nx/web": "22.7.5",
     "@playwright/test": "^1.60.0",
     "@size-limit/file": "^12.1.0",
-    "@vitest/coverage-v8": "4.1.8",
+    "@vitest/coverage-v8": "4.1.9",
     "lefthook": "2.1.9",
     "nx": "22.7.5",
     "oxfmt": "0.36.0",
