@@ -230,7 +230,7 @@
     "@types/unist": "3.0.3",
     "@types/yargs": "17.0.35",
     "@typescript/native-preview": "catalog:",
-    "@vitest/coverage-v8": "4.1.8",
+    "@vitest/coverage-v8": "4.1.9",
     "happy-dom": "catalog:",
     "oxc-parser": "^0.135.0",
     "react": "catalog:",
