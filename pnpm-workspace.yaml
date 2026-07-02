@@ -38,7 +38,7 @@ catalog:
   react-dom: 19.2.7
   react-is: 19.2.7
   tsdown: 0.22.0
-  "@tsdown/css": 0.22.0
+  "@tsdown/css": 0.22.3
   typescript: 6.0.3
   "@typescript/native-preview": 7.0.0-dev.20260624.1
   graphql: 16.14.0
