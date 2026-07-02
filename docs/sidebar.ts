@@ -30,6 +30,7 @@ export const docs: Navigation = [
       "docs/customization/colors-theme",
       "docs/configuration/docs",
       "docs/configuration/navigation",
+      "docs/configuration/create-path",
       "docs/configuration/site",
       "docs/configuration/search",
       "docs/configuration/footer",
