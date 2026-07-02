@@ -24,7 +24,7 @@
     "rehype-mermaid": "^3.0.0"
   },
   "devDependencies": {
-    "playwright": "1.60.0",
+    "playwright": "1.61.1",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zudoku": "workspace:*"
