@@ -1,4 +1,9 @@
-import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  CheckIcon,
+  CopyIcon,
+  ExternalLinkIcon,
+} from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
 import { Typography } from "../../components/Typography.js";
@@ -9,6 +14,7 @@ import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { ToggleGroup, ToggleGroupItem } from "../../ui/ToggleGroup.js";
 import { cn } from "../../util/cn.js";
 import {
+  CLAUDE_CONNECTORS_URL,
   type McpApp,
   type McpServerData,
   getAuthHeader,
@@ -17,11 +23,13 @@ import {
   getCodexCliCommand,
   getCodexConfig,
   getCursorConfig,
+  getCursorDeepLink,
   getGenericConfig,
   getMcpServerName,
   getMcpUrl,
   getVisibleApps,
   getVscodeConfig,
+  getVscodeDeepLink,
 } from "./mcp-configs.js";
 import { McpClientLogo } from "./McpClientLogos.js";
 
@@ -51,6 +59,27 @@ const Steps = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
+// One-click deep link rendered as a primary button. Protocol-handler links
+// (cursor://, vscode:) open in place; external https links open a new tab.
+const InstallButton = ({
+  href,
+  external,
+  children,
+}: {
+  href: string;
+  external?: boolean;
+  children: ReactNode;
+}) => (
+  <Button asChild size="sm" className="not-prose gap-1.5">
+    <a
+      href={href}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+    >
+      {children}
+    </a>
+  </Button>
+);
+
 export const MCPEndpoint = ({
   serverUrl,
   operationPath,
@@ -75,6 +104,8 @@ export const MCPEndpoint = ({
   const codexConfig = getCodexConfig(name, mcpUrl, auth);
   const genericConfig = getGenericConfig(name, mcpUrl, auth);
   const vscodeConfig = getVscodeConfig(name, mcpUrl, auth);
+  const cursorDeepLink = getCursorDeepLink(name, mcpUrl, auth);
+  const vscodeDeepLink = getVscodeDeepLink(name, mcpUrl, auth);
 
   const [selectedAppId, setSelectedAppId] = useState(
     visibleApps[0]?.id ?? "generic",
@@ -144,18 +175,19 @@ export const MCPEndpoint = ({
         }
         return (
           <>
+            <InstallButton href={CLAUDE_CONNECTORS_URL} external>
+              Open connector settings
+              <ArrowUpRightIcon className="size-3.5" />
+            </InstallButton>
             <Steps>
               <li>
                 <p>
-                  Open Claude Desktop and go to{" "}
-                  <strong>Settings → Connectors</strong>.
+                  In <strong>Settings → Connectors</strong>, click{" "}
+                  <strong>Add custom connector</strong>.
                 </p>
               </li>
               <li>
-                <p>
-                  Click <strong>Add custom connector</strong>, paste the MCP
-                  server URL above, and save.
-                </p>
+                <p>Paste the MCP server URL above and save.</p>
               </li>
               <li>
                 <p>
@@ -256,6 +288,17 @@ export const MCPEndpoint = ({
       case "cursor":
         return (
           <>
+            {!auth && (
+              <div className="not-prose space-y-2">
+                <InstallButton href={cursorDeepLink}>
+                  <McpClientLogo appId="cursor" className="size-3.5" />
+                  Add to Cursor
+                </InstallButton>
+                <p className="text-xs text-muted-foreground">
+                  Opens Cursor and prompts to install. Or configure it manually:
+                </p>
+              </div>
+            )}
             <Steps>
               <li>
                 <p>
@@ -287,6 +330,18 @@ export const MCPEndpoint = ({
             <Callout type="note" title="Requirements">
               VS Code with the GitHub Copilot extension.
             </Callout>
+            {!auth && (
+              <div className="not-prose space-y-2">
+                <InstallButton href={vscodeDeepLink}>
+                  <McpClientLogo appId="vscode" className="size-3.5" />
+                  Install in VS Code
+                </InstallButton>
+                <p className="text-xs text-muted-foreground">
+                  Opens VS Code and prompts to install. Or configure it
+                  manually:
+                </p>
+              </div>
+            )}
             <Steps>
               <li>
                 <p>
