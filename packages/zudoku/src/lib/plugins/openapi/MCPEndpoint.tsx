@@ -47,7 +47,7 @@ const DocsLink = ({
     className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
   >
     {children}
-    <ExternalLinkIcon className="h-3 w-3" />
+    <ExternalLinkIcon className="h-3 w-3" aria-hidden="true" />
   </a>
 );
 
@@ -177,7 +177,7 @@ export const MCPEndpoint = ({
           <>
             <InstallButton href={CLAUDE_CONNECTORS_URL} external>
               Open connector settings
-              <ArrowUpRightIcon className="size-3.5" />
+              <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
             </InstallButton>
             <Steps>
               <li>
@@ -444,12 +444,7 @@ export const MCPEndpoint = ({
         {/* Step 2 — pick your client. */}
         <div className="space-y-2">
           <div className="text-sm font-medium">Choose your client</div>
-          <div
-            className="grid gap-2"
-            style={{
-              gridTemplateColumns: `repeat(3, minmax(0, 1fr))`,
-            }}
-          >
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {visibleApps.map((app) => {
               const isActive = app.id === selectedApp?.id;
               return (
@@ -460,7 +455,7 @@ export const MCPEndpoint = ({
                   aria-pressed={isActive}
                   data-active={isActive}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-2 rounded-lg border p-3 transition sm:col-span-1",
+                    "flex flex-col items-center justify-center gap-2 rounded-lg border p-3 transition",
                     "hover:bg-muted/60",
                     isActive
                       ? "border-primary bg-primary/5 ring-1 ring-primary text-foreground"
