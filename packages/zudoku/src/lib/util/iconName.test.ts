@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { iconVirtualId, isIconNameShape, parseIconName } from "./iconName.js";
+import {
+  iconVirtualId,
+  isIconNameShape,
+  parseIconName,
+  parseIconVirtualId,
+} from "./iconName.js";
 
 describe("parseIconName", () => {
   it("defaults a bare name to the lucide prefix", () => {
@@ -35,6 +40,17 @@ describe("iconVirtualId", () => {
   });
 });
 
+describe("parseIconVirtualId", () => {
+  it.each(["home", "ph:acorn-duotone", "lucide:chevron-right"])(
+    "round-trips %s through iconVirtualId",
+    (raw) => {
+      expect(parseIconVirtualId(iconVirtualId(raw))).toEqual(
+        parseIconName(raw),
+      );
+    },
+  );
+});
+
 describe("isIconNameShape", () => {
   it.each([
     "home",
@@ -42,12 +58,14 @@ describe("isIconNameShape", () => {
     "circle-help",
     "lucide:home",
     "ph:acorn-duotone",
+    "1password", // leading digit (valid iconify name, e.g. simple-icons:1password)
+    "tabler:2fa",
+    "twemoji:1st-place-medal",
   ])("accepts %s", (value) => expect(isIconNameShape(value)).toBe(true));
 
   it.each([
     "", // empty
     "Home", // uppercase
-    "1password", // leading digit
     "trailing-", // trailing dash
     "double--dash", // empty dash segment
     "snake_case", // underscore

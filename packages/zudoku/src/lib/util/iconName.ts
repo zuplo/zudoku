@@ -25,7 +25,19 @@ export const iconVirtualId = (raw: string): string => {
   return `${ICON_VIRTUAL_PREFIX}${prefix}/${name}`;
 };
 
-const ICON_NAME_RE = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
+/** Inverse of `iconVirtualId`; expects the leading `\0` already stripped. */
+export const parseIconVirtualId = (virtualId: string): ParsedIconName => {
+  const rest = virtualId.slice(ICON_VIRTUAL_PREFIX.length);
+  const separator = rest.indexOf("/");
+  return parseIconName(
+    separator === -1
+      ? rest
+      : `${rest.slice(0, separator)}:${rest.slice(separator + 1)}`,
+  );
+};
+
+// Mirrors Iconify's `matchIconName` so digit-leading names like `tabler:2fa` are valid.
+const ICON_NAME_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const isIconNameShape = (value: string): boolean => {
   const parts = value.split(":");

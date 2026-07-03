@@ -1,25 +1,37 @@
 import { createRequire } from "node:module";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import type { IconifyJSON } from "@iconify/types";
 import { getIconData } from "@iconify/utils";
 import { parseSync, Visitor } from "oxc-parser";
 import type { ObjectProperty } from "oxc-parser";
 import colors from "picocolors";
-import type { Plugin } from "vite";
+import { normalizePath, type Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { IconNames } from "../config/validators/icon-types.js";
 import {
   ICON_VIRTUAL_PREFIX,
   isIconNameShape,
-  parseIconName,
+  parseIconVirtualId,
 } from "../lib/util/iconName.js";
 import { IconRegistry } from "./icon-registry.js";
 
-const resolvedPrefix = `\0${ICON_VIRTUAL_PREFIX}`;
 const lucideNames = new Set<string>(IconNames);
 
-const iconSetCache = new Map<string, IconifyJSON | null>();
+// The vite entry always sits at `<zudoku>/{src,dist}/vite/`, so two levels up is the package root
+const zudokuPackageRoot = normalizePath(
+  fileURLToPath(new URL("../../", import.meta.url)),
+);
+
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Exclude dependencies from scanning, but keep Zudoku's own source so built-in icons register.
+export const buildDependencyExclude = (packageRoot: string): RegExp =>
+  new RegExp(`^(?!${escapeRegExp(packageRoot)}).*/node_modules/`);
+
+const dependencyExclude = buildDependencyExclude(zudokuPackageRoot);
+const iconSetCache = new Map<string, IconifyJSON>();
 
 const isModuleNotFound = (err: unknown): boolean =>
   typeof err === "object" &&
@@ -28,8 +40,9 @@ const isModuleNotFound = (err: unknown): boolean =>
   (err.code === "MODULE_NOT_FOUND" || err.code === "ERR_MODULE_NOT_FOUND");
 
 const loadIconSet = (prefix: string, rootDir: string): IconifyJSON | null => {
-  const cached = iconSetCache.get(prefix);
-  if (cached !== undefined) return cached;
+  const cacheKey = `${rootDir}\0${prefix}`;
+  const cached = iconSetCache.get(cacheKey);
+  if (cached) return cached;
 
   const spec = `@iconify-json/${prefix}/icons.json`;
   // Resolve from the user's project first (user-installed sets), then fall back to
@@ -46,12 +59,11 @@ const loadIconSet = (prefix: string, rootDir: string): IconifyJSON | null => {
       break;
     } catch (err) {
       // "Not installed" is the expected miss — try the next requirer. Any other
-      // error (corrupt/malformed package) is a real problem, so surface it rather
-      // than caching it as an indistinguishable null.
+      // error (corrupt/malformed package) is a real problem, so surface it.
       if (!isModuleNotFound(err)) throw err;
     }
   }
-  iconSetCache.set(prefix, set);
+  if (set) iconSetCache.set(cacheKey, set);
 
   return set;
 };
@@ -65,7 +77,7 @@ const staticKeyName = (key: ObjectProperty["key"]): string | undefined => {
 // Exported for unit testing. Only collects literal `icon: "..."` properties (the shape
 // compiled `<Icon icon="..." />` JSX takes post-react-transform); icons passed via a
 // variable, spread, or a differently-named prop aren't inlined at build time.
-// `warn` (optional) reports icon-shaped names that won't resolve and scan failures.
+// `warn` (optional) reports scan/parse failures.
 export const collectIconLiterals = (
   code: string,
   id: string,
@@ -73,7 +85,14 @@ export const collectIconLiterals = (
 ) => {
   const found = new Set<string>();
   try {
-    const { program } = parseSync(id, code);
+    // parseSync reports syntax errors on `errors` instead of throwing, and a parse error can
+    // truncate `program` and drop icons — surface it (the catch only fires on other errors).
+    const { program, errors } = parseSync(id, code);
+    if (errors.length > 0) {
+      warn?.(
+        `Could not fully parse ${id} for icons (${errors.length} syntax error(s)); some icons may not be inlined.`,
+      );
+    }
     new Visitor({
       Property(node) {
         if (node.computed || staticKeyName(node.key) !== "icon") return;
@@ -84,14 +103,10 @@ export const collectIconLiterals = (
         const raw = value.value;
         if (!isIconNameShape(raw)) return;
 
+        // A bare, icon-shaped non-lucide name (e.g. a cva `icon: "size-8"` variant) is
+        // almost never a Zudoku icon — skip it silently rather than warn on every `icon:`.
         if (raw.includes(":") || lucideNames.has(raw)) {
           found.add(raw);
-        } else {
-          // Icon-shaped but a bare name that isn't a known lucide icon — almost always
-          // a typo. It would otherwise vanish with no build-time signal.
-          warn?.(
-            `Icon "${raw}" is not a known lucide icon and has no set prefix, so it won't be inlined. Check the name, or prefix it with an icon set (e.g. "ph:${raw}").`,
-          );
         }
       },
     }).visit(program);
@@ -119,14 +134,18 @@ export const viteIconsPlugin = (): Plugin => {
     name: "zudoku-icons-plugin",
     enforce: "post",
     resolveId: {
-      filter: { id: /^virtual:zudoku-icon\// },
+      filter: { id: new RegExp(`^${ICON_VIRTUAL_PREFIX}`) },
       handler: (id) => `\0${id}`,
     },
     load: {
-      filter: { id: /^\0virtual:zudoku-icon\// },
+      filter: { id: new RegExp(`^\\0${ICON_VIRTUAL_PREFIX}`) },
       handler(id) {
-        const iconId = id.slice(resolvedPrefix.length).replace("/", ":");
-        const { prefix, name } = parseIconName(iconId);
+        // Strip the leading `\0` rollup adds to resolved virtual ids, then decode.
+        const {
+          prefix,
+          name,
+          id: iconId,
+        } = parseIconVirtualId(id.replace(/^\0/, ""));
         const set = loadIconSet(prefix, getRootDir());
         const pkg = colors.cyan(`@iconify-json/${prefix}`);
 
@@ -157,7 +176,7 @@ export const viteIconsPlugin = (): Plugin => {
       filter: {
         id: {
           include: /\.(?:[cm]?[jt]sx?|mdx)(?:\?|$)/,
-          exclude: /\/node_modules\//,
+          exclude: dependencyExclude,
         },
         code: { include: "icon" },
       },

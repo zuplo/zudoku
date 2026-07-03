@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { collectIconLiterals } from "./plugin-icons.js";
+import { buildDependencyExclude, collectIconLiterals } from "./plugin-icons.js";
 
 // `collectIconLiterals` runs on post-react-transform code, so authored `<Icon icon="...">`
 // JSX reaches it as a plain `icon: "..."` object property — the form these tests use.
@@ -57,17 +57,29 @@ describe("collectIconLiterals", () => {
     expect(collect(`const x = @@@ <<< not valid`)).toEqual(new Set());
   });
 
-  it("warns about an icon-shaped bare name that isn't a known lucide icon", () => {
+  it("warns when syntax errors may have dropped icons", () => {
+    const warnings: string[] = [];
+    collectIconLiterals(
+      `const x = { icon: "house" }; const y = @@@ broken`,
+      "test.tsx",
+      (message) => warnings.push(message),
+    );
+
+    expect(warnings.some((w) => w.includes("syntax error"))).toBe(true);
+  });
+
+  it("silently ignores an icon-shaped bare name that isn't a known lucide icon", () => {
     const warnings: string[] = [];
     const found = collectIconLiterals(
-      `const x = { icon: "totally-not-an-icon-xyz" };`,
+      // e.g. a cva `icon: "size-8"` size variant — an unrelated `icon:` property, not a
+      // Zudoku icon. Must not warn.
+      `const x = { icon: "size-8" };`,
       "test.tsx",
       (message) => warnings.push(message),
     );
 
     expect(found).toEqual(new Set());
-    expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toContain("totally-not-an-icon-xyz");
+    expect(warnings).toHaveLength(0);
   });
 
   it("does not warn for known or prefixed icons", () => {
@@ -79,5 +91,39 @@ describe("collectIconLiterals", () => {
     );
 
     expect(warnings).toHaveLength(0);
+  });
+});
+
+describe("buildDependencyExclude", () => {
+  // A pnpm-nested root exercises regex escaping (`.pnpm`, `@`).
+  const zudokuRoot = "/proj/node_modules/.pnpm/zudoku@1/node_modules/zudoku/";
+  const exclude = buildDependencyExclude(zudokuRoot);
+  // The regex matches ids to SKIP; a non-match means the file is scanned.
+  const isScanned = (id: string) => !exclude.test(id);
+
+  it("scans app source outside node_modules", () => {
+    expect(isScanned("/proj/src/App.tsx")).toBe(true);
+  });
+
+  it("skips third-party dependencies", () => {
+    expect(isScanned("/proj/node_modules/some-lib/index.tsx")).toBe(false);
+  });
+
+  it("skips pnpm-nested third-party dependencies", () => {
+    expect(
+      isScanned(
+        "/proj/node_modules/.pnpm/react@19/node_modules/react/index.js",
+      ),
+    ).toBe(false);
+  });
+
+  it("scans zudoku's own source when installed under node_modules", () => {
+    expect(isScanned(`${zudokuRoot}dist/lib/components/Header.js`)).toBe(true);
+  });
+
+  it("still skips a dependency whose id carries a query suffix", () => {
+    expect(isScanned("/proj/node_modules/some-lib/index.tsx?v=123")).toBe(
+      false,
+    );
   });
 });

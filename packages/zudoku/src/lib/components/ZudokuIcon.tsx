@@ -38,9 +38,23 @@ export const Icon = ({
   className,
   ...props
 }: ZudokuIconProps) => {
+  // A falsy ref (e.g. lucide's `iconNode` API, where `icon` is undefined) would crash React
+  // with "Element type is invalid".
+  if (!icon) return null;
+
   if (typeof icon !== "string") {
     const LegacyIcon = icon;
-    return <LegacyIcon size={size} className={className} />;
+    // Forward the full prop surface so component icons match the string path, not just
+    // size/className. Lucide components accept SVG props.
+    return (
+      <LegacyIcon
+        size={size}
+        width={width}
+        height={height}
+        className={className}
+        {...props}
+      />
+    );
   }
 
   const name = parseIconName(icon).id;

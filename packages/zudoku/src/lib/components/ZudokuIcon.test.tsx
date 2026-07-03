@@ -3,7 +3,11 @@ import { addIcon } from "@iconify/react";
 import { render } from "@testing-library/react";
 import type { LucideIcon } from "lucide-react";
 import { afterEach, describe, expect, it } from "vitest";
-import { configureIconRuntimeFetch, Icon } from "./ZudokuIcon.js";
+import {
+  configureIconRuntimeFetch,
+  Icon,
+  type IconInput,
+} from "./ZudokuIcon.js";
 
 afterEach(() => {
   // Reset the runtime-fetch override so tests don't leak into each other.
@@ -15,6 +19,40 @@ describe("Icon", () => {
     const Stub = (() => <span data-testid="legacy" />) as unknown as LucideIcon;
     const { getByTestId } = render(<Icon icon={Stub} />);
     expect(getByTestId("legacy")).toBeInTheDocument();
+  });
+
+  it("renders nothing for a nullish icon instead of crashing", () => {
+    // Guards lucide's `iconNode` API where `icon` resolves to undefined; a bare
+    // render would throw React's "Element type is invalid".
+    const { container } = render(
+      <Icon icon={undefined as unknown as IconInput} />,
+    );
+    expect(container.innerHTML).toBe("");
+  });
+
+  it("forwards the full prop surface to a legacy component icon", () => {
+    const received: Record<string, unknown> = {};
+    const Stub = ((props: Record<string, unknown>) => {
+      Object.assign(received, props);
+      return <span data-testid="legacy" />;
+    }) as unknown as LucideIcon;
+
+    render(
+      <Icon
+        icon={Stub}
+        width={20}
+        height={24}
+        className="text-blue-500"
+        aria-label="star"
+      />,
+    );
+
+    expect(received).toMatchObject({
+      width: 20,
+      height: 24,
+      className: "text-blue-500",
+      "aria-label": "star",
+    });
   });
 
   it("renders a registered string icon as inline svg", () => {
