@@ -645,8 +645,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0(graphql@16.14.0)
       '@hono/node-server':
-        specifier: 2.0.3
-        version: 2.0.3(hono@4.12.27)
+        specifier: 2.0.8
+        version: 2.0.8(hono@4.12.27)
       '@lekoarts/rehype-meta-as-attributes':
         specifier: 3.0.3
         version: 3.0.3
@@ -2673,8 +2673,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hono/node-server@2.0.3':
-    resolution: {integrity: sha512-a0jV+/HRe3G5zjFID3zObAQFdkl6zpxTuqktdDDXS3MJKcrZIkB8OkLpNBlY/WXFqv2HF4a0takPej+aNFczWA==}
+  '@hono/node-server@2.0.8':
+    resolution: {integrity: sha512-GuCWzLxwg218fy1JaHculFsdcuY12hxit83V+algozTPnwhNjLrRL/Alg9OYjLZLoUZ1rw/S4CdTMsnkSKCmFA==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4
@@ -11403,7 +11403,7 @@ snapshots:
       protobufjs: 7.5.8
       yargs: 17.7.2
 
-  '@hono/node-server@2.0.3(hono@4.12.27)':
+  '@hono/node-server@2.0.8(hono@4.12.27)':
     dependencies:
       hono: 4.12.27
 
