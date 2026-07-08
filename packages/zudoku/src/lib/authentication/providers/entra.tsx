@@ -7,8 +7,6 @@ import type {
 import { OpenIDAuthenticationProvider } from "./openid.js";
 import { getEntraIssuer } from "./util.js";
 
-// Entra's multi-tenant authorities (common/organizations/consumers) advertise
-// a templated issuer while each token's `iss` carries the concrete tenant id.
 const ISSUER_TENANT_PLACEHOLDER = "{tenantid}";
 
 export class EntraAuthenticationProvider
@@ -19,10 +17,11 @@ export class EntraAuthenticationProvider
     super({ ...config, type: "openid", issuer: getEntraIssuer(config) });
   }
 
-  // The templated issuer never matches the requested authority, so the strict
-  // discovery check would throw. Expect the template itself; resolveTokenIssuer
-  // resolves the concrete tenant per token. Recommended by oauth4webapi's
-  // maintainer: https://github.com/panva/oauth4webapi/issues/100
+  // Multi-tenant authorities advertise a templated issuer that never matches
+  // the requested authority, so the strict discovery check would throw. Expect
+  // the template itself; resolveTokenIssuer resolves the concrete tenant per
+  // token. Recommended by oauth4webapi's maintainer:
+  // https://github.com/panva/oauth4webapi/issues/100
   protected override async getExpectedDiscoveryIssuer(
     issuerUrl: URL,
     response: Response,
@@ -40,9 +39,8 @@ export class EntraAuthenticationProvider
     }
   }
 
-  // Substitutes the ID token's `tid` claim into the templated issuer so the
-  // strict `iss` validation compares against the token's own tenant. Without a
-  // usable ID token the template stays in place and fails validation loudly.
+  // Without a usable ID token the template stays in place and fails the strict
+  // `iss` validation loudly.
   protected override async resolveTokenIssuer(
     as: oauth.AuthorizationServer,
     response: Response,

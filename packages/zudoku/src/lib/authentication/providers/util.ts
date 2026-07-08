@@ -12,7 +12,6 @@ export const redirectToSignUpUrl = (
   }
 };
 
-// Shared between the entra provider and server-side issuer resolution.
 export const getEntraIssuer = (config: {
   issuer?: string;
   tenantId?: string;
