@@ -152,10 +152,9 @@ export class OpenIDAuthenticationProvider
     return this.authorizationServer;
   }
 
-  // Hook for providers whose discovery metadata deviates from the requested
-  // issuer (see EntraAuthenticationProvider). Default: strict, expect the
-  // requested issuer. Overrides must not consume the response body — it is
-  // still needed by processDiscoveryResponse; peek via `response.clone()`.
+  // Overridable for providers whose discovery metadata deviates from the
+  // requested issuer (see EntraAuthenticationProvider). Overrides must peek
+  // via `response.clone()`; processDiscoveryResponse still needs the body.
   protected async getExpectedDiscoveryIssuer(
     issuerUrl: URL,
     _response: Response,
@@ -163,10 +162,9 @@ export class OpenIDAuthenticationProvider
     return issuerUrl;
   }
 
-  // Hook for providers whose token `iss` differs from the discovery issuer
-  // (see EntraAuthenticationProvider). Runs before each token response is
-  // validated. Default: pass through. Overrides must not consume the response
-  // body — it is still needed by the process* call; peek via `response.clone()`.
+  // Overridable for providers whose token `iss` differs from the discovery
+  // issuer (see EntraAuthenticationProvider). Overrides must peek via
+  // `response.clone()`; the process* call still needs the body.
   protected async resolveTokenIssuer(
     as: oauth.AuthorizationServer,
     _response: Response,

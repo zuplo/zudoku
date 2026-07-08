@@ -38,8 +38,8 @@ const getAuthServer = (provider: EntraAuthenticationProvider) =>
 describe("EntraAuthenticationProvider", () => {
   beforeEach(() => {
     useAuthState.getState().setLoggedOut();
-    // Replicate oauth4webapi's strict discovery issuer comparison so the
-    // tests exercise the real expected-issuer handling.
+    // Replicates oauth4webapi's strict issuer comparison so the tests exercise
+    // the real expected-issuer handling.
     vi.mocked(oauth.processDiscoveryResponse).mockImplementation(
       async (expected, response) => {
         const json = (await response.json()) as oauth.AuthorizationServer;
@@ -126,8 +126,6 @@ describe("EntraAuthenticationProvider", () => {
   });
 
   describe("token exchange issuer resolution", () => {
-    // Runs handleCallback up to the token exchange, capturing the
-    // authorization server it validates against, then short-circuits.
     const captureExchangeIssuer = async (tokenResponse: object) => {
       vi.mocked(oauth.discoveryRequest).mockResolvedValue(
         Response.json({ issuer: ISSUER_TEMPLATE }),

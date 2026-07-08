@@ -7,10 +7,8 @@ import type {
 import { OpenIDAuthenticationProvider } from "./openid.js";
 import { getEntraIssuer } from "./util.js";
 
-// Microsoft Entra ID's multi-tenant authorities (common/organizations/
-// consumers) return a templated issuer, e.g.
-// "https://login.microsoftonline.com/{tenantid}/v2.0", while each token's
-// `iss` carries the concrete tenant id.
+// Entra's multi-tenant authorities (common/organizations/consumers) advertise
+// a templated issuer while each token's `iss` carries the concrete tenant id.
 const ISSUER_TENANT_PLACEHOLDER = "{tenantid}";
 
 export class EntraAuthenticationProvider
@@ -21,12 +19,10 @@ export class EntraAuthenticationProvider
     super({ ...config, type: "openid", issuer: getEntraIssuer(config) });
   }
 
-  // Multi-tenant authorities return a templated issuer that never matches the
-  // requested authority, so oauth4webapi's strict discovery check would throw.
-  // Expect the template itself instead; per-token `iss` validation then
-  // resolves the concrete tenant in resolveTokenIssuer. Pattern recommended by
-  // oauth4webapi's maintainer:
-  // https://github.com/panva/oauth4webapi/issues/100
+  // The templated issuer never matches the requested authority, so the strict
+  // discovery check would throw. Expect the template itself; resolveTokenIssuer
+  // resolves the concrete tenant per token. Recommended by oauth4webapi's
+  // maintainer: https://github.com/panva/oauth4webapi/issues/100
   protected override async getExpectedDiscoveryIssuer(
     issuerUrl: URL,
     response: Response,
@@ -44,11 +40,9 @@ export class EntraAuthenticationProvider
     }
   }
 
-  // Rebuilds the concrete per-tenant issuer for multi-tenant token responses:
-  // substitutes the ID token's `tid` claim into the templated issuer so
-  // oauth4webapi's strict `iss` validation compares against the right tenant.
-  // Responses without a usable ID token pass through unchanged (a leftover
-  // template then fails that validation loudly).
+  // Substitutes the ID token's `tid` claim into the templated issuer so the
+  // strict `iss` validation compares against the token's own tenant. Without a
+  // usable ID token the template stays in place and fails validation loudly.
   protected override async resolveTokenIssuer(
     as: oauth.AuthorizationServer,
     response: Response,
