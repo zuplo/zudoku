@@ -16,9 +16,7 @@ export const pricingPageQuery = (context: ZudokuContext) =>
     queryKey: [
       `/v3/zudoku-metering/${getDeploymentName(context)}/pricing-page`,
     ],
-    meta: {
-      context: context.getAuthState().isAuthenticated ? context : undefined,
-    },
+    meta: { context },
   });
 
 export const subscriptionsQuery = (context: ZudokuContext) =>
