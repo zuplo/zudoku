@@ -154,7 +154,8 @@ export class OpenIDAuthenticationProvider
 
   // Hook for providers whose discovery metadata deviates from the requested
   // issuer (see EntraAuthenticationProvider). Default: strict, expect the
-  // requested issuer.
+  // requested issuer. Overrides must not consume the response body — it is
+  // still needed by processDiscoveryResponse; peek via `response.clone()`.
   protected async getExpectedDiscoveryIssuer(
     issuerUrl: URL,
     _response: Response,
@@ -164,7 +165,8 @@ export class OpenIDAuthenticationProvider
 
   // Hook for providers whose token `iss` differs from the discovery issuer
   // (see EntraAuthenticationProvider). Runs before each token response is
-  // validated. Default: pass through.
+  // validated. Default: pass through. Overrides must not consume the response
+  // body — it is still needed by the process* call; peek via `response.clone()`.
   protected async resolveTokenIssuer(
     as: oauth.AuthorizationServer,
     _response: Response,
