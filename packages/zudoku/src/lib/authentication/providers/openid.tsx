@@ -143,12 +143,33 @@ export class OpenIDAuthenticationProvider
         issuerUrl,
         this.oauthOptions,
       );
+
       this.authorizationServer = await oauth.processDiscoveryResponse(
-        issuerUrl,
+        await this.getExpectedDiscoveryIssuer(issuerUrl, response),
         response,
       );
     }
     return this.authorizationServer;
+  }
+
+  // Hook for providers whose discovery metadata deviates from the requested
+  // issuer (see EntraAuthenticationProvider). Default: strict, expect the
+  // requested issuer.
+  protected async getExpectedDiscoveryIssuer(
+    issuerUrl: URL,
+    _response: Response,
+  ): Promise<URL> {
+    return issuerUrl;
+  }
+
+  // Hook for providers whose token `iss` differs from the discovery issuer
+  // (see EntraAuthenticationProvider). Runs before each token response is
+  // validated. Default: pass through.
+  protected async resolveTokenIssuer(
+    as: oauth.AuthorizationServer,
+    _response: Response,
+  ): Promise<oauth.AuthorizationServer> {
+    return as;
   }
 
   /**
@@ -496,7 +517,7 @@ export class OpenIDAuthenticationProvider
       );
 
       const result = await oauth.processRefreshTokenResponse(
-        as,
+        await this.resolveTokenIssuer(as, response),
         this.client,
         response,
       );
@@ -590,7 +611,7 @@ export class OpenIDAuthenticationProvider
           this.oauthOptions,
         );
         const result = await oauth.processRefreshTokenResponse(
-          as,
+          await this.resolveTokenIssuer(as, response),
           this.client,
           response,
         );
@@ -657,7 +678,7 @@ export class OpenIDAuthenticationProvider
     );
 
     const oauthResult = await oauth.processAuthorizationCodeResponse(
-      authServer,
+      await this.resolveTokenIssuer(authServer, response),
       this.client,
       response,
     );

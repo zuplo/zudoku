@@ -45,6 +45,7 @@
     "./auth/clerk": "./src/lib/authentication/providers/clerk.tsx",
     "./auth/auth0": "./src/lib/authentication/providers/auth0.tsx",
     "./auth/openid": "./src/lib/authentication/providers/openid.tsx",
+    "./auth/entra": "./src/lib/authentication/providers/entra.tsx",
     "./auth/supabase": "./src/lib/authentication/providers/supabase.tsx",
     "./auth/azureb2c": "./src/lib/authentication/providers/azureb2c.tsx",
     "./auth/firebase": "./src/lib/authentication/providers/firebase.tsx",

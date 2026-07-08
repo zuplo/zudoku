@@ -487,6 +487,25 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     forwardAuthorizationParams: z.array(z.string()).optional(),
   }),
   z.object({
+    type: z.literal("entra"),
+    basePath: z.string().optional(),
+    clientId: z.string(),
+    // Tenant id or one of Entra's multi-tenant authorities
+    // (common/organizations/consumers). Defaults to "common".
+    tenantId: z.string().optional(),
+    // Full issuer override, e.g. for CIAM tenants on *.ciamlogin.com.
+    issuer: z.string().optional(),
+    audience: z.string().optional(),
+    scopes: z.array(z.string()).optional(),
+    redirectToAfterSignUp: z.string().optional(),
+    redirectToAfterSignIn: z.string().optional(),
+    redirectToAfterSignOut: z.string().optional(),
+    signUp: SignUpOpenIdSchema.optional(),
+    disableSignUp: z.boolean().optional(),
+    authorizationParams: z.record(z.string(), z.string()).optional(),
+    forwardAuthorizationParams: z.array(z.string()).optional(),
+  }),
+  z.object({
     type: z.literal("azureb2c"),
     basePath: z.string().optional(),
     clientId: z.string(),
