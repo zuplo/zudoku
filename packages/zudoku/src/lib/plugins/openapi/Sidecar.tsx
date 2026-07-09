@@ -211,7 +211,14 @@ export const Sidecar = ({
   const graphQLEndpoint = getGraphQLEndpoint(operation);
   const isGraphQLEndpoint = graphQLEndpoint !== undefined;
 
+  const showCodeSnippet =
+    operation.extensions["x-zudoku-code-snippet-enabled"] === true ||
+    (operation.extensions["x-zudoku-code-snippet-enabled"] === undefined &&
+      !options?.disableCodeSnippet);
+
   const httpSnippetCode = useMemo<string | undefined>(() => {
+    if (!showCodeSnippet) return;
+
     if (codeSamples && !hasResolvedAuth) {
       const match = codeSamples.find((s) => s.lang === selectedLang);
       return match?.source;
@@ -248,6 +255,7 @@ export const Sidecar = ({
 
     return getConverted(snippet, selectedLang);
   }, [
+    showCodeSnippet,
     codeSamples,
     currentExampleCode,
     operation,
@@ -271,11 +279,6 @@ export const Sidecar = ({
       (operation.extensions["x-explorer-enabled"] === undefined &&
         operation.extensions["x-zudoku-playground-enabled"] === undefined &&
         !options?.disablePlayground));
-
-  const showCodeSnippet =
-    operation.extensions["x-zudoku-code-snippet-enabled"] === true ||
-    (operation.extensions["x-zudoku-code-snippet-enabled"] === undefined &&
-      !options?.disableCodeSnippet);
 
   const hasResponseExamples = operation.responses.some((response) =>
     response.content?.some((content) => (content.examples?.length ?? 0) > 0),
