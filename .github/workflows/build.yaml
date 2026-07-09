@@ -153,13 +153,12 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
+      # On a cache miss, --with-deps installs the browser and its system
+      # libraries. On a cache hit those libraries are already present in the
+      # runner image, so no install-deps step is needed.
       - name: Install Playwright
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
-
-      - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm exec playwright install-deps chromium
 
       - name: E2E Tests
         run: pnpm test:e2e
