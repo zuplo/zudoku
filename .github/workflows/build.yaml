@@ -117,8 +117,10 @@ jobs:
         if: github.event_name == 'push' && github.ref != 'refs/heads/main'
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku --filter config --tag canary --no-git-checks
 
-      - name: Build Examples
-        run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
+      # Only the examples consumed by later steps (e2e, size-limit, smoke test);
+      # all other examples build in the parallel build-examples job
+      - name: Build Test Examples
+        run: nx run-many -t build --projects=cosmo-cargo,with-base-path
 
       - name: Smoke Test with-base-path
         run: |
@@ -164,6 +166,39 @@ jobs:
 
       - name: Check Bundle Size
         run: pnpm size
+
+  build-examples:
+    name: Build Examples
+    runs-on:
+      group: ubuntu-large-runners
+    permissions:
+      contents: read
+
+    env:
+      COREPACK_ENABLE_STRICT: 0
+      ZUDOKU_INTERNAL_DEV: true
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm install nx --global
+
+      # cosmo-cargo and with-base-path are built and verified in Build & Test
+      - name: Build Examples
+        run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis,cosmo-cargo,with-base-path
 
   check-links:
     name: Check Links
