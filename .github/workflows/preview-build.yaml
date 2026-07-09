@@ -25,15 +25,19 @@ jobs:
       - name: Install global dependencies
         run: npm install -g --ignore-scripts verdaccio nx npm-auth-to-token
 
+      - name: Run first pnpm install
+        run: pnpm install --ignore-scripts
+
+      # Start verdaccio only after the first install: once npm-auth-to-token
+      # points the registry at localhost:4873, pnpm routes all metadata
+      # requests (incl. the minimumReleaseAge supply-chain check for every
+      # lockfile entry) through the proxy, which is minutes slower than npmjs
       - name: Start local NPM registry
         run: |
           tmp_registry_log=$(mktemp)
           nohup verdaccio &>$tmp_registry_log &
           grep -q 'http address' <(tail -f $tmp_registry_log)
           npm-auth-to-token -u test -p test -e test@test.com -r http://localhost:4873
-
-      - name: Run first pnpm install
-        run: pnpm install --ignore-scripts
 
       - name: Build and publish package
         run: nx run zudoku:publish:local
