@@ -63,7 +63,7 @@ const CheckoutPage = () => {
   const planId = searchParams.get("planId");
 
   if (!planId) {
-    return <Navigate to="/pricing" />;
+    return <Navigate to="/pricing" replace />;
   }
 
   return <CheckoutRedirect planId={planId} />;
