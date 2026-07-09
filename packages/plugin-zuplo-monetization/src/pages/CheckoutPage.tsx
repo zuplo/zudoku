@@ -1,24 +1,18 @@
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
-import { Link, useSearchParams } from "zudoku/router";
+import { Link, Navigate, useSearchParams } from "zudoku/router";
 import { Alert, AlertAction, AlertDescription } from "zudoku/ui/Alert";
 import { Button } from "zudoku/ui/Button";
 import { RedirectPage } from "../components/RedirectPage.js";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { useUrlUtils } from "../hooks/useUrlUtils";
 
-const CheckoutPage = () => {
-  const [searchParams] = useSearchParams();
-  const planId = searchParams.get("planId");
+const CheckoutRedirect = ({ planId }: { planId: string }) => {
   const zudoku = useZudoku();
   const auth = useAuth();
   const { generateUrl } = useUrlUtils();
   const deploymentName = useDeploymentName();
-
-  if (!planId) {
-    throw new Error(`missing planId in URL`);
-  }
 
   const checkoutLink = useQuery<{ url: string }>({
     queryKey: [
@@ -62,6 +56,17 @@ const CheckoutPage = () => {
       )}
     </RedirectPage>
   );
+};
+
+const CheckoutPage = () => {
+  const [searchParams] = useSearchParams();
+  const planId = searchParams.get("planId");
+
+  if (!planId) {
+    return <Navigate to="/pricing" replace />;
+  }
+
+  return <CheckoutRedirect planId={planId} />;
 };
 
 export default CheckoutPage;
