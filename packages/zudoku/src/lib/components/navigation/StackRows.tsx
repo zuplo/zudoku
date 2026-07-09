@@ -24,7 +24,7 @@ export const StackDrillRow = ({
     className={cn(navigationListItem(), "group justify-between", className)}
   >
     <span className="flex items-center gap-2 truncate">{children}</span>
-    <span className="grid size-6 shrink-0 place-items-center">
+    <span className="grid size-6 -my-0.5 shrink-0 place-items-center">
       <ChevronRightIcon size={16} />
     </span>
   </Link>
