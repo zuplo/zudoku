@@ -175,24 +175,28 @@ export const MCPEndpoint = ({
         }
         return (
           <>
-            <InstallButton href={CLAUDE_CONNECTORS_URL} external>
-              Open connector settings
-              <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
-            </InstallButton>
             <Steps>
               <li>
                 <p>
-                  In <strong>Settings → Connectors</strong>, click{" "}
-                  <strong>Add custom connector</strong>.
+                  <strong>Copy the {name} URL.</strong> Use the copy button
+                  above — you'll need it in the next step.
                 </p>
               </li>
               <li>
-                <p>Paste the MCP server URL above and save.</p>
+                <p>
+                  <strong>Open Settings → Connectors.</strong> Add a custom
+                  connector, name it {name}, and paste the URL.
+                </p>
+                <InstallButton href={CLAUDE_CONNECTORS_URL} external>
+                  Open connector settings
+                  <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
+                </InstallButton>
               </li>
               <li>
                 <p>
-                  Click <strong>Connect</strong> and sign in to authorize {name}{" "}
-                  — the tools appear in your conversations.
+                  <strong>Connect and sign in.</strong> Click{" "}
+                  <strong>Add → Connect</strong> and sign in — you're all set,
+                  and the {name} tools appear in your conversations.
                 </p>
               </li>
             </Steps>
@@ -211,18 +215,23 @@ export const MCPEndpoint = ({
             <Steps>
               <li>
                 <p>
-                  Go to <strong>Settings → Apps → Advanced Settings</strong>.
+                  <strong>Turn on Developer Mode.</strong> Go to{" "}
+                  <strong>Settings → Apps → Advanced settings</strong>, enable{" "}
+                  <strong>Developer Mode</strong>, then click{" "}
+                  <strong>Create app</strong>.
                 </p>
               </li>
               <li>
                 <p>
-                  Click <strong>Create app</strong> and fill out the form.
+                  <strong>Create the app.</strong> Name it {name} and paste the
+                  MCP server URL above as the connection.
                 </p>
               </li>
               <li>
                 <p>
-                  Enter the MCP server URL above and save — the app is now
-                  available in your conversations.
+                  <strong>Connect and sign in.</strong> Click{" "}
+                  <strong>Create</strong> and sign in — you're all set, and the
+                  app is available in your conversations.
                 </p>
               </li>
             </Steps>

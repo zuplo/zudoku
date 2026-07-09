@@ -313,6 +313,8 @@ export const getVscodeDeepLink = (
   return `vscode:mcp/install?${encodeURIComponent(JSON.stringify(config))}`;
 };
 
-// Opens Claude's custom connector settings. Claude has no deep link that
-// pre-fills the server URL, so users paste it after landing here.
-export const CLAUDE_CONNECTORS_URL = "https://claude.ai/customize/connectors";
+// Opens Claude's custom connector settings with the "Add custom connector"
+// dialog already open. Claude has no deep link that pre-fills the server URL,
+// so users still paste it into the dialog.
+export const CLAUDE_CONNECTORS_URL =
+  "https://claude.ai/customize/connectors?modal=add-custom-connector";
