@@ -20,6 +20,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: ".tool-versions"
+          cache: "pnpm"
 
       - name: Install global dependencies
         run: npm install -g --ignore-scripts verdaccio nx npm-auth-to-token
