@@ -49,8 +49,11 @@ jobs:
           cd examples/cosmo-cargo
           npm pkg set "devDependencies.zudoku=$VERSION"
 
+      # minimumReleaseAge already verified against npmjs by the first install;
+      # re-verifying all lockfile entries through verdaccio takes ~3 minutes,
+      # and the only new package (zudoku@local) is in minimumReleaseAgeExclude
       - name: Run second pnpm install
-        run: pnpm install --no-frozen-lockfile --prefer-offline --ignore-scripts --registry http://localhost:4873
+        run: pnpm install --no-frozen-lockfile --prefer-offline --ignore-scripts --registry http://localhost:4873 --config.minimumReleaseAge=0
 
       - name: Build Cosmo Cargo example
         run: nx run cosmo-cargo:build
