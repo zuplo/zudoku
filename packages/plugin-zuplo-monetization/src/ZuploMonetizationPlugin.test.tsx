@@ -1,6 +1,8 @@
 import { act, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ZudokuContext } from "zudoku";
 import { StaticZudoku } from "zudoku/testing";
+import { pricingPageQuery } from "./queries.js";
 import type { Plan } from "./types/PlanType.js";
 import { zuploMonetizationPlugin } from "./ZuploMonetizationPlugin";
 import { queryClient } from "./ZuploMonetizationWrapper";
@@ -64,5 +66,85 @@ describe("PricingPage", () => {
     expect(screen.getByTestId("subtitle")).toHaveTextContent(
       "See our pricing options and choose the one that best suits your needs.",
     );
+  });
+});
+
+describe("pricing query signing after logout", () => {
+  // Simulates the OpenID end_session logout race: the pricing prefetch is
+  // built while localStorage still says authenticated, but by the time the
+  // request fires the logout callback has cleared auth state.
+  const createFakeContext = (authState: { isAuthenticated: boolean }) => {
+    const signRequest = vi.fn(async (_request: Request): Promise<Request> => {
+      throw new Error("Invalid or incompatible provider data");
+    });
+    const context = {
+      env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test" },
+      getAuthState: () => authState,
+      signRequest,
+    } as unknown as ZudokuContext;
+    return { context, signRequest };
+  };
+
+  beforeEach(() => {
+    queryClient.clear();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ items: [] }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    queryClient.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it("fetches unsigned when logged out after the query was built", async () => {
+    const authState = { isAuthenticated: true };
+    const { context, signRequest } = createFakeContext(authState);
+
+    const opts = pricingPageQuery(context);
+    authState.isAuthenticated = false;
+
+    await queryClient.prefetchQuery(opts);
+
+    expect(signRequest).not.toHaveBeenCalled();
+    expect(queryClient.getQueryState(opts.queryKey)?.status).toBe("success");
+  });
+
+  it("renders /pricing after a logout-poisoned prefetch", async () => {
+    const authState = { isAuthenticated: true };
+    const { context } = createFakeContext(authState);
+
+    const opts = pricingPageQuery(context);
+    authState.isAuthenticated = false;
+    await queryClient.prefetchQuery(opts);
+
+    await act(async () => {
+      render(
+        <StaticZudoku
+          env={{ ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test" }}
+          plugins={[zuploMonetizationPlugin({ pricing: { title: "Pricing" } })]}
+          path="/pricing"
+        />,
+      );
+    });
+
+    expect(screen.getByTestId("title")).toHaveTextContent("Pricing");
+  });
+
+  it("signs the request when authenticated at fetch time", async () => {
+    const authState = { isAuthenticated: true };
+    const { context, signRequest } = createFakeContext(authState);
+    signRequest.mockImplementation(async (request: Request) => request);
+
+    await queryClient.prefetchQuery(pricingPageQuery(context));
+
+    expect(signRequest).toHaveBeenCalledOnce();
   });
 });
