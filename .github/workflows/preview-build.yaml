@@ -28,32 +28,35 @@ jobs:
       - name: Run first pnpm install
         run: pnpm install --ignore-scripts
 
-      # Start verdaccio only after the first install: once npm-auth-to-token
-      # points the registry at localhost:4873, pnpm routes all metadata
-      # requests (incl. the minimumReleaseAge supply-chain check for every
-      # lockfile entry) through the proxy, which is minutes slower than npmjs
+      # The default registry must stay npmjs: pointing it at verdaccio routes
+      # all pnpm metadata resolution and the minimumReleaseAge verification
+      # (~1700 packuments) through the cold proxy, adding minutes to installs
+      # and nx builds. Only the publish and the zudoku tarball use verdaccio,
+      # both via explicit URLs, so drop the registry= line npm-auth-to-token
+      # writes and keep just the auth token needed for publishing.
       - name: Start local NPM registry
         run: |
           tmp_registry_log=$(mktemp)
           nohup verdaccio &>$tmp_registry_log &
           grep -q 'http address' <(tail -f $tmp_registry_log)
           npm-auth-to-token -u test -p test -e test@test.com -r http://localhost:4873
+          sed -i '/^registry=/d' .npmrc
 
       - name: Build and publish package
         run: nx run zudoku:publish:local
 
+      # Install zudoku via its verdaccio tarball URL instead of switching the
+      # registry: everything else keeps resolving against npmjs, whose metadata
+      # is already warm from the first install
       - name: Update package.json
         run: |
           VERSION=$(pnpm view zudoku@local version --registry http://localhost:4873)
           echo "Using locally-published zudoku version: $VERSION"
           cd examples/cosmo-cargo
-          npm pkg set "devDependencies.zudoku=$VERSION"
+          npm pkg set "devDependencies.zudoku=http://localhost:4873/zudoku/-/zudoku-$VERSION.tgz"
 
-      # minimumReleaseAge already verified against npmjs by the first install;
-      # re-verifying all lockfile entries through verdaccio takes ~3 minutes,
-      # and the only new package (zudoku@local) is in minimumReleaseAgeExclude
       - name: Run second pnpm install
-        run: pnpm install --no-frozen-lockfile --prefer-offline --ignore-scripts --registry http://localhost:4873 --config.minimumReleaseAge=0
+        run: pnpm install --no-frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: Build Cosmo Cargo example
         run: nx run cosmo-cargo:build
