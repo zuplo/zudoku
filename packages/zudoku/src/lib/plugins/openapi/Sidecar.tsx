@@ -272,6 +272,11 @@ export const Sidecar = ({
         operation.extensions["x-zudoku-playground-enabled"] === undefined &&
         !options?.disablePlayground));
 
+  const showCodeSnippet =
+    operation.extensions["x-zudoku-code-snippet-enabled"] === true ||
+    (operation.extensions["x-zudoku-code-snippet-enabled"] === undefined &&
+      !options?.disableCodeSnippet);
+
   const hasResponseExamples = operation.responses.some((response) =>
     response.content?.some((content) => (content.examples?.length ?? 0) > 0),
   );
@@ -321,82 +326,84 @@ export const Sidecar = ({
       className="flex flex-col sticky top-(--scroll-padding) gap-4"
       data-pagefind-ignore="all"
     >
-      <SidecarBox.Root>
-        <SidecarBox.Head className="py-1.5">
-          <div className="flex items-center flex-wrap gap-2 justify-between w-full">
-            <span className="font-mono wrap-break-word leading-6 space-x-1">
-              <Badge
-                variant="outline"
-                className={cn(
-                  methodTextColor,
-                  "px-1.5 rounded-md border-none bg-current/7 dark:bg-current/15",
-                )}
-              >
-                {operation.method.toUpperCase()}
-              </Badge>
-              {path}
-            </span>
-            {showPlayground &&
-              (isGraphQLEndpoint ? (
-                <GraphiQLDialog
-                  endpoint={graphQLEndpoint?.endpoint ?? operationUrl}
-                  operation={operation}
-                  securitySchemes={securitySchemes}
-                  defaultTabs={
-                    graphQLTabs && graphQLTabs.length > 0
-                      ? graphQLTabs
-                      : undefined
-                  }
-                />
-              ) : (
-                <PlaygroundDialogWrapper
-                  servers={operation.servers.map((server) => server.url)}
-                  operation={operation}
-                  examples={requestBodyContent ?? undefined}
-                />
-              ))}
-          </div>
-        </SidecarBox.Head>
-        <SidecarBox.Body>
-          {shouldLazyHighlight && !isOnScreen ? (
-            <NonHighlightedCode code={httpSnippetCode ?? ""} />
-          ) : (
-            <SyntaxHighlight
-              embedded
-              language={selectedLang}
-              showLanguageIndicator={false}
-              className="[--scrollbar-color:gray] rounded-none text-xs max-h-50"
-              // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
-              code={httpSnippetCode!}
-            />
-          )}
-        </SidecarBox.Body>
-        <SidecarBox.Footer className="text-xs self-end flex justify-between items-center gap-2">
-          <NativeSelect
-            className="text-xs h-fit py-1 max-w-32 truncate bg-background"
-            value={selectedLang}
-            onChange={(e) => {
-              startTransition(() => {
-                setSearchParams((prev) => {
-                  prev.set("lang", e.target.value);
-                  return prev;
+      {showCodeSnippet && (
+        <SidecarBox.Root>
+          <SidecarBox.Head className="py-1.5">
+            <div className="flex items-center flex-wrap gap-2 justify-between w-full">
+              <span className="font-mono wrap-break-word leading-6 space-x-1">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    methodTextColor,
+                    "px-1.5 rounded-md border-none bg-current/7 dark:bg-current/15",
+                  )}
+                >
+                  {operation.method.toUpperCase()}
+                </Badge>
+                {path}
+              </span>
+              {showPlayground &&
+                (isGraphQLEndpoint ? (
+                  <GraphiQLDialog
+                    endpoint={graphQLEndpoint?.endpoint ?? operationUrl}
+                    operation={operation}
+                    securitySchemes={securitySchemes}
+                    defaultTabs={
+                      graphQLTabs && graphQLTabs.length > 0
+                        ? graphQLTabs
+                        : undefined
+                    }
+                  />
+                ) : (
+                  <PlaygroundDialogWrapper
+                    servers={operation.servers.map((server) => server.url)}
+                    operation={operation}
+                    examples={requestBodyContent ?? undefined}
+                  />
+                ))}
+            </div>
+          </SidecarBox.Head>
+          <SidecarBox.Body>
+            {shouldLazyHighlight && !isOnScreen ? (
+              <NonHighlightedCode code={httpSnippetCode ?? ""} />
+            ) : (
+              <SyntaxHighlight
+                embedded
+                language={selectedLang}
+                showLanguageIndicator={false}
+                className="[--scrollbar-color:gray] rounded-none text-xs max-h-50"
+                // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
+                code={httpSnippetCode!}
+              />
+            )}
+          </SidecarBox.Body>
+          <SidecarBox.Footer className="text-xs self-end flex justify-between items-center gap-2">
+            <NativeSelect
+              className="text-xs h-fit py-1 max-w-32 truncate bg-background"
+              value={selectedLang}
+              onChange={(e) => {
+                startTransition(() => {
+                  setSearchParams((prev) => {
+                    prev.set("lang", e.target.value);
+                    return prev;
+                  });
                 });
-              });
-            }}
-          >
-            {supportedLanguages.map((language) => (
-              <NativeSelectOption key={language.value} value={language.value}>
-                {language.label}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-          <AuthSelectorPopover
-            operation={operation}
-            url={operationUrl}
-            securitySchemes={securitySchemes}
-          />
-        </SidecarBox.Footer>
-      </SidecarBox.Root>
+              }}
+            >
+              {supportedLanguages.map((language) => (
+                <NativeSelectOption key={language.value} value={language.value}>
+                  {language.label}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+            <AuthSelectorPopover
+              operation={operation}
+              url={operationUrl}
+              securitySchemes={securitySchemes}
+            />
+          </SidecarBox.Footer>
+        </SidecarBox.Root>
+      )}
 
       {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox

@@ -75,6 +75,7 @@ type BaseOasConfig = {
     supportedLanguages?: { value: string; label: string }[];
     disablePlayground?: boolean;
     disableSidecar?: boolean;
+    disableCodeSnippet?: boolean;
     disableSecurity?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
