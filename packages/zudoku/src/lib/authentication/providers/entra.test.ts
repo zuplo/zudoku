@@ -2,6 +2,7 @@
 import * as oauth from "oauth4webapi";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { useAuthState } from "../state.js";
+import type { UserProfile } from "../state.js";
 import entraAuth, { EntraAuthenticationProvider } from "./entra.js";
 
 vi.mock("oauth4webapi", async (importOriginal) => {
@@ -189,6 +190,72 @@ describe("EntraAuthenticationProvider", () => {
       });
 
       expect(issuer).toBe(ISSUER_TEMPLATE);
+    });
+  });
+
+  describe("profile mapping", () => {
+    const buildProfile = (
+      userInfo: Record<string, unknown>,
+      claims?: Record<string, unknown>,
+    ) => {
+      const provider = new EntraAuthenticationProvider({
+        type: "entra",
+        clientId: "test-client",
+      });
+      return (
+        provider as unknown as {
+          buildUserProfile: (
+            userInfo: oauth.UserInfoResponse,
+            claims: oauth.IDToken | undefined,
+          ) => UserProfile;
+        }
+      ).buildUserProfile(
+        userInfo as oauth.UserInfoResponse,
+        claims as oauth.IDToken | undefined,
+      );
+    };
+
+    test("keeps a real email and its verified status", () => {
+      const profile = buildProfile(
+        { sub: "u1", email: "real@contoso.com" },
+        { preferred_username: "pref@contoso.com", email_verified: true },
+      );
+      expect(profile.email).toBe("real@contoso.com");
+      expect(profile.emailVerified).toBe(true);
+    });
+
+    test("falls back to preferred_username when email is absent", () => {
+      const profile = buildProfile(
+        { sub: "u1" },
+        { preferred_username: "user@external.com", tid: "tenant-x" },
+      );
+      expect(profile.email).toBe("user@external.com");
+      // A username is not a verified email.
+      expect(profile.emailVerified).toBe(false);
+    });
+
+    test("falls back to upn when email and preferred_username are absent", () => {
+      const profile = buildProfile({ sub: "u1" }, { upn: "user@external.com" });
+      expect(profile.email).toBe("user@external.com");
+    });
+
+    test("surfaces immutable oid/tid and preferred_username from claims", () => {
+      const profile = buildProfile(
+        { sub: "u1" },
+        {
+          preferred_username: "user@external.com",
+          oid: "object-123",
+          tid: "tenant-x",
+        },
+      );
+      expect(profile.preferred_username).toBe("user@external.com");
+      expect(profile.oid).toBe("object-123");
+      expect(profile.tid).toBe("tenant-x");
+    });
+
+    test("leaves email undefined when no username claim is available", () => {
+      const profile = buildProfile({ sub: "u1" }, {});
+      expect(profile.email).toBeUndefined();
     });
   });
 });

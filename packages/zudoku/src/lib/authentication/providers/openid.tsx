@@ -257,12 +257,12 @@ export class OpenIDAuthenticationProvider
     });
   }
 
-  private buildUserProfile(
+  protected buildUserProfile(
     userInfo: oauth.UserInfoResponse,
-    fallbackEmailVerified: oauth.JsonValue | undefined,
+    claims: oauth.IDToken | undefined,
   ): UserProfile {
     const emailVerified =
-      userInfo.email_verified ?? fallbackEmailVerified ?? false;
+      userInfo.email_verified ?? claims?.email_verified ?? false;
     return {
       ...userInfo,
       sub: userInfo.sub,
@@ -321,12 +321,10 @@ export class OpenIDAuthenticationProvider
     const userInfo = await userInfoResponse.json();
 
     const { providerData } = useAuthState.getState();
-    const emailVerified =
-      providerData?.type === "openid"
-        ? providerData.claims?.email_verified
-        : undefined;
+    const claims =
+      providerData?.type === "openid" ? providerData.claims : undefined;
 
-    const profile = this.buildUserProfile(userInfo, emailVerified);
+    const profile = this.buildUserProfile(userInfo, claims);
 
     useAuthState.setState({
       isAuthenticated: true,
@@ -696,7 +694,7 @@ export class OpenIDAuthenticationProvider
     );
     const userInfo = await userInfoResponse.json();
 
-    const profile = this.buildUserProfile(userInfo, claims?.email_verified);
+    const profile = this.buildUserProfile(userInfo, claims);
 
     useAuthState.setState({
       isAuthenticated: true,

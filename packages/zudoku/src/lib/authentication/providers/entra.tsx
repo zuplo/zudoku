@@ -4,6 +4,7 @@ import type {
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
+import type { UserProfile } from "../state.js";
 import { OpenIDAuthenticationProvider } from "./openid.js";
 import { getEntraIssuer } from "./util.js";
 
@@ -60,6 +61,32 @@ export class EntraAuthenticationProvider
     } catch {
       return as;
     }
+  }
+
+  // Entra's `email` claim is only present when the account has a mailbox, which
+  // isn't guaranteed — often absent for users from external tenants. Its
+  // UserInfo endpoint also omits `preferred_username`, so the base profile
+  // (built from UserInfo) can lack any usable identifier. Fill `email` from the
+  // ID token's username claims, and surface the immutable `oid`/`tid` for
+  // reliable identity and tenant checks. `email`/`preferred_username` are
+  // mutable — kept unverified and unsuitable for authorization.
+  // https://learn.microsoft.com/en-us/entra/identity-platform/id-token-claims-reference
+  protected override buildUserProfile(
+    userInfo: oauth.UserInfoResponse,
+    claims: oauth.IDToken | undefined,
+  ): UserProfile {
+    const profile = super.buildUserProfile(userInfo, claims);
+    const claim = (name: string) =>
+      typeof claims?.[name] === "string" ? claims[name] : undefined;
+
+    const preferredUsername = claim("preferred_username");
+    return {
+      ...profile,
+      email: profile.email ?? preferredUsername ?? claim("upn"),
+      ...(preferredUsername && { preferred_username: preferredUsername }),
+      ...(claim("oid") && { oid: claim("oid") }),
+      ...(claim("tid") && { tid: claim("tid") }),
+    };
   }
 }
 
