@@ -37,22 +37,21 @@ export const categorizeRateCards = (
       return "month";
     };
 
-    // A metered card with `issueAfterReset` represents a "free quota" only
-    // when the first tier (matching the issued amount) is truly free —
-    // i.e. flat=0 and unit=0. If the first tier has any positive price,
-    // the plan is a tiered/graduated pricing schedule and the issued
-    // amount is just a tier boundary, not free included usage.
+    // A metered card with a positive `issueAfterReset` represents a "free
+    // quota" only when the first tier (matching the issued amount) is truly
+    // free — i.e. flat=0 and unit=0. If the first tier has any positive
+    // price, the plan is a tiered/graduated pricing schedule and the issued
+    // amount is just a tier boundary, not free included usage. A quota of 0
+    // is the same as no quota (the plan editor always serializes a number,
+    // 0 meaning pay-as-you-go) — never render it as "0 / period".
     const firstTier =
       rc.price?.type === "tiered" && rc.price.tiers.length > 0
         ? rc.price.tiers[0]
         : undefined;
     const firstTierIsPriced = !!firstTier && tierHasPositivePrice(firstTier);
+    const includedQuota = et.type === "metered" ? (et.issueAfterReset ?? 0) : 0;
 
-    if (
-      et.type === "metered" &&
-      et.issueAfterReset != null &&
-      !firstTierIsPriced
-    ) {
+    if (et.type === "metered" && includedQuota > 0 && !firstTierIsPriced) {
       let tierPrices: string[] | undefined;
       if (rc.price?.type === "tiered" && rc.price.tiers) {
         // Build a readable tier breakdown (useful for graduated/volume).
@@ -73,17 +72,17 @@ export const categorizeRateCards = (
       quotas.push({
         key: rc.featureKey ?? rc.key,
         name: rc.name,
-        limit: et.issueAfterReset,
+        limit: includedQuota,
         period: periodFor(rc),
         tierPrices,
       });
     } else if (et.type === "metered" && rc.type === "usage_based" && rc.price) {
       // Pay-as-you-go: usage-based card without a free included quota.
-      // Covers true PAYG (no `issueAfterReset`), tiered plans whose first
-      // tier carries a non-zero price (the issued amount is a tier boundary,
-      // not free included usage), and hard-limit metered cards with a
-      // positive price — `isSoftLimit` is a metering concern that doesn't
-      // change what the card should display.
+      // Covers true PAYG (zero or absent `issueAfterReset`), tiered plans
+      // whose first tier carries a non-zero price (the issued amount is a
+      // tier boundary, not free included usage), and hard-limit metered
+      // cards with a positive price — `isSoftLimit` is a metering concern
+      // that doesn't change what the card should display.
       const unitLabel = unitLabelFor(rc);
       if (rc.price.type === "tiered" && rc.price.tiers.length > 0) {
         const tiers = rc.price.tiers;
@@ -160,6 +159,12 @@ export const categorizeRateCards = (
       } else {
         features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
       }
+    } else if (et.type === "metered") {
+      // Zero/absent quota on a card the PAYG branch can't price (flat-fee,
+      // free, or priceless cards): the card still conveys feature access,
+      // so list it as a plain feature rather than a bogus "0 / period"
+      // quota — or worse, dropping it entirely.
+      features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
     } else if (et.type === "boolean") {
       features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
     } else if (et.type === "static" && et.config) {

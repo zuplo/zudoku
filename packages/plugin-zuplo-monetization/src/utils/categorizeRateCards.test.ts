@@ -39,6 +39,94 @@ describe("categorizeRateCards", () => {
     });
   });
 
+  // The plan editor always serializes a numeric quota (0 = pay-as-you-go),
+  // so a 0 must render exactly like an absent quota — never as "0 / period".
+  it("treats a 0 quota on a priced tiered card as pay-as-you-go", () => {
+    const { quotas } = categorizeRateCards([
+      makeMeteredRateCard({
+        isSoftLimit: true,
+        issueAfterReset: 0,
+        tiers: [
+          { unitPrice: { amount: "40" }, upToAmount: "50" },
+          { unitPrice: { amount: "10" }, upToAmount: "90" },
+          { unitPrice: { amount: "5" } },
+        ],
+      }),
+    ]);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0].isPayg).toBe(true);
+    expect(quotas[0].tierPrices).toEqual([
+      "Up to 50: $40/unit",
+      "Up to 90: $10/unit",
+      "Over 90: $5/unit",
+    ]);
+  });
+
+  it("treats a 0 quota on a free-first-tier card as pay-as-you-go with the included range in the breakdown", () => {
+    const { quotas } = categorizeRateCards([
+      makeMeteredRateCard({
+        isSoftLimit: true,
+        issueAfterReset: 0,
+        tiers: [
+          {
+            flatPrice: { amount: "0" },
+            unitPrice: { amount: "0" },
+            upToAmount: "1000",
+          },
+          { unitPrice: { amount: "0.01" } },
+        ],
+      }),
+    ]);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0].isPayg).toBe(true);
+    expect(quotas[0].tierPrices).toEqual([
+      "Up to 1,000: Included",
+      "Over 1,000: $0.01/unit",
+    ]);
+  });
+
+  it("treats a 0 quota on a unit-priced card as pay-as-you-go", () => {
+    const rc: RateCard = {
+      type: "usage_based",
+      key: "requests",
+      name: "Requests",
+      featureKey: "requests",
+      billingCadence: "P1M",
+      price: { type: "unit", amount: "0.05" },
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 0,
+        isSoftLimit: true,
+      },
+    };
+    const { quotas } = categorizeRateCards([rc]);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0]).toMatchObject({
+      isPayg: true,
+      unitPrice: "$0.05/unit",
+    });
+  });
+
+  it("renders a 0-quota metered card without a usable price as a plain feature", () => {
+    const rc: RateCard = {
+      type: "flat_fee",
+      key: "jobs",
+      name: "Jobs",
+      featureKey: "jobs",
+      billingCadence: null,
+      price: null,
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 0,
+        isSoftLimit: true,
+      },
+    };
+    const { quotas, features } = categorizeRateCards([rc]);
+    expect(quotas).toHaveLength(0);
+    expect(features).toHaveLength(1);
+    expect(features[0]).toMatchObject({ key: "jobs", name: "Jobs" });
+  });
+
   it("emits 'Included' for the free tier and an 'Over X' tier for the overage", () => {
     const { quotas } = categorizeRateCards([
       makeMeteredRateCard({
