@@ -7,11 +7,13 @@ import {
   getCodexCliCommand,
   getCodexConfig,
   getCursorConfig,
+  getCursorDeepLink,
   getGenericConfig,
   getMcpServerName,
   getMcpUrl,
   getVisibleApps,
   getVscodeConfig,
+  getVscodeDeepLink,
 } from "./mcp-configs.js";
 
 const SERVER_URL = "https://api.example.com";
@@ -419,5 +421,72 @@ describe("config snapshots - apiKey auth", () => {
         }
       }"
     `);
+  });
+});
+
+describe("getCursorDeepLink", () => {
+  const decodeConfig = (link: string) => {
+    const url = new URL(link);
+    const raw = url.searchParams.get("config");
+    if (!raw) throw new Error("missing config");
+    return JSON.parse(atob(raw));
+  };
+
+  it("builds a cursor:// install link with base64 config", () => {
+    const link = getCursorDeepLink(SERVER_NAME, `${SERVER_URL}${MCP_PATH}`);
+    const url = new URL(link);
+    expect(url.protocol).toBe("cursor:");
+    expect(url.host).toBe("anysphere.cursor-deeplink");
+    expect(url.pathname).toBe("/mcp/install");
+    expect(url.searchParams.get("name")).toBe(SERVER_NAME);
+    expect(decodeConfig(link)).toEqual({
+      url: "https://api.example.com/mcp",
+    });
+  });
+
+  it("includes auth headers when present", () => {
+    const link = getCursorDeepLink(
+      SERVER_NAME,
+      `${SERVER_URL}${MCP_PATH}`,
+      apiKeyAuth,
+    );
+    expect(decodeConfig(link)).toEqual({
+      url: "https://api.example.com/mcp",
+      headers: { "X-API-Key": "YOUR_API_KEY" },
+    });
+  });
+
+  it("url-encodes names with spaces", () => {
+    const link = getCursorDeepLink("My Server", `${SERVER_URL}${MCP_PATH}`);
+    expect(link).toContain("name=My%20Server");
+  });
+});
+
+describe("getVscodeDeepLink", () => {
+  const decodeConfig = (link: string) =>
+    JSON.parse(decodeURIComponent(link.split("?")[1] ?? ""));
+
+  it("builds a vscode:mcp/install link with url-encoded json", () => {
+    const link = getVscodeDeepLink(SERVER_NAME, `${SERVER_URL}${MCP_PATH}`);
+    expect(link.startsWith("vscode:mcp/install?")).toBe(true);
+    expect(decodeConfig(link)).toEqual({
+      name: "my-api",
+      type: "http",
+      url: "https://api.example.com/mcp",
+    });
+  });
+
+  it("includes auth headers when present", () => {
+    const link = getVscodeDeepLink(
+      SERVER_NAME,
+      `${SERVER_URL}${MCP_PATH}`,
+      apiKeyAuth,
+    );
+    expect(decodeConfig(link)).toEqual({
+      name: "my-api",
+      type: "http",
+      url: "https://api.example.com/mcp",
+      headers: { "X-API-Key": "YOUR_API_KEY" },
+    });
   });
 });

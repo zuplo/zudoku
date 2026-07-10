@@ -1,20 +1,20 @@
-import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
-import { useState } from "react";
+import {
+  ArrowUpRightIcon,
+  CheckIcon,
+  CopyIcon,
+  ExternalLinkIcon,
+} from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
 import { Typography } from "../../components/Typography.js";
 import { Button } from "../../ui/Button.js";
 import { Callout } from "../../ui/Callout.js";
 import { Card } from "../../ui/Card.js";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../ui/Select.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
+import { ToggleGroup, ToggleGroupItem } from "../../ui/ToggleGroup.js";
+import { cn } from "../../util/cn.js";
 import {
+  CLAUDE_CONNECTORS_URL,
   type McpApp,
   type McpServerData,
   getAuthHeader,
@@ -23,30 +23,62 @@ import {
   getCodexCliCommand,
   getCodexConfig,
   getCursorConfig,
+  getCursorDeepLink,
   getGenericConfig,
   getMcpServerName,
   getMcpUrl,
   getVisibleApps,
   getVscodeConfig,
+  getVscodeDeepLink,
 } from "./mcp-configs.js";
+import { McpClientLogo } from "./McpClientLogos.js";
 
-const SubAppSection = ({
-  label,
-  showLabel,
+const DocsLink = ({
+  href,
   children,
 }: {
-  label: string;
-  showLabel: boolean;
-  children: React.ReactNode;
-}) =>
-  showLabel ? (
-    <div className="space-y-3">
-      <h4 className="text-sm font-semibold">{label}</h4>
+  href: string;
+  children: ReactNode;
+}) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+  >
+    {children}
+    <ExternalLinkIcon className="h-3 w-3" aria-hidden="true" />
+  </a>
+);
+
+// Wraps a list of <li> steps in the shared `.stepper` visual (numbered bullets
+// with a connecting line, see main.css).
+const Steps = ({ children }: { children: ReactNode }) => (
+  <div className="stepper">
+    <ol>{children}</ol>
+  </div>
+);
+
+// One-click deep link rendered as a primary button. Protocol-handler links
+// (cursor://, vscode:) open in place; external https links open a new tab.
+const InstallButton = ({
+  href,
+  external,
+  children,
+}: {
+  href: string;
+  external?: boolean;
+  children: ReactNode;
+}) => (
+  <Button asChild size="sm" className="not-prose gap-1.5">
+    <a
+      href={href}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+    >
       {children}
-    </div>
-  ) : (
-    <div className="space-y-3">{children}</div>
-  );
+    </a>
+  </Button>
+);
 
 export const MCPEndpoint = ({
   serverUrl,
@@ -72,9 +104,29 @@ export const MCPEndpoint = ({
   const codexConfig = getCodexConfig(name, mcpUrl, auth);
   const genericConfig = getGenericConfig(name, mcpUrl, auth);
   const vscodeConfig = getVscodeConfig(name, mcpUrl, auth);
+  const cursorDeepLink = getCursorDeepLink(name, mcpUrl, auth);
+  const vscodeDeepLink = getVscodeDeepLink(name, mcpUrl, auth);
 
-  const defaultTab = visibleApps[0]?.id ?? "generic";
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  const [selectedAppId, setSelectedAppId] = useState(
+    visibleApps[0]?.id ?? "generic",
+  );
+  const selectedApp =
+    visibleApps.find((app) => app.id === selectedAppId) ?? visibleApps[0];
+
+  const [selectedSubAppId, setSelectedSubAppId] = useState<string | undefined>(
+    selectedApp?.subApps[0]?.id,
+  );
+
+  const selectApp = (id: string) => {
+    setSelectedAppId(id);
+    const next = visibleApps.find((app) => app.id === id);
+    setSelectedSubAppId(next?.subApps[0]?.id);
+  };
+
+  // Keep the active sub-app consistent with the selected app.
+  const activeSubApp =
+    selectedApp?.subApps.find((sub) => sub.id === selectedSubAppId) ??
+    selectedApp?.subApps[0];
 
   const handleCopy = () => {
     void navigator.clipboard.writeText(mcpUrl).then(() => {
@@ -83,55 +135,75 @@ export const MCPEndpoint = ({
     });
   };
 
-  const hasSubApp = (app: McpApp, subAppId: string) =>
-    app.subApps.some((s) => s.id === subAppId);
-
-  const renderAppContent = (app: McpApp) => {
-    const multiSub = app.subApps.length > 1;
+  const renderSetup = (app: McpApp) => {
+    const subAppId = activeSubApp?.id ?? app.subApps[0]?.id;
 
     switch (app.id) {
       case "claude":
+        if (subAppId === "claude-code") {
+          return (
+            <>
+              <Steps>
+                <li>
+                  <p>Add {name} to Claude Code by running:</p>
+                  <SyntaxHighlight
+                    showLanguageIndicator
+                    title="Terminal"
+                    language="bash"
+                    code={claudeCodeCommand}
+                  />
+                </li>
+                {auth && (
+                  <li>
+                    <p>
+                      Replace <InlineCode>{auth.placeholder}</InlineCode> with
+                      your API key.
+                    </p>
+                  </li>
+                )}
+                <li>
+                  <p>
+                    Restart Claude Code — the {name} tools are now available.
+                  </p>
+                </li>
+              </Steps>
+              <DocsLink href="https://docs.anthropic.com/en/docs/claude-code/mcp">
+                View official docs
+              </DocsLink>
+            </>
+          );
+        }
         return (
-          <div className="space-y-4">
-            {hasSubApp(app, "claude-desktop") && (
-              <SubAppSection label="Claude Desktop" showLabel={multiSub}>
-                <ol>
-                  <li>
-                    Open Claude Desktop and navigate to{" "}
-                    <strong>Settings</strong>
-                  </li>
-                  <li>
-                    Go to <strong>Connectors</strong> →{" "}
-                    <strong>Add custom connector</strong> and paste the MCP URL
-                  </li>
-                  <li>Save and the server will appear in your conversations</li>
-                </ol>
-                <a
-                  href="https://modelcontextprotocol.io/quickstart/user"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                >
-                  View official docs
-                  <ExternalLinkIcon className="h-3 w-3" />
-                </a>
-              </SubAppSection>
-            )}
-            {hasSubApp(app, "claude-code") && (
-              <SubAppSection label="Claude Code CLI" showLabel={multiSub}>
-                <p className="text-xs text-muted-foreground">
-                  Add it to Claude Code CLI by running:
+          <>
+            <Steps>
+              <li>
+                <p>
+                  <strong>Copy the {name} URL.</strong> Use the copy button
+                  above — you'll need it in the next step.
                 </p>
-                <SyntaxHighlight
-                  showLanguageIndicator
-                  title="Terminal"
-                  language="bash"
-                  code={claudeCodeCommand}
-                  className="mt-2"
-                />
-              </SubAppSection>
-            )}
-          </div>
+              </li>
+              <li>
+                <p>
+                  <strong>Open Settings → Connectors.</strong> Add a custom
+                  connector, name it {name}, and paste the URL.
+                </p>
+                <InstallButton href={CLAUDE_CONNECTORS_URL} external>
+                  Open connector settings
+                  <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
+                </InstallButton>
+              </li>
+              <li>
+                <p>
+                  <strong>Connect and sign in.</strong> Click{" "}
+                  <strong>Add → Connect</strong> and sign in — you're all set,
+                  and the {name} tools appear in your conversations.
+                </p>
+              </li>
+            </Steps>
+            <DocsLink href="https://modelcontextprotocol.io/quickstart/user">
+              View official docs
+            </DocsLink>
+          </>
         );
 
       case "chatgpt":
@@ -140,118 +212,124 @@ export const MCPEndpoint = ({
             <Callout type="note" title="Requirements">
               ChatGPT Plus, Team, Enterprise, or Edu subscription.
             </Callout>
-            <ol>
+            <Steps>
               <li>
-                Go to <strong>Settings</strong> → <strong>Apps</strong> →{" "}
-                <strong>Advanced Settings</strong>
+                <p>
+                  <strong>Turn on Developer Mode.</strong> Go to{" "}
+                  <strong>Settings → Apps → Advanced settings</strong>, enable{" "}
+                  <strong>Developer Mode</strong>, then click{" "}
+                  <strong>Create app</strong>.
+                </p>
               </li>
               <li>
-                Click <strong>Create app</strong> and fill out the form
+                <p>
+                  <strong>Create the app.</strong> Name it {name} and paste the
+                  MCP server URL above as the connection.
+                </p>
               </li>
               <li>
-                Enter the MCP server URL:
-                <InlineCode className="ml-2">{mcpUrl}</InlineCode>
+                <p>
+                  <strong>Connect and sign in.</strong> Click{" "}
+                  <strong>Create</strong> and sign in — you're all set, and the
+                  app is available in your conversations.
+                </p>
               </li>
-              <li>Save and the app will be available in your conversations</li>
-            </ol>
-            <a
-              href="https://developers.openai.com/apps-sdk/deploy/connect-chatgpt#create-a-connector"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-            >
+            </Steps>
+            <DocsLink href="https://developers.openai.com/apps-sdk/deploy/connect-chatgpt#create-a-connector">
               View official docs
-              <ExternalLinkIcon className="h-3 w-3" />
-            </a>
+            </DocsLink>
           </>
         );
 
       case "codex":
+        if (subAppId === "codex-cli") {
+          return (
+            <>
+              <Steps>
+                <li>
+                  <p>Add {name} to Codex CLI by running:</p>
+                  <SyntaxHighlight
+                    showLanguageIndicator
+                    title="Terminal"
+                    language="bash"
+                    code={codexCliCommand}
+                  />
+                </li>
+                <li>
+                  <p>
+                    Or add it to <InlineCode>~/.codex/config.json</InlineCode>:
+                  </p>
+                  <SyntaxHighlight
+                    showLanguageIndicator
+                    title="config.json"
+                    language="json"
+                    code={codexConfig}
+                  />
+                </li>
+              </Steps>
+              <DocsLink href="https://openai.com/index/introducing-codex/">
+                View official docs
+              </DocsLink>
+            </>
+          );
+        }
         return (
-          <div className="space-y-4">
-            {hasSubApp(app, "codex-gui") && (
-              <SubAppSection label="Codex" showLabel={multiSub}>
-                <ol>
-                  <li>
-                    Open Codex and go to <strong>Settings</strong> →{" "}
-                    <strong>MCP Servers</strong>
-                  </li>
-                  <li>Add a new server and paste the MCP URL</li>
-                  <li>
-                    Save and the server will be available in your sessions
-                  </li>
-                </ol>
-                <a
-                  href="https://openai.com/index/introducing-codex/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                >
-                  View official docs
-                  <ExternalLinkIcon className="h-3 w-3" />
-                </a>
-              </SubAppSection>
-            )}
-            {hasSubApp(app, "codex-cli") && (
-              <SubAppSection label="Codex CLI" showLabel={multiSub}>
-                <p className="text-xs text-muted-foreground">
-                  Add it to Codex CLI by running:
+          <>
+            <Steps>
+              <li>
+                <p>
+                  Open Codex and go to <strong>Settings → MCP Servers</strong>.
                 </p>
-                <SyntaxHighlight
-                  showLanguageIndicator
-                  title="Terminal"
-                  language="bash"
-                  code={codexCliCommand}
-                  className="mt-2"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Or add to <InlineCode>~/.codex/config.json</InlineCode>:
-                </p>
-                <SyntaxHighlight
-                  showLanguageIndicator
-                  title="config.json"
-                  language="json"
-                  code={codexConfig}
-                  className="mt-2"
-                />
-              </SubAppSection>
-            )}
-          </div>
+              </li>
+              <li>
+                <p>Add a new server and paste the MCP server URL above.</p>
+              </li>
+              <li>
+                <p>Save — the server is available in your sessions.</p>
+              </li>
+            </Steps>
+            <DocsLink href="https://openai.com/index/introducing-codex/">
+              View official docs
+            </DocsLink>
+          </>
         );
 
       case "cursor":
         return (
           <>
-            <ol>
+            {!auth && (
+              <div className="not-prose space-y-2">
+                <InstallButton href={cursorDeepLink}>
+                  <McpClientLogo appId="cursor" className="size-3.5" />
+                  Add to Cursor
+                </InstallButton>
+                <p className="text-xs text-muted-foreground">
+                  Opens Cursor and prompts to install. Or configure it manually:
+                </p>
+              </div>
+            )}
+            <Steps>
               <li>
-                <span>
-                  Go to <strong>Settings</strong> →{" "}
-                  <strong>Tools & MCPs</strong> →{" "}
-                  <strong>New MCP Server</strong>, or edit:{" "}
-                </span>
-                <InlineCode>~/.cursor/mcp.json</InlineCode>
-                <span> (global) or </span>
-                <InlineCode>.cursor/mcp.json</InlineCode>
-                <span> (project)</span>
+                <p>
+                  Go to{" "}
+                  <strong>Settings → Tools & MCPs → New MCP Server</strong>, or
+                  edit <InlineCode>~/.cursor/mcp.json</InlineCode> (global) /{" "}
+                  <InlineCode>.cursor/mcp.json</InlineCode> (project):
+                </p>
                 <SyntaxHighlight
                   showLanguageIndicator
                   title="mcp.json"
                   language="json"
                   code={cursorConfig}
-                  className="mt-2"
                 />
               </li>
-              <li>Restart Cursor to apply the configuration</li>
-            </ol>
-            <a
-              href="https://cursor.com/docs/context/mcp"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-            >
+              <li>
+                <p>Restart Cursor to apply the configuration.</p>
+              </li>
+            </Steps>
+            <DocsLink href="https://cursor.com/docs/context/mcp">
               View official docs
-              <ExternalLinkIcon className="h-3 w-3" />
-            </a>
+            </DocsLink>
           </>
         );
 
@@ -259,35 +337,46 @@ export const MCPEndpoint = ({
         return (
           <>
             <Callout type="note" title="Requirements">
-              VS Code with GitHub Copilot extension
+              VS Code with the GitHub Copilot extension.
             </Callout>
-            <ol>
+            {!auth && (
+              <div className="not-prose space-y-2">
+                <InstallButton href={vscodeDeepLink}>
+                  <McpClientLogo appId="vscode" className="size-3.5" />
+                  Install in VS Code
+                </InstallButton>
+                <p className="text-xs text-muted-foreground">
+                  Opens VS Code and prompts to install. Or configure it
+                  manually:
+                </p>
+              </div>
+            )}
+            <Steps>
               <li>
-                <span>Create </span>
-                <InlineCode>.vscode/mcp.json</InlineCode>
-                <span> in your workspace (or user-level mcp.json):</span>
+                <p>
+                  Create <InlineCode>.vscode/mcp.json</InlineCode> in your
+                  workspace (or a user-level mcp.json):
+                </p>
                 <SyntaxHighlight
                   showLanguageIndicator
                   title="mcp.json"
                   language="json"
                   code={vscodeConfig}
-                  className="mt-2"
                 />
               </li>
-              <li>Restart VS Code to apply the configuration</li>
               <li>
-                Use MCP tools in GitHub Copilot Chat by selecting Agent mode
+                <p>Restart VS Code to apply the configuration.</p>
               </li>
-            </ol>
-            <a
-              href="https://code.visualstudio.com/docs/copilot/chat/mcp-servers"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-            >
+              <li>
+                <p>
+                  Use the MCP tools in GitHub Copilot Chat by selecting Agent
+                  mode.
+                </p>
+              </li>
+            </Steps>
+            <DocsLink href="https://code.visualstudio.com/docs/copilot/chat/mcp-servers">
               View official docs
-              <ExternalLinkIcon className="h-3 w-3" />
-            </a>
+            </DocsLink>
           </>
         );
 
@@ -295,30 +384,23 @@ export const MCPEndpoint = ({
         return (
           <>
             <p>
-              Generic <InlineCode>.mcp.json</InlineCode> configuration format
-              that works with most MCP-compatible apps.
+              A generic <InlineCode>.mcp.json</InlineCode> configuration that
+              works with most MCP-compatible apps.
             </p>
             <SyntaxHighlight
               showLanguageIndicator
               title=".mcp.json"
               language="json"
               code={genericConfig}
-              className="mt-2"
             />
             <p className="text-sm text-muted-foreground">
               Place this file in your project root or the appropriate
               configuration directory for your app. The exact location depends
               on your specific tool.
             </p>
-            <a
-              href="https://modelcontextprotocol.io/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-            >
+            <DocsLink href="https://modelcontextprotocol.io/">
               Learn more about MCP
-              <ExternalLinkIcon className="h-3 w-3" />
-            </a>
+            </DocsLink>
           </>
         );
 
@@ -329,69 +411,106 @@ export const MCPEndpoint = ({
 
   return (
     <Card className="p-6 mb-6 max-w-screen-md">
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">App Configuration</h3>
+          <h3 className="text-lg font-semibold">Connect {name}</h3>
+          <p className="text-sm text-muted-foreground">
+            Add this MCP server to your favorite AI tools in a few steps.
+          </p>
+        </div>
+
+        {/* Step 1 — the one thing every client needs: the server URL. */}
+        <div className="rounded-lg border bg-muted/30 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-xs font-medium text-muted-foreground mb-1">
+                MCP Server URL
+              </div>
+              <code className="block truncate font-mono text-sm">{mcpUrl}</code>
+            </div>
             <Button
               onClick={handleCopy}
               variant="outline"
               size="sm"
-              className="gap-1.5"
+              className="gap-1.5 shrink-0"
             >
               {isCopied ? (
                 <CheckIcon className="h-3.5 w-3.5 text-green-600" />
               ) : (
                 <CopyIcon className="h-3.5 w-3.5" />
               )}
-              {isCopied ? "Copied!" : "Copy URL"}
+              {isCopied ? "Copied!" : "Copy"}
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">
-            Choose your app and copy the configuration to get started.
-          </p>
-
-          <hr className="my-4" />
-
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full sm:hidden">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {visibleApps.map((app) => (
-                  <SelectItem key={app.id} value={app.id}>
-                    {app.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <TabsList
-              className="hidden sm:grid w-full"
-              style={{
-                gridTemplateColumns: `repeat(${visibleApps.length}, minmax(0, 1fr))`,
-              }}
-            >
-              {visibleApps.map((app) => (
-                <TabsTrigger key={app.id} value={app.id}>
-                  {app.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            <Typography className="text-sm max-w-full">
-              {visibleApps.map((app) => (
-                <TabsContent key={app.id} value={app.id} className="space-y-3">
-                  {renderAppContent(app)}
-                </TabsContent>
-              ))}
-            </Typography>
-          </Tabs>
+          {auth && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Requires an <InlineCode>{auth.headerName}</InlineCode> header —
+              replace <InlineCode>{auth.placeholder}</InlineCode> with your key.
+            </p>
+          )}
         </div>
+
+        {/* Step 2 — pick your client. */}
+        <div className="space-y-2">
+          <div className="text-sm font-medium">Choose your client</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {visibleApps.map((app) => {
+              const isActive = app.id === selectedApp?.id;
+              return (
+                <button
+                  key={app.id}
+                  type="button"
+                  onClick={() => selectApp(app.id)}
+                  aria-pressed={isActive}
+                  data-active={isActive}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-2 rounded-lg border p-3 transition",
+                    "hover:bg-muted/60",
+                    isActive
+                      ? "border-primary bg-primary/5 ring-1 ring-primary text-foreground"
+                      : "border-border text-muted-foreground",
+                  )}
+                >
+                  <McpClientLogo appId={app.id} className="size-6" />
+                  <span className="text-xs font-medium">{app.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Step 3 — client-specific setup walkthrough. */}
+        {selectedApp && (
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-sm font-medium">
+                Set up {selectedApp.label}
+              </div>
+              {selectedApp.subApps.length > 1 && (
+                <ToggleGroup
+                  size="sm"
+                  variant="outline"
+                  spacing={2}
+                  aria-label={`Set up method for ${selectedApp.label}`}
+                  value={activeSubApp ? [activeSubApp.id] : []}
+                  onValueChange={(value: string[]) => {
+                    const next = value.at(0);
+                    if (next) setSelectedSubAppId(next);
+                  }}
+                >
+                  {selectedApp.subApps.map((sub) => (
+                    <ToggleGroupItem key={sub.id} value={sub.id}>
+                      {sub.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              )}
+            </div>
+            <Typography className="text-sm max-w-full">
+              {renderSetup(selectedApp)}
+            </Typography>
+          </div>
+        )}
       </div>
     </Card>
   );
