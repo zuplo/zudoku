@@ -263,3 +263,58 @@ export const getGenericConfig = (
     }
   }
 }`;
+
+// -- One-click install deep links --
+
+// btoa only handles latin1, so encode UTF-8 first to survive non-ASCII names.
+const base64Encode = (value: string): string => {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+};
+
+const authHeaders = (auth?: AuthHeader): Record<string, string> | undefined =>
+  auth ? { [auth.headerName]: auth.placeholder } : undefined;
+
+// Cursor "Add to Cursor" deep link. `config` is the base64 of the server's
+// mcp.json entry. It is URL-encoded so base64 `+`/`/`/`=` survive query parsing.
+// https://cursor.com/docs/context/mcp/install-links
+export const getCursorDeepLink = (
+  name: string,
+  mcpUrl: string,
+  auth?: AuthHeader,
+): string => {
+  const headers = authHeaders(auth);
+  const config = headers ? { url: mcpUrl, headers } : { url: mcpUrl };
+  const encoded = encodeURIComponent(base64Encode(JSON.stringify(config)));
+  return `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent(
+    name,
+  )}&config=${encoded}`;
+};
+
+// VS Code "Install in VS Code" deep link. The whole server config (including
+// name and transport) is URL-encoded JSON.
+// https://code.visualstudio.com/api/extension-guides/ai/mcp
+export const getVscodeDeepLink = (
+  name: string,
+  mcpUrl: string,
+  auth?: AuthHeader,
+): string => {
+  const headers = authHeaders(auth);
+  const config = {
+    name,
+    type: "http",
+    url: mcpUrl,
+    ...(headers ? { headers } : {}),
+  };
+  return `vscode:mcp/install?${encodeURIComponent(JSON.stringify(config))}`;
+};
+
+// Opens Claude's custom connector settings with the "Add custom connector"
+// dialog already open. Claude has no deep link that pre-fills the server URL,
+// so users still paste it into the dialog.
+export const CLAUDE_CONNECTORS_URL =
+  "https://claude.ai/customize/connectors?modal=add-custom-connector";
