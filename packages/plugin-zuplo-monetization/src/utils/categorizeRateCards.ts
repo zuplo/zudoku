@@ -160,10 +160,12 @@ export const categorizeRateCards = (
         features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
       }
     } else if (et.type === "metered") {
-      // Zero/absent quota on a card the PAYG branch can't price (flat-fee,
-      // free, or priceless cards): the card still conveys feature access,
-      // so list it as a plain feature rather than a bogus "0 / period"
-      // quota — or worse, dropping it entirely.
+      // Any remaining metered card: it neither qualifies as a free included
+      // quota (first branch) nor carries a usage price the PAYG branch can
+      // render — typically a zero/absent quota on a flat-fee, free, or
+      // priceless card. The card still conveys feature access, so list it
+      // as a plain feature rather than a bogus "0 / period" quota — or
+      // worse, dropping it entirely.
       features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
     } else if (et.type === "boolean") {
       features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
