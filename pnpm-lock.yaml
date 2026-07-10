@@ -789,8 +789,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@zuplo/mcp':
-        specifier: 0.0.32
-        version: 0.0.32
+        specifier: 0.1.0
+        version: 0.1.0(zod@4.4.3)
       bs58:
         specifier: 6.0.0
         version: 6.0.0
@@ -5695,8 +5695,10 @@ packages:
     resolution: {integrity: sha512-nrUSn7hzt7J6JWgWGz78ZYI8wj+gdIJdk0Ynjpp8l+trkn58Uqsf6RYrYkEK+3X18EX+TNdtJI0WxAtc+L84SQ==}
     hasBin: true
 
-  '@zuplo/mcp@0.0.32':
-    resolution: {integrity: sha512-rpLTpwL+g1sXtylu2gZwCTXdNIV2L0LPOcCdwogpP5hdyp/JMLSAVtd7H5fs5Wt2cq3jTm6nn7ZZvsBAECdl3A==}
+  '@zuplo/mcp@0.1.0':
+    resolution: {integrity: sha512-bnJ7EvT3Ne9/FCGZ6Vd/6vv0lrMRCcjbApAyohaS/4P4z6UhSvGZOnH/EJbKq702QQDKSUcqMZb9x5T/eGJFKw==}
+    peerDependencies:
+      zod: ^4.0.0
 
   acorn-import-attributes@1.9.5:
     resolution: {integrity: sha512-n02Vykv5uA3eHGM/Z2dQrcD56kL8TyDb2p1+0P83PClMnC/nc+anbQRhIOWnSq4Ke/KvDPrY3C9hDtC/A3eHnQ==}
@@ -6639,8 +6641,8 @@ packages:
   eventemitter3@5.0.4:
     resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
 
-  eventsource-parser@3.0.6:
-    resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
+  eventsource-parser@3.1.0:
+    resolution: {integrity: sha512-kJezFj9YFAMLeORyi7aCLxLbD5/qWMQnoMVlVPyHIll7lgRJCc3JVln9Vgl9nwQi0YkMnhdGTMNn7CkRRAptMg==}
     engines: {node: '>=18.0.0'}
 
   expect-type@1.3.0:
@@ -9413,9 +9415,6 @@ packages:
 
   youch@4.1.0-beta.10:
     resolution: {integrity: sha512-rLfVLB4FgQneDr0dv1oddCVZmKjcJ6yX6mS4pU82Mq/Dt9a3cLZQ62pDBL4AUO+uVrCvtWz3ZFUL2HFAFJ/BXQ==}
-
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
@@ -14089,10 +14088,10 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  '@zuplo/mcp@0.0.32':
+  '@zuplo/mcp@0.1.0(zod@4.4.3)':
     dependencies:
-      eventsource-parser: 3.0.6
-      zod: 3.25.76
+      eventsource-parser: 3.1.0
+      zod: 4.4.3
 
   acorn-import-attributes@1.9.5(acorn@8.17.0):
     dependencies:
@@ -15027,7 +15026,7 @@ snapshots:
 
   eventemitter3@5.0.4: {}
 
-  eventsource-parser@3.0.6: {}
+  eventsource-parser@3.1.0: {}
 
   expect-type@1.3.0: {}
 
@@ -18447,8 +18446,6 @@ snapshots:
       '@speed-highlight/core': 1.2.17
       cookie: 1.1.1
       youch-core: 0.3.3
-
-  zod@3.25.76: {}
 
   zod@4.4.3: {}
 
