@@ -211,13 +211,13 @@ export const Sidecar = ({
   const graphQLEndpoint = getGraphQLEndpoint(operation);
   const isGraphQLEndpoint = graphQLEndpoint !== undefined;
 
-  const showCodeSnippet =
-    operation.extensions["x-zudoku-code-snippet-enabled"] === true ||
-    (operation.extensions["x-zudoku-code-snippet-enabled"] === undefined &&
-      !options?.disableCodeSnippet);
+  const showRequestBox =
+    operation.extensions["x-zudoku-request-box-enabled"] === true ||
+    (operation.extensions["x-zudoku-request-box-enabled"] === undefined &&
+      !options?.disableRequestBox);
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
-    if (!showCodeSnippet) return;
+    if (!showRequestBox) return;
 
     if (codeSamples && !hasResolvedAuth) {
       const match = codeSamples.find((s) => s.lang === selectedLang);
@@ -255,7 +255,7 @@ export const Sidecar = ({
 
     return getConverted(snippet, selectedLang);
   }, [
-    showCodeSnippet,
+    showRequestBox,
     codeSamples,
     currentExampleCode,
     operation,
@@ -329,7 +329,7 @@ export const Sidecar = ({
       className="flex flex-col sticky top-(--scroll-padding) gap-4"
       data-pagefind-ignore="all"
     >
-      {showCodeSnippet && (
+      {showRequestBox && (
         <SidecarBox.Root>
           <SidecarBox.Head className="py-1.5">
             <div className="flex items-center flex-wrap gap-2 justify-between w-full">
