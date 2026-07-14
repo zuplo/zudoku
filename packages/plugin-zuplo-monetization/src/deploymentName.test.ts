@@ -22,4 +22,12 @@ describe("resolveDeploymentName", () => {
   it("throws when the deployment name is an empty string", () => {
     expect(() => resolveDeploymentName("")).toThrow(ZudokuError);
   });
+
+  it("throws when the deployment name is only whitespace", () => {
+    expect(() => resolveDeploymentName("   ")).toThrow(ZudokuError);
+  });
+
+  it("trims surrounding whitespace from the deployment name", () => {
+    expect(resolveDeploymentName("  my-deployment  ")).toBe("my-deployment");
+  });
 });

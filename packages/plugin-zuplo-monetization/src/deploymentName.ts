@@ -9,7 +9,11 @@ import { ZudokuError } from "zudoku/components";
  * guidance rather than a bare "not set" so the UI can surface the fix.
  */
 export const resolveDeploymentName = (deploymentName?: string): string => {
-  if (!deploymentName) {
+  // Trim so a whitespace-only env value doesn't slip into request URLs
+  // (e.g. `/v3/zudoku-metering/   /...`); treat blank as unset.
+  const trimmed = deploymentName?.trim();
+
+  if (!trimmed) {
     throw new ZudokuError(
       "This project is not linked to a Zuplo deployment, so the monetization plugin can't load pricing or subscriptions.",
       {
@@ -20,5 +24,5 @@ export const resolveDeploymentName = (deploymentName?: string): string => {
     );
   }
 
-  return deploymentName;
+  return trimmed;
 };
