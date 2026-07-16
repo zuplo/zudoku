@@ -15,8 +15,8 @@ authentication provider you use.
 
 ## Authentication Providers
 
-Zudoku supports Clerk, Auth0, Supabase, Firebase, Azure B2C, and any OpenID Connect provider
-(including Okta, Keycloak, Authentik, and PingFederate).
+Zudoku supports Clerk, Auth0, Supabase, Firebase, Microsoft Entra ID, Azure B2C, and any OpenID
+Connect provider (including Okta, Keycloak, Authentik, and PingFederate).
 
 Not seeing your authentication provider? [Let us know](https://github.com/zuplo/zudoku/issues)
 
@@ -98,6 +98,26 @@ providing your own array of scopes.
 
 For provider-specific guides (Okta, Keycloak, etc.), see the
 [OpenID Connect setup page](./authentication-openid.md).
+
+### Microsoft Entra ID
+
+For Microsoft Entra ID (formerly Azure AD), you will need the `clientId` from your app registration
+and your `tenantId`.
+
+```typescript
+{
+  // ...
+  authentication: {
+    type: "entra",
+    clientId: "<your-application-client-id>",
+    tenantId: "<your-tenant-id>", // Or "common" for multitenant. Defaults to "common".
+  },
+  // ...
+}
+```
+
+For full setup instructions, see the
+[Azure AD / Entra ID setup guide](./authentication-azure-ad.md).
 
 ### Firebase
 

@@ -72,9 +72,9 @@ to integrate Azure AD with your Zudoku documentation site.
    export default {
      // ... other configuration
      authentication: {
-       type: "openid",
+       type: "entra",
        clientId: "<your-application-client-id>",
-       issuer: "https://login.microsoftonline.com/<your-tenant-id>/v2.0",
+       tenantId: "<your-tenant-id>",
        scopes: ["openid", "profile", "email"], // Optional: customize scopes
      },
      // ... other configuration
@@ -91,20 +91,21 @@ For single tenant (organization-only access):
 
 ```typescript
 authentication: {
-  type: "openid",
+  type: "entra",
   clientId: "<your-application-client-id>",
-  issuer: "https://login.microsoftonline.com/<your-tenant-id>/v2.0",
+  tenantId: "<your-tenant-id>",
   scopes: ["openid", "profile", "email"],
 }
 ```
 
-For multitenant (any Azure AD organization):
+For multitenant (any Azure AD organization), use `tenantId: "common"` or `"organizations"` — this is
+also the default if `tenantId` is omitted:
 
 ```typescript
 authentication: {
-  type: "openid",
+  type: "entra",
   clientId: "<your-application-client-id>",
-  issuer: "https://login.microsoftonline.com/common/v2.0",
+  tenantId: "common",
   scopes: ["openid", "profile", "email"],
 }
 ```
@@ -115,9 +116,9 @@ Request additional Microsoft Graph API scopes:
 
 ```typescript
 authentication: {
-  type: "openid",
+  type: "entra",
   clientId: "<your-application-client-id>",
-  issuer: "https://login.microsoftonline.com/<your-tenant-id>/v2.0",
+  tenantId: "<your-tenant-id>",
   scopes: [
     "openid",
     "profile",
@@ -136,7 +137,7 @@ Protect specific documentation routes using the `protectedRoutes` configuration:
 {
   // ... other configuration
   authentication: {
-    type: "openid",
+    type: "entra",
     // ... Azure AD config
   },
   protectedRoutes: [
@@ -217,16 +218,17 @@ Azure AD provides rich user profile data through OpenID Connect:
 2. **Redirect URI Mismatch**: The redirect URI must exactly match one configured in Azure AD,
    including protocol and path.
 
-3. **Tenant Access Issues**: For single-tenant apps, ensure users are from the correct tenant. For
-   multi-tenant, verify the issuer URL uses "common" or "organizations".
+3. **Tenant Access Issues**: For single-tenant apps, ensure users are from the correct tenant and
+   `tenantId` is set to that tenant's GUID. For multi-tenant, use `tenantId: "common"` or
+   `"organizations"`.
 
 4. **Missing User Information**: Check that required API permissions are granted and admin consent
    is provided if needed.
 
-5. **Token Validation Errors**: Ensure your issuer URL is correct and includes the `/v2.0` endpoint
-   for the Microsoft identity platform.
+5. **Token Validation Errors**: Ensure your `tenantId` is correct. If you use a CIAM tenant
+   (`*.ciamlogin.com`), set the `issuer` option to override the default issuer instead.
 
-6. **Authentication Not Working**: Verify your issuer URL and client ID are correct, and that your
+6. **Authentication Not Working**: Verify your `tenantId` and client ID are correct, and that your
    app registration is configured as a Single-page application (SPA) with the correct redirect URIs.
 
 ## Security Best Practices
