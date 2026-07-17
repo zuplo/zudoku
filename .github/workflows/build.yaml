@@ -33,7 +33,7 @@ jobs:
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".tool-versions"
           registry-url: "https://registry.npmjs.org"
@@ -184,7 +184,7 @@ jobs:
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".tool-versions"
           registry-url: "https://registry.npmjs.org"
@@ -212,7 +212,7 @@ jobs:
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".tool-versions"
           registry-url: "https://registry.npmjs.org"
