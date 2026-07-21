@@ -215,10 +215,10 @@ describe("Generate OpenAPI schema module", () => {
 
     expect(slugs.operations).toMatchInlineSnapshot(`
       {
-        "/pets-get": "get-pets",
-        "/pets-head": "head-pets",
-        "/pets-post": "post-pets",
-        "/users-get": "get-users",
+        "/pets-GET": "get-pets",
+        "/pets-HEAD": "head-pets",
+        "/pets-POST": "post-pets",
+        "/users-GET": "get-users",
       }
     `);
     expect(slugs.tags).toMatchInlineSnapshot(`

@@ -247,7 +247,10 @@ export const getAllOperations = (
 
       return {
         ...operation,
-        method,
+        // Normalize to uppercase so every consumer (Playground request, code
+        // snippets, navigation) emits the canonical HTTP method. OpenAPI path
+        // item keys are lowercase; mirrors `resolveWebhooks`.
+        method: method.toUpperCase(),
         path,
         parameters,
         servers,
@@ -938,7 +941,8 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
           return (
             (!args.operationId || op.operationId === args.operationId) &&
             (!args.path || op.path === args.path) &&
-            (!args.method || op.method === args.method) &&
+            (!args.method ||
+              op.method.toLowerCase() === args.method.toLowerCase()) &&
             (!args.tag || op.tags?.some((tag) => args.tag?.includes(tag))) &&
             (!args.untagged || (op.tags ?? []).length === 0)
           );
