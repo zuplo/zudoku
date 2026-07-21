@@ -210,7 +210,11 @@ export const getAllSlugs = (
 };
 
 const getOperationSlugKey = (op: GraphQLOperationObject) =>
-  [op.path, op.method, op.operationId, op.summary].filter(Boolean).join("-");
+  // Lowercase the method so the slug key is stable regardless of the method
+  // field's casing, keeping operation slugs unchanged.
+  [op.path, op.method.toLowerCase(), op.operationId, op.summary]
+    .filter(Boolean)
+    .join("-");
 
 export const getAllOperations = (
   paths?: PathsObject,
