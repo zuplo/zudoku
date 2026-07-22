@@ -85,6 +85,97 @@ describe("categorizeRateCards", () => {
     ]);
   });
 
+  // A positive unit price bills every unit including the issued quota, so
+  // the quota is an allowance for the usage meter — not free included usage.
+  // The card must show the rate, not "1,000 / month" with the price hidden.
+  it("treats a positive quota on a positively unit-priced card as pay-as-you-go", () => {
+    const rc: RateCard = {
+      type: "usage_based",
+      key: "requests",
+      name: "Requests",
+      featureKey: "requests",
+      billingCadence: "P1M",
+      price: { type: "unit", amount: "0.03" },
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 1000,
+        isSoftLimit: true,
+      },
+    };
+    const { quotas } = categorizeRateCards([rc]);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0]).toMatchObject({
+      isPayg: true,
+      unitPrice: "$0.03/unit",
+    });
+  });
+
+  // A hard limit is a real cap the buyer must see: priced cards keep the
+  // quota line with the price alongside instead of collapsing to PAYG.
+  it("shows both the cap and the rate for a hard limit on a unit-priced card", () => {
+    const rc: RateCard = {
+      type: "usage_based",
+      key: "requests",
+      name: "Requests",
+      featureKey: "requests",
+      billingCadence: "P1M",
+      price: { type: "unit", amount: "0.03" },
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 1000,
+        isSoftLimit: false,
+      },
+    };
+    const { quotas } = categorizeRateCards([rc]);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0]).toMatchObject({
+      limit: 1000,
+      period: "month",
+      unitPrice: "$0.03/unit",
+      isHardCap: true,
+    });
+    expect(quotas[0].isPayg).toBeUndefined();
+  });
+
+  it("shows both the cap and the tier breakdown for a hard limit on a priced tiered card", () => {
+    const { quotas } = categorizeRateCards([
+      makeMeteredRateCard({
+        isSoftLimit: false,
+        issueAfterReset: 100,
+        tiers: [
+          { unitPrice: { amount: "40" }, upToAmount: "50" },
+          { unitPrice: { amount: "10" } },
+        ],
+      }),
+    ]);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0]).toMatchObject({ limit: 100, isHardCap: true });
+    expect(quotas[0].tierPrices).toEqual([
+      "Up to 50: $40/unit",
+      "Over 50: $10/unit",
+    ]);
+  });
+
+  it("keeps the quota line for a positive quota on a $0 unit-priced card", () => {
+    const rc: RateCard = {
+      type: "usage_based",
+      key: "requests",
+      name: "Requests",
+      featureKey: "requests",
+      billingCadence: "P1M",
+      price: { type: "unit", amount: "0" },
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 1000,
+        isSoftLimit: true,
+      },
+    };
+    const { quotas } = categorizeRateCards([rc]);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0]).toMatchObject({ limit: 1000, period: "month" });
+    expect(quotas[0].isPayg).toBeUndefined();
+  });
+
   it("treats a 0 quota on a unit-priced card as pay-as-you-go", () => {
     const rc: RateCard = {
       type: "usage_based",
@@ -738,7 +829,10 @@ describe("categorizeRateCards", () => {
       expect(quotas[0]).toMatchObject({ isPayg: true, limit: 0 });
     });
 
-    it("routes priced-first-tier card to PAYG even with isSoftLimit=false", () => {
+    it("keeps the cap visible for a priced-first-tier card with isSoftLimit=false", () => {
+      // A hard limit is a real cap the buyer must see: unlike a soft limit,
+      // the card keeps the quota line (marked isHardCap so the UI renders it
+      // alongside the tier breakdown) instead of collapsing to PAYG.
       const rc: RateCard = {
         type: "usage_based",
         key: "api",
@@ -760,7 +854,8 @@ describe("categorizeRateCards", () => {
       };
       const { quotas } = categorizeRateCards([rc]);
       expect(quotas).toHaveLength(1);
-      expect(quotas[0]).toMatchObject({ isPayg: true, limit: 0 });
+      expect(quotas[0]).toMatchObject({ limit: 1000, isHardCap: true });
+      expect(quotas[0].isPayg).toBeUndefined();
       expect(quotas[0].tierPrices).toEqual([
         "Up to 1,000: $10",
         "Over 1,000: $0.05/unit",

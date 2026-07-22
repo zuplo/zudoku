@@ -38,20 +38,34 @@ export const categorizeRateCards = (
     };
 
     // A metered card with a positive `issueAfterReset` represents a "free
-    // quota" only when the first tier (matching the issued amount) is truly
-    // free — i.e. flat=0 and unit=0. If the first tier has any positive
-    // price, the plan is a tiered/graduated pricing schedule and the issued
-    // amount is just a tier boundary, not free included usage. A quota of 0
-    // is the same as no quota (the plan editor always serializes a number,
-    // 0 meaning pay-as-you-go) — never render it as "0 / period".
+    // quota" only when the price doesn't already bill from the first unit.
+    // A tiered price with a priced first tier, or a unit price with a
+    // positive amount, bills every unit including the issued ones — the
+    // quota is a metering/display allowance, not free included usage, so
+    // the card must show the billing truth (the PAYG branch) instead of an
+    // "N / period" line that reads as included. A quota of 0 is the same as
+    // no quota (the plan editor always serializes a number, 0 meaning
+    // pay-as-you-go) — never render it as "0 / period".
     const firstTier =
       rc.price?.type === "tiered" && rc.price.tiers.length > 0
         ? rc.price.tiers[0]
         : undefined;
-    const firstTierIsPriced = !!firstTier && tierHasPositivePrice(firstTier);
+    const billsFromFirstUnit =
+      (!!firstTier && tierHasPositivePrice(firstTier)) ||
+      (rc.price?.type === "unit" && parseFloat(rc.price.amount) > 0);
     const includedQuota = et.type === "metered" ? (et.issueAfterReset ?? 0) : 0;
+    // A hard limit's quota is a real cap the buyer must see even when the
+    // price bills from the first unit, so it keeps the quota line (with the
+    // price alongside). Only an explicit `isSoftLimit: false` counts —
+    // when the flag is absent we don't claim a cap we can't verify, the
+    // same stance `deriveUsageView` takes.
+    const isHardCap = et.type === "metered" && et.isSoftLimit === false;
 
-    if (et.type === "metered" && includedQuota > 0 && !firstTierIsPriced) {
+    if (
+      et.type === "metered" &&
+      includedQuota > 0 &&
+      (isHardCap || !billsFromFirstUnit)
+    ) {
       let tierPrices: string[] | undefined;
       if (rc.price?.type === "tiered" && rc.price.tiers) {
         // Build a readable tier breakdown (useful for graduated/volume).
@@ -69,20 +83,32 @@ export const categorizeRateCards = (
           includedLabel: "Included",
         });
       }
+      // A priced unit rate on a hard cap renders inline next to the cap
+      // ("1,000 / month — $0.03/unit") so neither the price nor the limit
+      // is hidden.
+      const unitAmount =
+        rc.price?.type === "unit" ? parseFloat(rc.price.amount) : 0;
       quotas.push({
         key: rc.featureKey ?? rc.key,
         name: rc.name,
         limit: includedQuota,
         period: periodFor(rc),
         tierPrices,
+        ...(unitAmount > 0
+          ? {
+              unitPrice: `${formatPrice(unitAmount, currency)}/${unitLabelFor(rc)}`,
+            }
+          : {}),
+        ...(isHardCap && billsFromFirstUnit ? { isHardCap: true } : {}),
       });
     } else if (et.type === "metered" && rc.type === "usage_based" && rc.price) {
       // Pay-as-you-go: usage-based card without a free included quota.
-      // Covers true PAYG (zero or absent `issueAfterReset`), tiered plans
-      // whose first tier carries a non-zero price (the issued amount is a
-      // tier boundary, not free included usage), and hard-limit metered
-      // cards with a positive price — `isSoftLimit` is a metering concern
-      // that doesn't change what the card should display.
+      // Covers true PAYG (zero or absent `issueAfterReset`) and soft-limit
+      // cards whose price bills from the first unit (priced first tier or
+      // positive unit price) — there the issued amount is an allowance for
+      // the usage meter, not free included usage, and never blocks, so the
+      // card shows the billing truth only. Hard caps stay on the quota
+      // branch above so the limit is never hidden.
       const unitLabel = unitLabelFor(rc);
       if (rc.price.type === "tiered" && rc.price.tiers.length > 0) {
         const tiers = rc.price.tiers;
