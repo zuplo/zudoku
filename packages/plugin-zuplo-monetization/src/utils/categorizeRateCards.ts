@@ -80,10 +80,13 @@ export const categorizeRateCards = (
     // same stance `deriveUsageView` takes.
     const isHardCap = et.type === "metered" && et.isSoftLimit === false;
 
+    // Hard caps always take the quota branch — even a cap of 0 is a real
+    // limit ("0 / period" is the truthful render for a blocked feature).
+    // Soft quotas only qualify when positive and not already billed from
+    // the first unit; a soft 0 means pay-as-you-go.
     if (
       et.type === "metered" &&
-      includedQuota > 0 &&
-      (isHardCap || !billsFromFirstUnit)
+      (isHardCap || (includedQuota > 0 && !billsFromFirstUnit))
     ) {
       let tierPrices: string[] | undefined;
       if (rc.price?.type === "tiered" && rc.price.tiers) {

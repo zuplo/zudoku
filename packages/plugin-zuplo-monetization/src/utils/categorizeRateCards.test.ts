@@ -137,6 +137,34 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].isPayg).toBeUndefined();
   });
 
+  it('renders a hard cap of 0 as a real "0 / period" limit, not pay-as-you-go', () => {
+    // A hard limit blocks at the balance, so quota 0 means the feature is
+    // fully blocked — "0 / month" is the truthful render, unlike a soft 0
+    // which means pay-as-you-go.
+    const rc: RateCard = {
+      type: "usage_based",
+      key: "requests",
+      name: "Requests",
+      featureKey: "requests",
+      billingCadence: "P1M",
+      price: { type: "unit", amount: "0.03" },
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 0,
+        isSoftLimit: false,
+      },
+    };
+    const { quotas, features } = categorizeRateCards([rc]);
+    expect(features).toHaveLength(0);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0]).toMatchObject({
+      limit: 0,
+      period: "month",
+      isHardCap: true,
+    });
+    expect(quotas[0].isPayg).toBeUndefined();
+  });
+
   it("keeps the cap visible for a hard limit with a free first tier and priced overage", () => {
     // The breakdown's "Up to X: Included" line conveys the free range but
     // not that the limit is a hard stop — the cap line must stay visible.
@@ -650,7 +678,10 @@ describe("categorizeRateCards", () => {
       expect(quotas[0].tierPrices?.length).toBeGreaterThan(0);
     });
 
-    it("renders hard-limit unit-priced cards as PAYG (isSoftLimit only affects metering, not display)", () => {
+    it("renders hard-limit unit-priced cards without a quota as a hard cap at 0", () => {
+      // An absent quota on a hard limit materializes as a grant of 0, so
+      // the entitlement blocks at 0 — the cap line is the truthful render,
+      // not a PAYG price implying usable metered access.
       const rc: RateCard = {
         type: "usage_based",
         key: "api",
@@ -660,16 +691,16 @@ describe("categorizeRateCards", () => {
         entitlementTemplate: { type: "metered", isSoftLimit: false },
       };
       const { quotas, features } = categorizeRateCards([rc]);
-      expect(quotas).toEqual([
-        {
-          key: "api",
-          name: "API Calls",
-          limit: 0,
-          period: "month",
-          isPayg: true,
-          unitPrice: "$0.10/unit",
-        },
-      ]);
+      expect(quotas).toHaveLength(1);
+      expect(quotas[0]).toMatchObject({
+        key: "api",
+        name: "API Calls",
+        limit: 0,
+        period: "month",
+        isHardCap: true,
+        unitPrice: "$0.10/unit",
+      });
+      expect(quotas[0].isPayg).toBeUndefined();
       expect(features).toEqual([]);
     });
 
