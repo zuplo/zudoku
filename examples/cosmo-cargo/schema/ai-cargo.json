@@ -403,6 +403,118 @@
         }
       }
     },
+    "/mcp/navigator": {
+      "post": {
+        "tags": ["Quantum Transport"],
+        "summary": "Quantum Navigator MCP endpoint",
+        "description": "A dedicated Model Context Protocol (MCP) server for interstellar route planning. Lets AI tools plot quantum tunneling lanes, check lane stability, and estimate warp energy budgets before committing a shipment to the void.\n\nThis is a distinct MCP server from the universal endpoint — it sets its own title via `x-mcp-server.name`, so the generated install snippets read `claude mcp add … 'Quantum Navigator' …` rather than a generic default.",
+        "operationId": "mcpNavigator",
+        "x-mcp-server": {
+          "name": "Quantum Navigator",
+          "version": "2.4.0",
+          "tools": [
+            {
+              "name": "plot_quantum_route",
+              "description": "Plot an optimal quantum tunneling route between two star systems"
+            },
+            {
+              "name": "check_lane_stability",
+              "description": "Report the current stability of a quantum tunneling lane"
+            },
+            {
+              "name": "estimate_warp_energy",
+              "description": "Estimate the warp energy budget for a payload over a given distance"
+            }
+          ],
+          "security": [
+            {
+              "ApiKeyAuth": []
+            }
+          ],
+          "securitySchemes": {
+            "ApiKeyAuth": {
+              "type": "apiKey",
+              "in": "header",
+              "name": "X-API-Key"
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action", "parameters"],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "plot_quantum_route",
+                      "check_lane_stability",
+                      "estimate_warp_energy"
+                    ],
+                    "description": "The navigation action to perform"
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Action-specific parameters"
+                  }
+                }
+              },
+              "example": {
+                "action": "plot_quantum_route",
+                "parameters": {
+                  "origin": "Earth Station Alpha",
+                  "destination": "Proxima Cargo Depot",
+                  "maxLaneInstability": 0.15
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "MCP request processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MCPResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Quantum route plotted successfully",
+                  "data": {
+                    "routeId": "q-7f3a-warp-88",
+                    "entryPoint": "Sol Gateway",
+                    "exitPoint": "Proxima Lane 4",
+                    "distance": 4.24,
+                    "quantumStability": 0.92,
+                    "energyRequired": 1840
+                  },
+                  "mcpMetadata": {
+                    "processingTime": 128.7,
+                    "aiModel": "QuantumNavigator-v2.4",
+                    "confidence": 0.97
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid MCP request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/optimize": {
       "post": {
         "tags": ["AI Operations"],
