@@ -129,7 +129,10 @@ export const categorizeRateCards = (
         period: periodFor(rc),
         tierPrices,
         ...(inlinePrice ? { unitPrice: inlinePrice } : {}),
-        ...(isHardCap && billsFromFirstUnit ? { isHardCap: true } : {}),
+        // Every hard cap keeps its "X / period" line visible — including
+        // alongside a tier breakdown, which conveys prices but not that
+        // the limit is a hard stop.
+        ...(isHardCap ? { isHardCap: true } : {}),
       });
     } else if (et.type === "metered" && rc.type === "usage_based" && rc.price) {
       // Pay-as-you-go: usage-based card without a free included quota.

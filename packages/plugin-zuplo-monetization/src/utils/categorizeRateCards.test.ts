@@ -137,6 +137,32 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].isPayg).toBeUndefined();
   });
 
+  it("keeps the cap visible for a hard limit with a free first tier and priced overage", () => {
+    // The breakdown's "Up to X: Included" line conveys the free range but
+    // not that the limit is a hard stop — the cap line must stay visible.
+    const { quotas } = categorizeRateCards([
+      makeMeteredRateCard({
+        isSoftLimit: false,
+        issueAfterReset: 1000,
+        tiers: [
+          {
+            flatPrice: { amount: "0" },
+            unitPrice: { amount: "0" },
+            upToAmount: "1000",
+          },
+          { unitPrice: { amount: "0.05" } },
+        ],
+      }),
+    ]);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0]).toMatchObject({ limit: 1000, isHardCap: true });
+    expect(quotas[0].isPayg).toBeUndefined();
+    expect(quotas[0].tierPrices).toEqual([
+      "Up to 1,000: Included",
+      "Over 1,000: $0.05/unit",
+    ]);
+  });
+
   it("shows the price inline for a hard limit on a single-tier tiered card", () => {
     // A single tier produces no breakdown (formatTieredPriceBreakdown needs
     // ≥2 tiers), so the price must render inline next to the cap — never a
