@@ -12,8 +12,9 @@ export const QuotaItem = ({
   const hasTierBreakdown = !!quota.tierPrices && quota.tierPrices.length > 0;
   // Hide the "X / period" header when the card has no included quota
   // (`isPayg`) or when a tier breakdown already conveys it as an
-  // "Up to X: Included" line.
-  const showQuotaLine = !quota.isPayg && !hasTierBreakdown;
+  // "Up to X: Included" line. A hard cap (`isHardCap`) is a real limit the
+  // breakdown does NOT convey, so it keeps the header alongside the prices.
+  const showQuotaLine = !quota.isPayg && (quota.isHardCap || !hasTierBreakdown);
 
   return (
     <div className={cn("flex items-start gap-2", className)}>

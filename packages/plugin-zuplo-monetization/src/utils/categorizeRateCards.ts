@@ -5,6 +5,25 @@ import { formatStaticEntitlementConfig } from "./formatStaticEntitlementConfig.j
 import { formatTieredPriceBreakdown } from "./formatTieredPriceBreakdown.js";
 import { tierHasPositivePrice } from "./tierHasPositivePrice.js";
 
+// Inline "$flat + $unit/label" price string for a single price point (a unit
+// price or a single-tier tiered price) — the same flat-then-unit format the
+// multi-tier breakdown uses. Undefined when both parts are zero/absent.
+const formatInlinePrice = (opts: {
+  flatAmount?: string;
+  unitAmount?: string;
+  currency?: string;
+  unitLabel: string;
+}): string | undefined => {
+  const unit = parseFloat(opts.unitAmount ?? "0");
+  const flat = parseFloat(opts.flatAmount ?? "0");
+  const flatPart = flat > 0 ? formatPrice(flat, opts.currency) : "";
+  const unitPart =
+    unit > 0 ? `${formatPrice(unit, opts.currency)}/${opts.unitLabel}` : "";
+  const pricePart =
+    flatPart && unitPart ? `${flatPart} + ${unitPart}` : flatPart || unitPart;
+  return pricePart || undefined;
+};
+
 export const categorizeRateCards = (
   rateCards: RateCard[],
   options?: {
@@ -37,28 +56,45 @@ export const categorizeRateCards = (
       return "month";
     };
 
-    // A metered card with `issueAfterReset` represents a "free quota" only
-    // when the first tier (matching the issued amount) is truly free —
-    // i.e. flat=0 and unit=0. If the first tier has any positive price,
-    // the plan is a tiered/graduated pricing schedule and the issued
-    // amount is just a tier boundary, not free included usage.
+    // A metered card with a positive `issueAfterReset` represents a "free
+    // quota" only when the price doesn't already bill from the first unit.
+    // A tiered price with a priced first tier, or a unit price with a
+    // positive amount, bills every unit including the issued ones — the
+    // quota is a metering/display allowance, not free included usage, so
+    // the card must show the billing truth (the PAYG branch) instead of an
+    // "N / period" line that reads as included. A quota of 0 is the same as
+    // no quota (the plan editor always serializes a number, 0 meaning
+    // pay-as-you-go) — never render it as "0 / period".
     const firstTier =
       rc.price?.type === "tiered" && rc.price.tiers.length > 0
         ? rc.price.tiers[0]
         : undefined;
-    const firstTierIsPriced = !!firstTier && tierHasPositivePrice(firstTier);
+    const billsFromFirstUnit =
+      (!!firstTier && tierHasPositivePrice(firstTier)) ||
+      (rc.price?.type === "unit" && parseFloat(rc.price.amount) > 0);
+    const includedQuota = et.type === "metered" ? (et.issueAfterReset ?? 0) : 0;
+    // A hard limit's quota is a real cap the buyer must see even when the
+    // price bills from the first unit, so it keeps the quota line (with the
+    // price alongside). Only an explicit `isSoftLimit: false` counts —
+    // when the flag is absent we don't claim a cap we can't verify, the
+    // same stance `deriveUsageView` takes.
+    const isHardCap = et.type === "metered" && et.isSoftLimit === false;
 
+    // Hard caps always take the quota branch — even a cap of 0 is a real
+    // limit ("0 / period" is the truthful render for a blocked feature).
+    // Soft quotas only qualify when positive and not already billed from
+    // the first unit; a soft 0 means pay-as-you-go.
     if (
       et.type === "metered" &&
-      et.issueAfterReset != null &&
-      !firstTierIsPriced
+      (isHardCap || (includedQuota > 0 && !billsFromFirstUnit))
     ) {
       let tierPrices: string[] | undefined;
       if (rc.price?.type === "tiered" && rc.price.tiers) {
         // Build a readable tier breakdown (useful for graduated/volume).
-        // The breakdown's "Up to X: Included" line conveys the included
-        // quota; the UI hides the separate "X / period" header when this
-        // breakdown is present, so the two never duplicate each other.
+        // For soft quotas the UI hides the separate "X / period" header
+        // when this breakdown is present (the "Up to X: Included" line
+        // conveys it); hard caps deliberately render both — the breakdown
+        // shows prices, the header shows that the limit is a hard stop.
         tierPrices = formatTieredPriceBreakdown({
           tiers: rc.price.tiers.map((t) => ({
             upToAmount: t.upToAmount,
@@ -70,20 +106,46 @@ export const categorizeRateCards = (
           includedLabel: "Included",
         });
       }
+      // A priced rate on a hard cap renders inline next to the cap
+      // ("1,000 / month — $0.03/unit") so neither the price nor the limit
+      // is hidden. Covers unit prices AND single-tier tiered prices, which
+      // produce no tier breakdown (formatTieredPriceBreakdown needs ≥2
+      // tiers) and would otherwise show a cap with no price at all.
+      const inlinePrice =
+        rc.price?.type === "unit"
+          ? formatInlinePrice({
+              unitAmount: rc.price.amount,
+              currency,
+              unitLabel: unitLabelFor(rc),
+            })
+          : rc.price?.type === "tiered" && rc.price.tiers.length === 1
+            ? formatInlinePrice({
+                flatAmount: rc.price.tiers[0].flatPrice?.amount,
+                unitAmount: rc.price.tiers[0].unitPrice?.amount,
+                currency,
+                unitLabel: unitLabelFor(rc),
+              })
+            : undefined;
       quotas.push({
         key: rc.featureKey ?? rc.key,
         name: rc.name,
-        limit: et.issueAfterReset,
+        limit: includedQuota,
         period: periodFor(rc),
         tierPrices,
+        ...(inlinePrice ? { unitPrice: inlinePrice } : {}),
+        // Every hard cap keeps its "X / period" line visible — including
+        // alongside a tier breakdown, which conveys prices but not that
+        // the limit is a hard stop.
+        ...(isHardCap ? { isHardCap: true } : {}),
       });
     } else if (et.type === "metered" && rc.type === "usage_based" && rc.price) {
       // Pay-as-you-go: usage-based card without a free included quota.
-      // Covers true PAYG (no `issueAfterReset`), tiered plans whose first
-      // tier carries a non-zero price (the issued amount is a tier boundary,
-      // not free included usage), and hard-limit metered cards with a
-      // positive price — `isSoftLimit` is a metering concern that doesn't
-      // change what the card should display.
+      // Covers true PAYG (zero or absent `issueAfterReset`) and soft-limit
+      // cards whose price bills from the first unit (priced first tier or
+      // positive unit price) — there the issued amount is an allowance for
+      // the usage meter, not free included usage, and never blocks, so the
+      // card shows the billing truth only. Hard caps stay on the quota
+      // branch above so the limit is never hidden.
       const unitLabel = unitLabelFor(rc);
       if (rc.price.type === "tiered" && rc.price.tiers.length > 0) {
         const tiers = rc.price.tiers;
@@ -97,21 +159,16 @@ export const categorizeRateCards = (
         }
         // Single-tier "tiered" prices can't produce a breakdown
         // (`formatTieredPriceBreakdown` needs ≥2 tiers), so synthesize
-        // a single inline price string using the same flat-then-unit
-        // format the multi-tier breakdown uses: "$flat + $unit/label",
-        // or just one part if the other is zero. "unitPrice" is a mild
+        // a single inline price string instead. "unitPrice" is a mild
         // misnomer when the result is a bare flat charge, but it's
         // rendered as a free-form inline string after the name.
         if (tiers.length === 1) {
-          const unit = parseFloat(tiers[0].unitPrice?.amount ?? "0");
-          const flat = parseFloat(tiers[0].flatPrice?.amount ?? "0");
-          const flatPart = flat > 0 ? formatPrice(flat, currency) : "";
-          const unitPart =
-            unit > 0 ? `${formatPrice(unit, currency)}/${unitLabel}` : "";
-          const pricePart =
-            flatPart && unitPart
-              ? `${flatPart} + ${unitPart}`
-              : flatPart || unitPart;
+          const pricePart = formatInlinePrice({
+            flatAmount: tiers[0].flatPrice?.amount,
+            unitAmount: tiers[0].unitPrice?.amount,
+            currency,
+            unitLabel,
+          });
           if (pricePart) {
             quotas.push({
               key: rc.featureKey ?? rc.key,
@@ -158,8 +215,19 @@ export const categorizeRateCards = (
           isPayg: true,
         });
       } else {
+        // $0 unit prices, and price shapes this categorizer doesn't render
+        // (package, dynamic, …): list the card as a plain feature rather
+        // than invent a price line we can't compute.
         features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
       }
+    } else if (et.type === "metered") {
+      // Any remaining metered card: it neither qualifies as a free included
+      // quota (first branch) nor carries a usage price the PAYG branch can
+      // render — typically a zero/absent quota on a flat-fee, free, or
+      // priceless card. The card still conveys feature access, so list it
+      // as a plain feature rather than a bogus "0 / period" quota — or
+      // worse, dropping it entirely.
+      features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
     } else if (et.type === "boolean") {
       features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
     } else if (et.type === "static" && et.config) {
