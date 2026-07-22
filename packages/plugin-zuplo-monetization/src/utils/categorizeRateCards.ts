@@ -91,9 +91,10 @@ export const categorizeRateCards = (
       let tierPrices: string[] | undefined;
       if (rc.price?.type === "tiered" && rc.price.tiers) {
         // Build a readable tier breakdown (useful for graduated/volume).
-        // The breakdown's "Up to X: Included" line conveys the included
-        // quota; the UI hides the separate "X / period" header when this
-        // breakdown is present, so the two never duplicate each other.
+        // For soft quotas the UI hides the separate "X / period" header
+        // when this breakdown is present (the "Up to X: Included" line
+        // conveys it); hard caps deliberately render both — the breakdown
+        // shows prices, the header shows that the limit is a hard stop.
         tierPrices = formatTieredPriceBreakdown({
           tiers: rc.price.tiers.map((t) => ({
             upToAmount: t.upToAmount,
@@ -214,6 +215,9 @@ export const categorizeRateCards = (
           isPayg: true,
         });
       } else {
+        // $0 unit prices, and price shapes this categorizer doesn't render
+        // (package, dynamic, …): list the card as a plain feature rather
+        // than invent a price line we can't compute.
         features.push({ key: rc.featureKey ?? rc.key, name: rc.name });
       }
     } else if (et.type === "metered") {
