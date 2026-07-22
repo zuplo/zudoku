@@ -137,6 +137,26 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].isPayg).toBeUndefined();
   });
 
+  it("shows the price inline for a hard limit on a single-tier tiered card", () => {
+    // A single tier produces no breakdown (formatTieredPriceBreakdown needs
+    // ≥2 tiers), so the price must render inline next to the cap — never a
+    // cap with no price at all.
+    const { quotas } = categorizeRateCards([
+      makeMeteredRateCard({
+        isSoftLimit: false,
+        issueAfterReset: 500,
+        tiers: [{ flatPrice: { amount: "10" }, unitPrice: { amount: "0.05" } }],
+      }),
+    ]);
+    expect(quotas).toHaveLength(1);
+    expect(quotas[0]).toMatchObject({
+      limit: 500,
+      isHardCap: true,
+      unitPrice: "$10 + $0.05/unit",
+    });
+    expect(quotas[0].tierPrices).toBeUndefined();
+  });
+
   it("shows both the cap and the tier breakdown for a hard limit on a priced tiered card", () => {
     const { quotas } = categorizeRateCards([
       makeMeteredRateCard({

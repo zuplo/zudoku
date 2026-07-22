@@ -5,6 +5,25 @@ import { formatStaticEntitlementConfig } from "./formatStaticEntitlementConfig.j
 import { formatTieredPriceBreakdown } from "./formatTieredPriceBreakdown.js";
 import { tierHasPositivePrice } from "./tierHasPositivePrice.js";
 
+// Inline "$flat + $unit/label" price string for a single price point (a unit
+// price or a single-tier tiered price) — the same flat-then-unit format the
+// multi-tier breakdown uses. Undefined when both parts are zero/absent.
+const formatInlinePrice = (opts: {
+  flatAmount?: string;
+  unitAmount?: string;
+  currency?: string;
+  unitLabel: string;
+}): string | undefined => {
+  const unit = parseFloat(opts.unitAmount ?? "0");
+  const flat = parseFloat(opts.flatAmount ?? "0");
+  const flatPart = flat > 0 ? formatPrice(flat, opts.currency) : "";
+  const unitPart =
+    unit > 0 ? `${formatPrice(unit, opts.currency)}/${opts.unitLabel}` : "";
+  const pricePart =
+    flatPart && unitPart ? `${flatPart} + ${unitPart}` : flatPart || unitPart;
+  return pricePart || undefined;
+};
+
 export const categorizeRateCards = (
   rateCards: RateCard[],
   options?: {
@@ -83,22 +102,33 @@ export const categorizeRateCards = (
           includedLabel: "Included",
         });
       }
-      // A priced unit rate on a hard cap renders inline next to the cap
+      // A priced rate on a hard cap renders inline next to the cap
       // ("1,000 / month — $0.03/unit") so neither the price nor the limit
-      // is hidden.
-      const unitAmount =
-        rc.price?.type === "unit" ? parseFloat(rc.price.amount) : 0;
+      // is hidden. Covers unit prices AND single-tier tiered prices, which
+      // produce no tier breakdown (formatTieredPriceBreakdown needs ≥2
+      // tiers) and would otherwise show a cap with no price at all.
+      const inlinePrice =
+        rc.price?.type === "unit"
+          ? formatInlinePrice({
+              unitAmount: rc.price.amount,
+              currency,
+              unitLabel: unitLabelFor(rc),
+            })
+          : rc.price?.type === "tiered" && rc.price.tiers.length === 1
+            ? formatInlinePrice({
+                flatAmount: rc.price.tiers[0].flatPrice?.amount,
+                unitAmount: rc.price.tiers[0].unitPrice?.amount,
+                currency,
+                unitLabel: unitLabelFor(rc),
+              })
+            : undefined;
       quotas.push({
         key: rc.featureKey ?? rc.key,
         name: rc.name,
         limit: includedQuota,
         period: periodFor(rc),
         tierPrices,
-        ...(unitAmount > 0
-          ? {
-              unitPrice: `${formatPrice(unitAmount, currency)}/${unitLabelFor(rc)}`,
-            }
-          : {}),
+        ...(inlinePrice ? { unitPrice: inlinePrice } : {}),
         ...(isHardCap && billsFromFirstUnit ? { isHardCap: true } : {}),
       });
     } else if (et.type === "metered" && rc.type === "usage_based" && rc.price) {
@@ -122,21 +152,16 @@ export const categorizeRateCards = (
         }
         // Single-tier "tiered" prices can't produce a breakdown
         // (`formatTieredPriceBreakdown` needs ≥2 tiers), so synthesize
-        // a single inline price string using the same flat-then-unit
-        // format the multi-tier breakdown uses: "$flat + $unit/label",
-        // or just one part if the other is zero. "unitPrice" is a mild
+        // a single inline price string instead. "unitPrice" is a mild
         // misnomer when the result is a bare flat charge, but it's
         // rendered as a free-form inline string after the name.
         if (tiers.length === 1) {
-          const unit = parseFloat(tiers[0].unitPrice?.amount ?? "0");
-          const flat = parseFloat(tiers[0].flatPrice?.amount ?? "0");
-          const flatPart = flat > 0 ? formatPrice(flat, currency) : "";
-          const unitPart =
-            unit > 0 ? `${formatPrice(unit, currency)}/${unitLabel}` : "";
-          const pricePart =
-            flatPart && unitPart
-              ? `${flatPart} + ${unitPart}`
-              : flatPart || unitPart;
+          const pricePart = formatInlinePrice({
+            flatAmount: tiers[0].flatPrice?.amount,
+            unitAmount: tiers[0].unitPrice?.amount,
+            currency,
+            unitLabel,
+          });
           if (pricePart) {
             quotas.push({
               key: rc.featureKey ?? rc.key,
