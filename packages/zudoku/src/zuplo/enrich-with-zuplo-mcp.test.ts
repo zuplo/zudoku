@@ -7,13 +7,16 @@ import { removeExtensions } from "../lib/plugins/openapi/processors/removeExtens
 import { removePaths } from "../lib/plugins/openapi/processors/removePaths.js";
 import { enrichWithZuploMcpServerData } from "./enrich-with-zuplo-mcp.js";
 
-const mcpRouteHandler = (operations: Array<{ file: string; id: string }>) => ({
+const mcpRouteHandler = (
+  operations: Array<{ file: string; id: string }>,
+  options: Record<string, unknown> = {},
+) => ({
   "x-zuplo-route": {
     corsPolicy: "none",
     handler: {
       export: "mcpServerHandler",
       module: "$import(@zuplo/runtime)",
-      options: { operations },
+      options: { operations, ...options },
     },
     policies: { inbound: [] },
   },
@@ -87,6 +90,91 @@ describe("enrichWithZuploMcpServerData", () => {
     expect(op["x-mcp-server"].name).toBe("MCP Server");
     expect(op["x-mcp-server"].tools).toHaveLength(1);
     expect(op["x-mcp-server"].tools[0].name).toBe("get-users");
+  });
+
+  it("should use the configured handler name and version for x-mcp-server", async () => {
+    await writeApiFile("config/routes.oas.json", {
+      openapi: "3.1.0",
+      info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
+      paths: {
+        "/mcp": {
+          post: {
+            summary: "MCP Server",
+            operationId: "mcp-endpoint",
+            ...mcpRouteHandler(
+              [{ file: "./config/routes.oas.json", id: "get-users" }],
+              { name: "Cosmo Cargo MCP", version: "2.1.0" },
+            ),
+            responses: { "200": { description: "MCP response" } },
+          },
+        },
+      },
+    } as unknown as OpenAPIDocument;
+
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].name).toBe("Cosmo Cargo MCP");
+    expect(op["x-mcp-server"].version).toBe("2.1.0");
+  });
+
+  it("should fall back to the default name when the handler name is blank", async () => {
+    await writeApiFile("config/routes.oas.json", {
+      openapi: "3.1.0",
+      info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
+      paths: {
+        "/mcp": {
+          post: {
+            summary: "MCP Server",
+            operationId: "mcp-endpoint",
+            ...mcpRouteHandler(
+              [{ file: "./config/routes.oas.json", id: "get-users" }],
+              { name: "   " },
+            ),
+            responses: { "200": { description: "MCP response" } },
+          },
+        },
+      },
+    } as unknown as OpenAPIDocument;
+
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].name).toBe("MCP Server");
   });
 
   it("should group operations from the same file", async () => {

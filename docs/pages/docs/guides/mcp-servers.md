@@ -187,3 +187,29 @@ since they use a different interaction model.
 If you are using [Zuplo](https://zuplo.com) to host your API, the `x-mcp-server` extension is
 automatically added to POST operations that use the `mcpServerHandler`. No manual schema changes are
 needed. See the [Zuplo MCP documentation](https://zuplo.com/docs/handlers/mcp-server) for details.
+
+The server name shown in the install snippets (for example `claude mcp add … 'MCP Server' …`) is
+taken from the handler's `name` option — the same name your MCP server advertises to clients. Set it
+to override the default `"MCP Server"` title:
+
+```json title="config/routes.oas.json (paths section)"
+{
+  "/mcp": {
+    "post": {
+      "operationId": "mcpServerHandler",
+      "x-zuplo-route": {
+        "handler": {
+          "export": "mcpServerHandler",
+          "module": "$import(@zuplo/runtime)",
+          "options": {
+            "name": "Acme API",
+            "operations": [{ "file": "./config/routes.oas.json", "id": "get-users" }]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+With this configuration the snippets read `claude mcp add --transport http 'Acme API' …`.
