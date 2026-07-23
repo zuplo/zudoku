@@ -1003,6 +1003,24 @@ describe("categorizeRateCards", () => {
       ]);
     });
 
+    it("uses the configured unit label in the all-units reminder", () => {
+      const { quotas } = categorizeRateCards(
+        [
+          makeMeteredRateCard({
+            isSoftLimit: true,
+            issueAfterReset: 0,
+            mode: "volume",
+            tiers,
+          }),
+        ],
+        { units: { requests: "request" } },
+      );
+      expect(quotas[0].tierPrices).toEqual([
+        "Up to 100: $3 + $0.01/request",
+        "Over 100: $0.005/request (all requests)",
+      ]);
+    });
+
     it("renders the same tiers as consecutive ranges under graduated mode", () => {
       const { quotas } = categorizeRateCards([
         makeMeteredRateCard({

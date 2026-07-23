@@ -60,6 +60,30 @@ describe("formatTieredPriceBreakdown", () => {
     ]);
   });
 
+  it("pluralizes the configured unit label in the all-units reminder", () => {
+    const lines = formatTieredPriceBreakdown({
+      tiers: [
+        { upToAmount: "1000000", flatPriceAmount: "499" },
+        {
+          upToAmount: "2000000",
+          unitPriceAmount: "0.05",
+          flatPriceAmount: "199",
+        },
+        { unitPriceAmount: "0.02" },
+      ],
+      mode: "volume",
+      unitLabel: "request",
+      includedLabel: "Included",
+      currency: "USD",
+    });
+
+    expect(lines).toEqual([
+      "Up to 1,000,000: $499",
+      "Up to 2,000,000: $199 + $0.05/request (all requests)",
+      "Over 2,000,000: $0.02/request (all requests)",
+    ]);
+  });
+
   it("defaults to graduated when mode is omitted", () => {
     const lines = formatTieredPriceBreakdown({
       tiers: [

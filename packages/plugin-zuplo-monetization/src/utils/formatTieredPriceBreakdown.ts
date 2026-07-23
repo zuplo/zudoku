@@ -1,5 +1,6 @@
 import type { TieredPrice } from "../types/PlanType.js";
 import { formatPrice } from "./formatPrice.js";
+import { pluralizeUnit } from "./pluralizeUnit.js";
 
 export type TieredPriceBreakdownTier = {
   upToAmount?: string;
@@ -25,7 +26,8 @@ const formatBound = (value: number) => value.toLocaleString("en-US");
  * - `volume`: the highest tier reached prices ALL units, so lines read as
  *   total-usage brackets — "Up to 100: …", "Over 100: …" — and rows past the
  *   first spell out that their per-unit rate applies to every unit, not just
- *   the units beyond the previous bound.
+ *   the units beyond the previous bound ("(all requests)", using the
+ *   configured unit label).
  */
 export const formatTieredPriceBreakdown = (opts: {
   tiers: TieredPriceBreakdownTier[];
@@ -79,7 +81,9 @@ export const formatTieredPriceBreakdown = (opts: {
     // the graduated misreading would be most costly: rows past the first that
     // carry a per-unit rate.
     const suffix =
-      mode === "volume" && index > 0 && unitPart ? " (all units)" : "";
+      mode === "volume" && index > 0 && unitPart
+        ? ` (all ${pluralizeUnit(unitLabel)})`
+        : "";
     lines.push(`${prefix}: ${pricePart}${suffix}`);
 
     if (upTo != null) lastUpTo = upTo;
