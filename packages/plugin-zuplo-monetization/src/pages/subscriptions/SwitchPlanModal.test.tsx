@@ -943,7 +943,7 @@ describe("SwitchPlanModal", () => {
     // The transition line still names the pricing model…
     expect(within(card).getByText("Tiered pricing")).toBeInTheDocument();
     // …but the decision-relevant schedule is shown beneath it.
-    expect(within(card).getByText("Up to 1,000: Included")).toBeInTheDocument();
+    expect(within(card).getByText("First 1,000: Included")).toBeInTheDocument();
     expect(
       within(card).getByText("Over 1,000: $0.01/unit"),
     ).toBeInTheDocument();
