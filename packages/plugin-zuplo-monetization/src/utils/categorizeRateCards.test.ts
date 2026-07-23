@@ -6,6 +6,7 @@ const makeMeteredRateCard = (
   overrides: Partial<{
     isSoftLimit: boolean;
     issueAfterReset: number;
+    mode: "volume" | "graduated";
     tiers: Array<{
       flatPrice?: { amount: string };
       unitPrice?: { amount: string };
@@ -19,7 +20,11 @@ const makeMeteredRateCard = (
   featureKey: "requests",
   billingCadence: "P1M",
   price: overrides.tiers
-    ? { type: "tiered", mode: "graduated", tiers: overrides.tiers }
+    ? {
+        type: "tiered",
+        mode: overrides.mode ?? "graduated",
+        tiers: overrides.tiers,
+      }
     : null,
   entitlementTemplate: {
     type: "metered",
@@ -56,8 +61,8 @@ describe("categorizeRateCards", () => {
     expect(quotas).toHaveLength(1);
     expect(quotas[0].isPayg).toBe(true);
     expect(quotas[0].tierPrices).toEqual([
-      "Up to 50: $40/unit",
-      "Up to 90: $10/unit",
+      "First 50: $40/unit",
+      "Next 40: $10/unit",
       "Over 90: $5/unit",
     ]);
   });
@@ -80,7 +85,7 @@ describe("categorizeRateCards", () => {
     expect(quotas).toHaveLength(1);
     expect(quotas[0].isPayg).toBe(true);
     expect(quotas[0].tierPrices).toEqual([
-      "Up to 1,000: Included",
+      "First 1,000: Included",
       "Over 1,000: $0.01/unit",
     ]);
   });
@@ -166,7 +171,7 @@ describe("categorizeRateCards", () => {
   });
 
   it("keeps the cap visible for a hard limit with a free first tier and priced overage", () => {
-    // The breakdown's "Up to X: Included" line conveys the free range but
+    // The breakdown's "First X: Included" line conveys the free range but
     // not that the limit is a hard stop — the cap line must stay visible.
     const { quotas } = categorizeRateCards([
       makeMeteredRateCard({
@@ -186,7 +191,7 @@ describe("categorizeRateCards", () => {
     expect(quotas[0]).toMatchObject({ limit: 1000, isHardCap: true });
     expect(quotas[0].isPayg).toBeUndefined();
     expect(quotas[0].tierPrices).toEqual([
-      "Up to 1,000: Included",
+      "First 1,000: Included",
       "Over 1,000: $0.05/unit",
     ]);
   });
@@ -225,7 +230,7 @@ describe("categorizeRateCards", () => {
     expect(quotas).toHaveLength(1);
     expect(quotas[0]).toMatchObject({ limit: 100, isHardCap: true });
     expect(quotas[0].tierPrices).toEqual([
-      "Up to 50: $40/unit",
+      "First 50: $40/unit",
       "Over 50: $10/unit",
     ]);
   });
@@ -307,7 +312,7 @@ describe("categorizeRateCards", () => {
       }),
     ]);
     expect(quotas[0].tierPrices).toEqual([
-      "Up to 1,000: Included",
+      "First 1,000: Included",
       "Over 1,000: $0.01/unit",
     ]);
   });
@@ -326,7 +331,7 @@ describe("categorizeRateCards", () => {
       }),
     ]);
     expect(quotas[0].tierPrices).toEqual([
-      "Up to 1,000: Included",
+      "First 1,000: Included",
       "Over 1,000: $0.05/unit",
     ]);
   });
@@ -514,7 +519,7 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].period).toBe("month");
   });
 
-  it("emits the free first tier as an 'Up to X: Included' line so the included quota is explicit", () => {
+  it("emits the free first tier as a 'First X: Included' line so the included quota is explicit", () => {
     const { quotas } = categorizeRateCards([
       makeMeteredRateCard({
         issueAfterReset: 5000,
@@ -530,7 +535,7 @@ describe("categorizeRateCards", () => {
     ]);
 
     expect(quotas[0].tierPrices).toEqual([
-      "Up to 5,000: Included",
+      "First 5,000: Included",
       "Over 5,000: $0.05/unit",
     ]);
   });
@@ -876,8 +881,8 @@ describe("categorizeRateCards", () => {
         isPayg: true,
       });
       expect(quotas[0].tierPrices).toEqual([
-        "Up to 1,000,000: $499",
-        "Up to 2,000,000: $199 + $0.05/unit",
+        "First 1,000,000: $499",
+        "Next 1,000,000: $199 + $0.05/unit",
         "Over 2,000,000: $0.02/unit",
       ]);
     });
@@ -934,7 +939,7 @@ describe("categorizeRateCards", () => {
       expect(quotas[0]).toMatchObject({ limit: 1000, isHardCap: true });
       expect(quotas[0].isPayg).toBeUndefined();
       expect(quotas[0].tierPrices).toEqual([
-        "Up to 1,000: $10",
+        "First 1,000: $10",
         "Over 1,000: $0.05/unit",
       ]);
     });
@@ -966,10 +971,94 @@ describe("categorizeRateCards", () => {
       const { quotas } = categorizeRateCards([rc]);
       expect(quotas[0]).toMatchObject({ limit: 5000 });
       expect(quotas[0].tierPrices).toEqual([
-        "Up to 5,000: Included",
+        "First 5,000: Included",
         "Over 5,000: $0.05/unit",
       ]);
       expect(quotas[0].isPayg).toBeUndefined();
+    });
+  });
+
+  describe("volume vs graduated price modes", () => {
+    const tiers = [
+      {
+        flatPrice: { amount: "3" },
+        unitPrice: { amount: "0.01" },
+        upToAmount: "100",
+      },
+      { unitPrice: { amount: "0.005" } },
+    ];
+
+    it("renders volume tiers as total-usage brackets with an all-units reminder", () => {
+      const { quotas } = categorizeRateCards([
+        makeMeteredRateCard({
+          isSoftLimit: true,
+          issueAfterReset: 0,
+          mode: "volume",
+          tiers,
+        }),
+      ]);
+      expect(quotas[0].tierPrices).toEqual([
+        "Up to 100: $3 + $0.01/unit",
+        "Over 100: $0.005/unit (all units)",
+      ]);
+    });
+
+    it("uses the configured unit label in the all-units reminder", () => {
+      const { quotas } = categorizeRateCards(
+        [
+          makeMeteredRateCard({
+            isSoftLimit: true,
+            issueAfterReset: 0,
+            mode: "volume",
+            tiers,
+          }),
+        ],
+        { units: { requests: "request" } },
+      );
+      expect(quotas[0].tierPrices).toEqual([
+        "Up to 100: $3 + $0.01/request",
+        "Over 100: $0.005/request (all requests)",
+      ]);
+    });
+
+    it("renders the same tiers as consecutive ranges under graduated mode", () => {
+      const { quotas } = categorizeRateCards([
+        makeMeteredRateCard({
+          isSoftLimit: true,
+          issueAfterReset: 0,
+          mode: "graduated",
+          tiers,
+        }),
+      ]);
+      expect(quotas[0].tierPrices).toEqual([
+        "First 100: $3 + $0.01/unit",
+        "Over 100: $0.005/unit",
+      ]);
+    });
+
+    it("keeps volume wording on the included-quota branch too", () => {
+      // Free first tier + soft quota routes through the quota branch (not
+      // PAYG); the volume bracket wording must carry over there as well.
+      const { quotas } = categorizeRateCards([
+        makeMeteredRateCard({
+          isSoftLimit: true,
+          issueAfterReset: 1000,
+          mode: "volume",
+          tiers: [
+            {
+              flatPrice: { amount: "0" },
+              unitPrice: { amount: "0" },
+              upToAmount: "1000",
+            },
+            { unitPrice: { amount: "0.05" } },
+          ],
+        }),
+      ]);
+      expect(quotas[0]).toMatchObject({ limit: 1000 });
+      expect(quotas[0].tierPrices).toEqual([
+        "Up to 1,000: Included",
+        "Over 1,000: $0.05/unit (all units)",
+      ]);
     });
   });
 

@@ -90,9 +90,10 @@ export const categorizeRateCards = (
     ) {
       let tierPrices: string[] | undefined;
       if (rc.price?.type === "tiered" && rc.price.tiers) {
-        // Build a readable tier breakdown (useful for graduated/volume).
-        // For soft quotas the UI hides the separate "X / period" header
-        // when this breakdown is present (the "Up to X: Included" line
+        // Build a readable tier breakdown, worded per the price's mode
+        // (graduated ranges vs volume brackets). For soft quotas the UI
+        // hides the separate "X / period" header when this breakdown is
+        // present (the "First X: Included" / "Up to X: Included" line
         // conveys it); hard caps deliberately render both — the breakdown
         // shows prices, the header shows that the limit is a hard stop.
         tierPrices = formatTieredPriceBreakdown({
@@ -101,6 +102,7 @@ export const categorizeRateCards = (
             unitPriceAmount: t.unitPrice?.amount,
             flatPriceAmount: t.flatPrice?.amount,
           })),
+          mode: rc.price.mode,
           currency,
           unitLabel: unitLabelFor(rc),
           includedLabel: "Included",
@@ -192,6 +194,7 @@ export const categorizeRateCards = (
             unitPriceAmount: t.unitPrice?.amount,
             flatPriceAmount: t.flatPrice?.amount,
           })),
+          mode: rc.price.mode,
           currency,
           unitLabel,
           includedLabel: "Included",
