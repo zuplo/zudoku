@@ -18,6 +18,12 @@ const MCP_TAG_NAME = "MCP";
 const MCP_TAG_DESCRIPTION =
   "Model Context Protocol (MCP) server endpoints for AI tool integration";
 
+// Reads a non-empty string from an untyped handler option, returning undefined
+// for missing, blank, or non-string values so callers can fall back to a
+// default.
+const readStringOption = (value: unknown): string | undefined =>
+  typeof value === "string" && value.trim() !== "" ? value : undefined;
+
 // extracts x-mcp-server metadata from the operation using x-zuplo-mcp-tool
 // as a first class citizen.
 const extractOperationSchema = (
@@ -222,9 +228,15 @@ export const enrichWithZuploMcpServerData = ({
           allOperationIds,
         );
 
+      // Mirror the runtime's server identity (ZuploMcpServer resolves these
+      // from `opts.name` / `opts.version`) so the documented server name shown
+      // in the install snippets matches what MCP clients actually connect to.
+      // Falls back to the shared defaults when the handler leaves them unset.
       const mcpExtension: ExtensionMcpServer = {
-        name: DEFAULT_MCP_SERVER_NAME,
-        version: DEFAULT_MCP_SERVER_VERSION,
+        name: readStringOption(handler.options.name) ?? DEFAULT_MCP_SERVER_NAME,
+        version:
+          readStringOption(handler.options.version) ??
+          DEFAULT_MCP_SERVER_VERSION,
       };
 
       if (allTools.length > 0) {
