@@ -3,7 +3,7 @@ import { CreditCardIcon, StarsIcon } from "zudoku/icons";
 import type { MonetizationConfig } from "./MonetizationContext.js";
 import CheckoutConfirmPage from "./pages/CheckoutConfirmPage";
 import CheckoutPage from "./pages/CheckoutPage";
-import ManagePaymentPage from "./pages/ManagePaymentPage";
+import PaymentMethodsPage from "./pages/PaymentMethodsPage";
 import PricingPage from "./pages/PricingPage";
 import SubscriptionChangeConfirmPage from "./pages/SubscriptionChangeConfirmPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
@@ -87,7 +87,6 @@ export const zuploMonetizationPlugin = createPlugin(
       {
         label: "Manage payment details",
         path: "/manage-payment",
-        target: "_blank",
         icon: CreditCardIcon,
       },
     ],
@@ -110,10 +109,6 @@ export const zuploMonetizationPlugin = createPlugin(
               path: "/subscription-change-confirm",
               element: <SubscriptionChangeConfirmPage />,
             },
-            {
-              path: "/manage-payment",
-              element: <ManagePaymentPage />,
-            },
           ],
         },
         // Routes that share the default Layout with other plugins
@@ -127,6 +122,10 @@ export const zuploMonetizationPlugin = createPlugin(
             {
               path: "/subscriptions",
               element: <SubscriptionsPage />,
+            },
+            {
+              path: "/manage-payment",
+              element: <PaymentMethodsPage />,
             },
           ],
         },
