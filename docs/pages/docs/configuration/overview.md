@@ -35,7 +35,11 @@ Below is an example of the default Zudoku configuration. You can edit this confi
 your own needs.
 
 ```ts title=zudoku.config.ts
-import type { ZudokuConfig } from "zudoku";
+import { createPath, type ZudokuConfig } from "zudoku";
+
+// Define the path once and reference it from both the navigation link and the
+// API plugin so the two cannot drift apart.
+const apiReference = createPath("/api");
 
 const config: ZudokuConfig = {
   navigation: [
@@ -44,13 +48,13 @@ const config: ZudokuConfig = {
       label: "Documentation",
       items: ["introduction", "example"],
     },
-    { type: "link", to: "api", label: "API Reference" },
+    { type: "link", to: apiReference, label: "API Reference" },
   ],
   redirects: [{ from: "/", to: "/docs/introduction" }],
   apis: {
     type: "file",
     input: "./apis/openapi.yaml",
-    path: "/api",
+    path: apiReference,
   },
   docs: {
     files: "/pages/**/*.{md,mdx}",

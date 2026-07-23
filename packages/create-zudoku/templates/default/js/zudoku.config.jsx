@@ -1,3 +1,7 @@
+import { createPath } from "zudoku";
+
+const apiReference = createPath("/api");
+
 /** @type {import('zudoku').ZudokuConfig} */
 const config = {
   site: {
@@ -26,7 +30,7 @@ const config = {
                 color: "purple",
               },
               label: "API Reference",
-              to: "/api",
+              to: apiReference,
             },
           ],
         },
@@ -48,7 +52,7 @@ const config = {
     },
     {
       type: "link",
-      to: "/api",
+      to: apiReference,
       label: "API Reference",
     },
   ],
@@ -57,7 +61,7 @@ const config = {
     {
       type: "file",
       input: "./apis/openapi.yaml",
-      path: "/api",
+      path: apiReference,
     },
   ],
 };
