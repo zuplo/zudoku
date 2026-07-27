@@ -7,8 +7,14 @@ import type { Plan } from "./types/PlanType.js";
 const getDeploymentName = (context: ZudokuContext) =>
   resolveDeploymentName(context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME);
 
+export type PricingPageResponse = {
+  items: Plan[];
+  /** Whether the bucket allows customers to hold multiple active subscriptions. */
+  multipleSubscriptionsEnabled?: boolean;
+};
+
 export const pricingPageQuery = (context: ZudokuContext) =>
-  queryOptions<{ items: Plan[] }>({
+  queryOptions<PricingPageResponse>({
     queryKey: [
       `/v3/zudoku-metering/${getDeploymentName(context)}/pricing-page`,
     ],

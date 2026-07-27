@@ -20,9 +20,30 @@ const PricingPage = () => {
     enabled: auth.isAuthenticated,
   });
 
-  const isSubscribed = subscriptions.items.some((subscription) =>
+  const currentSubscriptions = subscriptions.items.filter((subscription) =>
     ["active", "canceled"].includes(subscription.status),
   );
+  const isSubscribed = currentSubscriptions.length > 0;
+
+  // With multi-subscription enabled, only plans the user already holds switch to
+  // "Manage Subscriptions" — every other plan keeps its Subscribe action. Plans are
+  // matched by key (stable across plan versions), falling back to id.
+  const multipleSubscriptionsEnabled =
+    pricingTable.multipleSubscriptionsEnabled ?? false;
+  const subscribedPlanKeys = new Set(
+    currentSubscriptions.flatMap((subscription) =>
+      subscription.plan?.key ? [subscription.plan.key] : [],
+    ),
+  );
+  const subscribedPlanIds = new Set(
+    currentSubscriptions.flatMap((subscription) =>
+      subscription.plan?.id ? [subscription.plan.id] : [],
+    ),
+  );
+  const showManageAction = (plan: { id: string; key: string }) =>
+    multipleSubscriptionsEnabled
+      ? subscribedPlanKeys.has(plan.key) || subscribedPlanIds.has(plan.id)
+      : isSubscribed;
 
   return (
     <div className="w-full px-4 pt-(--padding-content-top) pb-(--padding-content-bottom)">
@@ -49,7 +70,7 @@ const PricingPage = () => {
         plans={pricingTable.items}
         units={pricing?.units}
         renderAction={(plan, isPopular) =>
-          isSubscribed ? (
+          showManageAction(plan) ? (
             <Button variant={isPopular ? "default" : "outline"} asChild>
               <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
             </Button>
