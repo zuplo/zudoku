@@ -46,4 +46,6 @@ try {
   await shutdownAnalytics();
 }
 
-process.exit(0);
+// Force termination once analytics have flushed, but without an explicit code
+// so that any exit code set via `process.exitCode` is preserved.
+process.exit();
