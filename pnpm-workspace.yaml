@@ -34,9 +34,9 @@ catalog:
   "@types/react-dom": 19.2.3
   "@types/react-is": 19.2.0
   happy-dom: 20.10.6
-  react: 19.2.7
-  react-dom: 19.2.7
-  react-is: 19.2.7
+  react: 19.2.8
+  react-dom: 19.2.8
+  react-is: 19.2.8
   tsdown: 0.22.0
   "@tsdown/css": 0.22.4
   typescript: 6.0.3
