@@ -186,6 +186,21 @@ describe("PricingPage", () => {
     expect(screen.getAllByText("Subscribe")).toHaveLength(2);
   });
 
+  it("With multiple subscriptions enabled, falls back to matching held plans by id when key is missing", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      makePlan("2", "pro", "Pro"),
+    ];
+    mockPricingData.multipleSubscriptionsEnabled = true;
+    // The subscription's plan carries no key: matching must fall back to id.
+    mockSubscriptionData.items = [{ status: "active", plan: { id: "2" } }];
+
+    renderWithConfig();
+
+    expect(screen.getAllByText("Manage Subscriptions")).toHaveLength(1);
+    expect(screen.getAllByText("Subscribe")).toHaveLength(1);
+  });
+
   it("With multiple subscriptions enabled, matches held plans by key across plan versions", () => {
     mockPricingData.items = [
       makePlan("1", "starter", "Starter"),

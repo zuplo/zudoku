@@ -37,7 +37,7 @@ const subscriptionsItems = vi.hoisted(() => ({
   current: [] as Array<{
     id: string;
     status: string;
-    plan: { id: string; key: string };
+    plan: { id: string; key?: string };
   }>,
 }));
 
@@ -208,6 +208,37 @@ describe("SwitchPlanModal", () => {
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).queryByText("Team")).not.toBeInTheDocument();
     expect(within(dialog).getByText("Business")).toBeInTheDocument();
+  });
+
+  it("filters a held plan matched by id when the other subscription's plan has no key", () => {
+    plansItems.current = [
+      makePublicPlan({ id: "plan-starter", key: "starter", name: "Starter" }),
+      makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-starter",
+      key: "starter",
+      name: "Starter",
+      billingCadence: "P1M",
+      phases: [],
+    });
+
+    subscriptionsItems.current = [
+      {
+        id: "sub-1",
+        status: "active",
+        plan: { id: "plan-starter", key: "starter" },
+      },
+      // No key on the other subscription's plan: the id fallback must filter it.
+      { id: "sub-2", status: "active", plan: { id: "plan-team" } },
+    ];
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).queryByText("Team")).not.toBeInTheDocument();
   });
 
   it("still offers a plan held by an ended subscription", () => {
