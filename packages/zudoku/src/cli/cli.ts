@@ -1,11 +1,9 @@
-import * as Sentry from "@sentry/node";
 import { hideBin } from "yargs/helpers";
 import yargs from "yargs/yargs";
 import build from "./cmds/build.js";
 import dev from "./cmds/dev.js";
 import preview from "./cmds/preview.js";
 import { shutdownAnalytics } from "./common/analytics/lib.js";
-import { MAX_WAIT_PENDING_TIME_MS, SENTRY_DSN } from "./common/constants.js";
 import { warnIfOutdatedVersion } from "./common/outdated.js";
 import { printDiagnosticsToConsole } from "./common/output.js";
 import { getZudokuPackageJson } from "./common/package-json.js";
@@ -16,13 +14,6 @@ process.env.ZUDOKU_ENV = process.env.ZUDOKU_INTERNAL_DEV
   : "module";
 
 const packageJson = getZudokuPackageJson();
-
-if (SENTRY_DSN) {
-  Sentry.init({
-    dsn: SENTRY_DSN,
-    release: packageJson?.version,
-  });
-}
 
 const cli = yargs(hideBin(process.argv))
   .option("zuplo", {
@@ -51,15 +42,8 @@ try {
   void warnIfOutdatedVersion(packageJson?.version);
 
   await cli.argv;
-
-  void Sentry.close(MAX_WAIT_PENDING_TIME_MS).then(() => {
-    process.exit(0);
-  });
-} catch (err) {
-  if (err instanceof Error) {
-    Sentry.captureException(err);
-  }
-  throw err;
 } finally {
   await shutdownAnalytics();
 }
+
+process.exit(0);
