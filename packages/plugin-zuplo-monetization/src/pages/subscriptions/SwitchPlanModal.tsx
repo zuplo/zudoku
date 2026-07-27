@@ -1,7 +1,7 @@
 import { type PropsWithChildren, useMemo, useState } from "react";
 import { useZudoku } from "zudoku/hooks";
 import { ArrowDownIcon, ArrowLeftRightIcon, ArrowUpIcon } from "zudoku/icons";
-import { useMutation } from "zudoku/react-query";
+import { useMutation, useQuery } from "zudoku/react-query";
 import { Alert, AlertDescription } from "zudoku/ui/Alert";
 import { Button } from "zudoku/ui/Button";
 import {
@@ -15,6 +15,7 @@ import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import { usePlans } from "../../hooks/usePlans.js";
 import { useUrlUtils } from "../../hooks/useUrlUtils.js";
 import { useMonetizationConfig } from "../../MonetizationContext";
+import { subscriptionsQuery } from "../../queries.js";
 import type { Plan } from "../../types/PlanType.js";
 import type { Subscription } from "../../types/SubscriptionType.js";
 import { getActivePhase } from "../../utils/billables.js";
@@ -127,6 +128,21 @@ export const SwitchPlanModal = ({
 
   const subscribedPlan = subscription.plan;
 
+  // Plans held by the customer's other current subscriptions can't be change
+  // targets — the change would be rejected as a duplicate plan subscription.
+  // Matched by key (stable across plan versions), falling back to id.
+  const { data: subscriptionsData } = useQuery(subscriptionsQuery(context));
+  const plansHeldByOtherSubscriptions = useMemo(() => {
+    const others = (subscriptionsData?.items ?? []).filter(
+      (s) =>
+        s.id !== subscription.id && ["active", "canceled"].includes(s.status),
+    );
+    return {
+      keys: new Set(others.flatMap((s) => (s.plan?.key ? [s.plan.key] : []))),
+      ids: new Set(others.flatMap((s) => (s.plan?.id ? [s.plan.id] : []))),
+    };
+  }, [subscriptionsData?.items, subscription.id]);
+
   // The current plan's entitlements, sourced from the subscription's actual
   // provisioned items (real included quotas), with the catalog plan as a
   // fallback. Used by each target card's "what changes" summary.
@@ -169,6 +185,12 @@ export const SwitchPlanModal = ({
 
     const entries = catalogItems.flatMap((plan, targetIndex) => {
       if (plan.id === subscribedPlan.id) return [];
+      if (
+        plansHeldByOtherSubscriptions.keys.has(plan.key) ||
+        plansHeldByOtherSubscriptions.ids.has(plan.id)
+      ) {
+        return [];
+      }
       return [
         {
           plan,
@@ -197,7 +219,7 @@ export const SwitchPlanModal = ({
       downgrades: entries.filter((c) => !c.isUpgrade && !isPrivatePlan(c.plan)),
       privatePlans: entries.filter((c) => isPrivatePlan(c.plan)),
     };
-  }, [plansData?.items, subscribedPlan]);
+  }, [plansData?.items, subscribedPlan, plansHeldByOtherSubscriptions]);
 
   const renderCards = (entries: PlanEntry[], mode: PlanChangeMode) => (
     <div className="space-y-3">

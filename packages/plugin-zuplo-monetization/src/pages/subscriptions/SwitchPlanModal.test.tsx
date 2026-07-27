@@ -5,7 +5,9 @@ import type { Subscription } from "../../types/SubscriptionType.js";
 import { SwitchPlanModal } from "./SwitchPlanModal.js";
 
 vi.mock("zudoku/hooks", () => ({
-  useZudoku: () => ({ env: {} }),
+  useZudoku: () => ({
+    env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test-deployment" },
+  }),
 }));
 
 vi.mock("../../hooks/useDeploymentName.js", () => ({
@@ -31,6 +33,14 @@ vi.mock("../../hooks/usePlans.js", () => ({
   usePlans: () => ({ data: { items: plansItems.current } }),
 }));
 
+const subscriptionsItems = vi.hoisted(() => ({
+  current: [] as Array<{
+    id: string;
+    status: string;
+    plan: { id: string; key: string };
+  }>,
+}));
+
 const mutationStub = vi.hoisted(() => ({
   mutate: vi.fn(),
   isPending: false,
@@ -45,6 +55,7 @@ vi.mock("zudoku/react-query", async (importOriginal) => {
   return {
     ...actual,
     useMutation: () => mutationStub,
+    useQuery: () => ({ data: { items: subscriptionsItems.current } }),
     useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   };
 });
@@ -150,10 +161,87 @@ const expectPlanAction = (
 describe("SwitchPlanModal", () => {
   beforeEach(() => {
     plansItems.current = [];
+    subscriptionsItems.current = [];
     mutationStub.mutate.mockClear();
     mutationStub.reset.mockClear();
     mutationStub.isError = false;
     mutationStub.error = null;
+  });
+
+  it("does not offer plans held by the customer's other subscriptions", () => {
+    plansItems.current = [
+      makePublicPlan({ id: "plan-starter", key: "starter", name: "Starter" }),
+      makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
+      makePublicPlan({
+        id: "plan-business",
+        key: "business",
+        name: "Business",
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-starter",
+      key: "starter",
+      name: "Starter",
+      billingCadence: "P1M",
+      phases: [],
+    });
+
+    subscriptionsItems.current = [
+      {
+        id: "sub-1",
+        status: "active",
+        plan: { id: "plan-starter", key: "starter" },
+      },
+      // A second subscription already holds the Team plan (older version id):
+      // it must not be offered as a change target for this subscription.
+      {
+        id: "sub-2",
+        status: "active",
+        plan: { id: "plan-team-v1", key: "team" },
+      },
+    ];
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).queryByText("Team")).not.toBeInTheDocument();
+    expect(within(dialog).getByText("Business")).toBeInTheDocument();
+  });
+
+  it("still offers a plan held by an ended subscription", () => {
+    plansItems.current = [
+      makePublicPlan({ id: "plan-starter", key: "starter", name: "Starter" }),
+      makePublicPlan({ id: "plan-team", key: "team", name: "Team" }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-starter",
+      key: "starter",
+      name: "Starter",
+      billingCadence: "P1M",
+      phases: [],
+    });
+
+    subscriptionsItems.current = [
+      {
+        id: "sub-1",
+        status: "active",
+        plan: { id: "plan-starter", key: "starter" },
+      },
+      {
+        id: "sub-old",
+        status: "expired",
+        plan: { id: "plan-team", key: "team" },
+      },
+    ];
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Team")).toBeInTheDocument();
   });
 
   it("lists public plans as Upgrade Options when the subscription plan is private but omitted from the pricing page", () => {
