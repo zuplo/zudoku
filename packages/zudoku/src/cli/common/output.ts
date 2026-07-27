@@ -1,8 +1,6 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
 
-import * as Sentry from "@sentry/node";
 import colors from "picocolors";
-import { MAX_WAIT_PENDING_TIME_MS } from "./constants.js";
 
 // We standardize printing to the terminal with this module
 
@@ -19,9 +17,7 @@ export function printWarningToConsole(message?: any) {
 // This information is displayed to the user, so it should be actionable.
 export async function printCriticalFailureToConsoleAndExit(message?: any) {
   console.error(colors.bold(colors.red(message)));
-  await Sentry.close(MAX_WAIT_PENDING_TIME_MS).then(() => {
-    process.exit(1);
-  });
+  process.exit(1);
 }
 
 // Only use this to output the actual result of a command
@@ -38,16 +34,12 @@ export function printTableToConsole(table: any) {
 
 export async function printResultToConsoleAndExitGracefully(message?: any) {
   printResultToConsole(message);
-  await Sentry.close(MAX_WAIT_PENDING_TIME_MS).then(() => {
-    process.exit(0);
-  });
+  process.exit(0);
 }
 
 export async function printTableToConsoleAndExitGracefully(table: any) {
   printTableToConsole(table);
-  await Sentry.close(MAX_WAIT_PENDING_TIME_MS).then(() => {
-    process.exit(0);
-  });
+  process.exit(0);
 }
 
 // See https://nodejs.org/docs/latest-v18.x/api/process.html#a-note-on-process-io
