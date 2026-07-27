@@ -124,7 +124,7 @@
     "@radix-ui/react-tooltip": "1.2.8",
     "@radix-ui/react-visually-hidden": "1.2.4",
     "@scalar/openapi-parser": "0.28.4",
-    "@scalar/snippetz": "0.9.11",
+    "@scalar/snippetz": "0.9.23",
     "@shikijs/langs": "4.2.0",
     "@shikijs/rehype": "4.2.0",
     "@shikijs/themes": "4.2.0",
