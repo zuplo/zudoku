@@ -65,4 +65,36 @@ describe("MobileTopNavigation", () => {
       screen.queryByRole("button", { name: themeSwitchName }),
     ).not.toBeInTheDocument();
   });
+
+  it("forwards target and rel for top-nav links that open in a new tab", async () => {
+    const user = userEvent.setup();
+    await render({
+      site: { title: "Test Site" },
+      navigation: [
+        {
+          type: "link",
+          label: "Support",
+          to: "https://example.com/support",
+          target: "_blank",
+        },
+        {
+          type: "link",
+          label: "Docs",
+          to: "/docs",
+        },
+      ],
+    });
+
+    await user.click(screen.getByLabelText("Open navigation menu"));
+
+    const external = screen.getByRole("link", { name: "Support" });
+    expect(external.getAttribute("href")).toBe("https://example.com/support");
+    expect(external.getAttribute("target")).toBe("_blank");
+    expect(external.getAttribute("rel")).toBe("noopener noreferrer");
+
+    const internal = screen.getByRole("link", { name: "Docs" });
+    expect(internal.getAttribute("href")).toBe("/docs");
+    expect(internal.getAttribute("target")).toBeNull();
+    expect(internal.getAttribute("rel")).toBeNull();
+  });
 });

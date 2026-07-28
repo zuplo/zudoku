@@ -177,10 +177,15 @@ export const MobileTopNavigation = () => {
                 }
                 const path = getFirstMatchingPath(item);
                 const isActive = deepEqual(currentNav.topNavItem, item);
+                const target = "target" in item ? item.target : undefined;
                 return (
                   <li key={item.label}>
                     <Link
                       to={path}
+                      target={target}
+                      rel={
+                        target === "_blank" ? "noopener noreferrer" : undefined
+                      }
                       onClick={() => setDrawerOpen(false)}
                       className={`flex items-center gap-2 py-2 text-base font-medium ${isActive ? "text-foreground" : "text-foreground/75 hover:text-foreground"}`}
                     >
