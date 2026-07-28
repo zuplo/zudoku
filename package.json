@@ -23,7 +23,7 @@
     "test:e2e": "playwright test"
   },
   "engines": {
-    "node": ">=22.19",
+    "node": ">=22.22.0",
     "pnpm": ">=11"
   },
   "devDependencies": {

@@ -3,7 +3,7 @@
   "version": "0.82.4",
   "type": "module",
   "engines": {
-    "node": ">=20.19.0 <21.0.0 || >=22.12.0"
+    "node": ">=22.22.0"
   },
   "sideEffects": [
     "**/*.css",
@@ -183,7 +183,7 @@
     "react-hook-form": "7.83.0",
     "react-is": "catalog:",
     "react-markdown": "10.1.0",
-    "react-router": "7.18.1",
+    "react-router": "8.3.0",
     "rehype-mdx-import-media": "1.4.0",
     "rehype-raw": "7.0.0",
     "rehype-slug": "6.0.0",
@@ -244,8 +244,8 @@
     "@supabase/supabase-js": "^2.49.4",
     "firebase": "^12.6.0",
     "mermaid": "^11.0.0",
-    "react": ">=19.2.0",
-    "react-dom": ">=19.2.0"
+    "react": ">=19.2.7",
+    "react-dom": ">=19.2.7"
   },
   "peerDependenciesMeta": {
     "@azure/msal-browser": {
