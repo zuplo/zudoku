@@ -24,7 +24,7 @@
   "devDependencies": {
     "react": "catalog:",
     "react-dom": "catalog:",
-    "wrangler": "^4.105.0",
+    "wrangler": "^4.114.0",
     "zudoku": "workspace:*"
   }
 }

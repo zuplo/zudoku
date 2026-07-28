@@ -24,14 +24,14 @@
     "build": "rm -rf ./dist && ncc build ./index.ts -o ./dist/ --minify --no-cache --no-source-map-register && cp -r templates ./dist/"
   },
   "devDependencies": {
-    "@types/async-retry": "1.4.2",
+    "@types/async-retry": "1.4.9",
     "@types/cross-spawn": "6.0.6",
     "@types/node": "catalog:",
     "@types/prompts": "2.4.9",
     "@types/tar": "7.0.87",
     "@types/validate-npm-package-name": "4.0.2",
     "@vercel/ncc": "0.38.4",
-    "async-retry": "1.3.1",
+    "async-retry": "1.3.3",
     "ci-info": "4.4.0",
     "commander": "14.0.3",
     "conf": "15.1.0",
@@ -39,7 +39,7 @@
     "fast-glob": "3.3.3",
     "picocolors": "1.1.1",
     "prompts": "2.4.2",
-    "tar": "7.5.16",
+    "tar": "7.5.22",
     "update-check": "1.5.4",
     "validate-npm-package-name": "7.0.2"
   },
