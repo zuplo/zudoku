@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@joshwooding/vite-plugin-react-docgen-typescript": "^0.7.0",
-    "mermaid": "^11.12.2",
-    "motion": "12.40.0",
+    "mermaid": "^11.16.0",
+    "motion": "12.42.2",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

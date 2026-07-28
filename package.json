@@ -28,18 +28,18 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16",
-    "@nx/vite": "22.7.5",
-    "@nx/web": "22.7.5",
-    "@playwright/test": "^1.60.0",
+    "@nx/vite": "22.7.7",
+    "@nx/web": "22.7.7",
+    "@playwright/test": "^1.62.0",
     "@size-limit/file": "^12.1.0",
-    "@vitest/coverage-v8": "4.1.9",
-    "lefthook": "2.1.9",
-    "nx": "22.7.5",
+    "@vitest/coverage-v8": "4.1.10",
+    "lefthook": "2.1.10",
+    "nx": "22.7.7",
     "oxfmt": "0.36.0",
-    "publint": "^0.3.21",
+    "publint": "^0.3.22",
     "size-limit": "^12.1.0",
     "typescript": "catalog:",
-    "vitest": "4.1.0"
+    "vitest": "4.1.10"
   },
   "size-limit": [
     {
