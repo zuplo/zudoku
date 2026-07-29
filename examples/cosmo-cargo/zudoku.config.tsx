@@ -374,15 +374,10 @@ const config: ZudokuConfig = {
       ],
     },
     {
-      type: "category",
+      type: "link",
       icon: "ship",
+      to: "/api-shipments",
       label: "Shipments",
-      link: { type: "link", to: "/api-shipments" },
-      landing: "api-shipments/overview",
-      items: [
-        { type: "section", label: "Getting Started" },
-        "api-shipments/overview",
-      ],
     },
     {
       type: "link",
