@@ -71,6 +71,7 @@ export type NavigationCategory = ReplaceFields<
   {
     items: NavigationItem[];
     link?: NavigationCategoryLink;
+    landing?: NavigationCategoryLink;
   } & ResolvedIcon
 >;
 export type NavigationCustomPage = ReplaceFields<
@@ -341,15 +342,21 @@ export class NavigationResolver {
           )
         ).filter(isNavigationItem);
 
-        const resolvedLink = categoryItem.link
-          ? await this.resolveItemCategoryLinkDoc(categoryItem.link)
-          : undefined;
+        const [resolvedLink, resolvedLanding] = await Promise.all([
+          categoryItem.link
+            ? this.resolveItemCategoryLinkDoc(categoryItem.link)
+            : undefined,
+          categoryItem.landing
+            ? this.resolveItemCategoryLinkDoc(categoryItem.landing)
+            : undefined,
+        ]);
 
-        // Filter out empty categories (no items and no link) in production
+        // Filter out empty categories (no items, no link and no landing) in production
         if (
           process.env.NODE_ENV !== "development" &&
           items.length === 0 &&
-          !resolvedLink
+          !resolvedLink &&
+          !resolvedLanding
         ) {
           return undefined;
         }
@@ -358,6 +365,7 @@ export class NavigationResolver {
           ...categoryItem,
           items,
           link: resolvedLink,
+          landing: resolvedLanding,
         };
       }
     }
