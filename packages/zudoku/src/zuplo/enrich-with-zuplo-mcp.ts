@@ -1,13 +1,5 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type {
-  ExtensionMcpServer,
-  ExtensionMcpServerTool,
-} from "@zuplo/mcp/openapi/types";
-import {
-  DEFAULT_MCP_SERVER_NAME,
-  DEFAULT_MCP_SERVER_VERSION,
-} from "@zuplo/mcp/server";
 import type { OpenAPIV3_1 } from "openapi-types";
 import type { ProcessorArg } from "../config/validators/BuildSchema.js";
 import { traverse, traverseAsync } from "../lib/util/traverse.js";
@@ -17,6 +9,37 @@ import { operations } from "./enrich-with-zuplo.js";
 const MCP_TAG_NAME = "MCP";
 const MCP_TAG_DESCRIPTION =
   "Model Context Protocol (MCP) server endpoints for AI tool integration";
+
+// What the Zuplo MCP runtime advertises when the handler leaves `name` and
+// `version` unset. Mirrored here so the documented server identity matches what
+// MCP clients see during initialization.
+const DEFAULT_MCP_SERVER_NAME = "MCP Server";
+const DEFAULT_MCP_SERVER_VERSION = "0.0.0";
+
+// `x-mcp-server` is an OpenAPI extension rather than an MCP protocol message,
+// so its shape is described here instead of being pulled from an MCP SDK.
+// `name` and `version` mirror the spec's `Implementation`: they are what
+// clients read back during initialization. `security` and `securitySchemes`
+// carry the auth requirements of the operations the server exposes, so install
+// snippets can show the right credentials.
+type ExtensionMcpServer = {
+  name: string;
+  version: string;
+  tools?: ExtensionMcpServerTool[];
+  security?: OpenAPIV3_1.SecurityRequirementObject[];
+  securitySchemes?: Record<string, OpenAPIV3_1.SecuritySchemeObject>;
+};
+
+// Tool metadata for an `x-mcp-server` tool list. Deviates from the spec's
+// `Tool` in two places: `description` is required because the extractor always
+// resolves one, and `inputSchema` is loose because Zudoku documents only the
+// request body rather than the full JSON Schema object the spec expects — see
+// the TODO in extractOperationSchema.
+type ExtensionMcpServerTool = {
+  name: string;
+  description: string;
+  inputSchema?: object;
+};
 
 // Reads a non-empty string from an untyped handler option, returning undefined
 // for missing, blank, or non-string values so callers can fall back to a
@@ -243,15 +266,14 @@ export const enrichWithZuploMcpServerData = ({
         mcpExtension.tools = allTools;
       }
 
-      node["x-mcp-server"] = mcpExtension;
-
       // Add security from referenced operations to x-mcp-server
       const dedupedSecurity = deduplicateSecurity(allSecurity);
       if (dedupedSecurity.length > 0) {
-        const ext = node["x-mcp-server"] as RecordAny;
-        ext.security = dedupedSecurity;
-        ext.securitySchemes = { ...securitySchemes };
+        mcpExtension.security = dedupedSecurity;
+        mcpExtension.securitySchemes = { ...securitySchemes };
       }
+
+      node["x-mcp-server"] = mcpExtension;
 
       // Assign default MCP tag if the operation has no tags
       if (!operation.tags || operation.tags.length === 0) {
