@@ -1,5 +1,7 @@
-import type { ZudokuConfig } from "zudoku";
+import { createPath, type ZudokuConfig } from "zudoku";
 import { MyApiKeyService } from "./src/MyApiKeyService";
+
+const apiReference = createPath("/api");
 
 const config: ZudokuConfig = {
   site: {
@@ -17,7 +19,7 @@ const config: ZudokuConfig = {
   ],
   navigation: [
     "documentation/introduction",
-    { type: "link", to: "api", label: "Demo API" },
+    { type: "link", to: apiReference, label: "Demo API" },
   ],
   docs: {
     files: "/pages/**/*.mdx",
@@ -31,7 +33,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "file",
     input: "schema/simple.json",
-    path: "api",
+    path: apiReference,
   },
 };
 

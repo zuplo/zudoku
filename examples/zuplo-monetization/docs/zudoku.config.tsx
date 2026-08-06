@@ -1,5 +1,7 @@
 import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
-import type { ZudokuConfig } from "zudoku";
+import { createPath, type ZudokuConfig } from "zudoku";
+
+const apiReference = createPath("/api");
 
 const config: ZudokuConfig = {
   site: {
@@ -38,7 +40,7 @@ const config: ZudokuConfig = {
                 color: "purple",
               },
               label: "API Reference",
-              to: "/api",
+              to: apiReference,
             },
           ],
         },
@@ -64,7 +66,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "/api",
+      to: apiReference,
       label: "API Reference",
     },
   ],
@@ -72,7 +74,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "file",
     input: "../config/routes.oas.json",
-    path: "/api",
+    path: apiReference,
   },
   docs: {
     files: "/pages/**/*.mdx",

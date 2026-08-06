@@ -1,4 +1,6 @@
-import type { ZudokuConfig } from "zudoku";
+import { createPath, type ZudokuConfig } from "zudoku";
+
+const rickAndMortyApi = createPath("/api/rick-and-morty");
 
 const config: ZudokuConfig = {
   basePath: "/your-repo",
@@ -21,7 +23,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "/api/rick-and-morty",
+      to: rickAndMortyApi,
       label: "Rick & Morty API",
     },
   ],
@@ -29,7 +31,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "file",
     input: "./openapi.json",
-    path: "api/rick-and-morty",
+    path: rickAndMortyApi,
   },
   defaults: {
     apis: {

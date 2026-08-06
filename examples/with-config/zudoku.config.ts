@@ -1,4 +1,7 @@
-import type { ZudokuConfig } from "zudoku";
+import { createPath, joinUrl, type ZudokuConfig } from "zudoku";
+
+const rickAndMortyApi = createPath("/api/rick-and-morty");
+const adyenBalanceApi = createPath("/api/adyen-balance");
 
 const config: ZudokuConfig = {
   site: {
@@ -23,12 +26,12 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "/api/rick-and-morty",
+      to: rickAndMortyApi,
       label: "Rick & Morty API",
     },
     {
       type: "link",
-      to: "/api/adyen-balance/v2",
+      to: joinUrl(adyenBalanceApi, "v2"),
       label: "Versioned API",
     },
   ],
@@ -37,7 +40,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./openapi.json",
-      path: "api/rick-and-morty",
+      path: rickAndMortyApi,
     },
     {
       type: "url",
@@ -55,7 +58,7 @@ const config: ZudokuConfig = {
             "https://api.apis.guru/v2/specs/adyen.com/BalancePlatformService/1/openapi.json",
         },
       ],
-      path: "api/adyen-balance",
+      path: adyenBalanceApi,
     },
   ],
   defaults: {

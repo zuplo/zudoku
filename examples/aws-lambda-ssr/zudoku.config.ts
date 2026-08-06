@@ -1,4 +1,6 @@
-import type { ZudokuConfig } from "zudoku";
+import { createPath, joinUrl, type ZudokuConfig } from "zudoku";
+
+const apiReference = createPath("/api");
 
 const config: ZudokuConfig = {
   site: {
@@ -23,7 +25,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "/api",
+      to: apiReference,
       label: "Protected Pet Store API",
     },
   ],
@@ -31,7 +33,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "file",
     input: "./protected-api.yaml",
-    path: "api",
+    path: apiReference,
   },
   authentication: {
     type: "auth0",
@@ -39,7 +41,7 @@ const config: ZudokuConfig = {
     clientId: "kWQs12Q9Og4w6zzI82qJSa3klN1sMtvz",
     audience: "https://api.example.com/",
   },
-  protectedRoutes: ["/documentation/protected", "/api/*"],
+  protectedRoutes: ["/documentation/protected", joinUrl(apiReference, "*")],
   docs: {
     files: "/pages/**/*.mdx",
   },

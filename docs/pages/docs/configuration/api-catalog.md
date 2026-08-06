@@ -33,36 +33,43 @@ the catalog, but clicking them navigates the user outside the catalog section.
 
 :::
 
+Define the catalog path once with `createPath` and derive each API path from it, so the nested paths
+stay consistent with the catalog automatically:
+
 ```ts title=zudoku.config.ts
+import { createPath, joinUrl } from "zudoku";
+
+const catalog = createPath("/catalog");
+
 const config = {
   catalogs: {
-    path: "/catalog",
+    path: catalog,
     label: "API Catalog",
   },
   apis: [
     {
       type: "file",
       input: "./operational.json",
-      path: "/catalog/api-operational", // Must be under /catalog/
+      path: joinUrl(catalog, "api-operational"), // Nested under the catalog
       categories: [{ label: "General", tags: ["Operational"] }],
     },
     {
       type: "file",
       input: "./enduser.json",
-      path: "/catalog/api-enduser", // Must be under /catalog/
+      path: joinUrl(catalog, "api-enduser"),
       categories: [{ label: "General", tags: ["End-User"] }],
     },
     {
       type: "file",
       input: "./openapi.json",
-      path: "/catalog/api-auth", // Must be under /catalog/
+      path: joinUrl(catalog, "api-auth"),
       categories: [{ label: "Other", tags: ["Authentication"] }],
     },
   ],
 };
 ```
 
-To add the catalog to your navigation, use a link item:
+To add the catalog to your navigation, use a link item pointing at the same `catalog` path:
 
 ```ts title=zudoku.config.ts
 const config = {
@@ -70,7 +77,7 @@ const config = {
     {
       type: "link",
       label: "API Catalog",
-      to: "/catalog",
+      to: catalog,
       icon: "square-library",
     },
   ],
@@ -106,19 +113,23 @@ APIs that are **not** part of a catalog can use any path and will appear as stan
 pages. These APIs don't need `categories` and their paths don't need to be nested under a catalog.
 
 ```ts title=zudoku.config.ts
+import { createPath } from "zudoku";
+
+const apiReference = createPath("/api"); // standalone, not under a catalog
+
 const config = {
   apis: [
     {
       type: "file",
       input: "./openapi.json",
-      path: "/api", // standalone, not under a catalog
+      path: apiReference,
     },
   ],
   navigation: [
     {
       type: "link",
       label: "API Reference",
-      to: "/api",
+      to: apiReference,
     },
   ],
 };

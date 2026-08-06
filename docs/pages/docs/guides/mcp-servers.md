@@ -141,21 +141,23 @@ Then reference this spec in your Zudoku config (see
 [API Reference](/docs/configuration/api-reference) for full `apis` configuration):
 
 ```tsx title="zudoku.config.tsx"
-import type { ZudokuConfig } from "zudoku";
+import { createPath, type ZudokuConfig } from "zudoku";
+
+const mcpServer = createPath("/mcp");
 
 const config: ZudokuConfig = {
   apis: [
     {
       type: "file",
       input: "./mcp-api.json",
-      path: "mcp",
+      path: mcpServer,
     },
   ],
   navigation: [
     {
       type: "link",
       label: "MCP Server",
-      to: "/mcp",
+      to: mcpServer,
       icon: "bot",
     },
   ],

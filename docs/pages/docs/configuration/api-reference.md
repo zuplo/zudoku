@@ -30,6 +30,31 @@ const config = {
 };
 ```
 
+### Linking to your API
+
+The `path` is where your API reference is mounted. To link to it from the
+[navigation](./navigation.mdx), you reference that same path in a `link` item. To keep the two in
+sync, define the path once with `createPath` and reference the returned value in both places:
+
+```ts title=zudoku.config.ts
+import { createPath, type ZudokuConfig } from "zudoku";
+
+const apiReference = createPath("/api");
+
+const config: ZudokuConfig = {
+  navigation: [{ type: "link", to: apiReference, label: "API Reference" }],
+  apis: {
+    type: "file",
+    input: "./openapi.json",
+    path: apiReference,
+  },
+};
+```
+
+`createPath` returns the path string unchanged (it only validates that it starts with a `/`), so it
+can be used anywhere a path is expected. Using a shared value means the navigation link can never
+point to a path the plugin isn't mounted at.
+
 ## URL Reference
 
 :::danger{title="Recommendation"}

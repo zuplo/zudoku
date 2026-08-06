@@ -1,5 +1,11 @@
 import { graphqlPlugin } from "@zudoku/plugin-graphql";
-import type { ApiIdentityPlugin, ZudokuConfig } from "zudoku";
+import { createPath, type ApiIdentityPlugin, type ZudokuConfig } from "zudoku";
+
+const restApi = createPath("/api");
+const graphqlOasApi = createPath("/graphql-api");
+const graphqlDefault = createPath("/graphql/default");
+const graphqlDev = createPath("/graphql/dev");
+const graphqlAnalytics = createPath("/graphql/analytics");
 
 // Demo identities so the playground auth picker shows in this example
 const demoApiIdentityPlugin: ApiIdentityPlugin = {
@@ -44,8 +50,8 @@ const config: ZudokuConfig = {
           label: "REST",
           collapsed: false,
           items: [
-            { label: "E-Commerce REST API", type: "link", to: "/api" },
-            { label: "Blog REST API", type: "link", to: "/api" },
+            { label: "E-Commerce REST API", type: "link", to: restApi },
+            { label: "Blog REST API", type: "link", to: restApi },
           ],
         },
         {
@@ -56,13 +62,13 @@ const config: ZudokuConfig = {
             {
               label: "Developer API",
               type: "link",
-              to: "/graphql/dev",
+              to: graphqlDev,
               stack: true,
             },
             {
               label: "Analytics API",
               type: "link",
-              to: "/graphql/analytics",
+              to: graphqlAnalytics,
               stack: true,
             },
           ],
@@ -81,10 +87,10 @@ const config: ZudokuConfig = {
         },
       ],
     },
-    { label: "REST API", type: "link", to: "/api" },
-    { label: "GraphQL OAS", type: "link", to: "/graphql-api" },
+    { label: "REST API", type: "link", to: restApi },
+    { label: "GraphQL OAS", type: "link", to: graphqlOasApi },
   ],
-  redirects: [{ from: "/", to: "/graphql/default" }],
+  redirects: [{ from: "/", to: graphqlDefault }],
   theme: {
     registryUrl: "https://tweakcn.com/r/themes/cmjgilzlg000404ju2wgs7uj9",
   },
@@ -92,7 +98,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./openapi.json",
-      path: "api",
+      path: restApi,
       options: {
         showInfoPage: false,
       },
@@ -100,7 +106,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./openapi-graphql.json",
-      path: "graphql-api",
+      path: graphqlOasApi,
       options: {
         showInfoPage: false,
       },
@@ -110,7 +116,7 @@ const config: ZudokuConfig = {
     demoApiIdentityPlugin,
     graphqlPlugin({
       schema: "./schema.graphql",
-      path: "graphql/default",
+      path: graphqlDefault,
       options: {
         title: "E-Commerce GraphQL API",
         description:
@@ -119,7 +125,7 @@ const config: ZudokuConfig = {
     }),
     graphqlPlugin({
       schema: "./schema.graphql",
-      path: "graphql/dev",
+      path: graphqlDev,
       options: {
         title: "Developer GraphQL API",
         description:
@@ -128,7 +134,7 @@ const config: ZudokuConfig = {
     }),
     graphqlPlugin({
       schema: "./schema.graphql",
-      path: "graphql/analytics",
+      path: graphqlAnalytics,
       options: {
         title: "Analytics GraphQL API",
         description:

@@ -1,4 +1,6 @@
-import type { ZudokuConfig } from "zudoku";
+import { createPath, type ZudokuConfig } from "zudoku";
+
+const apiReference = createPath("/api");
 
 const config: ZudokuConfig = {
   site: {
@@ -23,7 +25,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "/api",
+      to: apiReference,
       label: "Pet Store API",
     },
   ],
@@ -31,7 +33,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "url",
     input: "https://petstore3.swagger.io/api/v3/openapi.json",
-    path: "api",
+    path: apiReference,
   },
   authentication: {
     type: "auth0",
