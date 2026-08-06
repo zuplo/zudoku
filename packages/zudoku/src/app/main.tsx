@@ -28,6 +28,8 @@ import { isNavigationPlugin } from "../lib/core/plugins.js";
 import { RouteGuard } from "../lib/core/RouteGuard.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { RouterError } from "../lib/errors/RouterError.js";
+import { ZudokuError } from "../lib/util/invariant.js";
+import { detectRouteConflicts } from "./detectRouteConflicts.js";
 import { ZuploEnv } from "./env.js";
 import { processRoutes } from "./processRoutes.js";
 import { createRedirectRoutes } from "./utils/createRedirectRoutes.js";
@@ -99,8 +101,28 @@ export const getRoutesByOptions = (
     ...(options.authentication ? [options.authentication] : []),
   ];
 
-  const routes = allPlugins
-    .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
+  const pluginRoutes = allPlugins.map((plugin) =>
+    isNavigationPlugin(plugin) ? plugin.getRoutes() : [],
+  );
+
+  const conflicts = import.meta.env.DEV
+    ? detectRouteConflicts(pluginRoutes)
+    : [];
+  if (conflicts.length > 0) {
+    throw new ZudokuError(
+      `Multiple plugins registered the same route${
+        conflicts.length > 1 ? "s" : ""
+      }: ${conflicts.map((path) => `"${path}"`).join(", ")}.`,
+      {
+        title: "Conflicting routes",
+        developerHint:
+          "Two or more plugins resolve to the same path, so one silently shadows the others. Check your OpenAPI/markdown/custom-page plugins for overlapping `path`s or `basePath`s and give each a unique route.",
+      },
+    );
+  }
+
+  const routes = pluginRoutes
+    .flat()
     .concat(
       enableStatusPages
         ? [400, 404, 500].map((statusCode) => ({
@@ -114,8 +136,6 @@ export const getRoutesByOptions = (
       ...route,
       errorElement: <RouterError className="w-full m-0" />,
     }));
-
-  // @TODO Detect conflicts in routes and log warning
 
   return routes;
 };
