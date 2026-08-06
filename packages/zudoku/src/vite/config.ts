@@ -19,6 +19,7 @@ import { loadZudokuConfig } from "../config/loader.js";
 import { PROTECTED_CHUNK_DIR } from "../lib/manifest.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import type { SSRAdapter } from "./build.js";
+import { getOptionalExternals } from "./optional-externals.js";
 import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
 import { protectedAnnotatorPlugin } from "./protected/annotator.js";
@@ -101,6 +102,10 @@ export async function getViteConfig(
     getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
       ?.__ZUPLO_DEPLOYMENT_NAME;
 
+  // Externalize optional deps outside Workers so missing packages fail at runtime.
+  // Workers bundle them because they must be self-contained.
+  const optionalExternals = isWorker ? [] : await getOptionalExternals(dir);
+
   const viteConfig: InlineConfig = {
     root: dir,
     base,
@@ -160,7 +165,10 @@ export async function getViteConfig(
       outDir: path.resolve(path.join(dir, "dist", config.basePath ?? "")),
       emptyOutDir: false,
       rolldownOptions: {
-        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+        external: [
+          joinUrl(config.basePath, "/pagefind/pagefind.js"),
+          ...optionalExternals,
+        ],
         logLevel: process.env.ZUDOKU_ENV === "internal" ? "info" : "warn",
         checks: {
           pluginTimings: process.env.ZUDOKU_ENV === "internal",
