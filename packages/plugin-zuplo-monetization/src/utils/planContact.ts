@@ -32,6 +32,14 @@ const trimmed = (value: unknown) =>
 // An opaque base used only to check whether a relative target stays in-app.
 const RELATIVE_BASE = "https://plan-contact.invalid";
 
+const parse = (target: string, base?: string) => {
+  try {
+    return new URL(target, base);
+  } catch {
+    return undefined;
+  }
+};
+
 // Only schemes that cannot execute script are accepted. Plan metadata is
 // authored in the Zuplo dashboard, but it ends up in an `href`, so
 // `javascript:` / `data:` targets are dropped rather than rendered.
@@ -41,12 +49,8 @@ const toHref = (target: string) => {
     // The scheme prefix alone proves nothing: `https:` and `https:foo` are not
     // absolute URLs. Parsing settles what the browser would navigate to, and
     // the normalized href is what gets rendered.
-    try {
-      const url = new URL(target);
-      return url.host === "" ? undefined : url.href;
-    } catch {
-      return undefined;
-    }
+    const url = parse(target);
+    return url && url.host !== "" ? url.href : undefined;
   }
 
   if (/^mailto:/i.test(target)) {
@@ -62,13 +66,9 @@ const toHref = (target: string) => {
   // and `/\evil.example.com` alike look in-app but navigate off-site.
   if (target.startsWith("#")) return target;
   if (!target.startsWith("/")) return undefined;
-  try {
-    return new URL(target, RELATIVE_BASE).origin === RELATIVE_BASE
-      ? target
-      : undefined;
-  } catch {
-    return undefined;
-  }
+  return parse(target, RELATIVE_BASE)?.origin === RELATIVE_BASE
+    ? target
+    : undefined;
 };
 
 /**

@@ -109,6 +109,11 @@ describe("PricingPage", () => {
         contactUrl: "sales@acme.com",
         contactLabel: "Contact us",
       }),
+      planWithMetadata("custom", "Custom", {
+        isCustom: "true",
+        contactUrl: "/contact",
+        contactLabel: "Talk to us",
+      }),
     ]);
 
     expect(screen.getByRole("link", { name: "Subscribe" })).toHaveAttribute(
@@ -118,7 +123,13 @@ describe("PricingPage", () => {
 
     const contact = screen.getByRole("link", { name: "Contact us" });
     expect(contact).toHaveAttribute("href", "mailto:sales@acme.com");
-    expect(screen.getByText("Custom")).toBeInTheDocument();
+    expect(contact).not.toHaveAttribute("target");
+
+    // An in-app path routes through the client-side router.
+    expect(screen.getByRole("link", { name: "Talk to us" })).toHaveAttribute(
+      "href",
+      "/contact",
+    );
   });
 
   it("omits the CTA for a custom plan without a contact target", async () => {
