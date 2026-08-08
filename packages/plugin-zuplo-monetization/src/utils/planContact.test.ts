@@ -77,6 +77,20 @@ describe("getPlanContact", () => {
     ).toBeUndefined();
   });
 
+  it("rejects malformed bare emails", () => {
+    for (const contactUrl of [
+      "sales@@acme.com",
+      "sales@acme@com",
+      "@acme.com",
+      "sales@acme",
+      "sales@.com",
+      "sales@acme.",
+      "sales @acme.com",
+    ]) {
+      expect(getPlanContact(withMetadata({ contactUrl }))).toBeUndefined();
+    }
+  });
+
   it("drops targets that are not safe to link to", () => {
     expect(
       getPlanContact(withMetadata({ contactUrl: "javascript:alert(1)" })),

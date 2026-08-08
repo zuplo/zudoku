@@ -10,7 +10,21 @@ export type PlanContact = {
   isExternal: boolean;
 };
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Bare-email detection without a regex: an `a@b.c` pattern expressed as
+// `[^\s@]+@[^\s@]+\.[^\s@]+` backtracks polynomially (the character class
+// matches `.` too), and the input is operator-supplied metadata.
+const isBareEmail = (target: string) => {
+  if (/\s/.test(target)) return false;
+  const parts = target.split("@");
+  if (parts.length !== 2) return false;
+  const [local, domain] = parts;
+  return (
+    local !== "" &&
+    domain.includes(".") &&
+    !domain.startsWith(".") &&
+    !domain.endsWith(".")
+  );
+};
 
 const trimmed = (value: unknown) =>
   typeof value === "string" && value.trim() !== "" ? value.trim() : undefined;
@@ -23,7 +37,7 @@ const trimmed = (value: unknown) =>
 const toHref = (target: string) => {
   // Scheme first: `mailto:sales@acme.com` also satisfies the bare-email shape.
   if (/^(https?:|mailto:)/i.test(target)) return target;
-  if (EMAIL.test(target)) return `mailto:${target}`;
+  if (isBareEmail(target)) return `mailto:${target}`;
   if (/^[/#]/.test(target) && !target.startsWith("//")) return target;
   return undefined;
 };
