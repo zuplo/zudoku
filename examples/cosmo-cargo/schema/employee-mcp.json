@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Employee MCP Servers",
-    "description": "Every Model Context Protocol server that Cosmo Cargo crew members are allowed to connect their AI\nassistants to, published from the same registry the gateway enforces at runtime. 20\nservers cover the business systems the company actually runs on — Salesforce, Microsoft 365,\nServiceNow, SAP, Workday, Snowflake and the rest — so a flight ops planner, a collections analyst,\nand a service desk engineer can each point their assistant at the systems they already have\naccounts in.\n\nNothing here is a new system of record. Each server is a governed front door to a product the crew\nmember is already licensed for, which is what makes it safe to hand an assistant the keys.\n\n## How the gateway works\n\nClients connect over streamable HTTP to `https://mcp.cosmocargo.space` and speak ordinary MCP. The gateway sits in\nfront of every downstream product and does four things on each call:\n\n1. **Resolves identity.** The crew member's SSO session is exchanged for a downstream token, so the\n   call reaches Salesforce or Workday as *that employee*. Row-level security, sharing rules, and\n   business unit scoping are enforced by the product, not re-implemented here.\n2. **Checks the grant.** A server is only reachable if the caller holds an active, unexpired grant\n   for it, and only the tools inside the granted scopes are advertised in `tools/list`.\n3. **Filters the payload.** Responses pass through DLP inspection; documents labelled\n   `Restricted — Legal`, worker compensation fields, and customer PII in analytics views are masked\n   or refused before they reach the model.\n4. **Writes the audit record.** Every `tools/call` is logged with the crew member, server, tool,\n   argument hash, and downstream request ID, and retained for seven years alongside the rest of the\n   compliance record.\n\n## Approved servers\n\n| Server | Domain | MCP endpoint | Auth | Tools |\n| ------ | ------ | ------------ | ---- | ----- |\n| Salesforce Sales Cloud | CRM & Customer Operations | `/v1/salesforce/sales-cloud/mcp` | SSO | 6 |\n| Salesforce Service Cloud | CRM & Customer Operations | `/v1/salesforce/service-cloud/mcp` | SSO | 6 |\n| Microsoft Dynamics 365 | CRM & Customer Operations | `/v1/microsoft/dynamics-365/mcp` | SSO | 5 |\n| Zendesk Suite | CRM & Customer Operations | `/v1/zendesk/support/mcp` | SSO | 6 |\n| Microsoft 365 Mail & Calendar | Microsoft 365 & Productivity | `/v1/microsoft/microsoft-365/mcp` | SSO | 6 |\n| Microsoft Teams | Microsoft 365 & Productivity | `/v1/microsoft/teams/mcp` | SSO | 6 |\n| SharePoint Online | Microsoft 365 & Productivity | `/v1/microsoft/sharepoint/mcp` | SSO | 6 |\n| Slack Enterprise Grid | Collaboration & Knowledge | `/v1/slack/enterprise-grid/mcp` | SSO | 5 |\n| Atlassian Confluence | Collaboration & Knowledge | `/v1/atlassian/confluence/mcp` | SSO | 5 |\n| ServiceNow ITSM | IT Service & Engineering | `/v1/servicenow/itsm/mcp` | SSO | 6 |\n| Atlassian Jira | IT Service & Engineering | `/v1/atlassian/jira/mcp` | SSO | 6 |\n| Azure DevOps | IT Service & Engineering | `/v1/microsoft/azure-devops/mcp` | SSO | 5 |\n| Okta Workforce Identity | IT Service & Engineering | `/v1/okta/workforce-identity/mcp` | Service token | 5 |\n| Workday HCM | Finance, HR & Procurement | `/v1/workday/hcm/mcp` | SSO | 6 |\n| SAP S/4HANA | Finance, HR & Procurement | `/v1/sap/s4hana/mcp` | Service token | 6 |\n| SAP Concur | Finance, HR & Procurement | `/v1/sap/concur/mcp` | Service token | 6 |\n| Oracle NetSuite | Finance, HR & Procurement | `/v1/oracle/netsuite/mcp` | Service token | 5 |\n| DocuSign eSignature | Finance, HR & Procurement | `/v1/docusign/esignature/mcp` | SSO | 6 |\n| Snowflake Data Cloud | Data & Analytics | `/v1/snowflake/data-cloud/mcp` | Service token | 5 |\n| Microsoft Power BI | Data & Analytics | `/v1/microsoft/power-bi/mcp` | SSO | 5 |\n\n## Getting access\n\nNew crew members start with the Microsoft 365 and Collaboration servers on day one. Everything else\nis requested per server through `POST /v1/access-requests`, approved by the requester's manager, and\ntime-boxed — 90 days by default, and there is no such thing as a permanent grant. Servers in the\nFinance, HR & Procurement domain need a second approval from the data owner.\n\n## Limits\n\n| Limit | Value |\n| ----- | ----- |\n| Requests per crew member | 600 / hour across all servers |\n| Requests per server | 120 / hour |\n| Concurrent sessions per crew member | 4 |\n| Tool response payload | 1 MiB, truncated with a continuation token |\n| Session idle timeout | 30 minutes |\n\nExceeding a limit returns `429` with a `Retry-After` header. Assistants should back off rather than\nretry immediately — a retry loop against a metered warehouse is the most expensive mistake a client\ncan make on this gateway.\n\n## What is deliberately missing\n\nApproving a payment, releasing a requisition, posting a journal entry, provisioning identity,\nresetting MFA, triggering a deployment, and sending mail on a crew member's behalf are all absent by\ndesign. Assistants prepare that work; a human commits it in the system of record where the approval\nchain and audit trail already live.",
+    "description": "Every Model Context Protocol server that Cosmo Cargo crew members are allowed to connect their AI\nassistants to, published from the same registry the gateway enforces at runtime. 20\nservers cover the business systems the company actually runs on — Salesforce, Microsoft 365,\nServiceNow, SAP, Workday, Snowflake and the rest — so a flight ops planner, a collections analyst,\nand a service desk engineer can each point their assistant at the systems they already have\naccounts in.\n\nNothing here is a new system of record. Each server is a governed front door to a product the crew\nmember is already licensed for, which is what makes it safe to hand an assistant the keys.\n\n## How the gateway works\n\nClients connect over streamable HTTP to `https://mcp.cosmocargo.space` and speak ordinary MCP. The gateway sits in\nfront of every downstream product and does four things on each call:\n\n1. **Resolves identity.** The crew member's SSO session is exchanged for a downstream token, so the\n   call reaches Salesforce or Workday as *that employee*. Row-level security, sharing rules, and\n   business unit scoping are enforced by the product, not re-implemented here.\n2. **Checks the grant.** A server is only reachable if the caller holds an active, unexpired grant\n   for it, and only the tools inside the granted scopes are advertised in `tools/list`.\n3. **Filters the payload.** Responses pass through DLP inspection; documents labelled\n   `Restricted — Legal`, worker compensation fields, and customer PII in analytics views are masked\n   or refused before they reach the model.\n4. **Writes the audit record.** Every `tools/call` is logged with the crew member, server, tool,\n   argument hash, and downstream request ID, and retained for seven years alongside the rest of the\n   compliance record.\n\n## Approved servers\n\n| Server | Domain | MCP endpoint | Auth | Tools |\n| ------ | ------ | ------------ | ---- | ----- |\n| Salesforce Sales Cloud | CRM & Customer Operations | `/v1/salesforce/sales-cloud/mcp` | SSO | 6 |\n| Salesforce Service Cloud | CRM & Customer Operations | `/v1/salesforce/service-cloud/mcp` | SSO | 6 |\n| Microsoft Dynamics 365 | CRM & Customer Operations | `/v1/microsoft/dynamics-365/mcp` | SSO | 5 |\n| Zendesk Suite | CRM & Customer Operations | `/v1/zendesk/support/mcp` | SSO | 6 |\n| Microsoft 365 Mail & Calendar | Microsoft 365 & Productivity | `/v1/microsoft/microsoft-365/mcp` | SSO | 6 |\n| Microsoft Teams | Microsoft 365 & Productivity | `/v1/microsoft/teams/mcp` | SSO | 7 |\n| SharePoint Online | Microsoft 365 & Productivity | `/v1/microsoft/sharepoint/mcp` | SSO | 6 |\n| Slack Enterprise Grid | Collaboration & Knowledge | `/v1/slack/enterprise-grid/mcp` | SSO | 5 |\n| Atlassian Confluence | Collaboration & Knowledge | `/v1/atlassian/confluence/mcp` | SSO | 5 |\n| ServiceNow ITSM | IT Service & Engineering | `/v1/servicenow/itsm/mcp` | SSO | 6 |\n| Atlassian Jira | IT Service & Engineering | `/v1/atlassian/jira/mcp` | SSO | 6 |\n| Azure DevOps | IT Service & Engineering | `/v1/microsoft/azure-devops/mcp` | SSO | 5 |\n| Okta Workforce Identity | IT Service & Engineering | `/v1/okta/workforce-identity/mcp` | Service token | 5 |\n| Workday HCM | Finance, HR & Procurement | `/v1/workday/hcm/mcp` | SSO | 6 |\n| SAP S/4HANA | Finance, HR & Procurement | `/v1/sap/s4hana/mcp` | Service token | 6 |\n| SAP Concur | Finance, HR & Procurement | `/v1/sap/concur/mcp` | Service token | 6 |\n| Oracle NetSuite | Finance, HR & Procurement | `/v1/oracle/netsuite/mcp` | Service token | 5 |\n| DocuSign eSignature | Finance, HR & Procurement | `/v1/docusign/esignature/mcp` | SSO | 6 |\n| Snowflake Data Cloud | Data & Analytics | `/v1/snowflake/data-cloud/mcp` | Service token | 5 |\n| Microsoft Power BI | Data & Analytics | `/v1/microsoft/power-bi/mcp` | SSO | 5 |\n\n## Getting access\n\nNew crew members start with the Microsoft 365 and Collaboration servers on day one. Everything else\nis requested per server through `POST /v1/access-requests`, approved by the requester's manager, and\ntime-boxed — 90 days by default, and there is no such thing as a permanent grant. Servers in the\nFinance, HR & Procurement domain need a second approval from the data owner.\n\n## Limits\n\n| Limit | Value |\n| ----- | ----- |\n| Requests per crew member | 600 / hour across all servers |\n| Requests per server | 120 / hour |\n| Concurrent sessions per crew member | 4 |\n| Tool response payload | 1 MiB, truncated with a continuation token |\n| Session idle timeout | 30 minutes |\n\nExceeding a limit returns `429` with a `Retry-After` header. Assistants should back off rather than\nretry immediately — a retry loop against a metered warehouse is the most expensive mistake a client\ncan make on this gateway.\n\n## What is deliberately missing\n\nApproving a payment, releasing a requisition, posting a journal entry, provisioning identity,\nresetting MFA, triggering a deployment, and sending mail on a crew member's behalf are all absent by\ndesign. Assistants prepare that work; a human commits it in the system of record where the approval\nchain and audit trail already live.",
     "version": "2.4.0",
     "contact": {
       "name": "Cosmo Cargo Crew Enablement",
@@ -183,12 +183,13 @@
                       "domain": "Microsoft 365 & Productivity",
                       "endpoint": "https://mcp.cosmocargo.space/v1/microsoft/teams/mcp",
                       "authType": "sso",
-                      "toolCount": 6,
+                      "toolCount": 7,
                       "scopes": [
                         "mcp:read",
                         "mcp:write",
                         "teams.channels:read",
-                        "teams.channels:write"
+                        "teams.channels:write",
+                        "teams.chats:read"
                       ]
                     },
                     {
@@ -428,7 +429,7 @@
                     },
                     {
                       "name": "update_opportunity",
-                      "description": "Update stage, amount, or next step on an opportunity the caller owns."
+                      "description": "Update stage, amount, or next step on an opportunity the caller owns. At least one of `stage`, `amount`, or `nextStep` must be supplied."
                     },
                     {
                       "name": "create_task",
@@ -597,7 +598,7 @@
             },
             {
               "name": "update_opportunity",
-              "description": "Update stage, amount, or next step on an opportunity the caller owns.",
+              "description": "Update stage, amount, or next step on an opportunity the caller owns. At least one of `stage`, `amount`, or `nextStep` must be supplied.",
               "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -618,7 +619,18 @@
                     "description": "Next step summary written to the record"
                   }
                 },
-                "required": ["opportunityId"]
+                "required": ["opportunityId"],
+                "anyOf": [
+                  {
+                    "required": ["stage"]
+                  },
+                  {
+                    "required": ["amount"]
+                  },
+                  {
+                    "required": ["nextStep"]
+                  }
+                ]
               }
             },
             {
@@ -757,7 +769,7 @@
                       },
                       {
                         "name": "update_opportunity",
-                        "description": "Update stage, amount, or next step on an opportunity the caller owns."
+                        "description": "Update stage, amount, or next step on an opportunity the caller owns. At least one of `stage`, `amount`, or `nextStep` must be supplied."
                       },
                       {
                         "name": "create_task",
@@ -1422,7 +1434,7 @@
             },
             {
               "name": "assign_ticket",
-              "description": "Assign a ticket to a group or agent the caller can act for.",
+              "description": "Assign a ticket to a group or agent the caller can act for. Supply `groupName`, `assigneeEmail`, or both.",
               "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -1439,7 +1451,15 @@
                     "description": "Target agent"
                   }
                 },
-                "required": ["ticketId"]
+                "required": ["ticketId"],
+                "anyOf": [
+                  {
+                    "required": ["groupName"]
+                  },
+                  {
+                    "required": ["assigneeEmail"]
+                  }
+                ]
               }
             },
             {
@@ -1547,7 +1567,7 @@
                       },
                       {
                         "name": "assign_ticket",
-                        "description": "Assign a ticket to a group or agent the caller can act for."
+                        "description": "Assign a ticket to a group or agent the caller can act for. Supply `groupName`, `assigneeEmail`, or both."
                       },
                       {
                         "name": "list_sla_breaches",
@@ -1899,7 +1919,7 @@
       "post": {
         "tags": ["Microsoft 365 & Productivity"],
         "summary": "Microsoft Teams",
-        "description": "Channel and chat history for the teams a crew member already belongs to. Flight ops runs its departure standups in Teams, so this server is how an assistant answers \"what changed on the Vega corridor overnight?\" without a human scrolling three channels.\n\nPosts are attributed to the signed-in user with an \"via assistant\" annotation. Private chats are readable only with the `teams.chats:read` scope, which is off by default and requires manager approval in the access request.",
+        "description": "Channel and chat history for the teams a crew member already belongs to. Flight ops runs its departure standups in Teams, so this server is how an assistant answers \"what changed on the Vega corridor overnight?\" without a human scrolling three channels.\n\nPosts are attributed to the signed-in user with a \"via assistant\" annotation. Reading private and group chats needs the `teams.chats:read` scope, which is not part of the default grant and requires manager approval on the access request.",
         "operationId": "mcpMicrosoftTeams",
         "x-mcp-server": {
           "name": "cosmo-microsoft-teams",
@@ -2003,6 +2023,24 @@
               }
             },
             {
+              "name": "read_chat_history",
+              "description": "Read a private or group chat the signed-in user participates in. Requires the `teams.chats:read` scope.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "chatId": {
+                    "type": "string",
+                    "description": "Chat ID"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "description": "Maximum messages to return"
+                  }
+                },
+                "required": ["chatId"]
+              }
+            },
+            {
               "name": "summarize_meeting_transcript",
               "description": "Summarise a recorded Teams meeting the user attended.",
               "inputSchema": {
@@ -2027,7 +2065,8 @@
                 "mcp:read",
                 "mcp:write",
                 "teams.channels:read",
-                "teams.channels:write"
+                "teams.channels:write",
+                "teams.chats:read"
               ]
             }
           ],
@@ -2044,7 +2083,8 @@
                     "mcp:read": "Read through the crew gateway",
                     "mcp:write": "Write through the crew gateway",
                     "teams.channels:read": "Read channels and messages the user can already read",
-                    "teams.channels:write": "Post messages as the signed-in user"
+                    "teams.channels:write": "Post messages as the signed-in user",
+                    "teams.chats:read": "Read private and group chats the user participates in — granted on request, not by default"
                   }
                 }
               }
@@ -2057,7 +2097,8 @@
               "mcp:read",
               "mcp:write",
               "teams.channels:read",
-              "teams.channels:write"
+              "teams.channels:write",
+              "teams.chats:read"
             ]
           }
         ],
@@ -2109,6 +2150,10 @@
                       {
                         "name": "post_channel_message",
                         "description": "Post a message to a channel as the signed-in user."
+                      },
+                      {
+                        "name": "read_chat_history",
+                        "description": "Read a private or group chat the signed-in user participates in. Requires the `teams.chats:read` scope."
                       },
                       {
                         "name": "summarize_meeting_transcript",
@@ -2957,7 +3002,7 @@
             },
             {
               "name": "update_incident",
-              "description": "Add work notes or change the state of an incident.",
+              "description": "Add work notes or change the state of an incident. At least one of `state` or `workNotes` must be supplied.",
               "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -2974,7 +3019,15 @@
                     "description": "Work notes to append"
                   }
                 },
-                "required": ["number"]
+                "required": ["number"],
+                "anyOf": [
+                  {
+                    "required": ["state"]
+                  },
+                  {
+                    "required": ["workNotes"]
+                  }
+                ]
               }
             },
             {
@@ -3092,7 +3145,7 @@
                       },
                       {
                         "name": "update_incident",
-                        "description": "Add work notes or change the state of an incident."
+                        "description": "Add work notes or change the state of an incident. At least one of `state` or `workNotes` must be supplied."
                       },
                       {
                         "name": "list_change_requests",
@@ -3666,7 +3719,7 @@
           "tools": [
             {
               "name": "get_user",
-              "description": "Look up a user by email or Okta ID.",
+              "description": "Look up a user by email or Okta ID. Supply `email`, `userId`, or both.",
               "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -3678,7 +3731,15 @@
                     "type": "string",
                     "description": "Okta user ID"
                   }
-                }
+                },
+                "anyOf": [
+                  {
+                    "required": ["email"]
+                  },
+                  {
+                    "required": ["userId"]
+                  }
+                ]
               }
             },
             {
@@ -3796,7 +3857,7 @@
                     "tools": [
                       {
                         "name": "get_user",
-                        "description": "Look up a user by email or Okta ID."
+                        "description": "Look up a user by email or Okta ID. Supply `email`, `userId`, or both."
                       },
                       {
                         "name": "list_user_groups",
@@ -5482,6 +5543,7 @@
               "slack.chat:write": "Post messages as the signed-in user",
               "teams.channels:read": "Read channels and messages the user can already read",
               "teams.channels:write": "Post messages as the signed-in user",
+              "teams.chats:read": "Read private and group chats the user participates in — granted on request, not by default",
               "workday.timeoff:write": "Submit time-off requests for the caller",
               "workday.worker:read": "Read the caller's own worker data and org chart",
               "zendesk.tickets:read": "Read tickets, comments, and satisfaction data",
@@ -5699,8 +5761,9 @@
           "durationDays": {
             "type": "integer",
             "default": 90,
+            "minimum": 1,
             "maximum": 180,
-            "description": "Grant lifetime. Capped at 180 days."
+            "description": "Grant lifetime in days, from 1 to 180."
           }
         }
       },
