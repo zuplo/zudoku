@@ -67,6 +67,70 @@ describe("PricingPage", () => {
       "See our pricing options and choose the one that best suits your needs.",
     );
   });
+
+  const planWithMetadata = (
+    id: string,
+    name: string,
+    metadata?: Plan["metadata"],
+  ): Plan => ({
+    id,
+    key: id,
+    name,
+    billingCadence: "P1M",
+    currency: "USD",
+    metadata,
+    phases: [{ key: "default", name: "Default", rateCards: [] }],
+  });
+
+  const renderPricingPage = async (plans: Plan[]) => {
+    queryClient.setQueryData(["/v3/zudoku-metering/test/subscriptions"], {
+      items: [],
+    });
+    queryClient.setQueryData(["/v3/zudoku-metering/test/pricing-page"], {
+      items: plans,
+    });
+
+    await act(async () => {
+      render(
+        <StaticZudoku
+          env={{ ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test" }}
+          plugins={[zuploMonetizationPlugin()]}
+          path="/pricing"
+        />,
+      );
+    });
+  };
+
+  it("renders a contact link instead of Subscribe for a custom plan", async () => {
+    await renderPricingPage([
+      planWithMetadata("basic", "Basic"),
+      planWithMetadata("enterprise", "Enterprise", {
+        isCustom: "true",
+        contactUrl: "sales@acme.com",
+        contactLabel: "Contact us",
+      }),
+    ]);
+
+    expect(screen.getByRole("link", { name: "Subscribe" })).toHaveAttribute(
+      "href",
+      "/checkout?planId=basic",
+    );
+
+    const contact = screen.getByRole("link", { name: "Contact us" });
+    expect(contact).toHaveAttribute("href", "mailto:sales@acme.com");
+    expect(screen.getByText("Custom")).toBeInTheDocument();
+  });
+
+  it("omits the CTA for a custom plan without a contact target", async () => {
+    await renderPricingPage([
+      planWithMetadata("enterprise", "Enterprise", { isCustom: "true" }),
+    ]);
+
+    expect(screen.getByText("Contact Sales")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Subscribe" }),
+    ).not.toBeInTheDocument();
+  });
 });
 
 describe("pricing query signing after logout", () => {
