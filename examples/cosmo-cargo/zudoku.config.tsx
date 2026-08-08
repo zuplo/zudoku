@@ -13,6 +13,10 @@ import { NotFound } from "./src/NotFound";
 import { VipLounge } from "./src/VipLounge";
 import "./custom.css";
 
+// The Employee MCP Servers API documents internal tooling, so it is hidden from
+// the catalog and its routes are blocked unless the crew member is signed in.
+const EMPLOYEE_MCP_PATH = "/catalog/api-employee-mcp";
+
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
     if (!context.getAuthState().isAuthenticated) {
@@ -125,7 +129,7 @@ const config: ZudokuConfig = {
     notFoundPage: <NotFound />,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
-      width: 130,
+      width: 165,
       alt: "Cosmo Cargo Inc.",
     },
     banner: {
@@ -210,6 +214,8 @@ const config: ZudokuConfig = {
     },
   ],
   protectedRoutes: {
+    [`${EMPLOYEE_MCP_PATH}/*`]: ({ auth, reasonCode }) =>
+      auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
     "/only-members": ({ auth, reasonCode }) =>
       auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
     "/vip-lounge": ({ auth, reasonCode }) =>
@@ -386,6 +392,13 @@ const config: ZudokuConfig = {
       label: "API Catalog",
     },
     {
+      type: "link",
+      icon: "bot",
+      to: EMPLOYEE_MCP_PATH,
+      label: "Employee MCP",
+      display: "auth",
+    },
+    {
       type: "custom-page",
       path: "/only-members",
       label: "Only members",
@@ -417,6 +430,10 @@ const config: ZudokuConfig = {
   catalogs: {
     path: "catalog",
     label: "API Catalog",
+    filterItems: (items, { auth }) =>
+      auth.isAuthenticated
+        ? items
+        : items.filter((item) => item.path !== EMPLOYEE_MCP_PATH),
   },
   authentication: {
     type: "clerk",
@@ -550,6 +567,18 @@ const config: ZudokuConfig = {
           label: "Platform",
           tags: ["Documentation"],
         },
+      ],
+    },
+    {
+      type: "file",
+      input: "./schema/employee-mcp.json",
+      path: EMPLOYEE_MCP_PATH,
+      categories: [
+        {
+          label: "AI & Automation",
+          tags: ["MCP Integration", "Employee Tools"],
+        },
+        { label: "Internal", tags: ["Employee Tools"] },
       ],
     },
     {
