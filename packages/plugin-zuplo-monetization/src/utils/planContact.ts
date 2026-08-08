@@ -29,17 +29,46 @@ const isBareEmail = (target: string) => {
 const trimmed = (value: unknown) =>
   typeof value === "string" && value.trim() !== "" ? value.trim() : undefined;
 
+// An opaque base used only to check whether a relative target stays in-app.
+const RELATIVE_BASE = "https://plan-contact.invalid";
+
 // Only schemes that cannot execute script are accepted. Plan metadata is
 // authored in the Zuplo dashboard, but it ends up in an `href`, so
-// `javascript:` / `data:` targets are dropped rather than rendered. A
-// protocol-relative `//host` target is dropped too: it looks in-app but
-// navigates off-site.
+// `javascript:` / `data:` targets are dropped rather than rendered.
 const toHref = (target: string) => {
   // Scheme first: `mailto:sales@acme.com` also satisfies the bare-email shape.
-  if (/^(https?:|mailto:)/i.test(target)) return target;
+  if (/^https?:/i.test(target)) {
+    // The scheme prefix alone proves nothing: `https:` and `https:foo` are not
+    // absolute URLs. Parsing settles what the browser would navigate to, and
+    // the normalized href is what gets rendered.
+    try {
+      const url = new URL(target);
+      return url.host === "" ? undefined : url.href;
+    } catch {
+      return undefined;
+    }
+  }
+
+  if (/^mailto:/i.test(target)) {
+    // Reject `mailto:` with no recipient. Multi-recipient lists stay valid.
+    const address = target.slice("mailto:".length).split("?")[0];
+    return address.includes("@") ? target : undefined;
+  }
+
   if (isBareEmail(target)) return `mailto:${target}`;
-  if (/^[/#]/.test(target) && !target.startsWith("//")) return target;
-  return undefined;
+
+  // A hash link can't leave the page. Any other relative target has to resolve
+  // back to its own origin: browsers fold `\` into `/`, so `//evil.example.com`
+  // and `/\evil.example.com` alike look in-app but navigate off-site.
+  if (target.startsWith("#")) return target;
+  if (!target.startsWith("/")) return undefined;
+  try {
+    return new URL(target, RELATIVE_BASE).origin === RELATIVE_BASE
+      ? target
+      : undefined;
+  } catch {
+    return undefined;
+  }
 };
 
 /**

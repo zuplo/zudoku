@@ -99,10 +99,44 @@ describe("getPlanContact", () => {
       getPlanContact(withMetadata({ contactUrl: "data:text/html,<script>" })),
     ).toBeUndefined();
     expect(
-      getPlanContact(withMetadata({ contactUrl: "//evil.example.com" })),
-    ).toBeUndefined();
-    expect(
       getPlanContact(withMetadata({ contactUrl: "acme.com/contact" })),
     ).toBeUndefined();
+  });
+
+  it("drops relative targets that escape the origin", () => {
+    // Browsers fold a backslash into a slash, so both of these read as in-app
+    // paths but navigate to evil.example.com.
+    for (const contactUrl of [
+      "//evil.example.com",
+      "/\\evil.example.com",
+      "/\\\\evil.example.com",
+    ]) {
+      expect(getPlanContact(withMetadata({ contactUrl }))).toBeUndefined();
+    }
+  });
+
+  it("drops http(s) targets that are not absolute URLs", () => {
+    for (const contactUrl of ["https:", "http:", "https://"]) {
+      expect(getPlanContact(withMetadata({ contactUrl }))).toBeUndefined();
+    }
+    // Scheme-relative shorthand is a real URL; it is normalized on the way out.
+    expect(
+      getPlanContact(withMetadata({ contactUrl: "https:acme.com" }))?.href,
+    ).toBe("https://acme.com/");
+  });
+
+  it("requires a recipient on an explicit mailto link", () => {
+    expect(
+      getPlanContact(withMetadata({ contactUrl: "mailto:" })),
+    ).toBeUndefined();
+    expect(
+      getPlanContact(withMetadata({ contactUrl: "mailto:?subject=Hi" })),
+    ).toBeUndefined();
+    // Multi-recipient lists stay valid.
+    expect(
+      getPlanContact(
+        withMetadata({ contactUrl: "mailto:a@acme.com,b@acme.com" }),
+      )?.href,
+    ).toBe("mailto:a@acme.com,b@acme.com");
   });
 });
