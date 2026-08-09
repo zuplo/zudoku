@@ -4,7 +4,7 @@ import { formatDuration } from "../utils/formatDuration.js";
 import { formatPlanPrice } from "../utils/formatPlanPrice.js";
 import { formatPrice } from "../utils/formatPrice.js";
 import { getPlanPriceSchedule } from "../utils/getPlanPriceSchedule.js";
-import { isContactSalesPlan } from "../utils/isCustomPlan.js";
+import { isCustomPlan } from "../utils/isCustomPlan.js";
 import { cn } from "./cn.js";
 import { PlanEntitlements } from "./PlanEntitlements.js";
 import { PlanPriceSchedule } from "./PlanPriceSchedule.js";
@@ -29,9 +29,7 @@ export const PricingCard = ({
 
   const priceLabel = formatPlanPrice(plan);
 
-  // Invited users see the real configured price instead of the
-  // contact-sales presentation, since they can actually subscribe.
-  const isCustom = isContactSalesPlan(plan);
+  const isCustom = isCustomPlan(plan);
   const billingInterval = formatDuration(plan.billingCadence);
   // Multi-phase plans with differing per-phase prices show a stacked schedule
   // instead of a single headline (which would only reflect the last phase).

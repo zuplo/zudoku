@@ -7,7 +7,7 @@ import { useMonetizationConfig } from "../MonetizationContext";
 import { PricingTable } from "../pricing-ui/PricingTable.js";
 import { subscriptionsQuery } from "../queries.js";
 import { getContactUrl } from "../utils/getContactUrl.js";
-import { isContactSalesPlan } from "../utils/isCustomPlan.js";
+import { isCustomPlan } from "../utils/isCustomPlan.js";
 
 const PricingPage = () => {
   const { pricing } = useMonetizationConfig();
@@ -79,10 +79,10 @@ const PricingPage = () => {
               </Button>
             );
           }
-          // Custom-priced plans are sales-led: the gateway rejects self-serve
-          // checkout for them, so the CTA points at the configured contact
-          // destination instead. Invited users fall through to Subscribe.
-          if (isContactSalesPlan(plan)) {
+          // Custom-priced plans are display-only stubs: the gateway rejects
+          // every subscription to them, so the CTA points at the configured
+          // contact destination instead — identical for every viewer.
+          if (isCustomPlan(plan)) {
             const contactUrl = getContactUrl(plan);
             if (!contactUrl) {
               return (

@@ -107,20 +107,6 @@ describe("PricingCard", () => {
     expect(screen.getByText("Contact Sales")).toBeInTheDocument();
   });
 
-  it("renders the real price for an invited custom plan", () => {
-    render(
-      <PricingCard
-        plan={pricedPlan("500", {
-          metadata: { isCustom: true },
-          invited: true,
-        })}
-      />,
-    );
-    expect(screen.getByText("$500")).toBeInTheDocument();
-    expect(screen.queryByText("Custom")).not.toBeInTheDocument();
-    expect(screen.queryByText("Contact Sales")).not.toBeInTheDocument();
-  });
-
   it("renders the 'Most Popular' badge when isPopular is true", () => {
     render(<PricingCard plan={plan()} isPopular />);
     expect(screen.getByText("Most Popular")).toBeInTheDocument();

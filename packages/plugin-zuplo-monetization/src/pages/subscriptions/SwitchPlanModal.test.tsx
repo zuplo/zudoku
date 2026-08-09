@@ -833,38 +833,6 @@ describe("SwitchPlanModal", () => {
     expect(link).toHaveAttribute("href", "mailto:sales@example.com");
   });
 
-  it("offers the regular switch action on an invited custom plan", () => {
-    plansItems.current = [
-      {
-        ...makePublicPlan({
-          id: "plan-custom",
-          key: "enterprise_custom",
-          name: "Enterprise Plus",
-          metadata: { isCustom: "true" },
-        }),
-        invited: true,
-      },
-    ];
-
-    const subscription = baseSubscription({
-      id: "plan-current",
-      key: "private_developer",
-      name: "Private Developer",
-      billingCadence: "P1M",
-      phases: [],
-      metadata: { zuplo_private_plan: "true" },
-    });
-
-    render(<SwitchPlanModal subscription={subscription} />);
-    openModal();
-
-    const card = getPlanCard(screen.getByRole("dialog"), "Enterprise Plus");
-    expect(within(card).queryByText("Contact Sales")).not.toBeInTheDocument();
-    expect(
-      within(card).getByRole("button", { name: /Upgrade|Downgrade|Switch/ }),
-    ).toBeInTheDocument();
-  });
-
   it("shows a per-phase price schedule for a multi-phase target", () => {
     plansItems.current = [
       {

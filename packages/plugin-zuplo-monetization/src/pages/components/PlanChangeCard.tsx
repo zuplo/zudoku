@@ -22,7 +22,7 @@ import {
 import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
 import { getContactUrl } from "../../utils/getContactUrl.js";
 import { getPlanPriceSchedule } from "../../utils/getPlanPriceSchedule.js";
-import { isContactSalesPlan } from "../../utils/isCustomPlan.js";
+import { isCustomPlan } from "../../utils/isCustomPlan.js";
 
 export type PlanChangeMode = "upgrade" | "downgrade" | "private";
 
@@ -156,9 +156,7 @@ export const PlanChangeCard = ({
   units?: Record<string, string>;
   onSwitch: () => void;
 }) => {
-  // Invited users can actually switch to the custom-priced plan, so they get
-  // the regular switch action and real price instead of Contact Sales.
-  const isCustom = isContactSalesPlan(plan);
+  const isCustom = isCustomPlan(plan);
   const contactUrl = getContactUrl(plan);
   const priceLabel = formatPlanPrice(plan);
   // Multi-phase ramp plans show a stacked per-phase price schedule below the

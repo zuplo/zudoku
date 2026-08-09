@@ -143,12 +143,6 @@ export interface Plan {
   description?: string;
   paymentRequired?: boolean;
   metadata?: Record<string, unknown>;
-  /**
-   * Pricing-page only: whether the signed-in user's email holds a plan invite
-   * for this plan. Invited users can subscribe to restricted (private or
-   * custom-priced) plans; the gateway consumes the invite on subscribe.
-   */
-  invited?: boolean;
   version?: number; // defaults to 1
   currency?: string;
   billingCadence: string;

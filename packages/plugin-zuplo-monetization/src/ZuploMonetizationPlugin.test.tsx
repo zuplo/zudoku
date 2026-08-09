@@ -124,17 +124,6 @@ describe("PricingPage custom plan CTA", () => {
     ).toBeDisabled();
     expect(screen.queryByText("Subscribe")).not.toBeInTheDocument();
   });
-
-  it("renders Subscribe for an invited custom plan", async () => {
-    await renderPricingPage(enterprisePlan({ invited: true }));
-
-    expect(screen.getByRole("link", { name: "Subscribe" })).toHaveAttribute(
-      "href",
-      "/checkout?planId=plan-enterprise",
-    );
-    // Invited users see the real (free-rate-card) price, not the custom label.
-    expect(screen.queryByText("Contact Sales")).not.toBeInTheDocument();
-  });
 });
 
 describe("pricing query signing after logout", () => {
