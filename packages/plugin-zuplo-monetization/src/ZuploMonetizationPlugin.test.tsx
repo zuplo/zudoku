@@ -76,7 +76,7 @@ describe("PricingPage custom plan CTA", () => {
     name: "Enterprise",
     billingCadence: "P1M",
     currency: "USD",
-    metadata: { isCustom: "true" },
+    metadata: { zuplo_custom_plan: "true" },
     phases: [{ key: "default", name: "Default", rateCards: [] }],
     ...overrides,
   });
@@ -107,7 +107,10 @@ describe("PricingPage custom plan CTA", () => {
   it("renders a Contact Sales link instead of Subscribe when contactUrl is set", async () => {
     await renderPricingPage(
       enterprisePlan({
-        metadata: { isCustom: "true", contactUrl: "mailto:sales@example.com" },
+        metadata: {
+          zuplo_custom_plan: "true",
+          zuplo_contact_url: "mailto:sales@example.com",
+        },
       }),
     );
 

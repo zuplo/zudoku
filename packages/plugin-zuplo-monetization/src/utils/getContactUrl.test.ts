@@ -9,14 +9,16 @@ const withMetadata = (metadata?: Plan["metadata"]): Pick<Plan, "metadata"> => ({
 describe("getContactUrl", () => {
   it("returns a mailto: contactUrl", () => {
     expect(
-      getContactUrl(withMetadata({ contactUrl: "mailto:sales@example.com" })),
+      getContactUrl(
+        withMetadata({ zuplo_contact_url: "mailto:sales@example.com" }),
+      ),
     ).toBe("mailto:sales@example.com");
   });
 
   it("returns an https: contactUrl", () => {
     expect(
       getContactUrl(
-        withMetadata({ contactUrl: "https://example.com/contact" }),
+        withMetadata({ zuplo_contact_url: "https://example.com/contact" }),
       ),
     ).toBe("https://example.com/contact");
   });
@@ -24,27 +26,31 @@ describe("getContactUrl", () => {
   it("trims surrounding whitespace", () => {
     expect(
       getContactUrl(
-        withMetadata({ contactUrl: "  mailto:sales@example.com " }),
+        withMetadata({ zuplo_contact_url: "  mailto:sales@example.com " }),
       ),
     ).toBe("mailto:sales@example.com");
   });
 
   it("rejects unsafe or non-link schemes", () => {
     expect(
-      getContactUrl(withMetadata({ contactUrl: "javascript:alert(1)" })),
+      getContactUrl(withMetadata({ zuplo_contact_url: "javascript:alert(1)" })),
     ).toBeUndefined();
     expect(
-      getContactUrl(withMetadata({ contactUrl: "http://example.com" })),
+      getContactUrl(withMetadata({ zuplo_contact_url: "http://example.com" })),
     ).toBeUndefined();
     expect(
-      getContactUrl(withMetadata({ contactUrl: "example.com/contact" })),
+      getContactUrl(withMetadata({ zuplo_contact_url: "example.com/contact" })),
     ).toBeUndefined();
   });
 
   it("returns undefined for missing or non-string values", () => {
     expect(getContactUrl(withMetadata(undefined))).toBeUndefined();
     expect(getContactUrl(withMetadata({}))).toBeUndefined();
-    expect(getContactUrl(withMetadata({ contactUrl: 42 }))).toBeUndefined();
-    expect(getContactUrl(withMetadata({ contactUrl: "" }))).toBeUndefined();
+    expect(
+      getContactUrl(withMetadata({ zuplo_contact_url: 42 })),
+    ).toBeUndefined();
+    expect(
+      getContactUrl(withMetadata({ zuplo_contact_url: "" })),
+    ).toBeUndefined();
   });
 });

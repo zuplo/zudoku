@@ -775,7 +775,7 @@ describe("SwitchPlanModal", () => {
         id: "plan-custom",
         key: "enterprise_custom",
         name: "Enterprise Plus",
-        metadata: { isCustom: "true" },
+        metadata: { zuplo_custom_plan: "true" },
       }),
     ];
 
@@ -810,8 +810,8 @@ describe("SwitchPlanModal", () => {
         key: "enterprise_custom",
         name: "Enterprise Plus",
         metadata: {
-          isCustom: "true",
-          contactUrl: "mailto:sales@example.com",
+          zuplo_custom_plan: "true",
+          zuplo_contact_url: "mailto:sales@example.com",
         },
       }),
     ];

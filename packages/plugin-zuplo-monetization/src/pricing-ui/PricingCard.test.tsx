@@ -101,7 +101,15 @@ describe("PricingCard", () => {
     expect(screen.getByText("Usage-based pricing")).toBeInTheDocument();
   });
 
-  it("renders 'Custom / Contact Sales' when metadata.isCustom is true", () => {
+  it("renders 'Custom / Contact Sales' when metadata.zuplo_custom_plan is true", () => {
+    render(
+      <PricingCard plan={plan({ metadata: { zuplo_custom_plan: true } })} />,
+    );
+    expect(screen.getByText("Custom")).toBeInTheDocument();
+    expect(screen.getByText("Contact Sales")).toBeInTheDocument();
+  });
+
+  it("renders 'Custom / Contact Sales' for the legacy metadata.isCustom flag", () => {
     render(<PricingCard plan={plan({ metadata: { isCustom: true } })} />);
     expect(screen.getByText("Custom")).toBeInTheDocument();
     expect(screen.getByText("Contact Sales")).toBeInTheDocument();
