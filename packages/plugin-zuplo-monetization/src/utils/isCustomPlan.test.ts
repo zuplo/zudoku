@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Plan } from "../types/PlanType.js";
-import { isCustomPlan } from "./isCustomPlan.js";
+import { isContactSalesPlan, isCustomPlan } from "./isCustomPlan.js";
 
 const withMetadata = (metadata: Plan["metadata"]): Pick<Plan, "metadata"> => ({
   metadata,
@@ -22,5 +22,25 @@ describe("isCustomPlan", () => {
     expect(isCustomPlan(withMetadata({ zuplo_most_popular: "true" }))).toBe(
       false,
     );
+  });
+});
+
+describe("isContactSalesPlan", () => {
+  it("is true for a custom plan without an invite", () => {
+    expect(isContactSalesPlan({ metadata: { isCustom: "true" } })).toBe(true);
+    expect(
+      isContactSalesPlan({ metadata: { isCustom: "true" }, invited: false }),
+    ).toBe(true);
+  });
+
+  it("is false for an invited custom plan", () => {
+    expect(
+      isContactSalesPlan({ metadata: { isCustom: "true" }, invited: true }),
+    ).toBe(false);
+  });
+
+  it("is false for non-custom plans regardless of invite", () => {
+    expect(isContactSalesPlan({ metadata: {} })).toBe(false);
+    expect(isContactSalesPlan({ metadata: {}, invited: true })).toBe(false);
   });
 });
