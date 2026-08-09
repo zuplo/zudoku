@@ -109,12 +109,6 @@ describe("PricingCard", () => {
     expect(screen.getByText("Contact Sales")).toBeInTheDocument();
   });
 
-  it("renders 'Custom / Contact Sales' for the legacy metadata.isCustom flag", () => {
-    render(<PricingCard plan={plan({ metadata: { isCustom: true } })} />);
-    expect(screen.getByText("Custom")).toBeInTheDocument();
-    expect(screen.getByText("Contact Sales")).toBeInTheDocument();
-  });
-
   it("renders the 'Most Popular' badge when isPopular is true", () => {
     render(<PricingCard plan={plan()} isPopular />);
     expect(screen.getByText("Most Popular")).toBeInTheDocument();

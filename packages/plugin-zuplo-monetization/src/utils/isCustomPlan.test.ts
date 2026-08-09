@@ -7,29 +7,14 @@ const withMetadata = (metadata: Plan["metadata"]): Pick<Plan, "metadata"> => ({
 });
 
 describe("isCustomPlan", () => {
-  it("detects the canonical zuplo_custom_plan flag", () => {
+  it("detects the boolean true flag", () => {
     expect(isCustomPlan(withMetadata({ zuplo_custom_plan: true }))).toBe(true);
+  });
+
+  it('detects the string "true" flag (API metadata is stringly-typed)', () => {
     expect(isCustomPlan(withMetadata({ zuplo_custom_plan: "true" }))).toBe(
       true,
     );
-  });
-
-  it("detects the legacy isCustom flag (shipped on live plans)", () => {
-    expect(isCustomPlan(withMetadata({ isCustom: true }))).toBe(true);
-    expect(isCustomPlan(withMetadata({ isCustom: "true" }))).toBe(true);
-  });
-
-  it("prefers the canonical key when both are present", () => {
-    expect(
-      isCustomPlan(
-        withMetadata({ zuplo_custom_plan: "false", isCustom: "true" }),
-      ),
-    ).toBe(false);
-    expect(
-      isCustomPlan(
-        withMetadata({ zuplo_custom_plan: "true", isCustom: "false" }),
-      ),
-    ).toBe(true);
   });
 
   it("is false when the flag is absent, false, or unrelated", () => {
@@ -38,7 +23,8 @@ describe("isCustomPlan", () => {
     expect(isCustomPlan(withMetadata({ zuplo_custom_plan: "false" }))).toBe(
       false,
     );
-    expect(isCustomPlan(withMetadata({ isCustom: "false" }))).toBe(false);
+    // The retired isCustom spelling is plain metadata with no effect.
+    expect(isCustomPlan(withMetadata({ isCustom: "true" }))).toBe(false);
     expect(isCustomPlan(withMetadata({ zuplo_most_popular: "true" }))).toBe(
       false,
     );
