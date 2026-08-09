@@ -262,7 +262,11 @@ describe("PricingCard", () => {
 
   it("renders 'Custom' instead of a schedule for a custom multi-phase plan", () => {
     const custom = rampPlan(flatFee("375"));
-    render(<PricingCard plan={{ ...custom, metadata: { isCustom: true } }} />);
+    render(
+      <PricingCard
+        plan={{ ...custom, metadata: { zuplo_custom_plan: true } }}
+      />,
+    );
 
     expect(screen.getByText("Custom")).toBeInTheDocument();
     expect(screen.getByText("Contact Sales")).toBeInTheDocument();
