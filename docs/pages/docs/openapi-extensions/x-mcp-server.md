@@ -102,3 +102,7 @@ endpoints.
 
 For a full walkthrough including Zudoku configuration, see the
 [Documenting MCP Servers guide](/docs/guides/mcp-servers).
+
+If a document describes several MCP servers, mark it with
+[`x-zudoku-type: mcp-catalog`](./x-zudoku-type) to render them as a searchable catalog instead of
+individual operation pages.
