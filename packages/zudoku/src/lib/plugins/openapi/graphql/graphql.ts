@@ -281,6 +281,7 @@ export type GetNavigationOperationsQuery = {
         method: string;
         operationId: string | null;
         path: string;
+        isMcpServer: boolean;
       }>;
     }>;
     components: { schemas: Array<{ __typename: "SchemaItem" }> | null } | null;
@@ -731,6 +732,7 @@ export const GetNavigationOperationsDocument = new TypedDocumentString(`
         method
         operationId
         path
+        isMcpServer
       }
     }
     components {
