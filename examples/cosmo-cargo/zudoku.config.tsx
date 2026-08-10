@@ -17,12 +17,12 @@ import "./custom.css";
 // the catalog and its routes are blocked unless the crew member is signed in.
 const EMPLOYEE_MCP_PATH = "/catalog/api-employee-mcp";
 
-// Deployed environments set ZUDOKU_PUBLIC_CLERK_PUB_KEY to the production
-// (`pk_live_…`) key from the Clerk dashboard. Local dev falls back to the shared
-// test instance so `nx run cosmo-cargo:dev` works without any setup. The key is
-// validated by the config schema, so a malformed value fails at config load.
+// The production Clerk instance, served from clerk.cosmocargo.dev. Publishable
+// keys are shipped to the browser by design, so this is safe to commit. The
+// instance is scoped to that domain, so local development should override it
+// with the test key via ZUDOKU_PUBLIC_CLERK_PUB_KEY (see .env.example).
 const CLERK_PUB_KEY = (process.env.ZUDOKU_PUBLIC_CLERK_PUB_KEY ??
-  "pk_test_dG9sZXJhbnQtaG9ybmV0LTQ2LmNsZXJrLmFjY291bnRzLmRldiQ") as
+  "pk_live_Y2xlcmsuY29zbW9jYXJnby5kZXYk") as
   | `pk_test_${string}`
   | `pk_live_${string}`;
 
