@@ -8,7 +8,7 @@ import { GraphQLClient } from "./client/GraphQLClient.js";
 import { createQuery } from "./client/useCreateQuery.js";
 import type { GetNavigationOperationsQuery as GetNavigationOperationsQueryResult } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
-import type { OasPluginConfig } from "./interfaces.js";
+import { MCP_CATALOG, type OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { buildTagCategories } from "./util/buildTagCategories.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
@@ -114,6 +114,11 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
       },
     }),
     getNavigation: async (path, context) => {
+      // Catalog documents are a single self-contained page with their own
+      // search and tag filters, so they contribute no sidebar entries — same as
+      // the API catalog plugin, which defines no navigation at all.
+      if (config.documentType === MCP_CATALOG) return [];
+
       if (!matchPath({ path: basePath, end: false }, path)) {
         return [];
       }

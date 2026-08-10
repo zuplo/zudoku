@@ -187,6 +187,49 @@ export const getMcpServerName = (
   return (data?.name as string) ?? summary ?? "mcp-server";
 };
 
+export type McpTool = { name: string; description?: string };
+
+/**
+ * Human-readable label for a server. Deliberately the inverse precedence of
+ * `getMcpServerName`, which prefers `x-mcp-server.name` — that is the protocol
+ * identity used in install snippets (`cosmo-salesforce-sales-cloud`) and reads
+ * poorly as a heading.
+ */
+export const getMcpServerTitle = (
+  data?: McpServerData,
+  summary?: string | null,
+  operationId?: string | null,
+): string => {
+  if (summary) return summary;
+  if (typeof data === "object" && typeof data.name === "string") {
+    return data.name;
+  }
+  return operationId ?? "MCP Server";
+};
+
+/**
+ * Tools the server advertises. Populated by the Zuplo enrichment from the
+ * gateway's handler options; a document that only marks operations with
+ * `x-mcp-server: true` has none, which is a normal state rather than an error.
+ */
+export const getMcpTools = (data?: McpServerData): McpTool[] => {
+  if (typeof data !== "object" || !Array.isArray(data.tools)) return [];
+
+  return data.tools.flatMap((tool) =>
+    tool && typeof tool === "object" && typeof tool.name === "string"
+      ? [
+          {
+            name: tool.name,
+            description:
+              typeof tool.description === "string"
+                ? tool.description
+                : undefined,
+          },
+        ]
+      : [],
+  );
+};
+
 export const getMcpUrl = (serverUrl?: string, operationPath?: string) =>
   `${(serverUrl ?? "").replace(/\/+$/, "")}${operationPath ?? "/mcp"}`;
 

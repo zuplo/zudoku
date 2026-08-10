@@ -30,6 +30,31 @@ export type ServersQueryQuery = {
   schema: { url: string | null; servers: Array<{ url: string }> };
 };
 
+export type GetMcpCatalogQueryVariables = Exact<{
+  input: any;
+  type: SchemaType;
+}>;
+
+export type GetMcpCatalogQuery = {
+  schema: {
+    title: string;
+    description: string | null;
+    tags: Array<{
+      name: string | null;
+      slug: string | null;
+      operations: Array<{
+        slug: string;
+        summary: string | null;
+        description: string | null;
+        operationId: string | null;
+        path: string;
+        extensions: any;
+        servers: Array<{ url: string }>;
+      }>;
+    }>;
+  };
+};
+
 export type OperationsFragmentFragment = {
   slug: string;
   summary: string | null;
@@ -446,6 +471,32 @@ export const ServersQueryDocument = new TypedDocumentString(`
     `) as unknown as TypedDocumentString<
   ServersQueryQuery,
   ServersQueryQueryVariables
+>;
+export const GetMcpCatalogDocument = new TypedDocumentString(`
+    query GetMcpCatalog($input: JSON!, $type: SchemaType!) {
+  schema(input: $input, type: $type) {
+    title
+    description
+    tags {
+      name
+      slug
+      operations {
+        slug
+        summary
+        description
+        operationId
+        path
+        extensions
+        servers {
+          url
+        }
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<
+  GetMcpCatalogQuery,
+  GetMcpCatalogQueryVariables
 >;
 export const OperationsForTagDocument = new TypedDocumentString(`
     query OperationsForTag($input: JSON!, $type: SchemaType!, $tag: String, $untagged: Boolean) {

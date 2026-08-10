@@ -75,6 +75,7 @@ export const docs: Navigation = [
           "docs/openapi-extensions/x-zudoku-collapsed",
           "docs/openapi-extensions/x-zudoku-collapsible",
           "docs/openapi-extensions/x-zudoku-playground-enabled",
+          "docs/openapi-extensions/x-zudoku-type",
         ],
       },
     ],

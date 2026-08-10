@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { deepEqual } from "fast-equals";
 import { type Plugin, runnerImport } from "vite";
+import { parse as parseYaml } from "yaml";
 import { ZuploEnv } from "../app/env.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { getCurrentConfig } from "../config/loader.js";
@@ -10,17 +11,65 @@ import {
   type Processor,
 } from "../config/validators/BuildSchema.js";
 import { getAllTags } from "../lib/oas/graphql/index.js";
+import type { OpenAPIDocument } from "../lib/oas/parser/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
-import type { VersionedInput } from "../lib/plugins/openapi/interfaces.js";
+import {
+  MCP_CATALOG,
+  type OasDocumentType,
+  type VersionedInput,
+} from "../lib/plugins/openapi/interfaces.js";
+import {
+  countMcpServers,
+  countOperations,
+  isKnownDocumentType,
+  readDocumentType,
+} from "../lib/plugins/openapi/util/documentType.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
 const PROCESSED_STORE_SUBPATH = "node_modules/.zudoku/processed";
+
+const warn = (message: string) => {
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
+  console.warn(`[zudoku] ${message}`);
+};
+
+/**
+ * Reads `x-zudoku-type` off a processed schema. Unknown values warn and fall
+ * back to the default view rather than failing the build, so a schema authored
+ * against a newer Zudoku still builds against an older one.
+ */
+const resolveDocumentType = (
+  schema: OpenAPIDocument,
+  apiPath = "<unknown>",
+): OasDocumentType | undefined => {
+  const value = readDocumentType(schema);
+  if (value === undefined) return undefined;
+  if (isKnownDocumentType(value)) return value;
+
+  warn(
+    `Unknown "x-zudoku-type" value ${JSON.stringify(value)} in "${apiPath}". Rendering the default API view.`,
+  );
+  return undefined;
+};
+
+/** `type: "raw"` inputs are schema strings in the config, so they resolve at
+ * build time like files do. `parse` handles JSON as well, YAML being a
+ * superset of it. */
+const resolveRawDocumentType = (input: string, apiPath = "<unknown>") => {
+  try {
+    return resolveDocumentType(parseYaml(input), apiPath);
+  } catch {
+    // An unparseable raw schema fails later with a better message than
+    // anything this could produce.
+    return undefined;
+  }
+};
 
 const viteApiPlugin = async (): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
@@ -160,33 +209,20 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         const apis = ensureArray(config.apis);
         const apiMetadata: ApiCatalogItem[] = [];
 
-        const httpMethods = new Set([
-          "get",
-          "post",
-          "put",
-          "patch",
-          "delete",
-          "options",
-          "head",
-          "trace",
-        ]);
-
         for (const apiConfig of apis) {
           if (apiConfig.type === "file" && apiConfig.path) {
             const latestSchema = schemaManager.getLatestSchema(apiConfig.path);
             if (!latestSchema?.schema.info) continue;
 
-            const operationCount = Object.values(
-              latestSchema.schema.paths ?? {},
-            ).reduce<number>((sum, pathItem) => {
-              if (!pathItem || typeof pathItem !== "object") return sum;
-              return (
-                sum +
-                Object.keys(pathItem).filter((m) =>
-                  httpMethods.has(m.toLowerCase()),
-                ).length
-              );
-            }, 0);
+            // A catalog document hides its non-MCP operations, so counting all
+            // of them would advertise endpoints the page never renders.
+            const isCatalog =
+              resolveDocumentType(latestSchema.schema, apiConfig.path) ===
+              MCP_CATALOG;
+
+            const operationCount = isCatalog
+              ? countMcpServers(latestSchema.schema)
+              : countOperations(latestSchema.schema);
 
             const rawVersion = latestSchema.schema.info.version;
             const version = rawVersion
@@ -202,6 +238,11 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               categories: apiConfig.categories ?? [],
               version,
               operationCount,
+              countLabel: isCatalog
+                ? operationCount === 1
+                  ? "server"
+                  : "servers"
+                : undefined,
             });
           }
         }
@@ -241,12 +282,35 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             const schemaImports = schemaManager.getSchemaImports();
 
+            // Catalog mode renders a single page, so it reads the flag from the
+            // latest schema only and ignores the other versions entirely.
+            const latest = schemas.at(0);
+            const documentType = latest
+              ? resolveDocumentType(latest.schema, apiConfig.path)
+              : undefined;
+
+            if (documentType === MCP_CATALOG) {
+              if (schemas.length > 1) {
+                warn(
+                  `"${apiConfig.path}" is an MCP catalog with ${schemas.length} versions. Only the latest is rendered; catalog documents do not support version switching.`,
+                );
+              }
+              if (latest && countMcpServers(latest.schema) === 0) {
+                warn(
+                  `"${apiConfig.path}" is marked as an MCP catalog but has no operations with "x-mcp-server". The catalog will render empty.`,
+                );
+              }
+            }
+
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
               `  type: "file",`,
               `  input: ${JSON.stringify(versionedInput)},`,
               `  path: ${JSON.stringify(apiConfig.path)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
+              ...(documentType
+                ? [`  documentType: ${JSON.stringify(documentType)},`]
+                : []),
               `  options: {`,
               `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
               `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
@@ -270,9 +334,20 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               "}));",
             );
           } else {
+            // URL schemas are fetched in the browser, so the flag can only be
+            // resolved for inputs available at build time. A flagged URL schema
+            // silently keeps the default view.
+            const documentType =
+              apiConfig.type === "raw"
+                ? resolveRawDocumentType(apiConfig.input, apiConfig.path)
+                : undefined;
+
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
               `  ...${JSON.stringify(apiConfig)},`,
+              ...(documentType
+                ? [`  documentType: ${JSON.stringify(documentType)},`]
+                : []),
               "  options: {",
               `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
               `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
