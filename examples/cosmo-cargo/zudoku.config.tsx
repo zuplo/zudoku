@@ -17,6 +17,15 @@ import "./custom.css";
 // the catalog and its routes are blocked unless the crew member is signed in.
 const EMPLOYEE_MCP_PATH = "/catalog/api-employee-mcp";
 
+// The production Clerk instance, served from clerk.cosmocargo.dev. Publishable
+// keys are shipped to the browser by design, so this is safe to commit. The
+// instance is scoped to that domain, so local development should override it
+// with the test key via ZUDOKU_PUBLIC_CLERK_PUB_KEY (see .env.example).
+const CLERK_PUB_KEY = (process.env.ZUDOKU_PUBLIC_CLERK_PUB_KEY ??
+  "pk_live_Y2xlcmsuY29zbW9jYXJnby5kZXYk") as
+  | `pk_test_${string}`
+  | `pk_live_${string}`;
+
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
     if (!context.getAuthState().isAuthenticated) {
@@ -437,7 +446,7 @@ const config: ZudokuConfig = {
   },
   authentication: {
     type: "clerk",
-    clerkPubKey: "pk_test_dG9sZXJhbnQtaG9ybmV0LTQ2LmNsZXJrLmFjY291bnRzLmRldiQ",
+    clerkPubKey: CLERK_PUB_KEY,
     redirectToAfterSignIn: "/documentation",
     redirectToAfterSignUp: "/documentation",
   },
