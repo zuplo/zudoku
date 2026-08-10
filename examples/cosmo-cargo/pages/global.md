@@ -66,5 +66,5 @@ Shipping to < 10 countries? Check our starter package!
 
 :::
 
-Contact our [support team](mailto:api@sh.example.com) for assistance with international shipping
+Contact our [support team](mailto:api@cosmocargo.dev) for assistance with international shipping
 integration.

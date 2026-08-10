@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "contact": {
       "name": "Cosmo Cargo API Support",
-      "email": "api@sh.example.com",
+      "email": "api@cosmocargo.dev",
       "url": "https://developers.sh.example.com"
     },
     "license": {
@@ -151,7 +151,7 @@
           "recipientEmail": {
             "type": "string",
             "format": "email",
-            "example": "recipient@example.com"
+            "example": "recipient@cosmocargo.dev"
           },
           "notes": {
             "type": "array",
@@ -776,7 +776,7 @@
                 "simple": {
                   "summary": "Simple domestic shipment",
                   "value": {
-                    "recipientEmail": "test@example.com",
+                    "recipientEmail": "test@cosmocargo.dev",
                     "recipientAddress": {
                       "street": "123 Delivery St",
                       "city": "Shiptown",
@@ -856,7 +856,7 @@
                     "summary": "Domestic shipment response",
                     "value": {
                       "id": "123e4567-e89b-12d3-a456-426614174000",
-                      "recipientEmail": "test@example.com",
+                      "recipientEmail": "test@cosmocargo.dev",
                       "recipientAddress": {
                         "street": "123 Delivery St",
                         "city": "Shiptown",
@@ -1195,7 +1195,7 @@
                 },
                 "example": {
                   "id": "123e4567-e89b-12d3-a456-426614174000",
-                  "recipientEmail": "test@example.com",
+                  "recipientEmail": "test@cosmocargo.dev",
                   "recipientAddress": {
                     "street": "123 Delivery St",
                     "city": "Shiptown",
@@ -2787,7 +2787,7 @@
                               "Commercial Invoice",
                               "Certificate of Origin"
                             ],
-                            "contactEmail": "customs@sh.example.com"
+                            "contactEmail": "customs@cosmocargo.dev"
                           }
                         },
                         {
