@@ -15,7 +15,9 @@ import "./custom.css";
 
 // The Employee MCP Servers API documents internal tooling, so it is hidden from
 // the catalog and its routes are blocked unless the crew member is signed in.
-const EMPLOYEE_MCP_PATH = "/catalog/api-employee-mcp";
+// It also lives outside the `/catalog` path so the catalog nav item isn't
+// highlighted at the same time as the Employee MCP one.
+const EMPLOYEE_MCP_PATH = "/employee-mcp";
 
 // The production Clerk instance, served from clerk.cosmocargo.dev. Publishable
 // keys are shipped to the browser by design, so this is safe to commit. The

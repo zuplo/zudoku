@@ -29,11 +29,15 @@ export const createNavigationCategory = ({
     type: "link" as const,
     label: operation.summary ?? operation.path,
     to: `${path}#${operation.slug}`,
-    badge: {
-      label: operation.method,
-      // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
-      color: MethodColorMap[operation.method.toLowerCase()]!,
-      invert: true,
-    },
+    badge: operation.isMcpServer
+      ? // MCP server endpoints are reached over MCP, so the underlying HTTP
+        // method isn't meaningful to the reader.
+        { label: "MCP", color: "indigo" as const, invert: true }
+      : {
+          label: operation.method,
+          // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
+          color: MethodColorMap[operation.method.toLowerCase()]!,
+          invert: true,
+        },
   })),
 });
