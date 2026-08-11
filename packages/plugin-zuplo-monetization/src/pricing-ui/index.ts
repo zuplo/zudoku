@@ -82,6 +82,12 @@ export {
   getPlanPriceSchedule,
   type PlanPriceScheduleRow,
 } from "../utils/getPlanPriceSchedule.js";
+export { isCustomPlan } from "../utils/isCustomPlan.js";
+export {
+  DEFAULT_CONTACT_LABEL,
+  getPlanContact,
+  type PlanContact,
+} from "../utils/planContact.js";
 export {
   collectDefaultTaxBehaviors,
   planHasDefaultTaxBehavior,

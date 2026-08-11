@@ -797,6 +797,42 @@ describe("SwitchPlanModal", () => {
     expect(
       within(card).queryByRole("button", { name: /Upgrade|Downgrade|Switch/ }),
     ).not.toBeInTheDocument();
+    // No contactUrl configured, so the label is plain text rather than a link.
+    expect(
+      within(card).queryByRole("link", { name: "Contact Sales" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("links a custom plan's CTA to the contact target in its metadata", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-custom",
+        key: "enterprise_custom",
+        name: "Enterprise Plus",
+        metadata: {
+          isCustom: "true",
+          contactUrl: "https://acme.com/contact",
+          contactLabel: "Talk to sales",
+        },
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Enterprise Plus");
+    const link = within(card).getByRole("link", { name: "Talk to sales" });
+    expect(link).toHaveAttribute("href", "https://acme.com/contact");
+    expect(link).toHaveAttribute("target", "_blank");
   });
 
   it("shows a per-phase price schedule for a multi-phase target", () => {
