@@ -20,6 +20,7 @@ import {
   sameEntitlementSet,
 } from "../../utils/comparePlanEntitlements.js";
 import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
+import { getContactUrl } from "../../utils/getContactUrl.js";
 import { getPlanPriceSchedule } from "../../utils/getPlanPriceSchedule.js";
 import { isCustomPlan } from "../../utils/isCustomPlan.js";
 
@@ -156,6 +157,7 @@ export const PlanChangeCard = ({
   onSwitch: () => void;
 }) => {
   const isCustom = isCustomPlan(plan);
+  const contactUrl = getContactUrl(plan);
   const priceLabel = formatPlanPrice(plan);
   // Multi-phase ramp plans show a stacked per-phase price schedule below the
   // title instead of the inline steady-state price tag.
@@ -230,9 +232,17 @@ export const PlanChangeCard = ({
           )}
         </div>
         {isCustom ? (
-          <Button variant="default" size="sm">
-            Contact Sales
-          </Button>
+          contactUrl ? (
+            <Button variant="default" size="sm" asChild>
+              <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+                Contact Sales
+              </a>
+            </Button>
+          ) : (
+            <Button variant="default" size="sm" disabled>
+              Contact Sales
+            </Button>
+          )
         ) : (
           <Button
             variant={mode === "upgrade" ? "default" : "outline"}

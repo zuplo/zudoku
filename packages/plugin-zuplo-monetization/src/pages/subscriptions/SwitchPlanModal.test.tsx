@@ -775,7 +775,7 @@ describe("SwitchPlanModal", () => {
         id: "plan-custom",
         key: "enterprise_custom",
         name: "Enterprise Plus",
-        metadata: { isCustom: "true" },
+        metadata: { zuplo_custom_plan: "true" },
       }),
     ];
 
@@ -797,6 +797,40 @@ describe("SwitchPlanModal", () => {
     expect(
       within(card).queryByRole("button", { name: /Upgrade|Downgrade|Switch/ }),
     ).not.toBeInTheDocument();
+    // Without a contactUrl the Contact Sales button has no destination.
+    expect(
+      within(card).getByRole("button", { name: "Contact Sales" }),
+    ).toBeDisabled();
+  });
+
+  it("links the custom plan's Contact Sales button to metadata.contactUrl", () => {
+    plansItems.current = [
+      makePublicPlan({
+        id: "plan-custom",
+        key: "enterprise_custom",
+        name: "Enterprise Plus",
+        metadata: {
+          zuplo_custom_plan: "true",
+          zuplo_contact_url: "mailto:sales@example.com",
+        },
+      }),
+    ];
+
+    const subscription = baseSubscription({
+      id: "plan-current",
+      key: "private_developer",
+      name: "Private Developer",
+      billingCadence: "P1M",
+      phases: [],
+      metadata: { zuplo_private_plan: "true" },
+    });
+
+    render(<SwitchPlanModal subscription={subscription} />);
+    openModal();
+
+    const card = getPlanCard(screen.getByRole("dialog"), "Enterprise Plus");
+    const link = within(card).getByRole("link", { name: "Contact Sales" });
+    expect(link).toHaveAttribute("href", "mailto:sales@example.com");
   });
 
   it("shows a per-phase price schedule for a multi-phase target", () => {

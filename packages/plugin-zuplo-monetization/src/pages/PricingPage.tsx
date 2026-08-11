@@ -6,6 +6,8 @@ import { usePlans } from "../hooks/usePlans";
 import { useMonetizationConfig } from "../MonetizationContext";
 import { PricingTable } from "../pricing-ui/PricingTable.js";
 import { subscriptionsQuery } from "../queries.js";
+import { getContactUrl } from "../utils/getContactUrl.js";
+import { isCustomPlan } from "../utils/isCustomPlan.js";
 
 const PricingPage = () => {
   const { pricing } = useMonetizationConfig();
@@ -69,19 +71,42 @@ const PricingPage = () => {
       <PricingTable
         plans={pricingTable.items}
         units={pricing?.units}
-        renderAction={(plan, isPopular) =>
-          showManageAction(plan) ? (
-            <Button variant={isPopular ? "default" : "outline"} asChild>
-              <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
-            </Button>
-          ) : (
+        renderAction={(plan, isPopular) => {
+          if (showManageAction(plan)) {
+            return (
+              <Button variant={isPopular ? "default" : "outline"} asChild>
+                <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
+              </Button>
+            );
+          }
+          // Custom-priced plans are display-only stubs: the gateway rejects
+          // every subscription to them, so the CTA points at the configured
+          // contact destination instead — identical for every viewer.
+          if (isCustomPlan(plan)) {
+            const contactUrl = getContactUrl(plan);
+            if (!contactUrl) {
+              return (
+                <Button variant={isPopular ? "default" : "outline"} disabled>
+                  Contact Sales
+                </Button>
+              );
+            }
+            return (
+              <Button variant={isPopular ? "default" : "outline"} asChild>
+                <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+                  Contact Sales
+                </a>
+              </Button>
+            );
+          }
+          return (
             <Button variant={isPopular ? "default" : "outline"} asChild>
               <Link to={`/checkout?planId=${encodeURIComponent(plan.id)}`}>
                 Subscribe
               </Link>
             </Button>
-          )
-        }
+          );
+        }}
       />
       <Slot.Target name="pricing-page-after" />
     </div>

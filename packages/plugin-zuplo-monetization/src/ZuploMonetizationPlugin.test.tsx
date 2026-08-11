@@ -69,6 +69,66 @@ describe("PricingPage", () => {
   });
 });
 
+describe("PricingPage custom plan CTA", () => {
+  const enterprisePlan = (overrides: Partial<Plan> = {}): Plan => ({
+    id: "plan-enterprise",
+    key: "enterprise",
+    name: "Enterprise",
+    billingCadence: "P1M",
+    currency: "USD",
+    metadata: { zuplo_custom_plan: "true" },
+    phases: [{ key: "default", name: "Default", rateCards: [] }],
+    ...overrides,
+  });
+
+  const renderPricingPage = async (plan: Plan) => {
+    queryClient.setQueryData(["/v3/zudoku-metering/test/subscriptions"], {
+      items: [],
+    });
+    queryClient.setQueryData(["/v3/zudoku-metering/test/pricing-page"], {
+      items: [plan],
+    });
+
+    await act(async () => {
+      render(
+        <StaticZudoku
+          env={{ ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test" }}
+          plugins={[zuploMonetizationPlugin()]}
+          path="/pricing"
+        />,
+      );
+    });
+  };
+
+  afterEach(() => {
+    queryClient.clear();
+  });
+
+  it("renders a Contact Sales link instead of Subscribe when contactUrl is set", async () => {
+    await renderPricingPage(
+      enterprisePlan({
+        metadata: {
+          zuplo_custom_plan: "true",
+          zuplo_contact_url: "mailto:sales@example.com",
+        },
+      }),
+    );
+
+    const link = screen.getByRole("link", { name: "Contact Sales" });
+    expect(link).toHaveAttribute("href", "mailto:sales@example.com");
+    expect(screen.queryByText("Subscribe")).not.toBeInTheDocument();
+  });
+
+  it("renders a disabled Contact Sales button when contactUrl is missing", async () => {
+    await renderPricingPage(enterprisePlan());
+
+    expect(
+      screen.getByRole("button", { name: "Contact Sales" }),
+    ).toBeDisabled();
+    expect(screen.queryByText("Subscribe")).not.toBeInTheDocument();
+  });
+});
+
 describe("pricing query signing after logout", () => {
   // Simulates the OpenID end_session logout race: the pricing prefetch is
   // built while localStorage still says authenticated, but by the time the
