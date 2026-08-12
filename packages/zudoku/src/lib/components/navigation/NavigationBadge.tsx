@@ -1,24 +1,24 @@
 import { cn } from "../../util/cn.js";
 
 export const ColorMap = {
-  green: "bg-green-400 dark:bg-green-800",
-  blue: "bg-sky-400 dark:bg-sky-800",
-  yellow: "bg-yellow-400 dark:bg-yellow-800",
-  red: "bg-red-400 dark:bg-red-800",
-  purple: "bg-purple-400 dark:bg-purple-600",
-  indigo: "bg-indigo-400 dark:bg-indigo-600",
-  gray: "bg-gray-400 dark:bg-gray-600",
+  green: "bg-badge-green",
+  blue: "bg-badge-blue",
+  yellow: "bg-badge-yellow",
+  red: "bg-badge-red",
+  purple: "bg-badge-purple",
+  indigo: "bg-badge-indigo",
+  gray: "bg-badge-gray",
   outline: "border border-border rounded-md text-foreground",
 };
 
 export const ColorMapInvert = {
-  green: "text-green-500 dark:text-green-600",
-  blue: "text-sky-400 dark:text-sky-600",
-  yellow: "text-yellow-400 dark:text-yellow-600",
-  red: "text-red-400 dark:text-red-600",
-  purple: "text-purple-400 dark:text-purple-600",
-  indigo: "text-indigo-400 dark:text-indigo-600",
-  gray: "text-gray-400 dark:text-gray-600",
+  green: "text-badge-green-invert",
+  blue: "text-badge-blue-invert",
+  yellow: "text-badge-yellow-invert",
+  red: "text-badge-red-invert",
+  purple: "text-badge-purple-invert",
+  indigo: "text-badge-indigo-invert",
+  gray: "text-badge-gray-invert",
   outline: "",
 };
 
@@ -36,7 +36,7 @@ export const NavigationBadge = ({
   return (
     <span
       className={cn(
-        "flex items-center duration-200 transition-opacity text-center uppercase text-[0.65rem] leading-5 font-bold rounded-sm text-background dark:text-zinc-50 h-full",
+        "flex items-center duration-200 transition-opacity text-center uppercase text-[0.65rem] leading-5 font-bold rounded-sm h-full",
         color === "outline" ? "px-3" : "mt-0.5 px-1",
         invert ? ColorMapInvert[color] : ColorMap[color],
         className,
