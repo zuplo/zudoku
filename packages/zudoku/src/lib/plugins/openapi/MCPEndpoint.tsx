@@ -92,7 +92,7 @@ export const MCPEndpoint = ({
   summary?: string;
 }) => {
   const [isCopied, setIsCopied] = useState(false);
-  const mcpUrl = getMcpUrl(serverUrl, operationPath);
+  const mcpUrl = getMcpUrl(serverUrl, operationPath, data);
   const name = getMcpServerName(data, summary);
   const auth = getAuthHeader(data);
   const authType = getAuthType(data);
