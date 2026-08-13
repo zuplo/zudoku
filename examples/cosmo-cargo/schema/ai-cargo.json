@@ -407,11 +407,12 @@
       "post": {
         "tags": ["Quantum Transport"],
         "summary": "Quantum Navigator MCP endpoint",
-        "description": "A dedicated Model Context Protocol (MCP) server for interstellar route planning. Lets AI tools plot quantum tunneling lanes, check lane stability, and estimate warp energy budgets before committing a shipment to the void.\n\nThis is a distinct MCP server from the universal endpoint — it sets its own title via `x-mcp-server.name`, so the generated install snippets read `claude mcp add … 'Quantum Navigator' …` rather than a generic default.",
+        "description": "A dedicated Model Context Protocol (MCP) server for interstellar route planning. Lets AI tools plot quantum tunneling lanes, check lane stability, and estimate warp energy budgets before committing a shipment to the void.\n\nThis is a distinct MCP server from the universal endpoint — it sets its own title via `x-mcp-server.name`, so the generated install snippets read `claude mcp add … 'Quantum Navigator' …` rather than a generic default.\n\nIt also runs on the navigation cluster rather than the AI gateway, so it sets `x-mcp-server.url` to publish its own hostname instead of the API server URL above.",
         "operationId": "mcpNavigator",
         "x-mcp-server": {
           "name": "Quantum Navigator",
           "version": "2.4.0",
+          "url": "https://navigator.cosmocargo.space/mcp",
           "tools": [
             {
               "name": "plot_quantum_route",
