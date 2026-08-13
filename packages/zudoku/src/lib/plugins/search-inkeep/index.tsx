@@ -37,10 +37,12 @@ export type InkeepSearchPluginOptions = InkeepBaseSettings &
 
 const InkeepSearch = ({
   isOpen,
+  onOpen,
   onClose,
   settings,
 }: {
   isOpen: boolean;
+  onOpen: () => void;
   onClose: () => void;
   settings: InkeepSearchPluginOptions;
 }) => {
@@ -71,7 +73,16 @@ const InkeepSearch = ({
         ...modalSettings,
         onOpenChange: (newOpen: boolean) => {
           modalSettings?.onOpenChange?.(newOpen);
-          if (!newOpen) onClose();
+          // The modal is controlled through `isOpen`, so Inkeep never opens or
+          // closes itself: it only reports what it wants (Escape, a
+          // `triggerSelector` click, or a `shortcutKey` if one was configured).
+          // Both directions have to be mirrored back into Zudoku's state,
+          // otherwise those interactions do nothing at all.
+          if (newOpen) {
+            onOpen();
+          } else {
+            onClose();
+          }
         },
       },
       searchSettings: {
@@ -83,24 +94,28 @@ const InkeepSearch = ({
         ...aiChatSettings,
       },
     };
-  }, [onClose, settings]);
-  const [searchInstance, setSearchInstance] = useState<
-    InkeepComponentInstance | undefined
-  >(
-    typeof window !== "undefined" && window.Inkeep?.ModalSearchAndChat
-      ? window.Inkeep.ModalSearchAndChat(config)
-      : undefined,
-  );
+  }, [onClose, onOpen, settings]);
+
+  const [searchInstance, setSearchInstance] =
+    useState<InkeepComponentInstance>();
 
   useEffect(() => {
     if (searchInstance) return;
 
+    // Every call mounts another widget into the DOM, so this must happen in an
+    // effect and never during render.
+    const createInstance = () => {
+      const instance = window.Inkeep?.ModalSearchAndChat?.(config);
+      if (instance) setSearchInstance(instance);
+
+      return Boolean(instance);
+    };
+
+    // The Inkeep script is loaded deferred, so poll until it is available
+    if (createInstance()) return;
+
     const checkInkeep = setInterval(() => {
-      if (typeof window !== "undefined" && window.Inkeep?.ModalSearchAndChat) {
-        const inkeep = window.Inkeep.ModalSearchAndChat(config);
-        setSearchInstance(inkeep);
-        clearInterval(checkInkeep);
-      }
+      if (createInstance()) clearInterval(checkInkeep);
     }, 100);
 
     return () => clearInterval(checkInkeep);
@@ -128,10 +143,15 @@ export const inkeepSearchPlugin = (
         />
       );
     },
-    renderSearch: ({ isOpen, onClose }) => {
+    renderSearch: ({ isOpen, onOpen, onClose }) => {
       return (
         <ClientOnly>
-          <InkeepSearch isOpen={isOpen} onClose={onClose} settings={settings} />
+          <InkeepSearch
+            isOpen={isOpen}
+            onOpen={onOpen}
+            onClose={onClose}
+            settings={settings}
+          />
         </ClientOnly>
       );
     },
