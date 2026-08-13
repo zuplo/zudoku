@@ -100,26 +100,38 @@ const InkeepSearch = ({
     useState<InkeepComponentInstance>();
 
   useEffect(() => {
-    if (searchInstance) return;
+    let instance: InkeepComponentInstance | undefined;
 
     // Every call mounts another widget into the DOM, so this must happen in an
     // effect and never during render.
     const createInstance = () => {
-      const instance = window.Inkeep?.ModalSearchAndChat?.(config);
+      instance = window.Inkeep?.ModalSearchAndChat?.(config);
       if (instance) setSearchInstance(instance);
 
       return Boolean(instance);
     };
 
+    const removeInstance = () => {
+      const created = instance;
+      if (!created) return;
+
+      instance = undefined;
+      // Defer so we never unmount synchronously mid-render (StrictMode).
+      setTimeout(() => created.unmount(), 0);
+    };
+
     // The Inkeep script is loaded deferred, so poll until it is available
-    if (createInstance()) return;
+    if (createInstance()) return removeInstance;
 
     const checkInkeep = setInterval(() => {
       if (createInstance()) clearInterval(checkInkeep);
     }, 100);
 
-    return () => clearInterval(checkInkeep);
-  }, [config, searchInstance]);
+    return () => {
+      clearInterval(checkInkeep);
+      removeInstance();
+    };
+  }, [config]);
 
   useEffect(() => {
     if (!searchInstance) return;

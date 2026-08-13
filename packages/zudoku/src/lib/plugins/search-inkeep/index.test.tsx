@@ -4,7 +4,8 @@
 
 import type { InkeepJS } from "@inkeep/cxkit-types";
 import { QueryClient } from "@tanstack/react-query";
-import { act, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
+import { Fragment, StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ZudokuProvider } from "../../components/context/ZudokuProvider.js";
 import { Search } from "../../components/Search.js";
@@ -31,6 +32,7 @@ type ModalSettings = {
 const createInkeepMock = () => {
   const instances: Array<{
     isOpen: () => boolean;
+    isMounted: () => boolean;
     modalSettings: () => ModalSettings;
     unmount: () => void;
   }> = [];
@@ -38,6 +40,7 @@ const createInkeepMock = () => {
   const ModalSearchAndChat = (props: { modalSettings?: ModalSettings }) => {
     let currentProps = props;
     let uncontrolledOpen = false;
+    let mounted = true;
 
     const modalSettings = () => currentProps.modalSettings ?? {};
     const isOpen = () => modalSettings().isOpen ?? uncontrolledOpen;
@@ -73,6 +76,7 @@ const createInkeepMock = () => {
 
     const instance = {
       isOpen,
+      isMounted: () => mounted,
       modalSettings,
       update: (nextProps: { modalSettings?: ModalSettings }) => {
         currentProps = {
@@ -84,8 +88,14 @@ const createInkeepMock = () => {
           },
         };
       },
-      unmount: () => document.removeEventListener("keydown", onKeyDown),
-      remount: () => document.addEventListener("keydown", onKeyDown),
+      unmount: () => {
+        mounted = false;
+        document.removeEventListener("keydown", onKeyDown);
+      },
+      remount: () => {
+        mounted = true;
+        document.addEventListener("keydown", onKeyDown);
+      },
     };
 
     instances.push(instance);
@@ -100,6 +110,7 @@ let inkeep: ReturnType<typeof createInkeepMock>;
 
 const renderSearch = async (
   options: Partial<InkeepSearchPluginOptions> = {},
+  { strict = false } = {},
 ) => {
   const queryClient = new QueryClient();
   const context = new ZudokuContext(
@@ -112,15 +123,26 @@ const renderSearch = async (
     {},
   );
 
+  const Wrapper = strict ? StrictMode : Fragment;
+
   await act(async () => {
     render(
-      <ZudokuProvider context={context}>
-        <Search />
-      </ZudokuProvider>,
+      <Wrapper>
+        <ZudokuProvider context={context}>
+          <Search />
+        </ZudokuProvider>
+      </Wrapper>,
     );
   });
 
   return inkeep.instances;
+};
+
+/** The widget is torn down in a deferred task, see `removeInstance` */
+const flushDeferredUnmounts = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
 };
 
 const pressKey = async (key: string, modifiers: KeyboardEventInit = {}) => {
@@ -241,5 +263,35 @@ describe("inkeepSearchPlugin", () => {
     await pressKey("k", { metaKey: true });
 
     expect(instances).toHaveLength(1);
+  });
+
+  it("leaves a single mounted widget behind in StrictMode", async () => {
+    const instances = await renderSearch({}, { strict: true });
+    await flushDeferredUnmounts();
+
+    // StrictMode runs the effect twice; the extra widget has to be unmounted
+    // again or it keeps listening for keyboard events from behind the modal
+    expect(instances.filter((instance) => instance.isMounted())).toHaveLength(
+      1,
+    );
+  });
+
+  it("still opens on ⌘K in StrictMode", async () => {
+    const instances = await renderSearch({}, { strict: true });
+    await flushDeferredUnmounts();
+
+    await pressKey("k", { metaKey: true });
+
+    const mounted = instances.filter((instance) => instance.isMounted());
+    expect(mounted.map((instance) => instance.isOpen())).toEqual([true]);
+  });
+
+  it("unmounts the widget when the search is removed", async () => {
+    const instances = await renderSearch();
+
+    cleanup();
+    await flushDeferredUnmounts();
+
+    expect(instances.every((instance) => !instance.isMounted())).toBe(true);
   });
 });
