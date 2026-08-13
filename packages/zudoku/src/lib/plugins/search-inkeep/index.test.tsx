@@ -8,7 +8,7 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import { Fragment, StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ZudokuProvider } from "../../components/context/ZudokuProvider.js";
-import { Search } from "../../components/Search.js";
+import { Search, SearchProvider } from "../../components/Search.js";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import { inkeepSearchPlugin, type InkeepSearchPluginOptions } from "./index.js";
 
@@ -129,7 +129,9 @@ const renderSearch = async (
     render(
       <Wrapper>
         <ZudokuProvider context={context}>
-          <Search />
+          <SearchProvider>
+            <Search />
+          </SearchProvider>
         </ZudokuProvider>
       </Wrapper>,
     );

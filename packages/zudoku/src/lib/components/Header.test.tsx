@@ -96,4 +96,68 @@ describe("Header", () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  describe("search", () => {
+    const searchPlugin = () => ({
+      renderSearch: ({ isOpen }: { isOpen: boolean }) =>
+        isOpen ? <div data-testid="search-modal" /> : null,
+    });
+
+    const pressSearchHotkey = async () => {
+      await act(async () => {
+        document.body.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            key: "k",
+            metaKey: true,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      });
+    };
+
+    // `start` and `end` additionally render the responsive copy of the search
+    // button, so the modal must not be tied to an individual button
+    it.each(["start", "center", "end"] as const)(
+      "opens a single modal for the %s placement",
+      async (search) => {
+        await render({
+          site: { title: "Test Site" },
+          header: { placements: { search } },
+          plugins: [searchPlugin()],
+        });
+
+        expect(screen.queryAllByTestId("search-modal")).toHaveLength(0);
+
+        await pressSearchHotkey();
+
+        expect(screen.getAllByTestId("search-modal")).toHaveLength(1);
+      },
+    );
+
+    it("opens the modal from every search button", async () => {
+      await render({
+        site: { title: "Test Site" },
+        header: { placements: { search: "start" } },
+        plugins: [searchPlugin()],
+      });
+
+      const buttons = screen.getAllByRole("button", { name: /search/i });
+      expect(buttons.length).toBeGreaterThan(1);
+
+      for (const button of buttons) {
+        await act(async () => button.click());
+
+        expect(screen.getAllByTestId("search-modal")).toHaveLength(1);
+      }
+    });
+
+    it("renders no search button without a search plugin", async () => {
+      await render({ site: { title: "Test Site" } });
+
+      expect(
+        screen.queryByRole("button", { name: /search/i }),
+      ).not.toBeInTheDocument();
+    });
+  });
 });
