@@ -10,7 +10,11 @@ const baseSettings: InkeepBaseSettings = {
 };
 
 const modalSettings: InkeepModalSettings = {
-  shortcutKey: "k",
+  // Zudoku renders the search button and owns the ⌘K / Ctrl+K shortcut (see
+  // `Search.tsx`), so Inkeep's built-in one is disabled by default. Inkeep
+  // binds its shortcut on `document` and calls `stopPropagation()`, which
+  // swallows the event before it reaches Zudoku's listener on `window`.
+  shortcutKey: null,
 };
 
 const searchSettings: InkeepSearchSettings = {
