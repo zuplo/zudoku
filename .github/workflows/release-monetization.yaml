@@ -32,7 +32,9 @@ jobs:
     env:
       # Skip git hooks, see the note in main.yaml. The version bump before the
       # release commit makes node_modules look stale to pnpm, which makes the
-      # parallel pre-commit commands race on installing lefthook.
+      # parallel pre-commit commands race on installing lefthook. The commit here
+      # only carries the `npm version` edit to the plugin manifest, which npm
+      # rewrites in place and leaves format-clean, so the hook has nothing to do.
       LEFTHOOK: "0"
 
     steps:
