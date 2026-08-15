@@ -1,14 +1,16 @@
 import { use } from "react";
 import type { RouteObject } from "react-router";
-import { RenderContext } from "../lib/components/context/RenderContext.js";
+import {
+  RenderContext,
+  setSsrStatus,
+} from "../lib/components/context/RenderContext.js";
 import { StatusPage } from "../lib/components/StatusPage.js";
 
 const SsrNotFoundPage = () => {
   const renderContext = use(RenderContext);
 
-  if (typeof window === "undefined" && renderContext.status === 200) {
-    renderContext.status = 404;
-  }
+  // Statuses set by outer routes (e.g. auth guards) take precedence
+  setSsrStatus(renderContext, 404, { onlyIfUnset: true });
 
   return <StatusPage statusCode={404} />;
 };
