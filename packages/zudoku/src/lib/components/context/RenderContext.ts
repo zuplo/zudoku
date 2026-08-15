@@ -17,3 +17,13 @@ export const RenderContext = createContext<RenderContextValue>({
   status: 200,
   bypassProtection: false,
 });
+
+export const setSsrStatus = (
+  renderContext: RenderContextValue,
+  status: number,
+  { onlyIfUnset = false }: { onlyIfUnset?: boolean } = {},
+) => {
+  if (typeof window !== "undefined") return;
+  if (onlyIfUnset && renderContext.status !== 200) return;
+  renderContext.status = status;
+};
