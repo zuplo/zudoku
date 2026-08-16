@@ -1,4 +1,5 @@
 import type {
+  OAuthFlowsItem,
   SecuritySchemeIn,
   SecuritySchemeType,
 } from "../../graphql/graphql.js";
@@ -15,6 +16,7 @@ type HttpScheme = {
 };
 type OAuth2Scheme = {
   type: Extract<SecuritySchemeType, "oauth2">;
+  flows?: OAuthFlowsItem | null;
 };
 type OpenIdConnectScheme = {
   type: Extract<SecuritySchemeType, "openIdConnect">;
