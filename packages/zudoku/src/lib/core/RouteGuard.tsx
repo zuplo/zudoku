@@ -12,7 +12,10 @@ import {
 } from "zudoku/ui/Dialog.js";
 import { REASON_CODES } from "../../config/validators/reason-codes.js";
 import { useAuth } from "../authentication/hook.js";
-import { RenderContext } from "../components/context/RenderContext.js";
+import {
+  RenderContext,
+  setSsrStatus,
+} from "../components/context/RenderContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { Layout } from "../components/Layout.js";
 import { ZudokuError } from "../util/invariant.js";
@@ -74,7 +77,7 @@ const BypassRoute = ({ isProtectedRoute }: { isProtectedRoute: boolean }) => (
 
 const ForbiddenPage = () => {
   const renderContext = use(RenderContext);
-  renderContext.status = 403;
+  setSsrStatus(renderContext, 403);
 
   return (
     <Layout>
@@ -196,7 +199,7 @@ export const RouteGuard = () => {
   }
 
   if (needsToSignIn) {
-    if (typeof window === "undefined") renderContext.status = 401;
+    setSsrStatus(renderContext, 401);
     if (auth.isPending) return null;
     return (
       <SignInRequiredPage redirectTo={location.pathname + location.search} />

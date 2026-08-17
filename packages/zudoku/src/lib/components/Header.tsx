@@ -25,7 +25,7 @@ import { useZudoku } from "./context/ZudokuContext.js";
 import { HeaderNavigation } from "./HeaderNavigation.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
 import { PageProgress } from "./PageProgress.js";
-import { Search } from "./Search.js";
+import { Search, SearchProvider } from "./Search.js";
 import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
 import { TopNavigation } from "./TopNavigation.js";
@@ -151,102 +151,106 @@ export const Header = memo(function HeaderInner() {
   const borderBottom = "inset-shadow-[0_-1px_0_0_var(--border)]";
 
   return (
-    <header
-      className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full"
-      data-pagefind-ignore="all"
-    >
-      <Banner />
-      <div className={cn(borderBottom, "relative")}>
-        <PageProgress />
-        <div className="max-w-screen-2xl mx-auto flex lg:grid lg:grid-cols-[1fr_auto_1fr] gap-2 items-center justify-between h-(--top-header-height) px-4 lg:px-8 border-transparent">
-          <div className="flex items-center gap-4 min-w-0 justify-self-start">
-            <Link
-              to={site?.logo?.href ?? "/"}
-              reloadDocument={site?.logo?.reloadDocument ?? true}
-              className="shrink-0"
-            >
-              <div className="flex items-center gap-3.5">
-                {site?.logo ? (
-                  <>
-                    <Head>
-                      <link rel="preload" as="image" href={logoLightSrc} />
-                      <link rel="preload" as="image" href={logoDarkSrc} />
-                    </Head>
-                    <img
-                      src={logoLightSrc}
-                      alt={site.logo.alt ?? site.title}
-                      style={{ width: site.logo.width }}
-                      className="max-h-(--top-header-height) dark:hidden"
-                    />
-                    <img
-                      src={logoDarkSrc}
-                      alt={site.logo.alt ?? site.title}
-                      style={{ width: site.logo.width }}
-                      className="max-h-(--top-header-height) hidden dark:block"
-                    />
-                  </>
-                ) : (
-                  <span className="font-semibold text-2xl">{site?.title}</span>
-                )}
-              </div>
-            </Link>
-            <Slot.Target name="head-navigation-start" />
-            {searchPosition === "start" && (
-              <Search className="hidden lg:flex" />
-            )}
-            {authPosition === "start" && (
-              <div className="hidden lg:flex">
-                <ProfileMenu />
-              </div>
-            )}
-            {navPosition === "start" && (
-              <div className="hidden lg:block min-w-0">
-                <HeaderNavigation />
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-center">
-            <Search
-              className={cn(
-                searchPosition === "center" ? "flex" : "flex lg:hidden",
+    <SearchProvider>
+      <header
+        className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full"
+        data-pagefind-ignore="all"
+      >
+        <Banner />
+        <div className={cn(borderBottom, "relative")}>
+          <PageProgress />
+          <div className="max-w-screen-2xl mx-auto flex lg:grid lg:grid-cols-[1fr_auto_1fr] gap-2 items-center justify-between h-(--top-header-height) px-4 lg:px-8 border-transparent">
+            <div className="flex items-center gap-4 min-w-0 justify-self-start">
+              <Link
+                to={site?.logo?.href ?? "/"}
+                reloadDocument={site?.logo?.reloadDocument ?? true}
+                className="shrink-0"
+              >
+                <div className="flex items-center gap-3.5">
+                  {site?.logo ? (
+                    <>
+                      <Head>
+                        <link rel="preload" as="image" href={logoLightSrc} />
+                        <link rel="preload" as="image" href={logoDarkSrc} />
+                      </Head>
+                      <img
+                        src={logoLightSrc}
+                        alt={site.logo.alt ?? site.title}
+                        style={{ width: site.logo.width }}
+                        className="max-h-(--top-header-height) dark:hidden"
+                      />
+                      <img
+                        src={logoDarkSrc}
+                        alt={site.logo.alt ?? site.title}
+                        style={{ width: site.logo.width }}
+                        className="max-h-(--top-header-height) hidden dark:block"
+                      />
+                    </>
+                  ) : (
+                    <span className="font-semibold text-2xl">
+                      {site?.title}
+                    </span>
+                  )}
+                </div>
+              </Link>
+              <Slot.Target name="head-navigation-start" />
+              {searchPosition === "start" && (
+                <Search className="hidden lg:flex" />
               )}
-            />
-            {navPosition === "center" && (
-              <div className="hidden lg:block min-w-0">
-                <HeaderNavigation />
-              </div>
-            )}
-            {authPosition === "center" && (
-              <div className="hidden lg:flex">
-                <ProfileMenu />
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 justify-self-end">
-            <MobileTopNavigation />
-            <div className="hidden lg:flex items-center text-sm gap-2">
-              {navPosition === "end" && (
-                <div className="min-w-0">
+              {authPosition === "start" && (
+                <div className="hidden lg:flex">
+                  <ProfileMenu />
+                </div>
+              )}
+              {navPosition === "start" && (
+                <div className="hidden lg:block min-w-0">
                   <HeaderNavigation />
                 </div>
               )}
-              {authPosition === "end" && <ProfileMenu />}
-              {searchPosition === "end" && <Search />}
-              <Slot.Target name="head-navigation-end" />
-              {themeSwitcherEnabled && <ThemeSwitch />}
+            </div>
+
+            <div className="flex items-center justify-center">
+              <Search
+                className={cn(
+                  searchPosition === "center" ? "flex" : "flex lg:hidden",
+                )}
+              />
+              {navPosition === "center" && (
+                <div className="hidden lg:block min-w-0">
+                  <HeaderNavigation />
+                </div>
+              )}
+              {authPosition === "center" && (
+                <div className="hidden lg:flex">
+                  <ProfileMenu />
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 justify-self-end">
+              <MobileTopNavigation />
+              <div className="hidden lg:flex items-center text-sm gap-2">
+                {navPosition === "end" && (
+                  <div className="min-w-0">
+                    <HeaderNavigation />
+                  </div>
+                )}
+                {authPosition === "end" && <ProfileMenu />}
+                {searchPosition === "end" && <Search />}
+                <Slot.Target name="head-navigation-end" />
+                {themeSwitcherEnabled && <ThemeSwitch />}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className={cn("hidden lg:block", borderBottom)}>
-        <div className="max-w-screen-2xl mx-auto border-transparent relative">
-          <Slot.Target name="top-navigation-before" />
-          <TopNavigation />
-          <Slot.Target name="top-navigation-after" />
+        <div className={cn("hidden lg:block", borderBottom)}>
+          <div className="max-w-screen-2xl mx-auto border-transparent relative">
+            <Slot.Target name="top-navigation-before" />
+            <TopNavigation />
+            <Slot.Target name="top-navigation-after" />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </SearchProvider>
   );
 });

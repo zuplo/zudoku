@@ -45,6 +45,15 @@ jobs:
 
     env:
       IS_RELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType != 'prerelease' }}
+      # Skip git hooks. The version bump makes node_modules look stale to pnpm, so
+      # the parallel pre-commit commands each re-run `pnpm install` -> `prepare` ->
+      # `lefthook install`, and those race to rewrite .git/hooks/pre-commit. The
+      # loser fails with ENOENT and takes the release commit down with it.
+      # Nothing is lost by skipping the hook: the release commit only carries the
+      # nx-written version fields in the two package manifests plus the regenerated
+      # lockfile. Biome reports no fixes on those manifests and oxfmt does not
+      # target lockfiles, so the hook has nothing to do here.
+      LEFTHOOK: "0"
 
     steps:
       - uses: actions/checkout@v7
