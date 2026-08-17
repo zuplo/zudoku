@@ -87,10 +87,10 @@ const TocPopoverButton = ({
           variant="outline"
           size="sm"
           aria-label="Toggle table of contents"
-          className={cn("max-w-48", className)}
+          className={cn("w-7 px-0 sm:w-auto sm:max-w-48 sm:px-2.5", className)}
         >
           <ListTreeIcon size={14} aria-hidden="true" />
-          <span className="truncate">{label}</span>
+          <span className="hidden truncate sm:inline">{label}</span>
         </Button>
       </PopoverTrigger>
     ) : (
@@ -305,6 +305,7 @@ export const MdxPage = ({
                     variant="outline"
                     size="sm"
                     onClick={handleCopyMarkdown}
+                    className="w-7 px-0 sm:w-auto sm:px-2.5"
                   >
                     {isCopied ? (
                       <CheckIcon
@@ -315,7 +316,9 @@ export const MdxPage = ({
                     ) : (
                       <CopyIcon size={14} aria-hidden="true" />
                     )}
-                    <span>Copy page</span>
+                    {/* Collapsed to an icon-only button on small screens so the
+                        floated page actions don't squeeze the page title. */}
+                    <span className="sr-only sm:not-sr-only">Copy page</span>
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
