@@ -130,5 +130,10 @@ When detected, the operation page shows:
 The standard method badge, request body, parameters, and sidecar panels are hidden for MCP
 endpoints.
 
+When the extension carries `security` and `securitySchemes`, the card also documents the credential
+header and adds it to every install snippet. Set the
+[`disableMcpApiKeyInstructions`](/docs/configuration/api-reference#options) API option to render the
+server as unauthenticated instead.
+
 For a full walkthrough including Zudoku configuration, see the
 [Documenting MCP Servers guide](/docs/guides/mcp-servers).

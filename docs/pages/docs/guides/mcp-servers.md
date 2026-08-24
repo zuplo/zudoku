@@ -107,6 +107,40 @@ server dropdown. A value without a scheme (such as `/v2/mcp`) is treated as a pa
 instead. See the
 [`x-mcp-server` reference](/docs/openapi-extensions/x-mcp-server#overriding-the-url) for details.
 
+## Authentication instructions
+
+When the `x-mcp-server` extension carries `security` and `securitySchemes` (Zuplo adds these
+automatically for authenticated routes), the card derives the credential header from the first
+scheme and threads it through every install snippet — for example an
+`Authorization: Bearer YOUR_API_KEY` header in the `mcp.json` samples, plus a step telling users to
+replace the placeholder with their key. API key auth also hides the clients that cannot send custom
+headers (Claude Desktop and ChatGPT), and the one-click install buttons for Cursor and VS Code,
+since those links cannot carry a secret.
+
+If your users get their credentials some other way — the key is injected by a proxy, handled by your
+own login flow, or simply documented elsewhere — turn the API key instructions off in your Zudoku
+config:
+
+```tsx title="zudoku.config.tsx"
+const config: ZudokuConfig = {
+  apis: [
+    {
+      type: "file",
+      input: "./mcp-api.json",
+      path: "mcp",
+      options: {
+        disableMcpApiKeyInstructions: true,
+      },
+    },
+  ],
+};
+```
+
+The card then renders the server as if it were unauthenticated: no header in the snippets, no
+placeholder step, and every client available again. Set it under `defaults.apis` instead to apply it
+to all APIs. OAuth-protected MCP servers are not affected — they document a sign-in flow rather than
+an API key.
+
 ## Complete example
 
 This is a minimal but complete OpenAPI spec that produces an MCP endpoint page:

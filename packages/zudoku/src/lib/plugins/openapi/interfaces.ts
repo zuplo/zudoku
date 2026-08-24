@@ -76,6 +76,7 @@ type BaseOasConfig = {
     disablePlayground?: boolean;
     disableSidecar?: boolean;
     disableSecurity?: boolean;
+    disableMcpApiKeyInstructions?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
     showInfoPage?: boolean;
