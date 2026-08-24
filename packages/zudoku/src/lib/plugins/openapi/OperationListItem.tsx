@@ -70,15 +70,23 @@ export const OperationListItem = ({
         <span className={methodForColor(operation.method)}>
           {operation.method.toUpperCase()}
         </span>
-        <SelectOnClick className="max-w-full truncate flex cursor-pointer">
+        {/*
+          Keep the server origin and the path as inline siblings of a single
+          non-flex container: flex items are blockified, and browsers insert a
+          newline between block-level boxes when serializing a selection, so a
+          flex wrapper puts a line break in the middle of the copied URL.
+          Long URLs wrap instead of being truncated, otherwise the shared
+          ellipsis would swallow the path.
+        */}
+        <SelectOnClick className="max-w-full wrap-anywhere cursor-pointer">
           {displayServerUrl && (
-            <div className="text-neutral-400 dark:text-neutral-500 truncate">
+            <span className="text-neutral-400 dark:text-neutral-500">
               {displayServerUrl.replace(/\/$/, "")}
-            </div>
+            </span>
           )}
-          <div className="text-neutral-900 dark:text-neutral-200">
+          <span className="text-neutral-900 dark:text-neutral-200">
             {operation.path}
-          </div>
+          </span>
         </SelectOnClick>
       </div>
       {!options?.disableSecurity && (

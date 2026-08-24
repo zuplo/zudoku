@@ -142,6 +142,32 @@ test("operation detail shows method, path, and parameters", async ({
   await expect(page.locator("text=/\\/shipments/").first()).toBeVisible();
 });
 
+test("selecting the operation endpoint copies it without a line break", async ({
+  page,
+}) => {
+  await page.goto("/api-shipments/shipment-management", {
+    waitUntil: "networkidle",
+  });
+
+  const endpoint = page.locator("main .font-mono .cursor-pointer").first();
+  await endpoint.waitFor({ state: "visible" });
+
+  // Selecting the endpoint must yield one unbroken URL. The server origin and
+  // the path are separate elements; if either becomes block-level (e.g. a flex
+  // item) the browser serializes a newline between them.
+  const selected = await endpoint.evaluate((el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    return selection?.toString() ?? "";
+  });
+
+  expect(selected).not.toContain("\n");
+  expect(selected).toBe(await endpoint.evaluate((el) => el.textContent));
+});
+
 test("playground dialog opens from operation", async ({ page }) => {
   await page.goto("/api-shipments/shipment-management", {
     waitUntil: "networkidle",
