@@ -359,7 +359,11 @@ export const McpCatalog = () => {
           if (!open) setParam("server", undefined, true);
         }}
       >
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        {/* The width has to be set on the `sm:` variant: DialogContent's own
+            default is `sm:max-w-xl`, which outranks an unprefixed max-width
+            from 640px up. `max-w-none` on the inner card lets MCPEndpoint's
+            `max-w-screen-md` give way to the dialog rather than cap it. */}
+        <DialogContent className="sm:max-w-5xl max-h-[85vh] overflow-y-auto [&_[data-slot=card]]:max-w-none">
           {selectedServer && (
             <>
               <DialogHeader>
