@@ -270,7 +270,7 @@ const CatalogCard = ({ item }: { item: ApiCatalogItem }) => {
                 </div>
                 {item.operationCount != null && (
                   <span className="text-muted-foreground shrink-0 text-xs font-medium">
-                    {item.operationCount} ops
+                    {item.operationCount} {item.countLabel ?? "ops"}
                   </span>
                 )}
               </div>

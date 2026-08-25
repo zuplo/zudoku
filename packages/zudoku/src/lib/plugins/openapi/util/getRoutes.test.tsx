@@ -97,6 +97,57 @@ describe("getVersionMetadata", () => {
 });
 
 describe("getRoutes", () => {
+  describe("mcp-catalog documents", () => {
+    const catalogConfig: OpenApiPluginOptions = {
+      ...baseConfig,
+      documentType: "mcp-catalog",
+      tagPages: ["users", "posts"],
+    };
+
+    it("mounts a single page at the base path", () => {
+      const routes = getRoutes({
+        basePath: "/api",
+        config: catalogConfig,
+        client: mockClient,
+      });
+
+      expect(routes).toHaveLength(1);
+      expect(routes[0]?.path).toBe("/api");
+      expect(routes[0]?.children).toHaveLength(1);
+      expect(routes[0]?.children?.[0]?.index).toBe(true);
+    });
+
+    it("mounts no tag, schema or untagged routes", () => {
+      const routes = getRoutes({
+        basePath: "/api",
+        config: catalogConfig,
+        client: mockClient,
+      });
+
+      // Prerendering walks the route tree, so anything left mounted here would
+      // be built and indexed despite being hidden from the catalog.
+      const paths = routes[0]?.children?.map((child) => child.path);
+      expect(paths).toEqual([undefined]);
+    });
+
+    it("ignores versions and renders one page for multi-version input", () => {
+      const routes = getRoutes({
+        basePath: "/api",
+        config: {
+          ...catalogConfig,
+          input: [
+            { path: "v1", input: "https://example.com/v1.json" },
+            { path: "v2", input: "https://example.com/v2.json" },
+          ],
+        },
+        client: mockClient,
+      });
+
+      expect(routes).toHaveLength(1);
+      expect(routes[0]?.path).toBe("/api");
+    });
+  });
+
   describe("without tagPages", () => {
     it("creates a single provider route for non-versioned config", () => {
       const routes = getRoutes({

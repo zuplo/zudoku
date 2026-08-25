@@ -10,8 +10,11 @@ import {
   getCursorDeepLink,
   getGenericConfig,
   getMcpServerName,
+  getMcpServerTitle,
+  getMcpTools,
   getMcpUrl,
   getVisibleApps,
+  isMcpServerData,
   getVscodeConfig,
   getVscodeDeepLink,
   resolveMcpAuth,
@@ -331,6 +334,91 @@ describe("getMcpServerName", () => {
 
   it("falls back to mcp-server", () => {
     expect(getMcpServerName(true)).toBe("mcp-server");
+  });
+});
+
+describe("getMcpServerTitle", () => {
+  it("prefers the summary, unlike getMcpServerName", () => {
+    const data = { name: "cosmo-salesforce-sales-cloud" };
+
+    // The protocol identity belongs in install snippets; a heading wants the
+    // human label. Precedence here is deliberately the inverse.
+    expect(getMcpServerTitle(data, "Salesforce Sales Cloud")).toBe(
+      "Salesforce Sales Cloud",
+    );
+    expect(getMcpServerName(data, "Salesforce Sales Cloud")).toBe(
+      "cosmo-salesforce-sales-cloud",
+    );
+  });
+
+  it("falls back to the server name, then the operation id", () => {
+    expect(getMcpServerTitle({ name: "my-server" })).toBe("my-server");
+    expect(getMcpServerTitle({}, null, "mcpSalesforce")).toBe("mcpSalesforce");
+    expect(getMcpServerTitle(true, null, "mcpSalesforce")).toBe(
+      "mcpSalesforce",
+    );
+  });
+
+  it("falls back to a generic label when nothing identifies the server", () => {
+    expect(getMcpServerTitle(true)).toBe("MCP Server");
+    expect(getMcpServerTitle(undefined, "")).toBe("MCP Server");
+  });
+});
+
+describe("getMcpTools", () => {
+  it("returns name and description for each tool", () => {
+    expect(
+      getMcpTools({
+        tools: [
+          { name: "soql_query", description: "Run a read-only SOQL query." },
+          { name: "list_accounts" },
+        ],
+      }),
+    ).toEqual([
+      { name: "soql_query", description: "Run a read-only SOQL query." },
+      { name: "list_accounts", description: undefined },
+    ]);
+  });
+
+  it("returns nothing for the boolean shorthand the designer writes", () => {
+    expect(getMcpTools(true)).toEqual([]);
+    expect(getMcpTools(undefined)).toEqual([]);
+  });
+
+  it("ignores entries that are not usable tools", () => {
+    expect(
+      getMcpTools({ tools: [null, "nope", {}, { name: 42 }, { name: "ok" }] }),
+    ).toEqual([{ name: "ok", description: undefined }]);
+  });
+
+  it("tolerates a non-array tools value", () => {
+    expect(getMcpTools({ tools: "all of them" })).toEqual([]);
+  });
+});
+
+// `extensions` is untyped JSON, so these values are all reachable from a
+// hand-authored document. `typeof null === "object"` made both helpers throw
+// and took the whole catalog page down with them.
+describe("malformed x-mcp-server values", () => {
+  const malformed = [null, 0, "", "yes", []];
+
+  it.each(malformed)("getMcpTools survives %p", (value) => {
+    expect(getMcpTools(value as never)).toEqual([]);
+  });
+
+  it.each(malformed)("getMcpServerTitle survives %p", (value) => {
+    expect(getMcpServerTitle(value as never, null, "opId")).toBe("opId");
+  });
+
+  it("treats only true and objects as describing a server", () => {
+    expect(isMcpServerData(true)).toBe(true);
+    expect(isMcpServerData({ name: "a" })).toBe(true);
+
+    expect(isMcpServerData(null)).toBe(false);
+    expect(isMcpServerData(undefined)).toBe(false);
+    expect(isMcpServerData(false)).toBe(false);
+    expect(isMcpServerData("x-mcp-server")).toBe(false);
+    expect(isMcpServerData(1)).toBe(false);
   });
 });
 
