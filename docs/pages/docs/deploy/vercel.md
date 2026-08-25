@@ -50,36 +50,19 @@ No framework detected. Default Project Settings:
 ? Want to modify these settings? (y/N)
 ```
 
-Answer _Yes_ and select to modify the Output Directory.
-
-By default Vercel looks for a directory named `public`, but the Zudoku build will be found in
-`dist`. Set the output directory like this:
-
-```ansi
-? What's your Output Directory? dist
-```
+You can accept these defaults. Do not configure an Output Directory for Zudoku. When Vercel runs the
+build, Zudoku detects the `VERCEL` environment variable and emits a
+[Build Output API](https://vercel.com/docs/build-output-api) deployment to `.vercel/output`. Vercel
+detects and deploys this directory automatically. If your project already has an Output Directory
+saved in Vercel, set `"outputDirectory": null` in `vercel.json` to clear that override.
 
 After this is complete, your site will build and Vercel will respond with the URL for you to test
 it.
 
-:::tip{title="Clean URLs"}
+:::tip{title="Routing configuration"}
 
-You will almost certainly want to enable clean URLs for your site. This will remove the `.html`
-extension from your URLs. You can do this by adding a `cleanUrls` property to your `vercel.json`
-file. See the
-[Vercel Configuration](https://vercel.com/docs/projects/project-configuration#cleanurls) for more
-information.
-
-:::
-
-:::caution{title="Redirects"}
-
-If you have redirects configured in your Zudoku configuration, you will need to also add those to
-your `vercel.json` file. See the
-[Vercel Configuration](https://vercel.com/docs/projects/project-configuration#redirects) for more
-information.
-
-This is a current limitation. See [#115](https://github.com/zuplo/zudoku/issues/151).
+The generated Build Output API configuration includes clean URLs and any redirects from your Zudoku
+configuration. You do not need to duplicate these settings in `vercel.json`.
 
 :::
 

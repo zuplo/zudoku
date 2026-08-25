@@ -8,16 +8,19 @@ const loadMiddleware = async ({
   basePath,
   knownCanonicalRoutePaths = ["/", "/guide", "/custom"],
   markdownCanonicalRoutePaths = ["/", "/guide"],
+  passthroughPaths,
 }: {
   basePath?: string;
   knownCanonicalRoutePaths?: string[];
   markdownCanonicalRoutePaths?: string[];
+  passthroughPaths?: string[];
 } = {}): Promise<Middleware> => {
   const source = generateVercelMarkdownMiddleware({
     basePath,
     knownCanonicalRoutePaths,
     markdownCanonicalRoutePaths,
     markdownNotFoundBody: "# Page not found\n\n- [Documentation home](/docs)\n",
+    passthroughPaths,
   });
   const encodedSource = encodeURIComponent(source);
   const module = await import(`data:text/javascript,${encodedSource}`);
@@ -41,7 +44,7 @@ describe("generateVercelMarkdownMiddleware", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("x-middleware-next")).toBe("1");
     expect(response.headers.get("x-middleware-rewrite")).toBeNull();
-    expect(response.headers.get("Vary")).toBe("Accept");
+    expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
     expect(response.headers.get("Link")).toBe(
       '</guide.md>; rel="alternate"; type="text/markdown"',
     );
@@ -61,7 +64,7 @@ describe("generateVercelMarkdownMiddleware", () => {
     expect(response.headers.get("Content-Type")).toBe(
       "text/markdown; charset=utf-8",
     );
-    expect(response.headers.get("Vary")).toBe("Accept");
+    expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
     expect(response.headers.get("Link")).toBe(
       '</guide.md>; rel="alternate"; type="text/markdown"',
     );
@@ -87,6 +90,7 @@ describe("generateVercelMarkdownMiddleware", () => {
   it.each([
     ["/hello world", "/hello%20world.md"],
     ["/guides/café", "/guides/caf%C3%A9.md"],
+    ["/api/1.0.0", "/api/1.0.0.md"],
   ])("URL-encodes the Markdown route for %s", async (routePath, expected) => {
     const middleware = await loadMiddleware({
       knownCanonicalRoutePaths: [routePath],
@@ -172,7 +176,7 @@ describe("generateVercelMarkdownMiddleware", () => {
     );
 
     expect(response.status).toBe(406);
-    expect(response.headers.get("Vary")).toBe("Accept");
+    expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
     expect(response.headers.get("Link")).toBe(
       '</guide.md>; rel="alternate"; type="text/markdown"',
     );
@@ -189,7 +193,7 @@ describe("generateVercelMarkdownMiddleware", () => {
     expect(response.headers.get("Content-Type")).toBe(
       "text/markdown; charset=utf-8",
     );
-    expect(response.headers.get("Vary")).toBe("Accept");
+    expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
     expect(response.headers.get("x-middleware-next")).toBeNull();
     expect(await response.text()).toBe(
       "# Page not found\n\n- [Documentation home](/docs)\n",
@@ -204,7 +208,7 @@ describe("generateVercelMarkdownMiddleware", () => {
         request("/docs/not/a-page", { accept }),
       );
       expect(response.headers.get("x-middleware-next")).toBe("1");
-      expect(response.headers.get("Vary")).toBe("Accept");
+      expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
     }
   });
 
@@ -217,7 +221,7 @@ describe("generateVercelMarkdownMiddleware", () => {
       );
 
       expect(response.status).toBe(406);
-      expect(response.headers.get("Vary")).toBe("Accept");
+      expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
       expect(await response.text()).toBe("Not Acceptable");
     },
   );
@@ -254,6 +258,20 @@ describe("generateVercelMarkdownMiddleware", () => {
       expect(response.headers.get("Vary")).toBeNull();
       expect(response.headers.get("x-middleware-rewrite")).toBeNull();
     }
+  });
+
+  it("passes extensionless static files through", async () => {
+    const middleware = await loadMiddleware({
+      basePath: "/docs",
+      passthroughPaths: ["/docs/health"],
+    });
+    const response = await middleware(
+      request("/docs/health", { accept: "text/markdown" }),
+    );
+
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+    expect(response.headers.get("Vary")).toBeNull();
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
   });
 
   it("rejects Markdown routes that are not known canonical routes", () => {

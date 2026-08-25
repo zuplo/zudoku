@@ -13,7 +13,6 @@ import { getBuildConfig } from "../../config/validators/BuildSchema.js";
 import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
-import { joinUrl } from "../../lib/util/joinUrl.js";
 import { getMarkdownNotFound } from "../../lib/util/markdown-representation.js";
 import {
   getMarkdownOutputPath,
@@ -22,7 +21,7 @@ import {
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
 import {
-  routesToPaths,
+  routesToPrerenderPaths,
   routesToRewrites,
   selectPagesToIndex,
 } from "./utils.js";
@@ -89,15 +88,8 @@ export const prerender = async ({
   const getRoutes = module.getRoutesByConfig as typeof getRoutesByConfig;
 
   const routes = getRoutes(config);
-  const paths = routesToPaths(routes);
+  const paths = routesToPrerenderPaths(routes, config.redirects);
   const rewrites = routesToRewrites(routes);
-
-  // Add redirect source paths so they get prerendered as redirects
-  if (config.redirects) {
-    for (const r of config.redirects) {
-      paths.push(joinUrl(r.from));
-    }
-  }
   const { maxThreads, maxOldGenerationSizeMb } = getWorkerScaling(
     buildConfig?.prerender?.workers,
   );

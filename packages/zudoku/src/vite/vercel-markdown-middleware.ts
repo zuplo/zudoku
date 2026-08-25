@@ -7,6 +7,8 @@ export type GenerateVercelMarkdownMiddlewareOptions = {
   markdownCanonicalRoutePaths: readonly string[];
   /** Recovery document returned for negotiated Markdown 404 responses. */
   markdownNotFoundBody: string;
+  /** Absolute static file paths that must bypass document negotiation. */
+  passthroughPaths?: readonly string[];
 };
 
 const normalizePath = (value: string) => {
@@ -50,6 +52,7 @@ export const generateVercelMarkdownMiddleware = ({
   knownCanonicalRoutePaths,
   markdownCanonicalRoutePaths,
   markdownNotFoundBody,
+  passthroughPaths = [],
 }: GenerateVercelMarkdownMiddlewareOptions): string => {
   const normalizedBasePath = normalizePath(basePath);
   const knownRoutes = new Set(
@@ -63,6 +66,7 @@ export const generateVercelMarkdownMiddleware = ({
       resolveMarkdownPath(normalizedBasePath, routePath),
     ]),
   );
+  const normalizedPassthroughPaths = passthroughPaths.map(normalizePath);
 
   for (const routePath of markdownRoutes.keys()) {
     if (!knownRoutes.has(routePath)) {
@@ -76,7 +80,9 @@ export const generateVercelMarkdownMiddleware = ({
 const BASE_PATH = ${JSON.stringify(normalizedBasePath)};
 const KNOWN_ROUTES = new Set(${JSON.stringify([...knownRoutes])});
 const MARKDOWN_ROUTES = new Map(${JSON.stringify([...markdownRoutes])});
+const PASSTHROUGH_PATHS = new Set(${JSON.stringify(normalizedPassthroughPaths)});
 const MARKDOWN_NOT_FOUND_BODY = ${JSON.stringify(markdownNotFoundBody)};
+const NEGOTIATED_VARY = "Accept, Accept-Encoding";
 
 const REPRESENTATIONS = [
   {
@@ -267,7 +273,7 @@ const continueRequest = (headers = undefined) => {
 };
 
 const negotiatedHeaders = (markdownPath) => ({
-  Vary: "Accept",
+  Vary: NEGOTIATED_VARY,
   Link: getAlternateLink(markdownPath),
 });
 
@@ -308,7 +314,7 @@ export default function middleware(request) {
     });
   }
 
-  if (KNOWN_ROUTES.has(pathname)) {
+  if (KNOWN_ROUTES.has(pathname) || PASSTHROUGH_PATHS.has(pathname)) {
     return continueRequest();
   }
 
@@ -322,13 +328,13 @@ export default function middleware(request) {
       status: 406,
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
-        Vary: "Accept",
+        Vary: NEGOTIATED_VARY,
       },
     });
   }
 
   if (negotiatedType === "text/html") {
-    return continueRequest({ Vary: "Accept" });
+    return continueRequest({ Vary: NEGOTIATED_VARY });
   }
 
   return new Response(
@@ -337,7 +343,7 @@ export default function middleware(request) {
       status: 404,
       headers: {
         "Content-Type": "text/markdown; charset=utf-8",
-        Vary: "Accept",
+        Vary: NEGOTIATED_VARY,
       },
     },
   );

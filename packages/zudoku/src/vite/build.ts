@@ -12,7 +12,7 @@ import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { writeManifest } from "./manifest.js";
-import { writeOutput } from "./output.js";
+import { cleanVercelOutput, writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
 import {
   assertCloudflareWranglerGatesProtected,
@@ -46,7 +46,10 @@ export async function runBuild(options: BuildOptions) {
   invariant(builder.environments.ssr, "SSR environment is missing");
 
   const distDir = path.resolve(path.join(dir, "dist"));
-  await rm(distDir, { recursive: true, force: true });
+  await Promise.all([
+    rm(distDir, { recursive: true, force: true }),
+    cleanVercelOutput(dir),
+  ]);
 
   const [clientResult, serverResult] = await Promise.all([
     builder.build(builder.environments.client),
