@@ -28,19 +28,34 @@ The `x-mcp-server` extension is added at the **Operation Object** level.
 
 When using the object form, the following properties are available:
 
-| Property  | Type            | Required | Description                                                                                                                  |
-| --------- | --------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `name`    | `string`        | No       | Display name used in the generated client configuration snippets. Falls back to the operation `summary`, then `"mcp-server"` |
-| `version` | `string`        | No       | Version metadata                                                                                                             |
-| `url`     | `string`        | No       | Overrides the endpoint URL shown in the card and install snippets. See [MCP URL resolution](#mcp-url-resolution)             |
-| `tools`   | `[Tool Object]` | No       | Array of tools provided by the MCP server                                                                                    |
+| Property            | Type                            | Required | Description                                                                                                                  |
+| ------------------- | ------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `name`              | `string`                        | No       | Display name used in the generated client configuration snippets. Falls back to the operation `summary`, then `"mcp-server"` |
+| `version`           | `string`                        | No       | Version metadata                                                                                                             |
+| `url`               | `string`                        | No       | Overrides the endpoint URL shown in the card and install snippets. See [MCP URL resolution](#mcp-url-resolution)             |
+| `authType`          | `"none" \| "apiKey" \| "oauth"` | No       | How clients authenticate. Takes precedence over the type inferred from `securitySchemes`                                     |
+| `tools`             | `[Tool Object]`                 | No       | Tools the server exposes                                                                                                     |
+| `prompts`           | `[Prompt Object]`               | No       | Prompts the server exposes                                                                                                   |
+| `resources`         | `[Resource Object]`             | No       | Resources the server exposes                                                                                                 |
+| `resourceTemplates` | `[Resource Template Object]`    | No       | Resource templates the server exposes                                                                                        |
 
-Each item in the `tools` array:
+Each capability is identified the way the protocol identifies it — tools and prompts by `name`,
+resources by `uri`, resource templates by `uriTemplate`. A bare string is accepted as shorthand for
+that key alone.
 
-| Property      | Type     | Required | Description                     |
-| ------------- | -------- | -------- | ------------------------------- |
-| `name`        | `string` | Yes      | Tool name                       |
-| `description` | `string` | No       | Human-readable tool description |
+| Object            | Key           | Other properties                  |
+| ----------------- | ------------- | --------------------------------- |
+| Tool              | `name`        | `description`                     |
+| Prompt            | `name`        | `description`                     |
+| Resource          | `uri`         | `name`, `description`, `mimeType` |
+| Resource Template | `uriTemplate` | `name`, `description`, `mimeType` |
+
+### Authentication
+
+`authType` states outright how clients authenticate, for servers whose flow no OpenAPI security
+scheme describes — an MCP gateway's inbound OAuth, for instance, is discovered by the client itself.
+Without it, the type is inferred from the first entry in `securitySchemes`: `oauth2` and
+`openIdConnect` mean OAuth, `http` and `apiKey` mean an API key.
 
 ## MCP URL resolution
 
@@ -110,6 +125,10 @@ paths:
             description: Search the documentation
           - name: get_page
             description: Retrieve a specific documentation page
+        resources:
+          - uri: docs://changelog
+            name: Changelog
+            mimeType: text/markdown
       responses:
         "200":
           description: MCP response
@@ -120,6 +139,8 @@ paths:
 When detected, the operation page shows:
 
 - **MCP Endpoint card** with the full URL and a copy button
+- **Capabilities card** listing the tools, prompts, resources, and resource templates the extension
+  documents — omitted entirely when it documents none
 - **AI Tool Configuration** tabs with setup instructions for:
   - **Claude** — add via Connectors UI or `claude mcp add` CLI command
   - **ChatGPT** — app setup via Settings → Apps → Advanced Settings

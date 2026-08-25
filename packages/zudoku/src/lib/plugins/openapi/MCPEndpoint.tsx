@@ -7,6 +7,7 @@ import {
 import { type ReactNode, useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
 import { Typography } from "../../components/Typography.js";
+import { Badge } from "../../ui/Badge.js";
 import { Button } from "../../ui/Button.js";
 import { Callout } from "../../ui/Callout.js";
 import { Card } from "../../ui/Card.js";
@@ -16,6 +17,7 @@ import { cn } from "../../util/cn.js";
 import {
   CLAUDE_CONNECTORS_URL,
   type McpApp,
+  type McpCapabilityGroup,
   type McpServerData,
   getClaudeCodeCommand,
   getCodexCliCommand,
@@ -23,6 +25,7 @@ import {
   getCursorConfig,
   getCursorDeepLink,
   getGenericConfig,
+  getMcpCapabilities,
   getMcpServerName,
   getMcpUrl,
   getVisibleApps,
@@ -79,6 +82,62 @@ const InstallButton = ({
   </Button>
 );
 
+// What the server exposes, listed so a reader can tell whether it is worth
+// connecting before they follow the setup steps. Only rendered when the
+// capabilities are known from config — see getMcpCapabilities.
+const Capabilities = ({
+  name,
+  groups,
+}: {
+  name: string;
+  groups: McpCapabilityGroup[];
+}) => (
+  <Card className="p-6 mb-6 max-w-screen-md">
+    <div className="space-y-5">
+      <div>
+        <h3 className="text-lg font-semibold">What {name} exposes</h3>
+        <p className="text-sm text-muted-foreground">
+          Available to any client connected to this server.
+        </p>
+      </div>
+      {groups.map((group) => (
+        <div key={group.id} className="space-y-2">
+          <div className="text-sm font-medium">
+            {group.label}{" "}
+            <span className="text-muted-foreground tabular-nums">
+              ({group.items.length})
+            </span>
+          </div>
+          <ul className="not-prose divide-y rounded-lg border">
+            {group.items.map((item) => (
+              <li key={item.id} className="flex flex-col gap-1 p-3">
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <code className="font-mono text-sm break-all">{item.id}</code>
+                  {item.label && (
+                    <span className="text-xs text-muted-foreground">
+                      {item.label}
+                    </span>
+                  )}
+                  {item.mimeType && (
+                    <Badge variant="muted" className="text-xs font-mono">
+                      {item.mimeType}
+                    </Badge>
+                  )}
+                </div>
+                {item.description && (
+                  <p className="text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </Card>
+);
+
 export const MCPEndpoint = ({
   serverUrl,
   operationPath,
@@ -99,6 +158,7 @@ export const MCPEndpoint = ({
     disableAuthInstructions,
   });
   const visibleApps = getVisibleApps(authType);
+  const capabilityGroups = getMcpCapabilities(data);
 
   const claudeCodeCommand = getClaudeCodeCommand(name, mcpUrl, auth);
   const codexCliCommand = getCodexCliCommand(name, mcpUrl, auth);
@@ -412,108 +472,116 @@ export const MCPEndpoint = ({
   };
 
   return (
-    <Card className="p-6 mb-6 max-w-screen-md">
-      <div className="space-y-5">
-        <div>
-          <h3 className="text-lg font-semibold">Connect {name}</h3>
-          <p className="text-sm text-muted-foreground">
-            Add this MCP server to your favorite AI tools in a few steps.
-          </p>
-        </div>
-
-        {/* Step 1 — the one thing every client needs: the server URL. */}
-        <div className="rounded-lg border bg-muted/30 p-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-xs font-medium text-muted-foreground mb-1">
-                MCP Server URL
-              </div>
-              <code className="block truncate font-mono text-sm">{mcpUrl}</code>
-            </div>
-            <Button
-              onClick={handleCopy}
-              variant="outline"
-              size="sm"
-              className="gap-1.5 shrink-0"
-            >
-              {isCopied ? (
-                <CheckIcon className="h-3.5 w-3.5 text-green-600" />
-              ) : (
-                <CopyIcon className="h-3.5 w-3.5" />
-              )}
-              {isCopied ? "Copied!" : "Copy"}
-            </Button>
-          </div>
-          {auth && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Requires an <InlineCode>{auth.headerName}</InlineCode> header —
-              replace <InlineCode>{auth.placeholder}</InlineCode> with your key.
+    <>
+      <Card className="p-6 mb-6 max-w-screen-md">
+        <div className="space-y-5">
+          <div>
+            <h3 className="text-lg font-semibold">Connect {name}</h3>
+            <p className="text-sm text-muted-foreground">
+              Add this MCP server to your favorite AI tools in a few steps.
             </p>
+          </div>
+
+          {/* Step 1 — the one thing every client needs: the server URL. */}
+          <div className="rounded-lg border bg-muted/30 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs font-medium text-muted-foreground mb-1">
+                  MCP Server URL
+                </div>
+                <code className="block truncate font-mono text-sm">
+                  {mcpUrl}
+                </code>
+              </div>
+              <Button
+                onClick={handleCopy}
+                variant="outline"
+                size="sm"
+                className="gap-1.5 shrink-0"
+              >
+                {isCopied ? (
+                  <CheckIcon className="h-3.5 w-3.5 text-green-600" />
+                ) : (
+                  <CopyIcon className="h-3.5 w-3.5" />
+                )}
+                {isCopied ? "Copied!" : "Copy"}
+              </Button>
+            </div>
+            {auth && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Requires an <InlineCode>{auth.headerName}</InlineCode> header —
+                replace <InlineCode>{auth.placeholder}</InlineCode> with your
+                key.
+              </p>
+            )}
+          </div>
+
+          {/* Step 2 — pick your client. */}
+          <div className="space-y-2">
+            <div className="text-sm font-medium">Choose your client</div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {visibleApps.map((app) => {
+                const isActive = app.id === selectedApp?.id;
+                return (
+                  <button
+                    key={app.id}
+                    type="button"
+                    onClick={() => selectApp(app.id)}
+                    aria-pressed={isActive}
+                    data-active={isActive}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-2 rounded-lg border p-3 transition",
+                      "hover:bg-muted/60",
+                      isActive
+                        ? "border-primary bg-primary/5 ring-1 ring-primary text-foreground"
+                        : "border-border text-muted-foreground",
+                    )}
+                  >
+                    <McpClientLogo appId={app.id} className="size-6" />
+                    <span className="text-xs font-medium">{app.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Step 3 — client-specific setup walkthrough. */}
+          {selectedApp && (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-sm font-medium">
+                  Set up {selectedApp.label}
+                </div>
+                {selectedApp.subApps.length > 1 && (
+                  <ToggleGroup
+                    size="sm"
+                    variant="outline"
+                    spacing={2}
+                    aria-label={`Set up method for ${selectedApp.label}`}
+                    value={activeSubApp ? [activeSubApp.id] : []}
+                    onValueChange={(value: string[]) => {
+                      const next = value.at(0);
+                      if (next) setSelectedSubAppId(next);
+                    }}
+                  >
+                    {selectedApp.subApps.map((sub) => (
+                      <ToggleGroupItem key={sub.id} value={sub.id}>
+                        {sub.label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                )}
+              </div>
+              <Typography className="text-sm max-w-full">
+                {renderSetup(selectedApp)}
+              </Typography>
+            </div>
           )}
         </div>
-
-        {/* Step 2 — pick your client. */}
-        <div className="space-y-2">
-          <div className="text-sm font-medium">Choose your client</div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {visibleApps.map((app) => {
-              const isActive = app.id === selectedApp?.id;
-              return (
-                <button
-                  key={app.id}
-                  type="button"
-                  onClick={() => selectApp(app.id)}
-                  aria-pressed={isActive}
-                  data-active={isActive}
-                  className={cn(
-                    "flex flex-col items-center justify-center gap-2 rounded-lg border p-3 transition",
-                    "hover:bg-muted/60",
-                    isActive
-                      ? "border-primary bg-primary/5 ring-1 ring-primary text-foreground"
-                      : "border-border text-muted-foreground",
-                  )}
-                >
-                  <McpClientLogo appId={app.id} className="size-6" />
-                  <span className="text-xs font-medium">{app.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Step 3 — client-specific setup walkthrough. */}
-        {selectedApp && (
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm font-medium">
-                Set up {selectedApp.label}
-              </div>
-              {selectedApp.subApps.length > 1 && (
-                <ToggleGroup
-                  size="sm"
-                  variant="outline"
-                  spacing={2}
-                  aria-label={`Set up method for ${selectedApp.label}`}
-                  value={activeSubApp ? [activeSubApp.id] : []}
-                  onValueChange={(value: string[]) => {
-                    const next = value.at(0);
-                    if (next) setSelectedSubAppId(next);
-                  }}
-                >
-                  {selectedApp.subApps.map((sub) => (
-                    <ToggleGroupItem key={sub.id} value={sub.id}>
-                      {sub.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              )}
-            </div>
-            <Typography className="text-sm max-w-full">
-              {renderSetup(selectedApp)}
-            </Typography>
-          </div>
-        )}
-      </div>
-    </Card>
+      </Card>
+      {capabilityGroups.length > 0 && (
+        <Capabilities name={name} groups={capabilityGroups} />
+      )}
+    </>
   );
 };
