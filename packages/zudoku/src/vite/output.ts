@@ -5,8 +5,18 @@ import { getZudokuPackageJson } from "../cli/common/package-json.js";
 import type { LoadedConfig } from "../config/config.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import type { RouteRewrite } from "./prerender/utils.js";
+import {
+  generateVercelMarkdownMiddleware,
+  type GenerateVercelMarkdownMiddlewareOptions,
+} from "./vercel-markdown-middleware.js";
 
 const pkgJson = getZudokuPackageJson();
+const MARKDOWN_MIDDLEWARE_PATH = "zudoku-markdown";
+
+export type MarkdownNegotiationOutput = Omit<
+  GenerateVercelMarkdownMiddlewareOptions,
+  "basePath"
+>;
 
 // Generates a Vercel build output file
 // https://vercel.com/docs/build-output-api/v3
@@ -140,10 +150,12 @@ export function generateOutput({
   config,
   redirects,
   rewrites = [],
+  markdownNegotiation,
 }: {
   config: LoadedConfig;
   redirects: Array<{ from: string; to: string }>;
   rewrites?: RouteRewrite[];
+  markdownNegotiation?: MarkdownNegotiationOutput;
 }): Config {
   const routes: Route[] = [];
 
@@ -175,6 +187,16 @@ export function generateOutput({
     });
   }
 
+  if (markdownNegotiation) {
+    const basePath = joinUrl(config.basePath);
+    const escapedBasePath = basePath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    routes.push({
+      src: basePath === "/" ? "/(.*)" : `${escapedBasePath}(?:/(.*))?`,
+      middlewarePath: MARKDOWN_MIDDLEWARE_PATH,
+      continue: true,
+    });
+  }
+
   if (rewrites.length > 0) {
     routes.push({ handle: "filesystem" });
     for (const rewrite of rewrites) {
@@ -202,13 +224,23 @@ export async function writeOutput(
     config,
     redirects,
     rewrites,
+    markdownNegotiation,
   }: {
     config: LoadedConfig;
     redirects: Array<{ from: string; to: string }>;
     rewrites?: RouteRewrite[];
+    markdownNegotiation?: MarkdownNegotiationOutput;
   },
 ) {
-  const output = generateOutput({ config, redirects, rewrites });
+  const vercelMarkdownNegotiation = process.env.VERCEL
+    ? markdownNegotiation
+    : undefined;
+  const output = generateOutput({
+    config,
+    redirects,
+    rewrites,
+    markdownNegotiation: vercelMarkdownNegotiation,
+  });
   // For now we are putting this in the dist folder, eventually we can
   // expand this to support the full vercel build output API
 
@@ -221,6 +253,30 @@ export async function writeOutput(
   await writeFile(outputFile, JSON.stringify(output, null, 2), "utf-8");
 
   if (process.env.VERCEL) {
+    if (vercelMarkdownNegotiation) {
+      const functionDir = path.join(
+        outputDir,
+        "functions",
+        `${MARKDOWN_MIDDLEWARE_PATH}.func`,
+      );
+      await mkdir(functionDir, { recursive: true });
+      await Promise.all([
+        writeFile(
+          path.join(functionDir, "index.js"),
+          generateVercelMarkdownMiddleware({
+            basePath: config.basePath,
+            ...vercelMarkdownNegotiation,
+          }),
+          "utf-8",
+        ),
+        writeFile(
+          path.join(functionDir, ".vc-config.json"),
+          JSON.stringify({ runtime: "edge", entrypoint: "index.js" }, null, 2),
+          "utf-8",
+        ),
+      ]);
+    }
+
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log("Wrote Vercel output to", outputDir);
   }

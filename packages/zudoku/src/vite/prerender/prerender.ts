@@ -14,6 +14,7 @@ import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
+import { getMarkdownNotFound } from "../../lib/util/markdown-representation.js";
 import {
   getMarkdownOutputPath,
   type MarkdownFileInfo,
@@ -271,9 +272,25 @@ export const prerender = async ({
       siteName: config.site?.title,
       llmsTxt: llmsConfig.llmsTxt,
       llmsTxtFull: llmsConfig.llmsTxtFull,
+      title: llmsConfig.title,
+      description: llmsConfig.description,
+      instructions: llmsConfig.instructions,
       redirectUrls,
     });
   }
+
+  const contentNegotiationEnabled =
+    config.docs.publishMarkdown && config.docs.contentNegotiation;
+  const markdownNotFound = contentNegotiationEnabled
+    ? getMarkdownNotFound({
+        basePath: config.basePath,
+        includeLlmsTxt: llmsConfig.llmsTxt ?? false,
+        markdownRoutePaths: markdownFileInfos.map((info) => info.routePath),
+        sitemapOutDir: config.sitemap
+          ? (config.sitemap.outDir ?? "")
+          : undefined,
+      })
+    : undefined;
 
   if (!config.docs.publishMarkdown) {
     await Promise.all(
@@ -287,7 +304,13 @@ export const prerender = async ({
     );
   }
 
-  return { workerResults, rewrites };
+  return {
+    workerResults,
+    rewrites,
+    knownRoutes: paths,
+    markdownRoutes: markdownFileInfos.map((info) => info.routePath),
+    markdownNotFound,
+  };
 };
 
 /**

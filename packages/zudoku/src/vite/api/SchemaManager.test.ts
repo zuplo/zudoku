@@ -2,7 +2,8 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type { OpenAPIV3_1 } from "openapi-types";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { parse as parseYaml } from "yaml";
 import type { ConfigWithMeta } from "../../config/loader.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
 import { validateConfig } from "../../config/validators/ZudokuConfig.js";
@@ -95,6 +96,144 @@ describe("SchemaManager", () => {
     expect(schemas).toHaveLength(2);
     expect(schemas?.[0]?.version).toBe("2.0.0"); // v2 first
     expect(schemas?.[1]?.version).toBe("1.0.0"); // v1 second
+  });
+
+  it("publishes only explicitly configured APIs using the primary schema", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    const schemaPathV2 = path.join(tempDir, "openapi-v2.json");
+    const otherSchemaPath = path.join(tempDir, "other.json");
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+    await fs.writeFile(
+      schemaPathV2,
+      JSON.stringify({
+        ...mockSchema,
+        info: { ...mockSchema.info, version: "2.0.0" },
+      }),
+    );
+    await fs.writeFile(otherSchemaPath, JSON.stringify(mockSchema));
+
+    const manager = new SchemaManager({
+      storeDir,
+      config: {
+        ...baseConfig,
+        basePath: "/docs",
+        apis: [
+          {
+            type: "file",
+            path: "test-api",
+            input: [schemaPathV2, schemaPath],
+            publish: { path: "/openapi.json" },
+          },
+          { type: "file", path: "other-api", input: otherSchemaPath },
+        ],
+      },
+      processors: [],
+    });
+
+    await manager.processAllSchemas();
+
+    const publications = manager.getPublishedSchemas();
+    expect(publications).toHaveLength(1);
+    expect(publications[0]).toMatchObject({
+      apiPath: "test-api",
+      urlPath: "/docs/openapi.json",
+      mediaType: "application/json",
+    });
+    expect(JSON.parse(publications[0]?.content ?? "{}").info.version).toBe(
+      "2.0.0",
+    );
+  });
+
+  it("publishes YAML with the matching media type", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+    const manager = new SchemaManager({
+      storeDir,
+      config: {
+        ...baseConfig,
+        apis: {
+          type: "file",
+          path: "test-api",
+          input: schemaPath,
+          publish: { path: "/openapi.yaml" },
+        },
+      },
+      processors: [],
+    });
+
+    await manager.processAllSchemas();
+
+    const publication = manager.getPublishedSchemas()[0];
+    expect(publication?.mediaType).toBe("application/yaml");
+    expect(parseYaml(publication?.content ?? "").info.title).toBe("Test API");
+  });
+
+  it("rejects duplicate publication paths across APIs", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    const secondSchemaPath = path.join(tempDir, "second-openapi.json");
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+    await fs.writeFile(secondSchemaPath, JSON.stringify(mockSchema));
+    const manager = new SchemaManager({
+      storeDir,
+      config: {
+        ...baseConfig,
+        apis: [
+          {
+            type: "file",
+            path: "first-api",
+            input: schemaPath,
+            publish: { path: "/openapi.json" },
+          },
+          {
+            type: "file",
+            path: "second-api",
+            input: secondSchemaPath,
+            publish: { path: "/openapi.json" },
+          },
+        ],
+      },
+      processors: [],
+    });
+
+    await expect(manager.processAllSchemas()).rejects.toThrow(
+      'OpenAPI publication path "/openapi.json" is configured by both "first-api" and "second-api"',
+    );
+  });
+
+  it("reports agent-quality issues only when opted in", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(
+      schemaPath,
+      JSON.stringify({
+        ...mockSchema,
+        paths: {
+          "/widgets": { get: { responses: { "200": { description: "OK" } } } },
+        },
+      }),
+    );
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const manager = new SchemaManager({
+      storeDir,
+      config: {
+        ...baseConfig,
+        apis: {
+          type: "file",
+          path: "test-api",
+          input: schemaPath,
+          publish: { path: "/openapi.json", agentQuality: true },
+        },
+      },
+      processors: [],
+    });
+
+    await manager.processAllSchemas();
+
+    expect(warning).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '[zudoku] Agent-quality audit for API "test-api" found',
+      ),
+    );
+    warning.mockRestore();
   });
 
   it("should handle multiple versions with overridden path and label", async () => {

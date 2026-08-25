@@ -158,7 +158,13 @@ const runPrerender = async (options: PrerenderOptions) => {
   const serverConfigFilename = findServerConfigFilename(serverResult);
 
   try {
-    const { workerResults, rewrites } = await prerender({
+    const {
+      workerResults,
+      rewrites,
+      knownRoutes,
+      markdownRoutes,
+      markdownNotFound,
+    } = await prerender({
       html,
       dir,
       basePath: config.basePath,
@@ -199,6 +205,13 @@ const runPrerender = async (options: PrerenderOptions) => {
       config,
       redirects: workerResults.flatMap((r) => r.redirect ?? []),
       rewrites,
+      markdownNegotiation: markdownNotFound
+        ? {
+            knownCanonicalRoutePaths: knownRoutes,
+            markdownCanonicalRoutePaths: markdownRoutes,
+            markdownNotFoundBody: markdownNotFound,
+          }
+        : undefined,
     });
 
     if (ZuploEnv.isZuplo && issuer) {

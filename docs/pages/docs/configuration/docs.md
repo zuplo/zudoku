@@ -246,6 +246,54 @@ The generated markdown files:
 - Are required for the `copyPage` button functionality
 - Are used by LLM features (see [llms.txt configuration](/docs/configuration/llms) for more details)
 
+### `contentNegotiation`
+
+**Type:** `boolean` **Default:** the value of `publishMarkdown`
+
+When `publishMarkdown` is enabled, canonical documentation URLs honor the HTTP `Accept` header.
+Requests that prefer `text/markdown` receive the same content as the page's `.md` URL with a
+`Content-Type: text/markdown; charset=utf-8` response. HTML and Markdown variants include
+`Vary: Accept` so shared caches do not mix representations. Content negotiation is therefore enabled
+by default whenever `publishMarkdown` is enabled. Set it to `false` to opt out.
+
+Canonical URL negotiation is built into the SSR-backed development server, SSR deployments, and
+Zudoku's Vercel static output. Other static hosts, and development with `--no-ssr`, must configure
+equivalent `Accept`-aware routing from each canonical URL to its generated `.md` sibling. The
+explicit `.md` files remain portable to every static host.
+
+```tsx title="zudoku.config.tsx"
+docs: {
+  publishMarkdown: true,
+  contentNegotiation: true,
+}
+```
+
+On those supported runtimes, Zudoku also returns a concise Markdown recovery response with status
+`404` when an agent requests a missing path. It links to the documentation root and, when those
+generated files are present, `llms.txt` and the sitemap. Set `contentNegotiation: false` to retain
+HTML-only canonical URLs while continuing to publish the explicit `.md` files.
+
+#### Other hosting providers
+
+When `publishMarkdown` is enabled, Zudoku emits the `.md` files, so other hosting providers can
+implement the same behavior in their CDN, reverse proxy, edge worker, or web server. Configure the
+hosting layer to:
+
+1. Apply the rule only to known documentation routes within the configured `basePath`; leave assets
+   and non-document routes unchanged.
+2. Inspect `Accept` on `GET` and `HEAD` requests. When Markdown is the preferred acceptable
+   representation, internally rewrite the canonical page URL to its `.md` sibling rather than
+   redirecting the client.
+3. Serve the rewritten response as `text/markdown; charset=utf-8`, and add `Accept` to any existing
+   `Vary` header on both the Markdown and HTML variants.
+4. Preserve the query string and return no body for `HEAD` requests.
+5. Keep real `404` status codes for unknown paths. If returning a Markdown 404 body, include useful
+   recovery links instead of serving the HTML application shell with status `200`.
+
+The exact rule syntax depends on the provider. The important contract is that caches vary on
+`Accept`, canonical URLs resolve to the correct representation, and missing resources remain
+missing.
+
 ### `llms`
 
 **Type:** `object` **Default:** `undefined`
@@ -258,7 +306,11 @@ docs: {
   llms: {
     llmsTxt: true,        // Generate llms.txt summary file
     llmsTxtFull: true,    // Generate llms-full.txt with complete content
-    includeProtected: false
+    includeProtected: false,
+    title: "Acme API",
+    description: "Build and operate integrations with the Acme API.",
+    instructions:
+      "Use these docs when creating or debugging an Acme integration. Start with the quickstart, then use the API reference for request and response schemas."
   }
 }
 ```
