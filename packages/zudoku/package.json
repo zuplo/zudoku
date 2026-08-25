@@ -1,6 +1,6 @@
 {
   "name": "zudoku",
-  "version": "0.83.1",
+  "version": "0.84.0",
   "type": "module",
   "engines": {
     "node": ">=22.22.0"
