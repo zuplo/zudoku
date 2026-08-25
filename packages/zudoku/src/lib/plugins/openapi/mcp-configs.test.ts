@@ -267,6 +267,27 @@ describe("resolveMcpAuth", () => {
     ).toEqual({ authType: "none" });
   });
 
+  it("does not derive an api key header for a declared oauth server", () => {
+    // A gateway carries both: the OAuth policy sets authType, while the route
+    // still documents a security scheme a header would be inferred from.
+    expect(
+      resolveMcpAuth({
+        authType: "oauth",
+        security: [{ key: [] }],
+        securitySchemes: {
+          key: { type: "apiKey", in: "header", name: "X-API-Key" },
+        },
+      }),
+    ).toEqual({ authType: "oauth", auth: undefined });
+  });
+
+  it("does not derive an api key header for a declared unauthenticated server", () => {
+    expect(resolveMcpAuth({ authType: "none", ...apiKeyData })).toEqual({
+      authType: "none",
+      auth: undefined,
+    });
+  });
+
   it("resolves no auth for servers without security", () => {
     expect(resolveMcpAuth(true)).toEqual({
       authType: "none",

@@ -54,8 +54,10 @@ that key alone.
 
 `authType` states outright how clients authenticate, for servers whose flow no OpenAPI security
 scheme describes — an MCP gateway's inbound OAuth, for instance, is discovered by the client itself.
-Without it, the type is inferred from the first entry in `securitySchemes`: `oauth2` and
-`openIdConnect` mean OAuth, `http` and `apiKey` mean an API key.
+Without it, the type is inferred from the security the extension carries: the first requirement in
+`security` names a scheme, and that scheme is looked up in `securitySchemes`. An `oauth2` or
+`openIdConnect` scheme means OAuth, `http` or `apiKey` means an API key. Anything else — including a
+scheme the lookup does not find — means no authentication.
 
 ## MCP URL resolution
 

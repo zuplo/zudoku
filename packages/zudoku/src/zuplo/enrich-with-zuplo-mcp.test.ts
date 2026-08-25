@@ -803,6 +803,59 @@ describe("enrichWithZuploMcpServerData", () => {
     expect(op["x-mcp-server"]).toEqual({ name: "Linear" });
   });
 
+  it("should document an empty capability list as exposing none", async () => {
+    const schema = gatewaySchema(
+      gatewayRouteHandler(["mcp-capability-filter"]),
+    );
+
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: {
+        policies: [
+          {
+            name: "mcp-capability-filter",
+            policyType: "mcp-capability-filter-inbound",
+            handler: {
+              module: "$import(@zuplo/runtime/mcp-gateway)",
+              export: "McpCapabilityFilterInboundPolicy",
+              // Tools filtered down to none; prompts omitted, so the upstream's
+              // pass through and stay unknown.
+              options: { tools: [], resources: ["linear://teams"] },
+            },
+          },
+        ],
+      },
+    })(processorArg(schema));
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].tools).toEqual([]);
+    expect(op["x-mcp-server"].prompts).toBeUndefined();
+    expect(op["x-mcp-server"].resources).toEqual([{ uri: "linear://teams" }]);
+  });
+
+  it("should ignore a handler from a module that merely starts like the runtime", async () => {
+    const schema = gatewaySchema({
+      "x-zuplo-route": {
+        corsPolicy: "none",
+        handler: {
+          export: "McpProxyHandler",
+          module: "$import(@zuplo/runtime-custom)",
+          options: {},
+        },
+        policies: { inbound: [] },
+      },
+    });
+
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"]).toBeUndefined();
+  });
+
   it("should ignore a same-named handler export from another module", async () => {
     const schema = gatewaySchema({
       "x-zuplo-route": {

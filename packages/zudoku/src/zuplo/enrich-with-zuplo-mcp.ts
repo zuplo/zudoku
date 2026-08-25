@@ -87,7 +87,9 @@ const MCP_GATEWAY_HANDLER_EXPORTS = new Set([
   "McpVirtualServerHandler",
   "mcpVirtualServerHandler",
 ]);
-const ZUPLO_RUNTIME_MODULE_PREFIX = "$import(@zuplo/runtime";
+// Matches `$import(@zuplo/runtime)` and its subpaths, and nothing else — a
+// bare prefix test would also accept a customer's `@zuplo/runtime-custom`.
+const ZUPLO_RUNTIME_MODULE = /^\$import\(@zuplo\/runtime(\/[^)]+)?\)$/;
 
 // The gateway's inbound OAuth policies: the generic `mcp-oauth-inbound` plus
 // the per-IdP variants (`mcp-auth0-oauth-inbound`, `mcp-entra-oauth-inbound`,
@@ -275,7 +277,7 @@ const deduplicateSecurity = (
 const isGatewayHandler = (handler: RecordAny): boolean =>
   MCP_GATEWAY_HANDLER_EXPORTS.has(handler.export) &&
   typeof handler.module === "string" &&
-  handler.module.startsWith(ZUPLO_RUNTIME_MODULE_PREFIX);
+  ZUPLO_RUNTIME_MODULE.test(handler.module);
 
 // Resolves a route's inbound policy names to their definitions in
 // policies.json, expanding one level of composite policy so an MCP policy
@@ -413,36 +415,40 @@ const buildGatewayServerExtension = ({
 
   const filterOptions = capabilityFilter?.handler.options;
   if (filterOptions) {
-    const tools = readCapabilityProjections(filterOptions.tools, "name");
-    const prompts = readCapabilityProjections(filterOptions.prompts, "name");
-    const resources = readCapabilityProjections(filterOptions.resources, "uri");
-    const resourceTemplates = readCapabilityProjections(
-      filterOptions.resourceTemplates,
-      "uriTemplate",
-    );
-
-    if (tools.length > 0) {
-      extension.tools = tools.map(({ key, description }) => ({
+    // The filter distinguishes an omitted list (pass the upstream's capabilities
+    // of that kind through, so Zudoku cannot know them) from an empty one
+    // (expose none of them). Only a list that is actually configured becomes an
+    // extension property, so an empty array documents "none" rather than
+    // collapsing into the same silence as passthrough.
+    if (Array.isArray(filterOptions.tools)) {
+      extension.tools = readCapabilityProjections(
+        filterOptions.tools,
+        "name",
+      ).map(({ key, description }) => ({
         name: key,
         ...(description ? { description } : {}),
       }));
     }
-    if (prompts.length > 0) {
-      extension.prompts = prompts.map(({ key, description }) => ({
+    if (Array.isArray(filterOptions.prompts)) {
+      extension.prompts = readCapabilityProjections(
+        filterOptions.prompts,
+        "name",
+      ).map(({ key, description }) => ({
         name: key,
         ...(description ? { description } : {}),
       }));
     }
-    if (resources.length > 0) {
-      extension.resources = resources.map(({ key, ...rest }) => ({
-        uri: key,
-        ...rest,
-      }));
+    if (Array.isArray(filterOptions.resources)) {
+      extension.resources = readCapabilityProjections(
+        filterOptions.resources,
+        "uri",
+      ).map(({ key, ...rest }) => ({ uri: key, ...rest }));
     }
-    if (resourceTemplates.length > 0) {
-      extension.resourceTemplates = resourceTemplates.map(
-        ({ key, ...rest }) => ({ uriTemplate: key, ...rest }),
-      );
+    if (Array.isArray(filterOptions.resourceTemplates)) {
+      extension.resourceTemplates = readCapabilityProjections(
+        filterOptions.resourceTemplates,
+        "uriTemplate",
+      ).map(({ key, ...rest }) => ({ uriTemplate: key, ...rest }));
     }
   }
 

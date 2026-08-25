@@ -100,7 +100,15 @@ export const resolveMcpAuth = (
 ): { authType: AuthType; auth?: AuthHeader } => {
   if (options?.disableAuthInstructions) return { authType: "none" };
 
-  return { authType: getAuthType(data), auth: getAuthHeader(data) };
+  // The header is derived from the resolved type, not independently: a server
+  // that declares `authType` still carries security schemes an inference would
+  // read a credential header out of, and an OAuth or unauthenticated server
+  // must not get "replace YOUR_API_KEY" steps from one.
+  const authType = getAuthType(data);
+  return {
+    authType,
+    auth: authType === "apiKey" ? getAuthHeader(data) : undefined,
+  };
 };
 
 // -- Capabilities --
