@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Crew Gateway Directory",
-    "description": "REST endpoints for discovering what the Cosmo Cargo crew gateway exposes and for requesting access to a server you do not have yet. Use these when you are building tooling around the gateway; connect an assistant through the [Employee MCP Servers](/catalog/api-employee-mcp) catalog instead.\n\nThe directory is the source of truth for the approved server list. If a server is not in `GET /v1/servers`, the gateway will not proxy to it, no matter what a client's configuration file says.",
+    "description": "REST endpoints for discovering what the Cosmo Cargo crew gateway exposes and for requesting access to a server you do not have yet. Use these when you are building tooling around the gateway; connect an assistant through the [Employee MCP Servers](/employee-mcp) catalog instead.\n\nThe directory is the source of truth for the approved server list. If a server is not in `GET /v1/servers`, the gateway will not proxy to it, no matter what a client's configuration file says.",
     "version": "2.4.0",
     "contact": {
       "name": "Cosmo Cargo Crew Enablement",
