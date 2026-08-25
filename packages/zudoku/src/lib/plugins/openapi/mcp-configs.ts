@@ -190,6 +190,22 @@ export const getMcpServerName = (
 export type McpTool = { name: string; description?: string };
 
 /**
+ * `extensions` reaches the client as untyped JSON, so `x-mcp-server` can hold
+ * anything a document author wrote — including `null`, which `typeof` reports as
+ * "object". Narrow before reading properties off it.
+ */
+export const isMcpServerObject = (
+  data?: McpServerData,
+): data is Record<string, unknown> => typeof data === "object" && data !== null;
+
+/**
+ * Whether a raw `x-mcp-server` value describes a server at all. Only `true` and
+ * an object do; `null`, `false` and scalars are treated as absent.
+ */
+export const isMcpServerData = (value: unknown): value is McpServerData =>
+  value === true || (typeof value === "object" && value !== null);
+
+/**
  * Human-readable label for a server. Deliberately the inverse precedence of
  * `getMcpServerName`, which prefers `x-mcp-server.name` — that is the protocol
  * identity used in install snippets (`cosmo-salesforce-sales-cloud`) and reads
@@ -201,7 +217,7 @@ export const getMcpServerTitle = (
   operationId?: string | null,
 ): string => {
   if (summary) return summary;
-  if (typeof data === "object" && typeof data.name === "string") {
+  if (isMcpServerObject(data) && typeof data.name === "string") {
     return data.name;
   }
   return operationId ?? "MCP Server";
@@ -213,7 +229,7 @@ export const getMcpServerTitle = (
  * `x-mcp-server: true` has none, which is a normal state rather than an error.
  */
 export const getMcpTools = (data?: McpServerData): McpTool[] => {
-  if (typeof data !== "object" || !Array.isArray(data.tools)) return [];
+  if (!isMcpServerObject(data) || !Array.isArray(data.tools)) return [];
 
   return data.tools.flatMap((tool) =>
     tool && typeof tool === "object" && typeof tool.name === "string"

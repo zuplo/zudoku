@@ -36,6 +36,7 @@ import { graphql } from "./graphql/index.js";
 import {
   getMcpServerTitle,
   getMcpTools,
+  isMcpServerData,
   type McpServerData,
 } from "./mcp-configs.js";
 import { MCPEndpoint } from "./MCPEndpoint.js";
@@ -121,12 +122,14 @@ export const McpCatalog = () => {
       const tagLabel = tag.name ?? UNTAGGED_LABEL;
 
       for (const operation of tag.operations) {
-        const data: McpServerData | undefined =
-          operation.extensions?.[MCP_SERVER_EXTENSION];
+        const raw: unknown = operation.extensions?.[MCP_SERVER_EXTENSION];
 
-        // Everything without `x-mcp-server` is REST surface, which a catalog
-        // document does not render.
-        if (data === undefined) continue;
+        // Everything without a usable `x-mcp-server` is REST surface, which a
+        // catalog document does not render. The value is untyped JSON, so this
+        // also rejects `null` and scalars rather than reading properties off
+        // them further down.
+        if (!isMcpServerData(raw)) continue;
+        const data: McpServerData = raw;
 
         const existing = bySlug.get(operation.slug);
         if (existing) {
@@ -350,7 +353,10 @@ export const McpCatalog = () => {
       <Dialog
         open={Boolean(selectedServer)}
         onOpenChange={(open) => {
-          if (!open) setParam("server", undefined, false);
+          // Opening pushes, so Back closes the dialog. Closing has to replace:
+          // pushing again would leave the ?server= entry behind it, and Back
+          // from the closed page would reopen the card instead of leaving.
+          if (!open) setParam("server", undefined, true);
         }}
       >
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">

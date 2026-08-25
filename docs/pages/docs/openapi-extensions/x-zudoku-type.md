@@ -26,15 +26,17 @@ against an older one.
 ## `mcp-catalog`
 
 A catalog document renders as a **single page** listing every operation marked with
-[`x-mcp-server`](./x-mcp-server) as a card, grouped by tag. Selecting a card opens the server's
-install instructions and its tool list.
+[`x-mcp-server`](./x-mcp-server) as a card, in one grid that can be searched and filtered by tag.
+Selecting a card opens the server's install instructions and its tool list.
 
 Because the whole document becomes a catalog, a few things change:
 
 - **Only MCP servers are rendered.** Operations without `x-mcp-server` are not shown, and the
   document contributes no sidebar entries, tag pages, or schema page. If you also want to document
   plain REST endpoints, put them in a separate OpenAPI document with its own `apis` entry.
-- **Tags become filters** rather than pages. Servers without a tag are grouped under "Other".
+- **Tags become filters** rather than pages or headings. Each tag appears as a filter chip and as a
+  badge on its servers' cards; the grid itself stays flat. Servers without a tag are filed under
+  "Other". The active filter is kept in the URL as `?tag=`, so a filtered view can be linked.
 - **Only the latest version is rendered.** Catalog documents do not support version switching; a
   versioned API marked as a catalog warns at build time.
 
@@ -69,9 +71,9 @@ paths:
             description: Find accounts by name, domain or owner.
 ```
 
-This renders one catalog page with a single `Salesforce Sales Cloud` card under a
-`CRM & Customer Operations` filter. The card opens install snippets for Claude, ChatGPT, Cursor, VS
-Code and Codex, alongside the server's tools.
+This renders one catalog page with a single `Salesforce Sales Cloud` card, reachable via a
+`CRM & Customer Operations` filter chip. The card opens install snippets for Claude, ChatGPT,
+Cursor, VS Code and Codex, alongside the server's tools.
 
 ## Related
 

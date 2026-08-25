@@ -14,6 +14,7 @@ import {
   getMcpTools,
   getMcpUrl,
   getVisibleApps,
+  isMcpServerData,
   getVscodeConfig,
   getVscodeDeepLink,
 } from "./mcp-configs.js";
@@ -344,6 +345,32 @@ describe("getMcpTools", () => {
 
   it("tolerates a non-array tools value", () => {
     expect(getMcpTools({ tools: "all of them" })).toEqual([]);
+  });
+});
+
+// `extensions` is untyped JSON, so these values are all reachable from a
+// hand-authored document. `typeof null === "object"` made both helpers throw
+// and took the whole catalog page down with them.
+describe("malformed x-mcp-server values", () => {
+  const malformed = [null, 0, "", "yes", []];
+
+  it.each(malformed)("getMcpTools survives %p", (value) => {
+    expect(getMcpTools(value as never)).toEqual([]);
+  });
+
+  it.each(malformed)("getMcpServerTitle survives %p", (value) => {
+    expect(getMcpServerTitle(value as never, null, "opId")).toBe("opId");
+  });
+
+  it("treats only true and objects as describing a server", () => {
+    expect(isMcpServerData(true)).toBe(true);
+    expect(isMcpServerData({ name: "a" })).toBe(true);
+
+    expect(isMcpServerData(null)).toBe(false);
+    expect(isMcpServerData(undefined)).toBe(false);
+    expect(isMcpServerData(false)).toBe(false);
+    expect(isMcpServerData("x-mcp-server")).toBe(false);
+    expect(isMcpServerData(1)).toBe(false);
   });
 });
 
