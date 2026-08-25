@@ -10,6 +10,8 @@ import {
   getCursorDeepLink,
   getGenericConfig,
   getMcpServerName,
+  getMcpServerTitle,
+  getMcpTools,
   getMcpUrl,
   getVisibleApps,
   getVscodeConfig,
@@ -283,6 +285,65 @@ describe("getMcpServerName", () => {
 
   it("falls back to mcp-server", () => {
     expect(getMcpServerName(true)).toBe("mcp-server");
+  });
+});
+
+describe("getMcpServerTitle", () => {
+  it("prefers the summary, unlike getMcpServerName", () => {
+    const data = { name: "cosmo-salesforce-sales-cloud" };
+
+    // The protocol identity belongs in install snippets; a heading wants the
+    // human label. Precedence here is deliberately the inverse.
+    expect(getMcpServerTitle(data, "Salesforce Sales Cloud")).toBe(
+      "Salesforce Sales Cloud",
+    );
+    expect(getMcpServerName(data, "Salesforce Sales Cloud")).toBe(
+      "cosmo-salesforce-sales-cloud",
+    );
+  });
+
+  it("falls back to the server name, then the operation id", () => {
+    expect(getMcpServerTitle({ name: "my-server" })).toBe("my-server");
+    expect(getMcpServerTitle({}, null, "mcpSalesforce")).toBe("mcpSalesforce");
+    expect(getMcpServerTitle(true, null, "mcpSalesforce")).toBe(
+      "mcpSalesforce",
+    );
+  });
+
+  it("falls back to a generic label when nothing identifies the server", () => {
+    expect(getMcpServerTitle(true)).toBe("MCP Server");
+    expect(getMcpServerTitle(undefined, "")).toBe("MCP Server");
+  });
+});
+
+describe("getMcpTools", () => {
+  it("returns name and description for each tool", () => {
+    expect(
+      getMcpTools({
+        tools: [
+          { name: "soql_query", description: "Run a read-only SOQL query." },
+          { name: "list_accounts" },
+        ],
+      }),
+    ).toEqual([
+      { name: "soql_query", description: "Run a read-only SOQL query." },
+      { name: "list_accounts", description: undefined },
+    ]);
+  });
+
+  it("returns nothing for the boolean shorthand the designer writes", () => {
+    expect(getMcpTools(true)).toEqual([]);
+    expect(getMcpTools(undefined)).toEqual([]);
+  });
+
+  it("ignores entries that are not usable tools", () => {
+    expect(
+      getMcpTools({ tools: [null, "nope", {}, { name: 42 }, { name: "ok" }] }),
+    ).toEqual([{ name: "ok", description: undefined }]);
+  });
+
+  it("tolerates a non-array tools value", () => {
+    expect(getMcpTools({ tools: "all of them" })).toEqual([]);
   });
 });
 
