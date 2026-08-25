@@ -142,11 +142,8 @@ const parseMediaRange = (
       continue;
     }
 
-    // Parameters following q are accept extensions, not media type parameters.
-    if (foundQuality) {
-      continue;
-    }
-
+    // RFC 9110 no longer defines accept extensions. Every non-q parameter is
+    // a media type parameter and participates in representation matching.
     const parameterValue = parseParameterValue(rawValue);
     if (parameterValue === undefined || parameters.has(name)) {
       return undefined;

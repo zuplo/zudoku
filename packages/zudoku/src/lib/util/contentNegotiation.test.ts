@@ -64,6 +64,32 @@ describe("negotiateContentType", () => {
       ),
     ).toBe("text/html");
   });
+
+  test("treats non-q parameters as media parameters regardless of order", () => {
+    expect(
+      negotiateContentType(
+        "text/markdown;q=0.9;charset=utf-8, text/html;q=0.5",
+      ),
+    ).toBe("text/markdown");
+    expect(
+      negotiateContentType(
+        "text/markdown;charset=utf-8;q=0.9, text/html;q=0.5",
+      ),
+    ).toBe("text/markdown");
+    expect(
+      negotiateContentType(
+        "text/markdown;q=0.9;charset=iso-8859-1, text/html;q=0.5",
+      ),
+    ).toBe("text/html");
+  });
+
+  test("rejects legacy valueless accept extensions", () => {
+    expect(
+      negotiateContentType(
+        "text/markdown;q=0.9;legacy-extension, text/html;q=0.5",
+      ),
+    ).toBe("text/html");
+  });
 });
 
 describe("addAcceptToVary", () => {

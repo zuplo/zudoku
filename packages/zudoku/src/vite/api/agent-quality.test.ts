@@ -154,6 +154,132 @@ describe("auditOpenApiAgentQuality", () => {
     expect(auditOpenApiAgentQuality(document)).toEqual([]);
   });
 
+  it("audits only the effective parameter after operation overrides", () => {
+    const document = createDocument({
+      "/widgets/{id}": {
+        parameters: [
+          { name: "id", in: "path" },
+          { name: "id", in: "query" },
+          { $ref: "https://example.com/parameters.json#/External" },
+        ],
+        get: {
+          operationId: "getWidget",
+          description: "Get a widget.",
+          parameters: [{ name: "id", in: "path", schema: { type: "string" } }],
+          responses: {
+            "200": {
+              description: "A widget.",
+              content: {
+                "application/json": { schema: { type: "object" } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(
+      auditOpenApiAgentQuality(document).filter(
+        (issue) => issue.code === "untyped-parameter",
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        message: 'Parameter "id" is missing a typed schema.',
+      }),
+      expect.objectContaining({
+        message: 'Parameter "<unknown>" is missing a typed schema.',
+      }),
+    ]);
+  });
+
+  it("resolves referenced parameter identities before applying overrides", () => {
+    const document = {
+      ...createDocument({
+        "/widgets/{id}": {
+          parameters: [{ $ref: "#/components/parameters/TypedPathId" }],
+          get: {
+            operationId: "getWidget",
+            description: "Get a widget.",
+            parameters: [
+              { $ref: "#/components/parameters/UntypedOperationId" },
+            ],
+            responses: {
+              "200": {
+                description: "A widget.",
+                content: {
+                  "application/json": { schema: { type: "object" } },
+                },
+              },
+            },
+          },
+        },
+      }),
+      components: {
+        parameters: {
+          TypedPathId: {
+            name: "id",
+            in: "path",
+            schema: { type: "string" },
+          },
+          UntypedOperationId: {
+            name: "id",
+            in: "path",
+          },
+        },
+      },
+    } as unknown as OpenAPIDocument;
+
+    expect(auditOpenApiAgentQuality(document)).toEqual([
+      expect.objectContaining({
+        code: "untyped-parameter",
+        location: "GET /widgets/{id}",
+        message: 'Parameter "id" is missing a typed schema.',
+      }),
+    ]);
+  });
+
+  it("does not require content schemas for HEAD or informational responses", () => {
+    const document = createDocument({
+      "/widgets": {
+        head: {
+          operationId: "headWidgets",
+          description: "Inspect widget metadata.",
+          responses: { "200": { description: "Widget metadata." } },
+        },
+        get: {
+          operationId: "getWidgets",
+          description: "List widgets.",
+          responses: {
+            "103": { description: "Early hints." },
+            "1XX": { description: "Informational response." },
+          },
+        },
+      },
+    });
+
+    expect(auditOpenApiAgentQuality(document)).toEqual([]);
+  });
+
+  it("still requires HEAD operations to declare a response", () => {
+    const document = createDocument({
+      "/widgets": {
+        head: {
+          operationId: "headWidgets",
+          description: "Inspect widget metadata.",
+          responses: {},
+        },
+      },
+    });
+
+    expect(auditOpenApiAgentQuality(document)).toEqual([
+      expect.objectContaining({
+        code: "missing-response-schema",
+        location: "HEAD /widgets",
+        message: "Operation has no response schemas.",
+      }),
+    ]);
+  });
+
   it("formats an actionable warning report", () => {
     expect(
       formatAgentQualityReport("/api", [

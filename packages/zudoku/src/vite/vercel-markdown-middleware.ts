@@ -179,8 +179,8 @@ const parseMediaRange = (value, order) => {
       continue;
     }
 
-    if (foundQuality) continue;
-
+    // RFC 9110 no longer defines accept extensions. Every non-q parameter is
+    // a media type parameter and participates in representation matching.
     const parameterValue = parseParameterValue(rawValue);
     if (parameterValue === undefined || parameters.has(name)) return undefined;
     parameters.set(name, parameterValue);
@@ -246,8 +246,18 @@ const negotiateContentType = (acceptHeader) => {
 };
 
 const normalizeRequestPath = (pathname) => {
-  const normalized = pathname.replace(/\\/+$/, "");
-  return normalized || "/";
+  const normalized = pathname
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => {
+      try {
+        return encodeURIComponent(decodeURIComponent(segment));
+      } catch {
+        return encodeURIComponent(segment);
+      }
+    })
+    .join("/");
+  return normalized ? "/" + normalized : "/";
 };
 
 const isWithinBasePath = (pathname) =>

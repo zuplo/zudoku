@@ -167,6 +167,58 @@ describe("generateVercelMarkdownMiddleware", () => {
     expect(actual).toBe(negotiateContentType(accept));
   });
 
+  it.each([
+    ["text/markdown;q=0.9;charset=utf-8, text/html;q=0.5", "text/markdown"],
+    ["text/markdown;charset=utf-8;q=0.9, text/html;q=0.5", "text/markdown"],
+    ["text/markdown;q=0.9;charset=iso-8859-1, text/html;q=0.5", "text/html"],
+    ["text/markdown;q=0.9;legacy-extension, text/html;q=0.5", "text/html"],
+  ])(
+    "matches shared RFC 9110 parameter handling for %j",
+    async (accept, expected) => {
+      const middleware = await loadMiddleware();
+      const response = await middleware(request("/guide", { accept }));
+      const actual = response.headers.has("x-middleware-rewrite")
+        ? "text/markdown"
+        : "text/html";
+
+      expect(actual).toBe(expected);
+      expect(actual).toBe(negotiateContentType(accept));
+    },
+  );
+
+  it.each([
+    ["/tracking", "/track%69ng", "/tracking.md"],
+    ["/guides/café", "/guides/caf%c3%a9", "/guides/caf%C3%A9.md"],
+  ])(
+    "canonicalizes encoded request route %s",
+    async (routePath, requestPath, expectedMarkdownPath) => {
+      const middleware = await loadMiddleware({
+        knownCanonicalRoutePaths: [routePath],
+        markdownCanonicalRoutePaths: [routePath],
+      });
+      const response = await middleware(
+        request(requestPath, { accept: "text/markdown" }),
+      );
+
+      expect(
+        new URL(response.headers.get("x-middleware-rewrite") ?? "").pathname,
+      ).toBe(expectedMarkdownPath);
+    },
+  );
+
+  it("does not decode an encoded reserved delimiter into a route boundary", async () => {
+    const middleware = await loadMiddleware({
+      knownCanonicalRoutePaths: ["/guides/a/b"],
+      markdownCanonicalRoutePaths: ["/guides/a/b"],
+    });
+    const response = await middleware(
+      request("/guides/a%2fb", { accept: "text/markdown" }),
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+  });
+
   it("returns 406 when neither representation of a known page is acceptable", async () => {
     const middleware = await loadMiddleware();
     const response = await middleware(

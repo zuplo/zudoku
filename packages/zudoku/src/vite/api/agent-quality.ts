@@ -109,6 +109,61 @@ const getParameterName = (document: OpenAPIDocument, parameter: unknown) => {
     : "<unknown>";
 };
 
+const getParameterIdentity = (
+  document: OpenAPIDocument,
+  parameter: unknown,
+) => {
+  const resolved = resolveLocalRef(document, parameter);
+  if (
+    !isObject(resolved) ||
+    typeof resolved.name !== "string" ||
+    typeof resolved.in !== "string"
+  ) {
+    return undefined;
+  }
+
+  return JSON.stringify([resolved.name, resolved.in]);
+};
+
+const mergeParameters = (
+  document: OpenAPIDocument,
+  pathParameters: unknown,
+  operationParameters: unknown,
+) => {
+  const merged: unknown[] = [];
+  const indexes = new Map<string, number>();
+
+  for (const parameter of [
+    ...(Array.isArray(pathParameters) ? pathParameters : []),
+    ...(Array.isArray(operationParameters) ? operationParameters : []),
+  ]) {
+    const identity = getParameterIdentity(document, parameter);
+    if (identity === undefined) {
+      // Keep unresolved or incomplete parameters so the audit still reports
+      // any typing issue instead of silently dropping it during the merge.
+      merged.push(parameter);
+      continue;
+    }
+
+    const existingIndex = indexes.get(identity);
+    if (existingIndex === undefined) {
+      indexes.set(identity, merged.length);
+      merged.push(parameter);
+    } else {
+      // OpenAPI operation parameters override path-level parameters with the
+      // same (name, in) identity.
+      merged[existingIndex] = parameter;
+    }
+  }
+
+  return merged;
+};
+
+const responseCannotHaveContent = (method: string, status: string) =>
+  method === "head" ||
+  /^1(?:\d{2}|xx)$/i.test(status) ||
+  ["204", "205", "304"].includes(status);
+
 /**
  * Reports OpenAPI authoring gaps that make operations harder to translate to
  * LLM function tools. The audit is read-only and intentionally opt-in.
@@ -155,10 +210,11 @@ export const auditOpenApiAgentQuality = (
         });
       }
 
-      const parameters = [
-        ...(Array.isArray(pathItem.parameters) ? pathItem.parameters : []),
-        ...(Array.isArray(operation.parameters) ? operation.parameters : []),
-      ];
+      const parameters = mergeParameters(
+        document,
+        pathItem.parameters,
+        operation.parameters,
+      );
       for (const parameter of parameters) {
         if (parameterIsTyped(document, parameter)) continue;
         issues.push({
@@ -195,7 +251,7 @@ export const auditOpenApiAgentQuality = (
       }
 
       for (const [status, response] of Object.entries(responses)) {
-        if (["204", "205", "304"].includes(status)) continue;
+        if (responseCannotHaveContent(method, status)) continue;
         if (responseHasTypedSchema(document, response)) continue;
         issues.push({
           code: "missing-response-schema",

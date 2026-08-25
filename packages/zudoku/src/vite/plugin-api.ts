@@ -5,7 +5,7 @@ import { type Plugin, runnerImport } from "vite";
 import { parse as parseYaml } from "yaml";
 import { ZuploEnv } from "../app/env.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
-import { getCurrentConfig } from "../config/loader.js";
+import { type ConfigWithMeta, getCurrentConfig } from "../config/loader.js";
 import {
   getBuildConfig,
   type Processor,
@@ -37,6 +37,11 @@ import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
 const PROCESSED_STORE_SUBPATH = "node_modules/.zudoku/processed";
+
+export const schemaConfigurationChanged = (
+  current: Pick<ConfigWithMeta, "apis" | "basePath">,
+  next: Pick<ConfigWithMeta, "apis" | "basePath">,
+) => current.basePath !== next.basePath || !deepEqual(current.apis, next.apis);
 
 const warn = (message: string) => {
   // biome-ignore lint/suspicious/noConsole: Logging allowed here
@@ -167,7 +172,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
       const config = getCurrentConfig();
 
-      if (!deepEqual(schemaManager.config.apis, config.apis)) {
+      if (schemaConfigurationChanged(schemaManager.config, config)) {
         schemaManager.config = config;
         await schemaManager.processAllSchemas();
         schemaManager

@@ -144,6 +144,47 @@ describe("SchemaManager", () => {
     );
   });
 
+  it("regenerates base-path-dependent outputs after reprocessing", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+    const config: ConfigWithMeta = {
+      ...baseConfig,
+      basePath: "/docs",
+      apis: {
+        type: "file",
+        path: "test-api",
+        input: schemaPath,
+        publish: { path: "/openapi.json" },
+        options: {
+          schemaDownload: { enabled: true },
+        },
+      },
+    };
+    const manager = new SchemaManager({
+      storeDir,
+      config,
+      processors: [],
+    });
+
+    await manager.processAllSchemas();
+    expect(manager.getPublishedSchemas()[0]?.urlPath).toBe(
+      "/docs/openapi.json",
+    );
+    expect(manager.getLatestSchema("test-api")?.downloadUrl).toBe(
+      "/docs/test-api/1.0.0/schema.json",
+    );
+
+    manager.config = { ...config, basePath: "/reference" };
+    await manager.processAllSchemas();
+
+    expect(manager.getPublishedSchemas()[0]?.urlPath).toBe(
+      "/reference/openapi.json",
+    );
+    expect(manager.getLatestSchema("test-api")?.downloadUrl).toBe(
+      "/reference/test-api/1.0.0/schema.json",
+    );
+  });
+
   it("publishes YAML with the matching media type", async () => {
     const schemaPath = path.join(tempDir, "openapi.json");
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
