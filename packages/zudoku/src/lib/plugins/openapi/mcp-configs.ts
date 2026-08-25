@@ -14,8 +14,20 @@ export interface AuthHeader {
 
 export type AuthType = "none" | "apiKey" | "oauth";
 
-// Detects auth type from x-mcp-server security data
+const AUTH_TYPES: AuthType[] = ["none", "apiKey", "oauth"];
+
+const isAuthType = (value: unknown): value is AuthType =>
+  typeof value === "string" && AUTH_TYPES.some((type) => type === value);
+
+// Detects auth type from x-mcp-server. An explicit `authType` wins: an MCP
+// gateway's inbound OAuth cannot be described as an OpenAPI security scheme —
+// clients discover that flow themselves — so the extension states it outright
+// instead of fabricating one to be inferred back out.
 export const getAuthType = (data?: McpServerData): AuthType => {
+  if (typeof data !== "boolean" && isAuthType(data?.authType)) {
+    return data.authType;
+  }
+
   if (typeof data === "boolean" || !data?.security || !data?.securitySchemes) {
     return "none";
   }
@@ -88,7 +100,114 @@ export const resolveMcpAuth = (
 ): { authType: AuthType; auth?: AuthHeader } => {
   if (options?.disableAuthInstructions) return { authType: "none" };
 
-  return { authType: getAuthType(data), auth: getAuthHeader(data) };
+  // The header is derived from the resolved type, not independently: a server
+  // that declares `authType` still carries security schemes an inference would
+  // read a credential header out of, and an OAuth or unauthenticated server
+  // must not get "replace YOUR_API_KEY" steps from one.
+  const authType = getAuthType(data);
+  return {
+    authType,
+    auth: authType === "apiKey" ? getAuthHeader(data) : undefined,
+  };
+};
+
+// -- Capabilities --
+
+// One documented MCP capability. `id` is what the protocol identifies it by —
+// a tool or prompt name, a resource URI, a resource template's URI template —
+// so it is what a user matches against what their client lists.
+export interface McpCapability {
+  id: string;
+  /** Human-readable label, where the protocol carries one beside the id. */
+  label?: string;
+  description?: string;
+  mimeType?: string;
+}
+
+export interface McpCapabilityGroup {
+  id: "tools" | "prompts" | "resources" | "resourceTemplates";
+  label: string;
+  items: McpCapability[];
+}
+
+const readString = (value: unknown): string | undefined => {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed === "" ? undefined : trimmed;
+};
+
+// Reads one string property off an object of unknown shape — extension data is
+// whatever the OpenAPI document happened to carry.
+const readStringProp = (source: object, key: string): string | undefined =>
+  readString(Reflect.get(source, key));
+
+// Reads one capability list off the extension. Entries are objects keyed the
+// way the protocol keys that capability kind, and a bare string is accepted as
+// the key alone — the shorthand the gateway's capability filter allows.
+const readCapabilities = (
+  value: unknown,
+  keyProp: "name" | "uri" | "uriTemplate",
+): McpCapability[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((entry: unknown) => {
+    const key = readString(entry);
+    if (key) return [{ id: key }];
+    if (!entry || typeof entry !== "object") return [];
+
+    const id = readStringProp(entry, keyProp);
+    if (!id) return [];
+
+    // A tool's or prompt's name is its id, so it is never also a label.
+    const label =
+      keyProp === "name" ? undefined : readStringProp(entry, "name");
+    const description = readStringProp(entry, "description");
+    const mimeType = readStringProp(entry, "mimeType");
+
+    return [
+      {
+        id,
+        ...(label ? { label } : {}),
+        ...(description ? { description } : {}),
+        ...(mimeType ? { mimeType } : {}),
+      },
+    ];
+  });
+};
+
+// What the server exposes, in the order a user cares about it. Empty for a
+// server whose capabilities Zudoku cannot know at build time — an MCP gateway
+// passing an upstream's tools through untouched, say — in which case the card
+// says nothing rather than guessing.
+export const getMcpCapabilities = (
+  data?: McpServerData,
+): McpCapabilityGroup[] => {
+  if (typeof data === "boolean" || !data) return [];
+
+  const groups: McpCapabilityGroup[] = [
+    {
+      id: "tools",
+      label: "Tools",
+      items: readCapabilities(data.tools, "name"),
+    },
+    {
+      id: "prompts",
+      label: "Prompts",
+      items: readCapabilities(data.prompts, "name"),
+    },
+    {
+      id: "resources",
+      label: "Resources",
+      items: readCapabilities(data.resources, "uri"),
+    },
+    {
+      id: "resourceTemplates",
+      label: "Resource templates",
+      items: readCapabilities(data.resourceTemplates, "uriTemplate"),
+    },
+  ];
+
+  return groups.filter((group) => group.items.length > 0);
 };
 
 // -- App compatibility matrix --

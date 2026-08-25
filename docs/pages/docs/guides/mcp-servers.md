@@ -7,7 +7,8 @@ zuplo: false
 Zudoku can render a dedicated [MCP](https://modelcontextprotocol.io/) endpoint UI for any OpenAPI
 operation that has the `x-mcp-server` extension. When detected, the operation page replaces the
 standard request/response view with an MCP card showing the endpoint URL, a copy button, and tabbed
-installation instructions for Claude, ChatGPT, Cursor, VS Code, and a generic config.
+installation instructions for Claude, ChatGPT, Cursor, VS Code, and a generic config — followed by
+what the server exposes, when the extension documents it.
 
 ## Adding the extension
 
@@ -60,7 +61,7 @@ metadata. In this case, the operation's `summary` is used as the server name.
 | `name`    | `string` | No       | Display name used in the generated client configuration snippets. Falls back to the operation `summary`, then `"mcp-server"` |
 | `version` | `string` | No       | Version metadata (included for completeness; not currently rendered in UI)                                                   |
 | `url`     | `string` | No       | Overrides the endpoint URL shown in the card and install snippets                                                            |
-| `tools`   | `array`  | No       | Tools metadata (used by Zuplo enrichment; not currently rendered in UI)                                                      |
+| `tools`   | `array`  | No       | Tools the server exposes, listed on the page                                                                                 |
 
 Each tool in the `tools` array has:
 
@@ -68,6 +69,21 @@ Each tool in the `tools` array has:
 | ------------- | -------- | -------- | ------------------------------- |
 | `name`        | `string` | Yes      | Tool name                       |
 | `description` | `string` | No       | Human-readable tool description |
+
+The extension also takes `prompts`, `resources`, and `resourceTemplates`, listed the same way. See
+the [`x-mcp-server` reference](/docs/openapi-extensions/x-mcp-server#mcp-server-object) for their
+shapes.
+
+## Capabilities
+
+Whatever the extension documents — tools, prompts, resources, resource templates — is listed under
+the connect card, so a reader can tell what a server does before they install it. Each entry shows
+the key its client will match on (a tool or prompt `name`, a resource `uri`, a template's
+`uriTemplate`) along with its description.
+
+The card is omitted entirely when the extension documents no capabilities. That is the honest
+outcome for a server whose capabilities are only known at runtime — an MCP gateway passing an
+upstream's tools straight through, for instance — rather than an empty list implying it has none.
 
 ## MCP URL resolution
 

@@ -22,6 +22,37 @@ const mcpRouteHandler = (
   },
 });
 
+const gatewayRouteHandler = (
+  inbound: string[] = [],
+  options: Record<string, unknown> = {},
+) => ({
+  "x-zuplo-route": {
+    corsPolicy: "none",
+    handler: {
+      export: "McpProxyHandler",
+      module: "$import(@zuplo/runtime/mcp-gateway)",
+      options: { rewritePattern: "https://mcp.linear.app/mcp", ...options },
+    },
+    policies: { inbound },
+  },
+});
+
+const gatewaySchema = (operation: Record<string, unknown>) =>
+  ({
+    openapi: "3.1.0",
+    info: { title: "Test MCP API", version: "1.0.0" },
+    paths: {
+      "/mcp/linear": {
+        post: {
+          summary: "Linear",
+          operationId: "linear-mcp-server",
+          responses: { "200": { description: "MCP response" } },
+          ...operation,
+        },
+      },
+    },
+  }) as unknown as OpenAPIDocument;
+
 describe("enrichWithZuploMcpServerData", () => {
   let tempDir: string;
   let rootDir: string;
@@ -621,5 +652,263 @@ describe("enrichWithZuploMcpServerData", () => {
 
     // Should not add MCP tag definition since it wasn't assigned
     expect(result.tags).toBeUndefined();
+  });
+  it("should document a gateway virtual server from its policies", async () => {
+    const schema = gatewaySchema(
+      gatewayRouteHandler([
+        "mcp-linear-oauth",
+        "mcp-capability-filter",
+        "mcp-token-exchange-linear",
+      ]),
+    );
+
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: {
+        policies: [
+          {
+            name: "mcp-linear-oauth",
+            policyType: "mcp-auth0-oauth-inbound",
+            handler: {
+              module: "$import(@zuplo/runtime/mcp-gateway)",
+              export: "McpAuth0OAuthInboundPolicy",
+              options: {},
+            },
+          },
+          {
+            name: "mcp-capability-filter",
+            policyType: "mcp-capability-filter-inbound",
+            handler: {
+              module: "$import(@zuplo/runtime/mcp-gateway)",
+              export: "McpCapabilityFilterInboundPolicy",
+              options: {
+                tools: [
+                  { name: "search_issues", description: "Search issues" },
+                  "create_issue",
+                ],
+                prompts: [{ name: "triage", description: "Triage a bug" }],
+                resources: [
+                  {
+                    uri: "linear://teams",
+                    name: "Teams",
+                    mimeType: "application/json",
+                  },
+                ],
+                resourceTemplates: [{ uriTemplate: "linear://issues/{id}" }],
+              },
+            },
+          },
+          {
+            name: "mcp-token-exchange-linear",
+            policyType: "mcp-token-exchange-inbound",
+            handler: {
+              module: "$import(@zuplo/runtime/mcp-gateway)",
+              export: "McpTokenExchangeInboundPolicy",
+              options: { displayName: "Linear", authMode: "user-oauth" },
+            },
+          },
+        ],
+      },
+    })(processorArg(schema));
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"]).toEqual({
+      name: "Linear",
+      authType: "oauth",
+      tools: [
+        { name: "search_issues", description: "Search issues" },
+        { name: "create_issue" },
+      ],
+      prompts: [{ name: "triage", description: "Triage a bug" }],
+      resources: [
+        {
+          uri: "linear://teams",
+          name: "Teams",
+          mimeType: "application/json",
+        },
+      ],
+      resourceTemplates: [{ uriTemplate: "linear://issues/{id}" }],
+    });
+  });
+
+  it("should document a passthrough gateway server without capabilities", async () => {
+    const schema = gatewaySchema(gatewayRouteHandler());
+
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    // Falls back to the operation summary, and documents no tools: a
+    // passthrough server's list only exists once a client initializes.
+    expect(op["x-mcp-server"]).toEqual({ name: "Linear" });
+  });
+
+  it("should carry the route's own security onto a gateway server", async () => {
+    const schema = gatewaySchema({
+      ...gatewayRouteHandler(),
+      security: [{ api_key: [] }],
+    });
+    schema.components = {
+      securitySchemes: { api_key: { type: "http", scheme: "bearer" } },
+    };
+
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].security).toEqual([{ api_key: [] }]);
+    expect(op["x-mcp-server"].securitySchemes).toEqual({
+      api_key: { type: "http", scheme: "bearer" },
+    });
+  });
+
+  it("should let an authored x-mcp-server object win over derived data", async () => {
+    const schema = gatewaySchema({
+      ...gatewayRouteHandler(),
+      "x-mcp-server": {
+        name: "Linear (EU)",
+        url: "https://eu.example.com/mcp",
+      },
+    });
+
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"]).toEqual({
+      name: "Linear (EU)",
+      url: "https://eu.example.com/mcp",
+    });
+  });
+
+  it("should replace the x-mcp-server shorthand with derived data", async () => {
+    const schema = gatewaySchema({
+      ...gatewayRouteHandler(),
+      "x-mcp-server": true,
+    });
+
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"]).toEqual({ name: "Linear" });
+  });
+
+  it("should document an empty capability list as exposing none", async () => {
+    const schema = gatewaySchema(
+      gatewayRouteHandler(["mcp-capability-filter"]),
+    );
+
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: {
+        policies: [
+          {
+            name: "mcp-capability-filter",
+            policyType: "mcp-capability-filter-inbound",
+            handler: {
+              module: "$import(@zuplo/runtime/mcp-gateway)",
+              export: "McpCapabilityFilterInboundPolicy",
+              // Tools filtered down to none; prompts omitted, so the upstream's
+              // pass through and stay unknown.
+              options: { tools: [], resources: ["linear://teams"] },
+            },
+          },
+        ],
+      },
+    })(processorArg(schema));
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].tools).toEqual([]);
+    expect(op["x-mcp-server"].prompts).toBeUndefined();
+    expect(op["x-mcp-server"].resources).toEqual([{ uri: "linear://teams" }]);
+  });
+
+  it("should ignore a handler from a module that merely starts like the runtime", async () => {
+    const schema = gatewaySchema({
+      "x-zuplo-route": {
+        corsPolicy: "none",
+        handler: {
+          export: "McpProxyHandler",
+          module: "$import(@zuplo/runtime-custom)",
+          options: {},
+        },
+        policies: { inbound: [] },
+      },
+    });
+
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"]).toBeUndefined();
+  });
+
+  it("should ignore a same-named handler export from another module", async () => {
+    const schema = gatewaySchema({
+      "x-zuplo-route": {
+        corsPolicy: "none",
+        handler: {
+          export: "McpProxyHandler",
+          module: "$import(./modules/my-proxy)",
+          options: {},
+        },
+        policies: { inbound: [] },
+      },
+    });
+
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"]).toBeUndefined();
+  });
+
+  it("should find gateway policies nested in a composite policy", async () => {
+    const schema = gatewaySchema(gatewayRouteHandler(["mcp-stack"]));
+
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: {
+        policies: [
+          {
+            name: "mcp-stack",
+            policyType: "composite-inbound",
+            handler: {
+              module: "$import(@zuplo/runtime)",
+              export: "CompositeInboundPolicy",
+              options: { policies: ["mcp-oauth"] },
+            },
+          },
+          {
+            name: "mcp-oauth",
+            policyType: "mcp-oauth-inbound",
+            handler: {
+              module: "$import(@zuplo/runtime/mcp-gateway)",
+              export: "McpOAuthInboundPolicy",
+              options: {},
+            },
+          },
+        ],
+      },
+    })(processorArg(schema));
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp/linear"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].authType).toBe("oauth");
   });
 });

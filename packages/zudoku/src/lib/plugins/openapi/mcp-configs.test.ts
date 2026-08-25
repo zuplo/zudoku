@@ -9,6 +9,7 @@ import {
   getCursorConfig,
   getCursorDeepLink,
   getGenericConfig,
+  getMcpCapabilities,
   getMcpServerName,
   getMcpServerTitle,
   getMcpTools,
@@ -79,6 +80,102 @@ describe("getAuthType", () => {
         securitySchemes: { oidc: { type: "openIdConnect" } },
       }),
     ).toBe("oauth");
+  });
+});
+
+describe("getAuthType with an explicit authType", () => {
+  it("returns the declared type", () => {
+    expect(getAuthType({ authType: "oauth" })).toBe("oauth");
+  });
+
+  it("wins over inferring from security schemes", () => {
+    expect(
+      getAuthType({
+        authType: "oauth",
+        security: [{ api_key: [] }],
+        securitySchemes: { api_key: { type: "http", scheme: "bearer" } },
+      }),
+    ).toBe("oauth");
+  });
+
+  it("falls back to the security schemes when not a known type", () => {
+    expect(
+      getAuthType({
+        authType: "sometimes",
+        security: [{ api_key: [] }],
+        securitySchemes: { api_key: { type: "http", scheme: "bearer" } },
+      }),
+    ).toBe("apiKey");
+  });
+});
+
+describe("getMcpCapabilities", () => {
+  it("returns nothing for a server with no documented capabilities", () => {
+    expect(getMcpCapabilities(true)).toEqual([]);
+    expect(getMcpCapabilities({ name: "test" })).toEqual([]);
+  });
+
+  it("groups each capability kind, skipping empty ones", () => {
+    expect(
+      getMcpCapabilities({
+        tools: [{ name: "search_issues", description: "Search issues" }],
+        resources: [
+          {
+            uri: "file:///readme.md",
+            name: "Readme",
+            mimeType: "text/markdown",
+          },
+        ],
+        prompts: [],
+      }),
+    ).toEqual([
+      {
+        id: "tools",
+        label: "Tools",
+        items: [{ id: "search_issues", description: "Search issues" }],
+      },
+      {
+        id: "resources",
+        label: "Resources",
+        items: [
+          {
+            id: "file:///readme.md",
+            label: "Readme",
+            mimeType: "text/markdown",
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("accepts a bare string as the capability key", () => {
+    expect(getMcpCapabilities({ tools: ["search_issues", "  "] })).toEqual([
+      { id: "tools", label: "Tools", items: [{ id: "search_issues" }] },
+    ]);
+  });
+
+  it("keys resource templates by their URI template", () => {
+    expect(
+      getMcpCapabilities({
+        resourceTemplates: [
+          { uriTemplate: "file:///{path}", description: "Any file" },
+        ],
+      }),
+    ).toEqual([
+      {
+        id: "resourceTemplates",
+        label: "Resource templates",
+        items: [{ id: "file:///{path}", description: "Any file" }],
+      },
+    ]);
+  });
+
+  it("drops entries with no key and non-object entries", () => {
+    expect(
+      getMcpCapabilities({
+        tools: [{ description: "no name" }, 42, null, { name: "kept" }],
+      }),
+    ).toEqual([{ id: "tools", label: "Tools", items: [{ id: "kept" }] }]);
   });
 });
 
@@ -171,6 +268,27 @@ describe("resolveMcpAuth", () => {
     expect(
       resolveMcpAuth(oauthData, { disableAuthInstructions: true }),
     ).toEqual({ authType: "none" });
+  });
+
+  it("does not derive an api key header for a declared oauth server", () => {
+    // A gateway carries both: the OAuth policy sets authType, while the route
+    // still documents a security scheme a header would be inferred from.
+    expect(
+      resolveMcpAuth({
+        authType: "oauth",
+        security: [{ key: [] }],
+        securitySchemes: {
+          key: { type: "apiKey", in: "header", name: "X-API-Key" },
+        },
+      }),
+    ).toEqual({ authType: "oauth", auth: undefined });
+  });
+
+  it("does not derive an api key header for a declared unauthenticated server", () => {
+    expect(resolveMcpAuth({ authType: "none", ...apiKeyData })).toEqual({
+      authType: "none",
+      auth: undefined,
+    });
   });
 
   it("resolves no auth for servers without security", () => {
