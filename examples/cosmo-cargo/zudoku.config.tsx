@@ -19,14 +19,23 @@ import "./custom.css";
 // highlighted at the same time as the Employee MCP one.
 const EMPLOYEE_MCP_PATH = "/employee-mcp";
 
-// The production Clerk instance, served from clerk.cosmocargo.dev. Publishable
-// keys are shipped to the browser by design, so this is safe to commit. The
-// instance is scoped to that domain, so local development should override it
-// with the test key via ZUDOKU_PUBLIC_CLERK_PUB_KEY (see .env.example).
+// Clerk publishable keys are shipped to the browser by design, so both are safe
+// to commit. The production instance is served from clerk.cosmocargo.dev and is
+// scoped to that domain, so it only authenticates on the production deployment;
+// preview deployments and local development have to use the development
+// instance instead.
+const CLERK_PUB_KEY_PRODUCTION = "pk_live_Y2xlcmsuY29zbW9jYXJnby5kZXYk";
+const CLERK_PUB_KEY_DEVELOPMENT =
+  "pk_test_dG9sZXJhbnQtaG9ybmV0LTQ2LmNsZXJrLmFjY291bnRzLmRldiQ";
+
+// `ZUDOKU_PUBLIC_VERCEL_ENV` mirrors Vercel's `VERCEL_ENV` and is set by the
+// build command in vercel.json. Only ZUDOKU_PUBLIC_/ZUPLO_PUBLIC_ variables are
+// inlined into the client bundle, so reading `VERCEL_ENV` here would resolve to
+// `undefined` in the browser and always pick the production key.
 const CLERK_PUB_KEY = (process.env.ZUDOKU_PUBLIC_CLERK_PUB_KEY ??
-  "pk_live_Y2xlcmsuY29zbW9jYXJnby5kZXYk") as
-  | `pk_test_${string}`
-  | `pk_live_${string}`;
+  (process.env.ZUDOKU_PUBLIC_VERCEL_ENV === "production"
+    ? CLERK_PUB_KEY_PRODUCTION
+    : CLERK_PUB_KEY_DEVELOPMENT)) as `pk_test_${string}` | `pk_live_${string}`;
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
