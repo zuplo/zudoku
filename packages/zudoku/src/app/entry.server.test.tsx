@@ -12,6 +12,7 @@ const navigationMocks = vi.hoisted(() => ({
       { type: "link" as const, label: "API reference", to: "/reference" },
     ]),
   ),
+  initialize: vi.fn(),
 }));
 
 vi.mock("virtual:zudoku-auth", () => ({
@@ -40,6 +41,7 @@ vi.mock("./main.js", () => ({
       {
         getNavigation: navigationMocks.getNavigation,
         getRoutes: () => [],
+        initialize: navigationMocks.initialize,
       },
     ],
   }),
@@ -210,5 +212,20 @@ describe("handleRequest", () => {
     expect(html).not.toContain('<div hidden id="S:');
     expect(html).not.toContain("$RC(");
     expect(html).toContain('"queryKey":["plugin-navigation","/guide",false]');
+  });
+
+  it("returns an HTML 500 when plugin initialization throws synchronously", async () => {
+    navigationMocks.initialize.mockImplementationOnce(() => {
+      throw new Error("Plugin initialization failed");
+    });
+
+    const response = await renderPath("/");
+    const html = await response.text();
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(html).toContain("Error: Plugin initialization failed");
   });
 });

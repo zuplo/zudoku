@@ -144,44 +144,47 @@ export const handleRequest = async ({
     }
   }
 
-  const zudokuContext = new ZudokuContext(
-    convertZudokuConfigToOptions(config),
-    queryClient,
-    import.meta.env,
-    ssrAuth,
-  );
-  if (zudokuContext.initialize) {
-    await Promise.allSettled([zudokuContext.initialize]);
-  }
-
-  const pathname = joinUrl(
-    stripBasePath(new URL(request.url).pathname, basePath),
-  );
-  await queryClient.prefetchQuery(
-    zudokuContext.getPluginNavigationQueryOptions(pathname, !!ssrAuth?.profile),
-  );
-
-  const router = createStaticRouter(dataRoutes, context);
-  const head = createHead();
-  const renderContext = {
-    status: 200,
-    bypassProtection: bypassProtection ?? false,
-    ssrAuth,
-    zudokuContext,
-  };
-
-  const App = (
-    <BootstrapStatic
-      router={router}
-      context={context}
-      queryClient={queryClient}
-      head={head}
-      bypassProtection={bypassProtection}
-      renderContext={renderContext}
-    />
-  );
-
   try {
+    const zudokuContext = new ZudokuContext(
+      convertZudokuConfigToOptions(config),
+      queryClient,
+      import.meta.env,
+      ssrAuth,
+    );
+    if (zudokuContext.initialize) {
+      await Promise.allSettled([zudokuContext.initialize]);
+    }
+
+    const pathname = joinUrl(
+      stripBasePath(new URL(request.url).pathname, basePath),
+    );
+    await queryClient.prefetchQuery(
+      zudokuContext.getPluginNavigationQueryOptions(
+        pathname,
+        !!ssrAuth?.profile,
+      ),
+    );
+
+    const router = createStaticRouter(dataRoutes, context);
+    const head = createHead();
+    const renderContext = {
+      status: 200,
+      bypassProtection: bypassProtection ?? false,
+      ssrAuth,
+      zudokuContext,
+    };
+
+    const App = (
+      <BootstrapStatic
+        router={router}
+        context={context}
+        queryClient={queryClient}
+        head={head}
+        bypassProtection={bypassProtection}
+        renderContext={renderContext}
+      />
+    );
+
     const reactStream = await renderToReadableStream(App, {
       onError(error) {
         status = 500;
