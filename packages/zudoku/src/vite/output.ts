@@ -247,8 +247,15 @@ export async function writeOutput(
   const staticHtmlFiles = staticFiles.filter((filename) =>
     filename.endsWith(HTML_EXTENSION),
   );
-  const extensionlessStaticPaths = staticFiles
-    .filter((filename) => !path.posix.basename(filename).includes("."))
+  const staticPassthroughPaths = staticFiles
+    .filter((filename) => {
+      const basename = path.posix.basename(filename);
+      return (
+        !basename.includes(".") ||
+        basename.endsWith(".md") ||
+        basename.endsWith(".mdx")
+      );
+    })
     .map((filename) => `/${filename}`);
   const output = generateOutput({
     config,
@@ -280,7 +287,7 @@ export async function writeOutput(
           generateVercelMarkdownMiddleware({
             basePath: config.basePath,
             ...vercelMarkdownNegotiation,
-            passthroughPaths: extensionlessStaticPaths,
+            passthroughPaths: staticPassthroughPaths,
           }),
           "utf-8",
         ),

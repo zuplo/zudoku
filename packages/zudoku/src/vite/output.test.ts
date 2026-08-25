@@ -197,7 +197,13 @@ describe("Vercel Build Output", () => {
       ".vercel/output/static/docs/health",
     );
     await mkdir(path.dirname(extensionlessAsset), { recursive: true });
-    await writeFile(extensionlessAsset, "ok");
+    await Promise.all([
+      writeFile(extensionlessAsset, "ok"),
+      writeFile(
+        path.join(path.dirname(extensionlessAsset), "source.md"),
+        "# Source",
+      ),
+    ]);
 
     await writeOutput(rootDir, {
       config: createConfig(),
@@ -225,7 +231,7 @@ describe("Vercel Build Output", () => {
     expect(source).toContain("export default function middleware(request)");
     expect(source).toContain('const BASE_PATH = "/docs"');
     expect(source).toContain(
-      'const PASSTHROUGH_PATHS = new Set(["/docs/health"]);',
+      'const PASSTHROUGH_PATHS = new Set(["/docs/health","/docs/source.md"]);',
     );
   });
 

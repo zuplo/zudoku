@@ -258,6 +258,9 @@ const isExtensionlessPath = (pathname) => {
   return lastSegment === undefined || !lastSegment.includes(".");
 };
 
+const isMarkdownPath = (pathname) =>
+  pathname.endsWith(".md") || pathname.endsWith(".mdx");
+
 const getAlternateLink = (markdownPath) =>
   "<" + markdownPath + '>; rel="alternate"; type="text/markdown"';
 
@@ -316,6 +319,16 @@ export default function middleware(request) {
 
   if (KNOWN_ROUTES.has(pathname) || PASSTHROUGH_PATHS.has(pathname)) {
     return continueRequest();
+  }
+
+  if (isWithinBasePath(pathname) && isMarkdownPath(pathname)) {
+    return new Response(
+      request.method === "HEAD" ? null : MARKDOWN_NOT_FOUND_BODY,
+      {
+        status: 404,
+        headers: { "Content-Type": "text/markdown; charset=utf-8" },
+      },
+    );
   }
 
   if (!isWithinBasePath(pathname) || !isExtensionlessPath(pathname)) {

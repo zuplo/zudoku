@@ -200,6 +200,23 @@ describe("generateVercelMarkdownMiddleware", () => {
     );
   });
 
+  it.each(["/docs/not-a-page.md", "/docs/not-a-page.mdx"])(
+    "returns a Markdown recovery document for missing explicit path %s",
+    async (pathname) => {
+      const middleware = await loadMiddleware({ basePath: "/docs" });
+      const response = await middleware(request(pathname));
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("Content-Type")).toBe(
+        "text/markdown; charset=utf-8",
+      );
+      expect(response.headers.get("Vary")).toBeNull();
+      expect(await response.text()).toBe(
+        "# Page not found\n\n- [Documentation home](/docs)\n",
+      );
+    },
+  );
+
   it("varies pass-through HTML 404s on Accept", async () => {
     const middleware = await loadMiddleware({ basePath: "/docs" });
 
@@ -231,6 +248,9 @@ describe("generateVercelMarkdownMiddleware", () => {
     const notFound = await middleware(
       request("/docs/missing", { accept: "text/markdown", method: "HEAD" }),
     );
+    const explicitNotFound = await middleware(
+      request("/docs/missing.md", { method: "HEAD" }),
+    );
     const notAcceptable = await middleware(
       request("/docs/guide", {
         accept: "text/html;q=0, text/markdown;q=0",
@@ -240,6 +260,8 @@ describe("generateVercelMarkdownMiddleware", () => {
 
     expect(notFound.status).toBe(404);
     expect(await notFound.text()).toBe("");
+    expect(explicitNotFound.status).toBe(404);
+    expect(await explicitNotFound.text()).toBe("");
     expect(notAcceptable.status).toBe(406);
     expect(await notAcceptable.text()).toBe("");
   });
@@ -260,18 +282,20 @@ describe("generateVercelMarkdownMiddleware", () => {
     }
   });
 
-  it("passes extensionless static files through", async () => {
+  it("passes extensionless and Markdown static files through", async () => {
     const middleware = await loadMiddleware({
       basePath: "/docs",
-      passthroughPaths: ["/docs/health"],
+      passthroughPaths: ["/docs/health", "/docs/source.md"],
     });
-    const response = await middleware(
-      request("/docs/health", { accept: "text/markdown" }),
-    );
 
-    expect(response.headers.get("x-middleware-next")).toBe("1");
-    expect(response.headers.get("Vary")).toBeNull();
-    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+    for (const pathname of ["/docs/health", "/docs/source.md"]) {
+      const response = await middleware(
+        request(pathname, { accept: "text/markdown" }),
+      );
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+      expect(response.headers.get("Vary")).toBeNull();
+      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+    }
   });
 
   it("rejects Markdown routes that are not known canonical routes", () => {
