@@ -77,6 +77,20 @@ export const getAuthHeader = (data?: McpServerData): AuthHeader | undefined => {
   return undefined;
 };
 
+// Resolves what the card renders for auth. With `disableAuthInstructions` the
+// server is presented as unauthenticated whatever its security says: no header
+// snippets, no "replace YOUR_API_KEY" steps, no sign-in flow, and the full
+// client list — for docs where credentials reach the MCP server some other way,
+// or are documented elsewhere.
+export const resolveMcpAuth = (
+  data?: McpServerData,
+  options?: { disableAuthInstructions?: boolean },
+): { authType: AuthType; auth?: AuthHeader } => {
+  if (options?.disableAuthInstructions) return { authType: "none" };
+
+  return { authType: getAuthType(data), auth: getAuthHeader(data) };
+};
+
 // -- App compatibility matrix --
 
 export interface McpSubApp {

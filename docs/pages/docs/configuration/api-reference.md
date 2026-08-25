@@ -207,6 +207,7 @@ const config = {
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
       disableSecurity: true, // Disable security scheme display and playground auth (default)
+      disableMcpAuthInstructions: false, // Hide auth steps in the MCP server card
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
       showInfoPage: true, // Always show the info page (unset = show only if a description is set)
@@ -229,6 +230,11 @@ Available options:
 - `disableSecurity`: Disable OpenAPI security scheme display (auth badges on operations, security
   schemes section on the info page, and the Authorize dialog in the playground). Disabled by default
   (`true`). Set to `false` to enable security scheme support
+- `disableMcpAuthInstructions`: Hide the authentication instructions on
+  [MCP server](../guides/mcp-servers.md) endpoints. The MCP card normally derives a credential
+  header from the operation's security scheme and shows it in every install snippet. Set to `true`
+  to render the server as unauthenticated instead — no header snippets and no "replace
+  `YOUR_API_KEY`" steps
 - `showVersionSelect`: Control version selector visibility
   - `"if-available"`: Show version selector only when multiple versions exist (default)
   - `"always"`: Always show version selector (disabled if only one version)
@@ -260,6 +266,7 @@ const config = {
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
       disableSecurity: true, // Disable security scheme display and playground auth (default)
+      disableMcpAuthInstructions: false, // Hide auth steps in the MCP server card
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
       showInfoPage: true, // Always show the info page (unset = show only if a description is set)

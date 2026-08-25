@@ -14,6 +14,7 @@ import {
   getVisibleApps,
   getVscodeConfig,
   getVscodeDeepLink,
+  resolveMcpAuth,
 } from "./mcp-configs.js";
 
 const SERVER_URL = "https://api.example.com";
@@ -127,6 +128,53 @@ describe("getVisibleApps", () => {
     const apps = getVisibleApps("apiKey");
     const codex = apps.find((a) => a.id === "codex");
     expect(codex?.subApps).toHaveLength(2);
+  });
+});
+
+describe("resolveMcpAuth", () => {
+  const apiKeyData = {
+    security: [{ key: [] }],
+    securitySchemes: {
+      key: { type: "apiKey", in: "header", name: "X-API-Key" },
+    },
+  };
+
+  const oauthData = {
+    security: [{ oauth: [] }],
+    securitySchemes: { oauth: { type: "oauth2" } },
+  };
+
+  it("resolves api key auth when instructions are enabled", () => {
+    expect(resolveMcpAuth(apiKeyData)).toEqual({
+      authType: "apiKey",
+      auth: apiKeyAuth,
+    });
+  });
+
+  it("resolves oauth when instructions are enabled", () => {
+    expect(resolveMcpAuth(oauthData)).toEqual({
+      authType: "oauth",
+      auth: undefined,
+    });
+  });
+
+  it("drops api key auth when instructions are disabled", () => {
+    expect(
+      resolveMcpAuth(apiKeyData, { disableAuthInstructions: true }),
+    ).toEqual({ authType: "none" });
+  });
+
+  it("drops oauth when instructions are disabled", () => {
+    expect(
+      resolveMcpAuth(oauthData, { disableAuthInstructions: true }),
+    ).toEqual({ authType: "none" });
+  });
+
+  it("resolves no auth for servers without security", () => {
+    expect(resolveMcpAuth(true)).toEqual({
+      authType: "none",
+      auth: undefined,
+    });
   });
 });
 

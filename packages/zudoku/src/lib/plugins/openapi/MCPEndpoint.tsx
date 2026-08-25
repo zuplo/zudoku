@@ -17,8 +17,6 @@ import {
   CLAUDE_CONNECTORS_URL,
   type McpApp,
   type McpServerData,
-  getAuthHeader,
-  getAuthType,
   getClaudeCodeCommand,
   getCodexCliCommand,
   getCodexConfig,
@@ -30,6 +28,7 @@ import {
   getVisibleApps,
   getVscodeConfig,
   getVscodeDeepLink,
+  resolveMcpAuth,
 } from "./mcp-configs.js";
 import { McpClientLogo } from "./McpClientLogos.js";
 
@@ -85,17 +84,20 @@ export const MCPEndpoint = ({
   operationPath,
   summary,
   data,
+  disableAuthInstructions,
 }: {
   serverUrl?: string;
   operationPath?: string;
   data?: McpServerData;
   summary?: string;
+  disableAuthInstructions?: boolean;
 }) => {
   const [isCopied, setIsCopied] = useState(false);
   const mcpUrl = getMcpUrl(serverUrl, operationPath, data);
   const name = getMcpServerName(data, summary);
-  const auth = getAuthHeader(data);
-  const authType = getAuthType(data);
+  const { auth, authType } = resolveMcpAuth(data, {
+    disableAuthInstructions,
+  });
   const visibleApps = getVisibleApps(authType);
 
   const claudeCodeCommand = getClaudeCodeCommand(name, mcpUrl, auth);
