@@ -118,8 +118,8 @@ headers (Claude Desktop and ChatGPT), and the one-click install buttons for Curs
 since those links cannot carry a secret.
 
 If your users get their credentials some other way — the key is injected by a proxy, handled by your
-own login flow, or simply documented elsewhere — turn the API key instructions off in your Zudoku
-config:
+own login flow, or simply documented elsewhere — turn the authentication instructions off in your
+Zudoku config:
 
 ```tsx title="zudoku.config.tsx"
 const config: ZudokuConfig = {
@@ -129,17 +129,16 @@ const config: ZudokuConfig = {
       input: "./mcp-api.json",
       path: "mcp",
       options: {
-        disableMcpApiKeyInstructions: true,
+        disableMcpAuthInstructions: true,
       },
     },
   ],
 };
 ```
 
-The card then renders the server as if it were unauthenticated: no header in the snippets, no
-placeholder step, and every client available again. Set it under `defaults.apis` instead to apply it
-to all APIs. OAuth-protected MCP servers are not affected — they document a sign-in flow rather than
-an API key.
+The card then renders the server as if it were unauthenticated, whatever its security says: no
+header in the snippets, no placeholder step, and every client available again. Set it under
+`defaults.apis` instead to apply it to all APIs.
 
 ## Complete example
 

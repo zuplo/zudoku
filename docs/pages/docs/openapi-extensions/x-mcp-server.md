@@ -132,7 +132,7 @@ endpoints.
 
 When the extension carries `security` and `securitySchemes`, the card also documents the credential
 header and adds it to every install snippet. Set the
-[`disableMcpApiKeyInstructions`](/docs/configuration/api-reference#options) API option to render the
+[`disableMcpAuthInstructions`](/docs/configuration/api-reference#options) API option to render the
 server as unauthenticated instead.
 
 For a full walkthrough including Zudoku configuration, see the

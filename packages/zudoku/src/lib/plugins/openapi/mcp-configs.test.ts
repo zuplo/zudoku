@@ -151,16 +151,23 @@ describe("resolveMcpAuth", () => {
     });
   });
 
+  it("resolves oauth when instructions are enabled", () => {
+    expect(resolveMcpAuth(oauthData)).toEqual({
+      authType: "oauth",
+      auth: undefined,
+    });
+  });
+
   it("drops api key auth when instructions are disabled", () => {
     expect(
-      resolveMcpAuth(apiKeyData, { disableApiKeyInstructions: true }),
+      resolveMcpAuth(apiKeyData, { disableAuthInstructions: true }),
     ).toEqual({ authType: "none" });
   });
 
-  it("keeps oauth when api key instructions are disabled", () => {
+  it("drops oauth when instructions are disabled", () => {
     expect(
-      resolveMcpAuth(oauthData, { disableApiKeyInstructions: true }),
-    ).toEqual({ authType: "oauth", auth: undefined });
+      resolveMcpAuth(oauthData, { disableAuthInstructions: true }),
+    ).toEqual({ authType: "none" });
   });
 
   it("resolves no auth for servers without security", () => {

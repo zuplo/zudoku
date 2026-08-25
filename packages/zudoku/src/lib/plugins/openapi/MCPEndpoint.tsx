@@ -84,19 +84,19 @@ export const MCPEndpoint = ({
   operationPath,
   summary,
   data,
-  disableApiKeyInstructions,
+  disableAuthInstructions,
 }: {
   serverUrl?: string;
   operationPath?: string;
   data?: McpServerData;
   summary?: string;
-  disableApiKeyInstructions?: boolean;
+  disableAuthInstructions?: boolean;
 }) => {
   const [isCopied, setIsCopied] = useState(false);
   const mcpUrl = getMcpUrl(serverUrl, operationPath, data);
   const name = getMcpServerName(data, summary);
   const { auth, authType } = resolveMcpAuth(data, {
-    disableApiKeyInstructions,
+    disableAuthInstructions,
   });
   const visibleApps = getVisibleApps(authType);
 

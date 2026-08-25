@@ -97,7 +97,7 @@ const ApiOptionsSchema = z
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
     disableSecurity: z.boolean(),
-    disableMcpApiKeyInstructions: z.boolean(),
+    disableMcpAuthInstructions: z.boolean(),
     schemaDownload: z
       .object({
         enabled: z.boolean(),

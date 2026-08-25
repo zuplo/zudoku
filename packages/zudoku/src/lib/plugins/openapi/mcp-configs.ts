@@ -77,22 +77,18 @@ export const getAuthHeader = (data?: McpServerData): AuthHeader | undefined => {
   return undefined;
 };
 
-// Resolves what the card renders for auth. With `disableApiKeyInstructions`
-// the API-key case is dropped from the render entirely: no header snippets, no
-// "replace YOUR_API_KEY" steps, and the client list is the unauthenticated one
-// again — for docs whose keys are handed to the MCP server some other way (or
-// not documented here at all). OAuth is untouched, it carries no API key.
+// Resolves what the card renders for auth. With `disableAuthInstructions` the
+// server is presented as unauthenticated whatever its security says: no header
+// snippets, no "replace YOUR_API_KEY" steps, no sign-in flow, and the full
+// client list — for docs where credentials reach the MCP server some other way,
+// or are documented elsewhere.
 export const resolveMcpAuth = (
   data?: McpServerData,
-  options?: { disableApiKeyInstructions?: boolean },
+  options?: { disableAuthInstructions?: boolean },
 ): { authType: AuthType; auth?: AuthHeader } => {
-  const authType = getAuthType(data);
+  if (options?.disableAuthInstructions) return { authType: "none" };
 
-  if (options?.disableApiKeyInstructions && authType === "apiKey") {
-    return { authType: "none" };
-  }
-
-  return { authType, auth: getAuthHeader(data) };
+  return { authType: getAuthType(data), auth: getAuthHeader(data) };
 };
 
 // -- App compatibility matrix --
