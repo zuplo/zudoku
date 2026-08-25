@@ -10,8 +10,8 @@ import type {
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import invariant from "../../util/invariant.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { throwIfProblemJson } from "../../util/problemJson.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
+import { zuploFetch } from "./zuploFetch.js";
 
 const DEFAULT_GATEWAY_URL = "https://api.zuploedge.com";
 
@@ -84,18 +84,19 @@ const createZuploService = ({
   return {
     deleteKey: async (consumerId, keyId, context) => {
       invariant(deploymentName, "Cannot delete API key.", developerHintOptions);
-      const request = new Request(
-        joinUrl(
-          getApiKeyEndpoint(context),
-          `${deploymentName}/consumers/${consumerId}/keys/${keyId}`,
+      await zuploFetch(
+        context,
+        new Request(
+          joinUrl(
+            getApiKeyEndpoint(context),
+            `${deploymentName}/consumers/${consumerId}/keys/${keyId}`,
+          ),
+          {
+            method: "DELETE",
+          },
         ),
-        {
-          method: "DELETE",
-        },
+        "Failed to delete API key",
       );
-      const response = await fetch(await context.signRequest(request));
-      await throwIfProblemJson(response);
-      invariant(response.ok, "Failed to delete API key");
     },
     updateConsumer: async (consumer, context) => {
       invariant(
@@ -103,60 +104,55 @@ const createZuploService = ({
         "Cannot update API key description.",
         developerHintOptions,
       );
-      const response = await fetch(
-        await context.signRequest(
-          new Request(
-            joinUrl(
-              getApiKeyEndpoint(context),
-              `${deploymentName}/consumers/${consumer.id}`,
-            ),
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                label: consumer.label,
-              }),
-            },
+      await zuploFetch(
+        context,
+        new Request(
+          joinUrl(
+            getApiKeyEndpoint(context),
+            `${deploymentName}/consumers/${consumer.id}`,
           ),
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              label: consumer.label,
+            }),
+          },
         ),
+        "Failed to update API key description",
       );
-      await throwIfProblemJson(response);
-      invariant(response.ok, "Failed to update API key description");
     },
     rollKey: async (consumerId, context) => {
       invariant(deploymentName, "Cannot roll API key.", developerHintOptions);
-      const response = await fetch(
-        await context.signRequest(
-          new Request(
-            joinUrl(
-              getApiKeyEndpoint(context),
-              `${deploymentName}/consumers/${consumerId}/roll-key`,
-            ),
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({}),
-            },
+      await zuploFetch(
+        context,
+        new Request(
+          joinUrl(
+            getApiKeyEndpoint(context),
+            `${deploymentName}/consumers/${consumerId}/roll-key`,
           ),
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          },
         ),
+        "Failed to roll API key",
       );
-      await throwIfProblemJson(response);
-      invariant(response.ok, "Failed to roll API key");
     },
     getConsumers: async (context) => {
       invariant(deploymentName, "Cannot get API keys.", developerHintOptions);
-      const request = new Request(
-        joinUrl(getApiKeyEndpoint(context), `${deploymentName}/consumers`),
+      const keys = await zuploFetch(
+        context,
+        new Request(
+          joinUrl(getApiKeyEndpoint(context), `${deploymentName}/consumers`),
+        ),
+        "Failed to fetch API keys",
       );
-      await context.signRequest(request);
-
-      const keys = await fetch(request);
-      await throwIfProblemJson(keys);
-      invariant(keys.ok, "Failed to fetch API keys");
 
       const data = (await keys.json()) as {
         data: [
