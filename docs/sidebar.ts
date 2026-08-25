@@ -138,6 +138,7 @@ export const docs: Navigation = [
       "docs/deploy/cloudflare-pages",
       "docs/deploy/github-pages",
       "docs/deploy/vercel",
+      "docs/deploy/apache-nginx",
       "docs/deploy/direct-upload",
     ],
   },

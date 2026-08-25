@@ -252,9 +252,10 @@ The generated markdown files:
 
 When `publishMarkdown` is enabled, canonical documentation URLs honor the HTTP `Accept` header.
 Requests that prefer `text/markdown` receive the same content as the page's `.md` URL with a
-`Content-Type: text/markdown; charset=utf-8` response. HTML and Markdown variants include
-`Vary: Accept` so shared caches do not mix representations. Content negotiation is therefore enabled
-by default whenever `publishMarkdown` is enabled. Set it to `false` to opt out.
+`Content-Type: text/markdown; charset=utf-8` response. HTML and Markdown variants include `Accept`
+in the `Vary` header so shared caches do not mix representations, and advertise the `.md` URL with a
+`Link` header. Vercel responses use `Vary: Accept, Accept-Encoding`. Content negotiation is
+therefore enabled by default whenever `publishMarkdown` is enabled. Set it to `false` to opt out.
 
 Canonical URL negotiation is built into the SSR-backed development server, SSR deployments, and
 Zudoku's Vercel static output. Other static hosts, and development with `--no-ssr`, must configure
@@ -269,9 +270,10 @@ docs: {
 ```
 
 On those supported runtimes, Zudoku also returns a concise Markdown recovery response with status
-`404` when an agent requests a missing path. It links to the documentation root and, when those
-generated files are present, `llms.txt` and the sitemap. Set `contentNegotiation: false` to retain
-HTML-only canonical URLs while continuing to publish the explicit `.md` files.
+`404` when an agent prefers Markdown for a missing canonical path. Vercel provides the same recovery
+response for missing explicit `.md` and `.mdx` paths. It links to the documentation root and, when
+those generated files are present, `llms.txt` and the sitemap. Set `contentNegotiation: false` to
+retain HTML-only canonical URLs while continuing to publish the explicit `.md` files.
 
 #### Other hosting providers
 
@@ -281,13 +283,14 @@ hosting layer to:
 
 1. Apply the rule only to known documentation routes within the configured `basePath`; leave assets
    and non-document routes unchanged.
-2. Inspect `Accept` on `GET` and `HEAD` requests. When Markdown is the preferred acceptable
-   representation, internally rewrite the canonical page URL to its `.md` sibling rather than
-   redirecting the client.
-3. Serve the rewritten response as `text/markdown; charset=utf-8`, and add `Accept` to any existing
+2. Inspect `Accept` on `GET` and `HEAD` requests, honoring media-range specificity and `q` values.
+   When Markdown is the preferred acceptable representation, internally rewrite the canonical page
+   URL to its `.md` sibling rather than redirecting the client.
+3. Return `406 Not Acceptable` when the request explicitly accepts neither HTML nor Markdown.
+4. Serve the rewritten response as `text/markdown; charset=utf-8`, and add `Accept` to any existing
    `Vary` header on both the Markdown and HTML variants.
-4. Preserve the query string and return no body for `HEAD` requests.
-5. Keep real `404` status codes for unknown paths. If returning a Markdown 404 body, include useful
+5. Preserve the query string and return no body for `HEAD` requests.
+6. Keep real `404` status codes for unknown paths. If returning a Markdown 404 body, include useful
    recovery links instead of serving the HTML application shell with status `200`.
 
 The exact rule syntax depends on the provider. The important contract is that caches vary on

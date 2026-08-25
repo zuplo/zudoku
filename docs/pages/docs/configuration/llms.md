@@ -113,6 +113,10 @@ dist/
     └── ...
 ```
 
+On Vercel builds, this tree is written beneath `.vercel/output/static/` instead of `dist/`. The
+deployed public URLs remain the same. See the [Vercel deployment guide](/docs/deploy/vercel) for the
+generated routing and Markdown content-negotiation behavior.
+
 **Important:** Individual `.md` files are only kept in the final build if `publishMarkdown: true`.
 If only `llmsTxt` or `llmsTxtFull` is enabled, the `.md` files are generated temporarily during the
 build but deleted after the `llms.txt` files are created.

@@ -328,10 +328,10 @@ details.
 
 :::note
 
-Avoid naming files `index.md` or `index.mdx` and relying on their default path. Some hosting
-providers (e.g. Vercel) automatically strip `/index` from URLs with a redirect, which can cause
-routing issues. Instead, give files descriptive names and use the `path` property to serve them at
-the desired URL.
+Avoid naming files `index.md` or `index.mdx` and relying on their default path. Zudoku's generated
+Vercel clean-URL routes strip `/index` with a redirect, and other hosting providers may do the same.
+This can cause routing issues. Instead, give files descriptive names and use the `path` property to
+serve them at the desired URL.
 
 :::
 
