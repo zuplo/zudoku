@@ -70,7 +70,10 @@ export const OperationListItem = ({
         <span className={methodForColor(operation.method)}>
           {operation.method.toUpperCase()}
         </span>
-        <SelectOnClick className="max-w-full truncate flex cursor-pointer">
+        <SelectOnClick
+          className="max-w-full truncate flex cursor-pointer"
+          copyValue={`${displayServerUrl?.replace(/\/$/, "") ?? ""}${operation.path}`}
+        >
           {displayServerUrl && (
             <div className="text-neutral-400 dark:text-neutral-500 truncate">
               {displayServerUrl.replace(/\/$/, "")}

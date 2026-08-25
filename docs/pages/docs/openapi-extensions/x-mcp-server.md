@@ -32,6 +32,7 @@ When using the object form, the following properties are available:
 | --------- | --------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `name`    | `string`        | No       | Display name used in the generated client configuration snippets. Falls back to the operation `summary`, then `"mcp-server"` |
 | `version` | `string`        | No       | Version metadata                                                                                                             |
+| `url`     | `string`        | No       | Overrides the endpoint URL shown in the card and install snippets. See [MCP URL resolution](#mcp-url-resolution)             |
 | `tools`   | `[Tool Object]` | No       | Array of tools provided by the MCP server                                                                                    |
 
 Each item in the `tools` array:
@@ -46,6 +47,35 @@ Each item in the `tools` array:
 The displayed MCP URL is constructed from the **server URL** of the API and the **path** of the
 operation. The server URL comes from the OpenAPI `servers` array (or the operation-level `servers`
 override if present).
+
+### Overriding the URL
+
+Set `url` on `x-mcp-server` when the MCP server is not reachable under the documented API server —
+for example when it runs on its own hostname:
+
+```yaml
+servers:
+  - url: https://api.example.com
+paths:
+  /mcp:
+    post:
+      summary: My MCP Server
+      x-mcp-server:
+        name: my-mcp-server
+        url: https://mcp.example.com/mcp
+      responses:
+        "200":
+          description: MCP response
+```
+
+The card and every install snippet then use `https://mcp.example.com/mcp` instead of
+`https://api.example.com/mcp`.
+
+An absolute `url` (one with a scheme, such as `https://`) replaces the endpoint entirely and is used
+verbatim — it also takes precedence over the server picked in the server dropdown, since it names a
+host of its own. A value without a scheme is treated as a path on the server URL instead, so
+`url: /v2/mcp` resolves to `https://api.example.com/v2/mcp` and still follows server selection.
+Blank values are ignored and the URL falls back to the server URL plus the operation path.
 
 ## Examples
 

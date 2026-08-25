@@ -70,6 +70,7 @@ type OperationItem {
   deprecated: Boolean
   description: String
   extensions: JSONObject
+  isMcpServer: Boolean!
   method: String!
   operationId: String
   parameters: [ParameterItem!]

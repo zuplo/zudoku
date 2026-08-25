@@ -36,6 +36,7 @@ export const GetNavigationOperationsQuery = graphql(`
           method
           operationId
           path
+          isMcpServer
         }
       }
       components {

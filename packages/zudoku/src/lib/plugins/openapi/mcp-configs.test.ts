@@ -219,6 +219,57 @@ describe("getMcpUrl", () => {
       "https://api.example.com/mcp",
     );
   });
+
+  it("uses an absolute url override instead of the server URL", () => {
+    expect(
+      getMcpUrl("https://api.example.com", "/mcp", {
+        url: "https://mcp.example.com/mcp",
+      }),
+    ).toBe("https://mcp.example.com/mcp");
+  });
+
+  it("keeps the url override verbatim, including trailing slashes", () => {
+    expect(
+      getMcpUrl("https://api.example.com", "/mcp", {
+        url: "https://mcp.example.com/mcp/",
+      }),
+    ).toBe("https://mcp.example.com/mcp/");
+  });
+
+  it("trims surrounding whitespace from the url override", () => {
+    expect(
+      getMcpUrl("https://api.example.com", "/mcp", {
+        url: "  https://mcp.example.com/mcp  ",
+      }),
+    ).toBe("https://mcp.example.com/mcp");
+  });
+
+  it("treats a relative url override as a path on the server URL", () => {
+    expect(
+      getMcpUrl("https://api.example.com/", "/mcp", { url: "/v2/mcp" }),
+    ).toBe("https://api.example.com/v2/mcp");
+  });
+
+  it("adds the leading slash a relative url override is missing", () => {
+    expect(
+      getMcpUrl("https://api.example.com", "/mcp", { url: "v2/mcp" }),
+    ).toBe("https://api.example.com/v2/mcp");
+  });
+
+  it("falls back to the operation path for blank or non-string overrides", () => {
+    expect(getMcpUrl("https://api.example.com", "/mcp", { url: "   " })).toBe(
+      "https://api.example.com/mcp",
+    );
+    expect(getMcpUrl("https://api.example.com", "/mcp", { url: 42 })).toBe(
+      "https://api.example.com/mcp",
+    );
+  });
+
+  it("ignores the override lookup for boolean data", () => {
+    expect(getMcpUrl("https://api.example.com", "/mcp", true)).toBe(
+      "https://api.example.com/mcp",
+    );
+  });
 });
 
 describe("getMcpServerName", () => {

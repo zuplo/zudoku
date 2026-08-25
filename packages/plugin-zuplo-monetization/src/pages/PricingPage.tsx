@@ -2,10 +2,13 @@ import { Button, Head, Heading, Slot } from "zudoku/components";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { useQuery } from "zudoku/react-query";
 import { Link } from "zudoku/router";
+import { ContactLinkButton } from "../components/ContactLinkButton.js";
 import { usePlans } from "../hooks/usePlans";
 import { useMonetizationConfig } from "../MonetizationContext";
 import { PricingTable } from "../pricing-ui/PricingTable.js";
 import { subscriptionsQuery } from "../queries.js";
+import { isCustomPlan } from "../utils/isCustomPlan.js";
+import { getPlanContact } from "../utils/planContact.js";
 
 const PricingPage = () => {
   const { pricing } = useMonetizationConfig();
@@ -40,10 +43,10 @@ const PricingPage = () => {
       subscription.plan?.id ? [subscription.plan.id] : [],
     ),
   );
+  const holdsPlan = (plan: { id: string; key: string }) =>
+    subscribedPlanKeys.has(plan.key) || subscribedPlanIds.has(plan.id);
   const showManageAction = (plan: { id: string; key: string }) =>
-    multipleSubscriptionsEnabled
-      ? subscribedPlanKeys.has(plan.key) || subscribedPlanIds.has(plan.id)
-      : isSubscribed;
+    multipleSubscriptionsEnabled ? holdsPlan(plan) : isSubscribed;
 
   return (
     <div className="w-full px-4 pt-(--padding-content-top) pb-(--padding-content-bottom)">
@@ -69,8 +72,24 @@ const PricingPage = () => {
       <PricingTable
         plans={pricingTable.items}
         units={pricing?.units}
-        renderAction={(plan, isPopular) =>
-          showManageAction(plan) ? (
+        renderAction={(plan, isPopular) => {
+          // Contact-sales plans have no self-serve price, so they never route
+          // to checkout. A plan the user already holds still gets the regular
+          // "Manage Subscriptions" action below.
+          if (isCustomPlan(plan) && !holdsPlan(plan)) {
+            const contact = getPlanContact(plan);
+            // Without a `contactUrl` in the plan metadata there is nowhere to
+            // send the user, so the card's "Contact Sales" price line stands
+            // on its own rather than gaining a button that goes nowhere.
+            return contact ? (
+              <ContactLinkButton
+                contact={contact}
+                variant={isPopular ? "default" : "outline"}
+              />
+            ) : null;
+          }
+
+          return showManageAction(plan) ? (
             <Button variant={isPopular ? "default" : "outline"} asChild>
               <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
             </Button>
@@ -80,8 +99,8 @@ const PricingPage = () => {
                 Subscribe
               </Link>
             </Button>
-          )
-        }
+          );
+        }}
       />
       <Slot.Target name="pricing-page-after" />
     </div>

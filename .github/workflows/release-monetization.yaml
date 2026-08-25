@@ -29,13 +29,21 @@ jobs:
       contents: write
       id-token: write
 
+    env:
+      # Skip git hooks, see the note in main.yaml. The version bump before the
+      # release commit makes node_modules look stale to pnpm, which makes the
+      # parallel pre-commit commands race on installing lefthook. The commit here
+      # only carries the `npm version` edit to the plugin manifest, which npm
+      # rewrites in place and leaves format-clean, so the hook has nothing to do.
+      LEFTHOOK: "0"
+
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
         with:
           run_install: false
 

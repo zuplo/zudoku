@@ -230,8 +230,38 @@ export const getMcpTools = (data?: McpServerData): McpTool[] => {
   );
 };
 
-export const getMcpUrl = (serverUrl?: string, operationPath?: string) =>
-  `${(serverUrl ?? "").replace(/\/+$/, "")}${operationPath ?? "/mcp"}`;
+// Matches a URL that carries its own scheme, e.g. `https://mcp.example.com`.
+const isAbsoluteUrl = (value: string) => /^[a-z][a-z0-9+.-]*:\/\//i.test(value);
+
+// Reads the `url` override from x-mcp-server, ignoring blank and non-string
+// values so callers fall back to the derived endpoint.
+const getUrlOverride = (data?: McpServerData): string | undefined => {
+  if (typeof data === "boolean") return undefined;
+
+  const url = data?.url;
+  if (typeof url !== "string") return undefined;
+
+  const trimmed = url.trim();
+  return trimmed === "" ? undefined : trimmed;
+};
+
+// The MCP endpoint is derived from the API's server URL plus the operation
+// path. An `x-mcp-server.url` override takes precedence, for servers that are
+// not hosted under the documented API server: an absolute URL replaces the
+// endpoint entirely, anything else is treated as a path on the server URL.
+export const getMcpUrl = (
+  serverUrl?: string,
+  operationPath?: string,
+  data?: McpServerData,
+) => {
+  const override = getUrlOverride(data);
+  if (override && isAbsoluteUrl(override)) return override;
+
+  const path = override ?? operationPath ?? "/mcp";
+  return `${(serverUrl ?? "").replace(/\/+$/, "")}${
+    path.startsWith("/") ? path : `/${path}`
+  }`;
+};
 
 export const getClaudeCodeCommand = (
   name: string,

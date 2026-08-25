@@ -711,6 +711,12 @@ const OperationItem = builder
       operationId: t.exposeString("operationId", { nullable: true }),
       summary: t.exposeString("summary", { nullable: true }),
       description: t.exposeString("description", { nullable: true }),
+      // Lean flag so consumers (e.g. the sidebar) can tell an MCP server
+      // endpoint apart without pulling in the whole `x-mcp-server` extension.
+      isMcpServer: t.boolean({
+        resolve: (parent) =>
+          resolveExtensions(parent)["x-mcp-server"] !== undefined,
+      }),
       contentTypes: t.stringList({
         resolve: (parent) => Object.keys(parent.requestBody?.content ?? {}),
       }),

@@ -29,6 +29,7 @@ import { RouteGuard } from "../lib/core/RouteGuard.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { RouterError } from "../lib/errors/RouterError.js";
 import { ZuploEnv } from "./env.js";
+import { notFoundRoute } from "./notFoundRoute.js";
 import { processRoutes } from "./processRoutes.js";
 import { createRedirectRoutes } from "./utils/createRedirectRoutes.js";
 import {
@@ -109,7 +110,7 @@ export const getRoutesByOptions = (
           }))
         : [],
     )
-    .concat([{ path: "*", element: <StatusPage statusCode={404} /> }])
+    .concat([notFoundRoute])
     .map((route) => ({
       ...route,
       errorElement: <RouterError className="w-full m-0" />,

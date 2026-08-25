@@ -59,6 +59,7 @@ metadata. In this case, the operation's `summary` is used as the server name.
 | --------- | -------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `name`    | `string` | No       | Display name used in the generated client configuration snippets. Falls back to the operation `summary`, then `"mcp-server"` |
 | `version` | `string` | No       | Version metadata (included for completeness; not currently rendered in UI)                                                   |
+| `url`     | `string` | No       | Overrides the endpoint URL shown in the card and install snippets                                                            |
 | `tools`   | `array`  | No       | Tools metadata (used by Zuplo enrichment; not currently rendered in UI)                                                      |
 
 Each tool in the `tools` array has:
@@ -91,6 +92,20 @@ For example, with this configuration:
 ```
 
 The displayed MCP URL will be `https://api.example.com/mcp/docs`.
+
+If your MCP server lives on its own hostname, set `url` on the extension to override the derived
+endpoint:
+
+```json
+{
+  "x-mcp-server": { "name": "docs-mcp", "url": "https://mcp.example.com/mcp" }
+}
+```
+
+An absolute URL is used verbatim everywhere the endpoint appears, and takes precedence over the
+server dropdown. A value without a scheme (such as `/v2/mcp`) is treated as a path on the server URL
+instead. See the
+[`x-mcp-server` reference](/docs/openapi-extensions/x-mcp-server#overriding-the-url) for details.
 
 ## Complete example
 
