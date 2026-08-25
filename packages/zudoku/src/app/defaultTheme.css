@@ -68,10 +68,17 @@
    * How far each treatment is shaded toward `--badge-shade` (the dark end of
    * the theme). A palette token is already the right color for a light-mode
    * fill, so that stays at 100% and only the text treatment is darkened.
+   *
+   * The text mix is set by the hue that needs it most. At 50% every color
+   * clears WCAG AA (4.5:1) as label text on `--background` and `--sidebar`,
+   * and every hue beats what it replaced. The mix shades toward `--foreground`,
+   * so a theme with a lighter foreground lands lighter: 50% keeps the margin
+   * for one as light as `#262626` (yellow, the binding hue, holds ~4.5:1).
+   * Sites overriding the palette with lighter colors should lower this.
    */
   --badge-shade: var(--foreground);
   --badge-fill-mix: 100%;
-  --badge-text-mix: 78%;
+  --badge-text-mix: 50%;
   --badge-fill-foreground: var(--background);
 }
 
@@ -123,10 +130,13 @@
 
   /*
    * On dark backgrounds the palette token is the readable text color, and the
-   * fill is shaded down into the background instead.
+   * fill is shaded down into the background instead. 50% keeps chroma near the
+   * ~0.10-0.12 the old `-800` fills carried, so the colors stay separable by
+   * saturation and not hue alone, while `--badge-fill-foreground` still clears
+   * AA on every fill (5.83:1 at the worst hue, 4.95:1 on a lighter dark theme).
    */
   --badge-shade: var(--background);
-  --badge-fill-mix: 47%;
+  --badge-fill-mix: 50%;
   --badge-text-mix: 100%;
   --badge-fill-foreground: oklch(0.985 0 0);
 }
