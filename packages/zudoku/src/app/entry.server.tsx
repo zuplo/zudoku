@@ -19,11 +19,14 @@ import { cachedVerifyAccessToken } from "../lib/authentication/verify-cache.js";
 import { BootstrapStatic } from "../lib/components/Bootstrap.js";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
 import type { SSRAuthState } from "../lib/components/context/RenderContext.js";
+import { ZudokuContext } from "../lib/core/ZudokuContext.js";
 import { ServerError } from "../lib/errors/ServerError.js";
 import { buildManifest } from "../lib/manifest.js";
 import { highlighterPromise } from "../lib/shiki.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
+import { stripBasePath } from "../lib/util/url.js";
 import type { Adapter } from "./adapter.js";
-import { getRoutesByConfig } from "./main.js";
+import { convertZudokuConfigToOptions, getRoutesByConfig } from "./main.js";
 import { protectChunks as rawProtectChunks } from "./protectChunks.js";
 import { getSsrCacheControl } from "./ssrCacheControl.js";
 import { wrapProtectedRoutesForRender } from "./wrapProtectedRoutes.js";
@@ -141,12 +144,30 @@ export const handleRequest = async ({
     }
   }
 
+  const zudokuContext = new ZudokuContext(
+    convertZudokuConfigToOptions(config),
+    queryClient,
+    import.meta.env,
+    ssrAuth,
+  );
+  if (zudokuContext.initialize) {
+    await Promise.allSettled([zudokuContext.initialize]);
+  }
+
+  const pathname = joinUrl(
+    stripBasePath(new URL(request.url).pathname, basePath),
+  );
+  await queryClient.prefetchQuery(
+    zudokuContext.getPluginNavigationQueryOptions(pathname, !!ssrAuth?.profile),
+  );
+
   const router = createStaticRouter(dataRoutes, context);
   const head = createHead();
   const renderContext = {
     status: 200,
     bypassProtection: bypassProtection ?? false,
     ssrAuth,
+    zudokuContext,
   };
 
   const App = (

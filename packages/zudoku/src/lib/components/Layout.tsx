@@ -1,4 +1,4 @@
-import { type ReactNode, Suspense, useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Outlet } from "react-router";
 import { TooltipProvider } from "zudoku/ui/Tooltip.js";
 import { cn } from "../util/cn.js";
@@ -10,13 +10,6 @@ import { Header } from "./Header.js";
 import { Main } from "./Main.js";
 import { useSidebar } from "./navigation/sidebarStore.js";
 import { Slot } from "./Slot.js";
-import { Spinner } from "./Spinner.js";
-
-const LoadingFallback = () => (
-  <div className="col-span-full row-span-full grid place-items-center">
-    <Spinner />
-  </div>
-);
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
   const { authentication } = useZudoku();
@@ -46,9 +39,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
             : "lg:grid-cols-[var(--side-nav-width)_1fr]",
         )}
       >
-        <Suspense fallback={<LoadingFallback />}>
-          <Main>{children ?? <Outlet />}</Main>
-        </Suspense>
+        <Main>{children ?? <Outlet />}</Main>
       </div>
       <Footer />
     </TooltipProvider>

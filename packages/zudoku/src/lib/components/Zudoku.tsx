@@ -66,12 +66,9 @@ const ZudokuInner = memo(
     const renderContext = use(RenderContext);
     if (typeof window === "undefined") {
       // Fresh context per SSR request to avoid leaking
-      zudokuContext = new ZudokuContext(
-        props,
-        queryClient,
-        env,
-        renderContext.ssrAuth,
-      );
+      zudokuContext =
+        renderContext.zudokuContext ??
+        new ZudokuContext(props, queryClient, env, renderContext.ssrAuth);
     } else {
       zudokuContext ??= new ZudokuContext(props, queryClient, env);
     }

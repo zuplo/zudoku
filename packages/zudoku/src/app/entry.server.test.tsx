@@ -2,6 +2,17 @@ import { use } from "react";
 import { Outlet, type RouteObject } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 import { RenderContext } from "../lib/components/context/RenderContext.js";
+import { useCurrentNavigation } from "../lib/components/context/ZudokuContext.js";
+import { Layout } from "../lib/components/Layout.js";
+import { Zudoku } from "../lib/components/Zudoku.js";
+
+const navigationMocks = vi.hoisted(() => ({
+  getNavigation: vi.fn(() =>
+    Promise.resolve([
+      { type: "link" as const, label: "API reference", to: "/reference" },
+    ]),
+  ),
+}));
 
 vi.mock("virtual:zudoku-auth", () => ({
   configuredAuthProvider: undefined,
@@ -24,6 +35,14 @@ vi.mock("../lib/manifest.js", () => ({
 }));
 
 vi.mock("./main.js", () => ({
+  convertZudokuConfigToOptions: () => ({
+    plugins: [
+      {
+        getNavigation: navigationMocks.getNavigation,
+        getRoutes: () => [],
+      },
+    ],
+  }),
   getRoutesByConfig: vi.fn(),
 }));
 
@@ -41,6 +60,21 @@ const ExistingStatus = ({ status }: { status: number }) => {
   const renderContext = use(RenderContext);
   renderContext.status = status;
   return <Outlet />;
+};
+
+const AsyncPluginNavigation = () => {
+  const { navigation, isPending } = useCurrentNavigation();
+
+  return (
+    <main>
+      <nav>
+        {isPending
+          ? "Loading navigation"
+          : navigation.map((item) => item.label).join(", ")}
+      </nav>
+      <article>API documentation</article>
+    </main>
+  );
 };
 
 const routes: RouteObject[] = [
@@ -80,5 +114,101 @@ describe("handleRequest", () => {
 
     expect(response.status).toBe(status);
     expect(response.headers.get("Cache-Control")).toBe(cacheControl);
+  });
+
+  it("preserves async plugin navigation in HTML and dehydrated state", async () => {
+    const response = await handleRequest({
+      template,
+      request: new Request("http://localhost/"),
+      routes: [
+        {
+          path: "/",
+          element: (
+            <Zudoku
+              plugins={[
+                {
+                  getNavigation: navigationMocks.getNavigation,
+                  getRoutes: () => [],
+                },
+              ]}
+            >
+              <Layout>
+                <AsyncPluginNavigation />
+              </Layout>
+            </Zudoku>
+          ),
+        },
+      ],
+    });
+    const html = await response.text();
+    const serializedState = html.match(
+      /window\.ZUDOKU_DATA=([\s\S]*?)<\/script>/,
+    )?.[1];
+
+    expect(html).toContain("<nav>API reference</nav>");
+    expect(html).toContain("<article>API documentation</article>");
+    expect(html).not.toContain("Loading navigation");
+    expect(html).not.toContain('<div hidden id="S:');
+    expect(html).not.toContain("$RC(");
+    expect(serializedState).toBeDefined();
+
+    const dehydratedState = JSON.parse(serializedState ?? "{}");
+    expect(dehydratedState.queries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          queryKey: ["plugin-navigation", "/", false],
+          state: expect.objectContaining({
+            data: [
+              {
+                type: "link",
+                label: "API reference",
+                to: "/reference",
+              },
+            ],
+          }),
+        }),
+      ]),
+    );
+  });
+
+  it("prefetches navigation with the router-relative path under a base path", async () => {
+    navigationMocks.getNavigation.mockClear();
+
+    const response = await handleRequest({
+      template,
+      request: new Request("http://localhost/docs/guide"),
+      basePath: "/docs",
+      routes: [
+        {
+          path: "/guide",
+          element: (
+            <Zudoku
+              plugins={[
+                {
+                  getNavigation: navigationMocks.getNavigation,
+                  getRoutes: () => [],
+                },
+              ]}
+            >
+              <Layout>
+                <AsyncPluginNavigation />
+              </Layout>
+            </Zudoku>
+          ),
+        },
+      ],
+    });
+    const html = await response.text();
+
+    expect(navigationMocks.getNavigation).toHaveBeenCalledTimes(1);
+    expect(navigationMocks.getNavigation).toHaveBeenCalledWith(
+      "/guide",
+      expect.anything(),
+    );
+    expect(html).toContain("<nav>API reference</nav>");
+    expect(html).not.toContain("Loading navigation");
+    expect(html).not.toContain('<div hidden id="S:');
+    expect(html).not.toContain("$RC(");
+    expect(html).toContain('"queryKey":["plugin-navigation","/guide",false]');
   });
 });
