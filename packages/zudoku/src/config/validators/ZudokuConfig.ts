@@ -7,6 +7,7 @@ import { z } from "zod";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { AuthState } from "../../lib/authentication/state.js";
 import type { SlotType } from "../../lib/components/context/SlotProvider.js";
+import type { SlotConfig } from "../../lib/components/Slot.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
 import { mergeConfig } from "../../lib/core/transform-config.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
@@ -711,7 +712,9 @@ const CdnUrlSchema = z
   });
 
 const BaseConfigSchema = z.object({
-  slots: z.record(z.string(), z.custom<SlotType>()),
+  slots: z.custom<SlotConfig>(
+    (slots) => z.record(z.string(), z.custom()).safeParse(slots).success,
+  ),
   /**
    * @deprecated Use `slots` instead
    */
