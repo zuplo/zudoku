@@ -12,13 +12,13 @@ import { describe, expect, it } from "vitest";
 import { ZudokuContext } from "../core/ZudokuContext.js";
 import { SlotProvider } from "./context/SlotProvider.js";
 import { ZudokuProvider } from "./context/ZudokuProvider.js";
-import { Slot } from "./Slot.js";
+import { Slot, type SlotConfig } from "./Slot.js";
 
 /**
  * @vitest-environment happy-dom
  */
 
-const createWrapper = (slots: Record<string, ReactNode> = {}) => {
+const createWrapper = (slots: SlotConfig = {}) => {
   const queryClient = new QueryClient();
   const context = new ZudokuContext({}, queryClient, {});
 
@@ -37,10 +37,7 @@ const createWrapper = (slots: Record<string, ReactNode> = {}) => {
 
 // We wrap every render function with `act` because of Suspense:
 // https://github.com/testing-library/react-testing-library/issues/1375
-const render = async (
-  element: ReactNode,
-  slots: Record<string, ReactNode> = {},
-) => {
+const render = async (element: ReactNode, slots: SlotConfig = {}) => {
   let renderResult: unknown;
   const { wrapper } = createWrapper(slots);
 
@@ -276,6 +273,76 @@ describe("Slot", () => {
       );
 
       expect(screen.getByText("Source content")).toBeInTheDocument();
+    });
+  });
+
+  describe("Slots with data", () => {
+    it("handles slots that pass data", async () => {
+      await render(
+        <>
+          <Slot.Target
+            name="after-openapi-operation-description"
+            data={{ operationId: "myId" }}
+          />
+        </>,
+        {
+          "after-openapi-operation-description": ({ data }) => (
+            <div>{data.operationId}</div>
+          ),
+        },
+      );
+
+      expect(screen.getByText("myId")).toBeInTheDocument();
+    });
+
+    it("handles multiple slots of same name with different data", async () => {
+      await render(
+        <>
+          <Slot.Target
+            name="after-openapi-operation-description"
+            data={{ operationId: "myId" }}
+          />
+          <Slot.Target
+            name="after-openapi-operation-description"
+            data={{ operationId: "myOtherId" }}
+          />
+        </>,
+        {
+          "after-openapi-operation-description": ({ data }) => (
+            <div>{data.operationId}</div>
+          ),
+        },
+      );
+
+      expect(screen.getByText("myId")).toBeInTheDocument();
+      expect(screen.getByText("myOtherId")).toBeInTheDocument();
+    });
+
+    it("handles re-renders with changed data", async () => {
+      const { rerender } = await render(
+        <>
+          <Slot.Target
+            name="after-openapi-operation-description"
+            data={{ operationId: "myId" }}
+          />
+        </>,
+        {
+          "after-openapi-operation-description": ({ data }) => (
+            <div>{data.operationId}</div>
+          ),
+        },
+      );
+
+      rerender(
+        <>
+          <Slot.Target
+            name="after-openapi-operation-description"
+            data={{ operationId: "myOtherId" }}
+          />
+        </>,
+      );
+
+      expect(screen.getByText("myOtherId")).toBeInTheDocument();
     });
   });
 
