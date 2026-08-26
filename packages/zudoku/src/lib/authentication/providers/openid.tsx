@@ -19,19 +19,15 @@ import { fetchServerSession } from "../cookie-sync.js";
 import { DEFAULT_SESSION_MAX_AGE, SESSION_ENDPOINT_PATH } from "../cookies.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
+import { applyUserData, decodeTokenClaims } from "../user-data.js";
 import { redirectToSignUpUrl } from "./util.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
 
 const decodeJwtExp = async (token: string): Promise<number | undefined> => {
-  try {
-    const { decodeJwt } = await import("jose");
-    const payload = decodeJwt(token);
-    return typeof payload.exp === "number" ? payload.exp : undefined;
-  } catch {
-    return undefined;
-  }
+  const payload = await decodeTokenClaims(token);
+  return typeof payload?.exp === "number" ? payload.exp : undefined;
 };
 
 export interface OpenIdProviderData {
@@ -85,6 +81,7 @@ export class OpenIDAuthenticationProvider
     "acr_values",
   ];
   private readonly allowInsecureRequests: boolean;
+  protected readonly userData: OpenIDAuthenticationConfig["userData"];
   private readonly sessionEndpoint: string;
   private serverSessionHydration?: Promise<OpenIdProviderData | undefined>;
 
@@ -102,6 +99,7 @@ export class OpenIDAuthenticationProvider
     authorizationParams,
     forwardAuthorizationParams,
     allowInsecureRequests,
+    userData,
   }: OpenIDAuthenticationConfig) {
     super();
     this.client = {
@@ -115,6 +113,7 @@ export class OpenIDAuthenticationProvider
     this.sessionEndpoint = joinUrl(basePath, SESSION_ENDPOINT_PATH);
     this.scopes = scopes ?? ["openid", "profile", "email"];
     this.allowInsecureRequests = allowInsecureRequests ?? false;
+    this.userData = userData;
 
     this.redirectToAfterSignUp = redirectToAfterSignUp;
     this.redirectToAfterSignIn = redirectToAfterSignIn;
@@ -273,6 +272,29 @@ export class OpenIDAuthenticationProvider
     };
   }
 
+  /**
+   * Builds the profile and layers the configured `userData` on top. This is
+   * the client-side counterpart of the enrichment in `verifyAccessToken`, so
+   * `useAuth().profile` carries the same custom data whether the page was
+   * rendered on the server or hydrated after the OAuth callback.
+   */
+  protected async buildEnrichedProfile(
+    userInfo: oauth.UserInfoResponse,
+    claims: oauth.IDToken | undefined,
+    accessToken: string,
+  ): Promise<UserProfile> {
+    const profile = this.buildUserProfile(userInfo, claims);
+    if (!this.userData) return profile;
+
+    return applyUserData(profile, {
+      userData: this.userData,
+      accessToken,
+      claimSources: this.userData.claims?.length
+        ? [claims, await decodeTokenClaims(accessToken)]
+        : undefined,
+    });
+  }
+
   public async verifyAccessToken(
     token: string,
   ): Promise<VerifyAccessTokenResult> {
@@ -286,19 +308,30 @@ export class OpenIDAuthenticationProvider
     const userInfo = (await response.json()) as Record<string, unknown>;
     if (!userInfo.sub) return undefined;
 
-    // userInfoRequest authenticated the token upstream; parsing `exp` here
-    // lets us bound the cookie lifetime to the token's. Opaque tokens just
-    // yield undefined and fall back to the handler's default.
-    const expiresAt = await decodeJwtExp(token);
+    // userInfoRequest authenticated the token upstream; decoding the payload
+    // here bounds the cookie lifetime to the token's `exp` and feeds claim
+    // selection below. Opaque tokens just yield undefined and fall back to
+    // the handler's default.
+    const tokenClaims = await decodeTokenClaims(token);
+    const expiresAt =
+      typeof tokenClaims?.exp === "number" ? tokenClaims.exp : undefined;
+
+    const profile: UserProfile = {
+      sub: String(userInfo.sub),
+      email: userInfo.email as string | undefined,
+      name: userInfo.name as string | undefined,
+      emailVerified: Boolean(userInfo.email_verified),
+      pictureUrl: userInfo.picture as string | undefined,
+    };
 
     return {
-      profile: {
-        sub: String(userInfo.sub),
-        email: userInfo.email as string | undefined,
-        name: userInfo.name as string | undefined,
-        emailVerified: Boolean(userInfo.email_verified),
-        pictureUrl: userInfo.picture as string | undefined,
-      },
+      // The ID token isn't available here — only the access token was
+      // submitted — so claim selection sees the access token payload alone.
+      profile: await applyUserData(profile, {
+        userData: this.userData,
+        accessToken: token,
+        claimSources: [tokenClaims],
+      }),
       expiresAt,
     };
   }
@@ -324,7 +357,11 @@ export class OpenIDAuthenticationProvider
     const claims =
       providerData?.type === "openid" ? providerData.claims : undefined;
 
-    const profile = this.buildUserProfile(userInfo, claims);
+    const profile = await this.buildEnrichedProfile(
+      userInfo,
+      claims,
+      accessToken,
+    );
 
     useAuthState.setState({
       isAuthenticated: true,
@@ -694,6 +731,9 @@ export class OpenIDAuthenticationProvider
     );
     const userInfo = await userInfoResponse.json();
 
+    // Interim profile only — the awaited refresh below rebuilds it through
+    // buildEnrichedProfile. Enriching here too would call a configured
+    // `userData.endpoint` twice per login.
     const profile = this.buildUserProfile(userInfo, claims);
 
     useAuthState.setState({

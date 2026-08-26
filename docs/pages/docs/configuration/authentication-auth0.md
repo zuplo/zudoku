@@ -154,6 +154,60 @@ When the prompt parameter is omitted (empty string), Auth0 will:
 - Silently authenticate the user if they have a valid session
 - Redirect to the login page if no valid session exists
 
+### Attaching Custom User Data
+
+If your portal needs data Auth0 doesn't hold — a subscription record, a plan tier, entitlement flags
+— configure `userData` instead of writing a Post-Login Action to inject it.
+
+To have Zudoku fetch it from your own API at login:
+
+```typescript
+authentication: {
+  type: "auth0",
+  domain: "your-domain.us.auth0.com",
+  clientId: "<your-auth0-client-id>",
+  audience: "https://your-domain.com/api",
+
+  userData: {
+    endpoint: {
+      url: "https://api.your-domain.com/v1/me/subscription",
+      as: "subscription",
+    },
+  },
+}
+```
+
+Zudoku calls the endpoint with the user's Auth0 access token as a `Bearer` token, so your API can
+identify the caller and authorize the request with the token it already validates. The JSON response
+lands on the profile:
+
+```tsx
+const { profile } = useAuth();
+
+if (profile?.subscription?.plan === "enterprise") {
+  // ...
+}
+```
+
+If you already add namespaced claims in an Auth0 Action, `claims` surfaces them on the profile
+without a second request — Auth0 keeps namespaced claims out of the User Info response, so they
+aren't picked up automatically:
+
+```typescript
+userData: {
+  claims: [
+    "https://your-domain.com/roles",
+    { claim: "https://your-domain.com/subscription", as: "subscription" },
+  ],
+}
+```
+
+The ID token is checked first, then the access token, so it works whether your Action calls
+`api.idToken.setCustomClaim` or `api.accessToken.setCustomClaim`.
+
+See [Custom User Data](./authentication.md#custom-user-data) for the full set of options, including
+`required` to fail the login when the request fails.
+
 ### Customizing Sign-up
 
 By default Auth0 already adds `screen_hint=signup` when a user clicks Register. To send users to a

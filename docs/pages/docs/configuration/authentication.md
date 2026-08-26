@@ -214,6 +214,97 @@ fields are used to display the user profile:
 
 If the provider does not return a field, it will be left blank.
 
+### Custom User Data
+
+Anything else the User Info endpoint returns is merged into `profile` as-is, so a claim your
+identity provider already puts there needs no configuration.
+
+For data that _isn't_ in the User Info response — a subscription record in your own database, a plan
+tier, entitlement flags — use `authentication.userData`. It has two layers, and both are available
+on `auth0`, `openid`, and `entra`:
+
+```typescript title="zudoku.config.ts"
+{
+  authentication: {
+    type: "auth0",
+    domain: "your-domain.us.auth0.com",
+    clientId: "<your-auth0-client-id>",
+    audience: "https://your-domain.com/api",
+
+    userData: {
+      // 1. Lift claims out of the ID token and access token into the profile
+      claims: [
+        "https://your-domain.com/roles",
+        { claim: "https://your-domain.com/plan", as: "plan" },
+      ],
+
+      // 2. Fetch data from your own API, authenticated as the signed-in user
+      endpoint: {
+        url: "https://api.your-domain.com/v1/me/subscription",
+        as: "subscription",
+      },
+    },
+  },
+}
+```
+
+Both layers land on the same profile, which any component can read:
+
+```tsx
+const { profile } = useAuth();
+
+if (profile?.subscription?.plan === "enterprise") {
+  // ...
+}
+```
+
+#### Claims
+
+`claims` selects claims from the tokens the provider issued — the ID token first, then the access
+token. This is the piece that surfaces namespaced claims (`https://your-domain.com/plan`), which
+providers keep out of the User Info response. A claim that appears in neither token is skipped
+rather than set to `undefined`.
+
+By default the claim keeps its own name, which for a namespaced claim is the whole URL. Use
+`{ claim, as }` to store it under a shorter key.
+
+#### Endpoint
+
+`endpoint` calls your API once the user is authenticated and merges the JSON response into the
+profile. The user's access token is sent as a `Bearer` token, so the endpoint can identify the
+caller and authorize the request itself — the same token your API already validates.
+
+| Option     | Default | Description                                                                   |
+| ---------- | ------- | ----------------------------------------------------------------------------- |
+| `url`      | –       | Absolute URL to call. Relative paths are rejected (see below).                |
+| `method`   | `"GET"` | `"GET"` or `"POST"`.                                                          |
+| `headers`  | –       | Extra request headers. Cannot override `Authorization`.                       |
+| `as`       | –       | Profile key to nest the response under. Omit to merge an object at top level. |
+| `required` | `false` | Fail the login when the request fails, instead of logging and carrying on.    |
+
+Passing a bare string is shorthand for `{ url }`.
+
+Zudoku calls the endpoint when a profile is built: after the OAuth callback, on profile refresh, and
+— in SSR mode — when the server verifies the access token, so server-rendered HTML sees the same
+data as the client. Server-side results are cached per access token for 60 seconds.
+
+:::caution
+
+`url` must be absolute. SSR verification runs without a page origin to resolve a relative path
+against, so a relative URL would work in the browser and break on the server.
+
+:::
+
+Custom user data can override `name` or `email` — useful when your own user store is more
+authoritative than the IdP — but never `sub`, which stays the identity from the provider.
+
+:::warning
+
+In SSR mode the profile is stored in a cookie capped at just under 4KB. A large response can push it
+over, and the session cookie then fails to be set. Return only the fields the portal needs.
+
+:::
+
 ## Protected Routes
 
 Once authentication is configured, you can protect specific routes in your documentation to require

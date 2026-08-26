@@ -1,8 +1,10 @@
 // @vitest-environment happy-dom
 import * as oauth from "oauth4webapi";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import type { OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { OAuthAuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
+import { UserDataError } from "../user-data.js";
 import auth0Auth from "./auth0.js";
 import {
   OpenIDAuthenticationProvider,
@@ -12,6 +14,17 @@ import {
 // Fake JWT-shaped tokens (3 dot-separated segments) to pass the opaque token check
 const FAKE_ACCESS_TOKEN = "header.payload.signature";
 const FAKE_NEW_ACCESS_TOKEN = "header.newpayload.signature";
+
+// Decodable-but-unverified JWT, which is all the claim selection reads.
+const signedlessJwt = (payload: object) => {
+  const encode = (value: object) =>
+    Buffer.from(JSON.stringify(value))
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+  return `${encode({ alg: "none" })}.${encode(payload)}.signature`;
+};
 
 vi.mock("oauth4webapi", async (importOriginal) => {
   const actual = await importOriginal<typeof oauth>();
@@ -315,6 +328,168 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       expect(profile?.sub).toBe("user-1");
       expect(profile?.email).toBe("user@example.com");
       expect(profile?.emailVerified).toBe(true);
+    });
+  });
+
+  describe("userData config", () => {
+    const SUBSCRIPTION_CLAIM = "https://zuplo.com/subscription";
+
+    const createUserDataProvider = (
+      userData: OpenIDAuthenticationConfig["userData"],
+    ) =>
+      new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        userData,
+      });
+
+    const setLoggedInWith = (accessToken: string) => {
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: {
+          sub: "user-1",
+          email: "user@example.com",
+          emailVerified: true,
+          name: "Test",
+          pictureUrl: undefined,
+        },
+        providerData: {
+          type: "openid",
+          accessToken,
+          expiresOn: new Date(Date.now() + 3600_000),
+          tokenType: "bearer",
+          claims: undefined,
+        } satisfies OpenIdProviderData,
+      });
+
+      vi.mocked(oauth.userInfoRequest).mockResolvedValue(
+        Response.json({
+          sub: "user-1",
+          email: "user@example.com",
+          name: "Test",
+          email_verified: true,
+        }),
+      );
+    };
+
+    test("lifts a configured claim out of the access token on refresh", async () => {
+      const provider = createUserDataProvider({
+        claims: [{ claim: SUBSCRIPTION_CLAIM, as: "subscription" }],
+      });
+      setLoggedInWith(signedlessJwt({ [SUBSCRIPTION_CLAIM]: { plan: "pro" } }));
+
+      await provider.refreshUserProfile();
+
+      expect(useAuthState.getState().profile?.subscription).toEqual({
+        plan: "pro",
+      });
+    });
+
+    test("attaches endpoint data to the profile on refresh", async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(Response.json({ plan: "enterprise", seats: 12 }));
+
+      const provider = createUserDataProvider({
+        endpoint: {
+          url: "https://api.example.com/v1/me/subscription",
+          as: "subscription",
+        },
+      });
+      setLoggedInWith(FAKE_ACCESS_TOKEN);
+
+      await provider.refreshUserProfile();
+
+      expect(fetchSpy).toHaveBeenCalledWith(
+        "https://api.example.com/v1/me/subscription",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: `Bearer ${FAKE_ACCESS_TOKEN}`,
+          }),
+        }),
+      );
+      expect(useAuthState.getState().profile?.subscription).toEqual({
+        plan: "enterprise",
+        seats: 12,
+      });
+    });
+
+    test("leaves the profile alone when userData is not configured", async () => {
+      const fetchSpy = vi.spyOn(globalThis, "fetch");
+      const provider = createProvider();
+      setLoggedInWith(FAKE_ACCESS_TOKEN);
+
+      await provider.refreshUserProfile();
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+      expect(useAuthState.getState().profile?.subscription).toBeUndefined();
+    });
+
+    test("verifyAccessToken enriches the SSR profile from the access token", async () => {
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        Response.json({ plan: "pro" }),
+      );
+      vi.mocked(oauth.userInfoRequest).mockResolvedValue(
+        Response.json({
+          sub: "user-1",
+          email: "user@example.com",
+          name: "Test",
+          email_verified: true,
+        }),
+      );
+
+      const provider = createUserDataProvider({
+        claims: [{ claim: SUBSCRIPTION_CLAIM, as: "tokenSubscription" }],
+        endpoint: {
+          url: "https://api.example.com/v1/me/subscription",
+          as: "subscription",
+        },
+      });
+
+      const result = await provider.verifyAccessToken(
+        signedlessJwt({ [SUBSCRIPTION_CLAIM]: { plan: "from-token" } }),
+      );
+
+      expect(result?.profile).toMatchObject({
+        sub: "user-1",
+        tokenSubscription: { plan: "from-token" },
+        subscription: { plan: "pro" },
+      });
+    });
+
+    test("a soft endpoint failure does not break the login", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(null, { status: 503 }),
+      );
+
+      const provider = createUserDataProvider({
+        endpoint: { url: "https://api.example.com/v1/me/subscription" },
+      });
+      setLoggedInWith(FAKE_ACCESS_TOKEN);
+
+      await expect(provider.refreshUserProfile()).resolves.toBe(true);
+      expect(useAuthState.getState().profile?.sub).toBe("user-1");
+    });
+
+    test("a required endpoint failure surfaces as an error", async () => {
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(null, { status: 503 }),
+      );
+
+      const provider = createUserDataProvider({
+        endpoint: {
+          url: "https://api.example.com/v1/me/subscription",
+          required: true,
+        },
+      });
+      setLoggedInWith(FAKE_ACCESS_TOKEN);
+
+      await expect(provider.refreshUserProfile()).rejects.toThrow(
+        UserDataError,
+      );
     });
   });
 

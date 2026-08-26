@@ -424,6 +424,54 @@ const SignUpOpenIdSchema = z.union([
     .strict(),
 ]);
 
+/**
+ * Custom user data attached to the profile at login.
+ *
+ * Declarative on purpose: the auth config is serialized into the
+ * `virtual:zudoku-auth` module, so function hooks would not survive the
+ * build. Both layers run on the client (after the OAuth callback and on
+ * profile refresh) and on the server (when SSR verifies the access token),
+ * so `useAuth().profile` carries the same data in either render.
+ */
+const UserDataClaimSchema = z.union([
+  z.string().min(1),
+  z
+    .object({
+      claim: z.string().min(1),
+      // Profile key to store the claim under. Defaults to the claim name,
+      // which for namespaced claims is the full namespaced string.
+      as: z.string().min(1).optional(),
+    })
+    .strict(),
+]);
+
+const UserDataEndpointSchema = z.union([
+  // Absolute URLs only: SSR verification has no page origin to resolve a
+  // relative path against, so allowing one would work on the client and
+  // silently break server-side.
+  z.url(),
+  z
+    .object({
+      url: z.url(),
+      method: z.enum(["GET", "POST"]).optional(),
+      headers: z.record(z.string(), z.string()).optional(),
+      // Profile key to nest the response under. Omit to merge a JSON object
+      // response into the profile at the top level.
+      as: z.string().min(1).optional(),
+      // By default a failed request logs and leaves the profile unchanged so
+      // an outage can't lock users out. Set true to fail the login instead.
+      required: z.boolean().optional(),
+    })
+    .strict(),
+]);
+
+const UserDataSchema = z
+  .object({
+    claims: z.array(UserDataClaimSchema).optional(),
+    endpoint: UserDataEndpointSchema.optional(),
+  })
+  .strict();
+
 const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
@@ -486,6 +534,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     disableSignUp: z.boolean().optional(),
     authorizationParams: z.record(z.string(), z.string()).optional(),
     forwardAuthorizationParams: z.array(z.string()).optional(),
+    userData: UserDataSchema.optional(),
   }),
   z.object({
     type: z.literal("entra"),
@@ -505,6 +554,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     disableSignUp: z.boolean().optional(),
     authorizationParams: z.record(z.string(), z.string()).optional(),
     forwardAuthorizationParams: z.array(z.string()).optional(),
+    userData: UserDataSchema.optional(),
   }),
   z.object({
     type: z.literal("azureb2c"),
@@ -554,6 +604,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
       .optional(),
     signUp: SignUpOpenIdSchema.optional(),
     disableSignUp: z.boolean().optional(),
+    userData: UserDataSchema.optional(),
   }),
   z.object({
     type: z.literal("supabase"),
@@ -794,6 +845,7 @@ export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
 export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
+export type UserDataConfig = z.infer<typeof UserDataSchema>;
 
 // Pin navigation types to their strict inferred form (z.input widens them due to z.lazy recursion).
 type InputOverrides = {

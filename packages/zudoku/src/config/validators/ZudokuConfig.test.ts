@@ -29,6 +29,66 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it("should accept auth0 userData claims and endpoint config", () => {
+    const config = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "example.auth0.com",
+        userData: {
+          claims: [
+            "https://zuplo.com/roles",
+            { claim: "https://zuplo.com/subscription", as: "subscription" },
+          ],
+          endpoint: {
+            url: "https://api.example.com/v1/me/subscription",
+            as: "subscription",
+            required: true,
+          },
+        },
+      },
+    };
+
+    const result = validateConfig(config);
+
+    expect(result.authentication).toMatchObject(config.authentication);
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should reject a relative userData endpoint url", () => {
+    process.env.NODE_ENV = "production";
+
+    const config = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "example.auth0.com",
+        userData: { endpoint: "/api/me" },
+      },
+    };
+
+    expect(() => validateConfig(config)).toThrow(
+      /Invalid Zudoku configuration/,
+    );
+  });
+
+  it("should reject unknown keys in userData", () => {
+    process.env.NODE_ENV = "production";
+
+    const config = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "example.auth0.com",
+        userData: { transform: "not-supported" },
+      },
+    };
+
+    expect(() => validateConfig(config)).toThrow(
+      /Invalid Zudoku configuration/,
+    );
+  });
+
   it("should validate clerk public key format correctly", () => {
     process.env.NODE_ENV = "production";
 

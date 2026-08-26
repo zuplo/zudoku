@@ -2,12 +2,13 @@ import type { ConfigWithMeta } from "./loader.js";
 import type { BuildConfig } from "./validators/BuildSchema.js";
 import type {
   AuthenticationConfig,
+  UserDataConfig,
   ZudokuConfig,
 } from "./validators/ZudokuConfig.js";
 
 export type ZudokuBuildConfig = BuildConfig;
 export type LoadedConfig = ConfigWithMeta;
-export type { ZudokuConfig };
+export type { UserDataConfig, ZudokuConfig };
 
 export type ClerkAuthenticationConfig = Extract<
   AuthenticationConfig,
