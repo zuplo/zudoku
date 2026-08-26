@@ -25,10 +25,11 @@ import { redirectToSignUpUrl } from "./util.js";
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
 
-const decodeJwtExp = async (token: string): Promise<number | undefined> => {
-  const payload = await decodeTokenClaims(token);
-  return typeof payload?.exp === "number" ? payload.exp : undefined;
-};
+const tokenExp = (claims: Record<string, unknown> | undefined) =>
+  typeof claims?.exp === "number" ? claims.exp : undefined;
+
+const decodeJwtExp = async (token: string): Promise<number | undefined> =>
+  tokenExp(await decodeTokenClaims(token));
 
 export interface OpenIdProviderData {
   // just for easy migration we also allow for undefined type. can be removed in the future.
@@ -313,8 +314,7 @@ export class OpenIDAuthenticationProvider
     // selection below. Opaque tokens just yield undefined and fall back to
     // the handler's default.
     const tokenClaims = await decodeTokenClaims(token);
-    const expiresAt =
-      typeof tokenClaims?.exp === "number" ? tokenClaims.exp : undefined;
+    const expiresAt = tokenExp(tokenClaims);
 
     const profile: UserProfile = {
       sub: String(userInfo.sub),
