@@ -128,6 +128,7 @@ export const OperationListItem = ({
                   operationPath={operation.path}
                   summary={operation.summary ?? undefined}
                   data={operation.extensions?.["x-mcp-server"]}
+                  disableAuthInstructions={options?.disableMcpAuthInstructions}
                 />
               </div>
             ) : (

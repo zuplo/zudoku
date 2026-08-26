@@ -77,6 +77,20 @@ export const getAuthHeader = (data?: McpServerData): AuthHeader | undefined => {
   return undefined;
 };
 
+// Resolves what the card renders for auth. With `disableAuthInstructions` the
+// server is presented as unauthenticated whatever its security says: no header
+// snippets, no "replace YOUR_API_KEY" steps, no sign-in flow, and the full
+// client list — for docs where credentials reach the MCP server some other way,
+// or are documented elsewhere.
+export const resolveMcpAuth = (
+  data?: McpServerData,
+  options?: { disableAuthInstructions?: boolean },
+): { authType: AuthType; auth?: AuthHeader } => {
+  if (options?.disableAuthInstructions) return { authType: "none" };
+
+  return { authType: getAuthType(data), auth: getAuthHeader(data) };
+};
+
 // -- App compatibility matrix --
 
 export interface McpSubApp {
@@ -185,6 +199,65 @@ export const getMcpServerName = (
 ): string => {
   if (typeof data === "boolean") return summary ?? "mcp-server";
   return (data?.name as string) ?? summary ?? "mcp-server";
+};
+
+export type McpTool = { name: string; description?: string };
+
+/**
+ * `extensions` reaches the client as untyped JSON, so `x-mcp-server` can hold
+ * anything a document author wrote — including `null`, which `typeof` reports as
+ * "object". Narrow before reading properties off it.
+ */
+export const isMcpServerObject = (
+  data?: McpServerData,
+): data is Record<string, unknown> => typeof data === "object" && data !== null;
+
+/**
+ * Whether a raw `x-mcp-server` value describes a server at all. Only `true` and
+ * an object do; `null`, `false` and scalars are treated as absent.
+ */
+export const isMcpServerData = (value: unknown): value is McpServerData =>
+  value === true || (typeof value === "object" && value !== null);
+
+/**
+ * Human-readable label for a server. Deliberately the inverse precedence of
+ * `getMcpServerName`, which prefers `x-mcp-server.name` — that is the protocol
+ * identity used in install snippets (`cosmo-salesforce-sales-cloud`) and reads
+ * poorly as a heading.
+ */
+export const getMcpServerTitle = (
+  data?: McpServerData,
+  summary?: string | null,
+  operationId?: string | null,
+): string => {
+  if (summary) return summary;
+  if (isMcpServerObject(data) && typeof data.name === "string") {
+    return data.name;
+  }
+  return operationId ?? "MCP Server";
+};
+
+/**
+ * Tools the server advertises. Populated by the Zuplo enrichment from the
+ * gateway's handler options; a document that only marks operations with
+ * `x-mcp-server: true` has none, which is a normal state rather than an error.
+ */
+export const getMcpTools = (data?: McpServerData): McpTool[] => {
+  if (!isMcpServerObject(data) || !Array.isArray(data.tools)) return [];
+
+  return data.tools.flatMap((tool) =>
+    tool && typeof tool === "object" && typeof tool.name === "string"
+      ? [
+          {
+            name: tool.name,
+            description:
+              typeof tool.description === "string"
+                ? tool.description
+                : undefined,
+          },
+        ]
+      : [],
+  );
 };
 
 // Matches a URL that carries its own scheme, e.g. `https://mcp.example.com`.
