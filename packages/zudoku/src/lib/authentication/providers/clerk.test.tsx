@@ -323,4 +323,30 @@ describe("clerkAuth signUp short-circuit", () => {
     await expect(provider.refreshUserProfile?.()).resolves.toBe(true);
     expect(reload).toHaveBeenCalledOnce();
   });
+
+  test("loads the auth route screens only when their routes are visited", async () => {
+    const provider = clerkAuth({
+      type: "clerk",
+      clerkPubKey: TEST_PUB_KEY,
+      jwtTemplateName: "dev-portal",
+    });
+    const routes = provider.getRoutes?.() ?? [];
+
+    expect(routes.map((route) => route.path)).toEqual([
+      "/signout",
+      "/signin",
+      "/signup",
+    ]);
+    expect(routes.every((route) => route.element === undefined)).toBe(true);
+    expect(routes.every((route) => typeof route.lazy === "function")).toBe(
+      true,
+    );
+
+    const routeModules = await Promise.all(
+      routes.map((route) => route.lazy?.()),
+    );
+    expect(routeModules.every((routeModule) => routeModule?.element)).toBe(
+      true,
+    );
+  });
 });

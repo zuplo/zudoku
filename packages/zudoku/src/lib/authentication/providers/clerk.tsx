@@ -6,9 +6,6 @@ import type {
   AuthenticationProviderInitializer,
   VerifyAccessTokenResult,
 } from "../authentication.js";
-import { SignIn } from "../components/SignIn.js";
-import { SignOut } from "../components/SignOut.js";
-import { SignUp } from "../components/SignUp.js";
 import { type UserProfile, useAuthState } from "../state.js";
 import { getClerkFrontendApi, redirectToSignUpUrl } from "./util.js";
 
@@ -353,9 +350,27 @@ const clerkAuth: AuthenticationProviderInitializer<
   return {
     disableSignUp: disableSignUp ?? false,
     getRoutes: () => [
-      { path: "/signout", element: <SignOut /> },
-      { path: "/signin", element: <SignIn /> },
-      { path: "/signup", element: <SignUp /> },
+      {
+        path: "/signout",
+        async lazy() {
+          const { SignOut } = await import("../components/SignOut.js");
+          return { element: <SignOut /> };
+        },
+      },
+      {
+        path: "/signin",
+        async lazy() {
+          const { SignIn } = await import("../components/SignIn.js");
+          return { element: <SignIn /> };
+        },
+      },
+      {
+        path: "/signup",
+        async lazy() {
+          const { SignUp } = await import("../components/SignUp.js");
+          return { element: <SignUp /> };
+        },
+      },
     ],
     refreshUserProfile,
     getProfileMenuItems() {
