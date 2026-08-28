@@ -32,11 +32,29 @@ export type GetUserMetadata = (
   context: GetUserMetadataContext,
 ) => Promise<UserMetadata | undefined> | UserMetadata | undefined;
 
-export const withMetadataTimeout = (signal?: AbortSignal): AbortSignal => {
-  const timeout = AbortSignal.timeout(USER_METADATA_TIMEOUT_MS);
+export const withMetadataTimeout = (
+  signal?: AbortSignal,
+  timeoutMs = USER_METADATA_TIMEOUT_MS,
+): AbortSignal => {
+  const timeout = AbortSignal.timeout(timeoutMs);
   if (!signal) return timeout;
 
-  return typeof AbortSignal.any === "function"
-    ? AbortSignal.any([signal, timeout])
-    : signal;
+  if (typeof AbortSignal.any === "function") {
+    return AbortSignal.any([signal, timeout]);
+  }
+
+  // `AbortSignal.timeout` shipped before `AbortSignal.any`, so combine the two
+  // by hand rather than dropping the timeout on browsers in between.
+  const controller = new AbortController();
+  for (const source of [signal, timeout]) {
+    if (source.aborted) {
+      controller.abort(source.reason);
+      break;
+    }
+    source.addEventListener("abort", () => controller.abort(source.reason), {
+      once: true,
+    });
+  }
+
+  return controller.signal;
 };

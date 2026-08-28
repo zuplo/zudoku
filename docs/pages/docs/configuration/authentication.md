@@ -232,9 +232,11 @@ by Zudoku and cannot be overwritten by a claim. The `metadata` key is reserved f
 data described below.
 
 In server-side rendered deployments, claims are also read from the access token, so the profile is
-the same on the server as it is in the browser. The server-side profile is stored in a cookie: if it
-exceeds the browser's size limit, custom claims are dropped from it (a warning is logged) and
-restored in the browser shortly after the page loads.
+the same on the server as it is in the browser. The server-side profile is stored in a cookie, which
+puts a hard limit (roughly 3.9 KB, URL-encoded) on how much claim data it can carry: if the profile
+exceeds it, custom claims are dropped from the session with a warning and will be missing from the
+profile after a full page load until something restores the access token. Keep custom claims small,
+and prefer the custom user data below for anything larger.
 
 ## Custom User Data
 

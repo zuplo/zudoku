@@ -64,30 +64,41 @@ export const useUserMetadata = () => {
         signal: withMetadataTimeout(signal),
       });
 
-      useAuthState.setState((state) =>
-        state.profile ? { profile: { ...state.profile, metadata } } : {},
-      );
-
       return metadata ?? null;
     },
   });
 
-  const { isError, error } = query;
+  const { isError, isSuccess, error } = query;
+  const data = query.data ?? undefined;
 
-  // Fail closed once the retries are exhausted: drop any previous value so a
-  // stale entitlement can't outlive a failing lookup.
   useEffect(() => {
     if (!isError) return;
 
     // biome-ignore lint/suspicious/noConsole: Surface metadata failures
     console.error("[Zudoku] Failed to load user metadata:", error);
+  }, [isError, error]);
+
+  // Applied here rather than inside `queryFn` so the store converges on the
+  // query's result no matter how it got there: a cache hit skips `queryFn`
+  // entirely, and `refreshUserProfile` replaces the whole profile object,
+  // dropping the metadata that was written alongside it. Watching `profile` is
+  // what catches that replacement.
+  //
+  // A failed lookup converges on `undefined` so a stale entitlement can't
+  // outlive it, and the `sub` guard keeps a result from landing on a different
+  // user's profile.
+  useEffect(() => {
+    if (!isSuccess && !isError) return;
+
+    const next = isSuccess ? data : undefined;
+    if (!profile || profile.sub !== sub || profile.metadata === next) return;
 
     useAuthState.setState((state) =>
-      state.profile
-        ? { profile: { ...state.profile, metadata: undefined } }
+      state.profile?.sub === sub
+        ? { profile: { ...state.profile, metadata: next } }
         : {},
     );
-  }, [isError, error]);
+  }, [isSuccess, isError, data, sub, profile]);
 
   return {
     ...query,

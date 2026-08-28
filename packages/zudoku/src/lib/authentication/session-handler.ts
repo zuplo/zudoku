@@ -216,8 +216,13 @@ export const createSessionHandler = (verify: VerifyAccessToken | undefined) =>
       // Custom claims make the profile unbounded, so an oversized one degrades
       // to the core identity fields rather than failing the session: a 413 here
       // leaves the cookie unset, and SSR mode has no localStorage to fall back
-      // on, so the user would appear signed out after any full reload. The
-      // client refetches userinfo shortly after load and restores the claims.
+      // on, so the user would appear signed out after any full reload.
+      //
+      // The dropped claims do NOT come back on their own: after an SSR reload
+      // `providerData` is null, so `refreshUserProfile` returns early and never
+      // reaches userinfo. They reappear only once something restores the
+      // cookie-backed token (any `signRequest`). Treat the cookie budget as a
+      // hard limit on how much claim data a profile can carry.
       if (cookieSize(profileJson) > MAX_COOKIE_SIZE) {
         const core = coreProfile(verified.profile);
         const coreJson = serializeProfile(core);
