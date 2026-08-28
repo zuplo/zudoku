@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const outputDirectory = path.resolve(".vercel/output");
@@ -46,6 +46,10 @@ const catalog =
   '{"linkset":[{"anchor":"https://developers.example.com/.well-known/api-catalog","item":[]}]}\n';
 const openapi =
   '{"openapi":"3.1.1","info":{"title":"Contract API","version":"1.0.0"},"paths":{}}\n';
+const middlewareSource = await readFile(
+  path.resolve("zudoku-markdown.js"),
+  "utf8",
+);
 
 await Promise.all([
   writeFile(path.join(staticDirectory, "docs/.well-known/ard.json"), ard),
@@ -61,10 +65,7 @@ await Promise.all([
     path.join(functionDirectory, ".vc-config.json"),
     JSON.stringify({ runtime: "edge", entrypoint: "index.js" }),
   ),
-  writeFile(
-    path.join(functionDirectory, "index.js"),
-    "export default async () => new Response(null, { headers: { 'x-middleware-next': '1' } });\n",
-  ),
+  writeFile(path.join(functionDirectory, "index.js"), middlewareSource),
 ]);
 
 const ardLink =

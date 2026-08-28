@@ -241,13 +241,16 @@ const compareRepresentations = (left, right) =>
   left.rangeOrder - right.rangeOrder ||
   left.serverOrder - right.serverOrder;
 
-const negotiateContentType = (acceptHeader) => {
+const negotiateContentType = (
+  acceptHeader,
+  representations = REPRESENTATIONS,
+) => {
   if (!acceptHeader?.trim()) return "text/html";
 
   const ranges = splitOutsideQuotes(acceptHeader, ",")
     .map((value, order) => parseMediaRange(value.trim(), order))
     .filter((range) => range !== undefined);
-  const match = REPRESENTATIONS
+  const match = representations
     .map((representation) => getRepresentationMatch(ranges, representation))
     .filter((result) => result !== undefined)
     .filter((result) => result.quality > 0)
@@ -348,7 +351,33 @@ export default function middleware(request) {
     });
   }
 
-  if (KNOWN_ROUTES.has(pathname) || PASSTHROUGH_PATHS.has(pathname)) {
+  if (KNOWN_ROUTES.has(pathname)) {
+    const negotiatedType = negotiateContentType(
+      request.headers.get("Accept"),
+      REPRESENTATIONS.filter(
+        (representation) => representation.contentType === "text/html",
+      ),
+    );
+    const headers = mergeHeader(
+      getRouteHeaders(pathname),
+      "Vary",
+      NEGOTIATED_VARY,
+    );
+
+    if (negotiatedType === null) {
+      return new Response(request.method === "HEAD" ? null : "Not Acceptable", {
+        status: 406,
+        headers: {
+          ...headers,
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
+    }
+
+    return continueRequest(headers);
+  }
+
+  if (PASSTHROUGH_PATHS.has(pathname)) {
     return continueRequest(getRouteHeaders(pathname));
   }
 

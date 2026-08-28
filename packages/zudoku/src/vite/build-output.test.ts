@@ -2,9 +2,10 @@ import { spawnSync } from "node:child_process";
 import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { copyVercelStaticOutput } from "./build.js";
+import { generateVercelMarkdownMiddleware } from "./vercel-markdown-middleware.js";
 
 describe("Vercel static output", () => {
   const tempDirs: string[] = [];
@@ -70,6 +71,15 @@ describe("Vercel static output", () => {
         null,
         2,
       )}\n`,
+    );
+    await writeFile(
+      path.join(rootDir, "zudoku-markdown.js"),
+      generateVercelMarkdownMiddleware({
+        basePath: "/docs",
+        knownCanonicalRoutePaths: ["/", "/guide"],
+        markdownCanonicalRoutePaths: ["/guide"],
+        markdownNotFoundBody: "# Page not found\n",
+      }),
     );
 
     const vercelBinary = path.join(repositoryRoot, "node_modules/.bin/vercel");
@@ -175,5 +185,39 @@ describe("Vercel static output", () => {
         "utf8",
       ),
     ).resolves.toContain('"runtime":"edge"');
+
+    const finalizedMiddlewareUrl = pathToFileURL(
+      path.join(outputDirectory, "functions/zudoku-markdown.func/index.js"),
+    );
+    finalizedMiddlewareUrl.searchParams.set("test", String(Date.now()));
+    const finalizedMiddleware = await import(
+      /* @vite-ignore */ finalizedMiddlewareUrl.href
+    );
+    const htmlOnlyHtml = await finalizedMiddleware.default(
+      new Request("https://developers.example.com/docs", {
+        headers: { Accept: "text/html" },
+      }),
+    );
+    expect(htmlOnlyHtml.headers.get("x-middleware-next")).toBe("1");
+    expect(htmlOnlyHtml.headers.get("Vary")).toBe("Accept, Accept-Encoding");
+
+    const htmlOnlyMarkdown = await finalizedMiddleware.default(
+      new Request("https://developers.example.com/docs", {
+        headers: { Accept: "text/markdown" },
+      }),
+    );
+    expect(htmlOnlyMarkdown.status).toBe(406);
+    expect(htmlOnlyMarkdown.headers.get("Vary")).toBe(
+      "Accept, Accept-Encoding",
+    );
+
+    const guideMarkdown = await finalizedMiddleware.default(
+      new Request("https://developers.example.com/docs/guide", {
+        headers: { Accept: "text/markdown" },
+      }),
+    );
+    expect(guideMarkdown.headers.get("x-middleware-rewrite")).toBe(
+      "https://developers.example.com/docs/guide.md",
+    );
   }, 120_000);
 });
