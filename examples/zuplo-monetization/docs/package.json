@@ -21,10 +21,11 @@
     }
   },
   "dependencies": {
+    "@zuplo/zudoku-plugin-monetization": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "zudoku": "workspace:*",
-    "@zuplo/zudoku-plugin-monetization": "workspace:*"
+    "react-hook-form": "^7.83.0",
+    "zudoku": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

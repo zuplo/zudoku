@@ -1,5 +1,6 @@
 import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
 import type { ZudokuConfig } from "zudoku";
+import { SubscribeQuestionnaire } from "./src/SubscribeQuestionnaire.js";
 
 const config: ZudokuConfig = {
   site: {
@@ -86,7 +87,19 @@ const config: ZudokuConfig = {
     clientId: "f8I87rdsCRo4nU2FHf0fHVwA9P7xi7Ml",
     audience: "https://api.example.com/",
   },
-  plugins: [zuploMonetizationPlugin()],
+  plugins: [
+    zuploMonetizationPlugin({
+      checkout: {
+        // Asked on /checkout, after "Subscribe" and before Stripe. Return
+        // `null` to send a plan straight to checkout — here the free plan
+        // skips the questions.
+        renderBeforeCheckout: (props) =>
+          props.plan.paymentRequired === false ? null : (
+            <SubscribeQuestionnaire {...props} />
+          ),
+      },
+    }),
+  ],
 };
 
 export default config;

@@ -1,6 +1,6 @@
 import { use } from "react";
 import { Outlet, type RouteObject } from "react-router";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { RenderContext } from "../lib/components/context/RenderContext.js";
 import { useCurrentNavigation } from "../lib/components/context/ZudokuContext.js";
 import { Layout } from "../lib/components/Layout.js";
@@ -20,7 +20,18 @@ vi.mock("virtual:zudoku-auth", () => ({
 }));
 
 vi.mock("virtual:zudoku-config", () => ({
-  default: {},
+  default: {
+    docs: {
+      publishMarkdown: true,
+      contentNegotiation: true,
+      llms: { llmsTxt: true },
+    },
+    sitemap: { siteUrl: "https://example.com" },
+  },
+}));
+
+vi.mock("virtual:zudoku-markdown-files", () => ({
+  default: { "/": "# Home\n\nWelcome." },
 }));
 
 vi.mock("virtual:zudoku-shiki-register", () => ({
@@ -90,14 +101,24 @@ const routes: RouteObject[] = [
   notFoundRoute,
 ];
 
-const renderPath = (path: string) =>
+const renderPath = (
+  path: string,
+  { accept, method }: { accept?: string; method?: string } = {},
+) =>
   handleRequest({
     template,
-    request: new Request(`http://localhost${path}`),
+    request: new Request(`http://localhost${path}`, {
+      method,
+      headers: accept ? { Accept: accept } : undefined,
+    }),
     routes,
   });
 
 describe("handleRequest", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it.each([
     {
       path: "/",
@@ -121,7 +142,9 @@ describe("handleRequest", () => {
   it("preserves async plugin navigation in HTML and dehydrated state", async () => {
     const response = await handleRequest({
       template,
-      request: new Request("http://localhost/"),
+      request: new Request("http://localhost/", {
+        headers: { Accept: "text/html" },
+      }),
       routes: [
         {
           path: "/",
@@ -153,6 +176,10 @@ describe("handleRequest", () => {
     expect(html).not.toContain('<div hidden id="S:');
     expect(html).not.toContain("$RC(");
     expect(serializedState).toBeDefined();
+    expect(response.headers.get("Vary")).toBe("Accept");
+    expect(response.headers.get("Link")).toBe(
+      '</index.md>; rel="alternate"; type="text/markdown"',
+    );
 
     const dehydratedState = JSON.parse(serializedState ?? "{}");
     expect(dehydratedState.queries).toEqual(
@@ -219,7 +246,7 @@ describe("handleRequest", () => {
       throw new Error("Plugin initialization failed");
     });
 
-    const response = await renderPath("/");
+    const response = await renderPath("/", { accept: "text/markdown" });
     const html = await response.text();
 
     expect(response.status).toBe(500);
@@ -227,5 +254,111 @@ describe("handleRequest", () => {
       "text/html; charset=utf-8",
     );
     expect(html).toContain("Error: Plugin initialization failed");
+  });
+
+  it("returns an HTML 500 when plugin initialization rejects", async () => {
+    navigationMocks.initialize.mockRejectedValueOnce(
+      new Error("Async plugin initialization failed"),
+    );
+
+    const response = await renderPath("/");
+    const html = await response.text();
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(html).toContain("Error: Async plugin initialization failed");
+  });
+
+  it("serves a Markdown representation from the canonical URL", async () => {
+    const response = await renderPath("/", { accept: "text/markdown" });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/markdown; charset=utf-8",
+    );
+    expect(response.headers.get("Vary")).toBe("Accept");
+    expect(response.headers.get("Link")).toBe(
+      '</index.md>; rel="alternate"; type="text/markdown"',
+    );
+    await expect(response.text()).resolves.toBe("# Home\n\nWelcome.");
+  });
+
+  it("advertises the Markdown variant on the HTML response", async () => {
+    const response = await renderPath("/", { accept: "text/html" });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(response.headers.get("Vary")).toBe("Accept");
+    expect(response.headers.get("Link")).toBe(
+      '</index.md>; rel="alternate"; type="text/markdown"',
+    );
+  });
+
+  it("returns a recoverable Markdown 404", async () => {
+    const response = await renderPath("/missing", {
+      accept: "text/markdown",
+    });
+    const body = await response.text();
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/markdown; charset=utf-8",
+    );
+    expect(response.headers.get("Vary")).toBe("Accept");
+    expect(body).toContain("# Page not found");
+    expect(body).toContain("[Markdown documentation index](/index.md)");
+    expect(body).toContain("[Agent documentation index](/llms.txt)");
+    expect(body).toContain("[Sitemap](/sitemap.xml)");
+  });
+
+  it("does not advertise SSG-only indexes from an SSR deployment", async () => {
+    vi.stubEnv("ZUDOKU_HAS_SERVER", "true");
+    const response = await renderPath("/missing", {
+      accept: "text/markdown",
+    });
+    const body = await response.text();
+
+    expect(response.status).toBe(404);
+    expect(body).toContain("[Markdown documentation index](/index.md)");
+    expect(body).not.toContain("llms.txt");
+    expect(body).not.toContain("sitemap.xml");
+  });
+
+  it("returns 406 when neither representation is acceptable", async () => {
+    const response = await renderPath("/", { accept: "application/json" });
+
+    expect(response.status).toBe(406);
+    expect(response.headers.get("Vary")).toBe("Accept");
+  });
+
+  it("returns Markdown headers without a body for HEAD", async () => {
+    const response = await renderPath("/", {
+      accept: "text/markdown",
+      method: "HEAD",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/markdown; charset=utf-8",
+    );
+    await expect(response.text()).resolves.toBe("");
+  });
+
+  it("returns HTML headers without a body for HEAD", async () => {
+    const response = await renderPath("/", {
+      accept: "text/html",
+      method: "HEAD",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(response.headers.get("Vary")).toBe("Accept");
+    await expect(response.text()).resolves.toBe("");
   });
 });

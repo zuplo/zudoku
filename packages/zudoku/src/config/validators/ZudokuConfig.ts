@@ -127,6 +127,23 @@ const ApiConfigSchema = z
   })
   .partial();
 
+const OpenApiPublicationSchema = z.object({
+  path: z
+    .string()
+    .regex(
+      /^\/(?!\/)(?:[A-Za-z0-9._~-]+\/)*[A-Za-z0-9._~-]+\.(?:json|ya?ml)$/i,
+      "OpenAPI publication path must be a root-relative .json, .yaml, or .yml path without traversal, query, or fragment components",
+    )
+    .refine(
+      (value) =>
+        value
+          .split("/")
+          .every((segment) => segment !== "." && segment !== ".."),
+      "OpenAPI publication path must not contain traversal segments",
+    ),
+  agentQuality: z.boolean().optional(),
+});
+
 const VersionConfigSchema = z.object({
   path: z.string(),
   input: z.string(),
@@ -145,6 +162,7 @@ const ApiSchema = z.discriminatedUnion("type", [
       z.string(),
       z.array(z.union([z.string(), VersionConfigSchema])),
     ]),
+    publish: OpenApiPublicationSchema.optional(),
     ...ApiConfigSchema.shape,
   }),
   z.object({
@@ -317,6 +335,28 @@ const LlmsConfigSchema = z
       .describe(
         "When enabled, includes content from protected routes in the generated .md files and llms.txt files. By default, protected routes are excluded.",
       ),
+    title: z
+      .string()
+      .trim()
+      .min(1)
+      .optional()
+      .describe(
+        "The project or site name rendered as the llms.txt H1. Defaults to the configured site title.",
+      ),
+    description: z
+      .string()
+      .trim()
+      .min(1)
+      .optional()
+      .describe("A short project summary rendered as the llms.txt blockquote."),
+    instructions: z
+      .string()
+      .trim()
+      .min(1)
+      .optional()
+      .describe(
+        "Guidance for agents, such as when to use the documentation and how to interpret it. Rendered as introductory prose before the link sections.",
+      ),
   })
   .partial()
   // `prefault` so parsing an absent value still yields the inner defaults
@@ -333,6 +373,12 @@ const DocsConfigSchema = z
       .default(true)
       .describe(
         "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
+      ),
+    contentNegotiation: z
+      .boolean()
+      .optional()
+      .describe(
+        "When enabled, serves generated Markdown at canonical document URLs when Accept prefers text/markdown and adds Vary: Accept. Defaults to the value of publishMarkdown.",
       ),
     defaultOptions: z
       .object({
@@ -353,6 +399,11 @@ const DocsConfigSchema = z
       .optional(),
     llms: LlmsConfigSchema,
   })
+  .transform((docs) => ({
+    ...docs,
+    contentNegotiation:
+      docs.publishMarkdown && (docs.contentNegotiation ?? true),
+  }))
   // `prefault` so parsing an absent value still yields the inner defaults
   .prefault({});
 

@@ -2897,6 +2897,11 @@
               }
             }
           }
+        },
+        "responses": {
+          "204": {
+            "description": "Notification preferences updated"
+          }
         }
       }
     },
@@ -2933,6 +2938,11 @@
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Shipment priority updated"
           }
         }
       }
@@ -3832,6 +3842,23 @@
         "requestBody": {
           "content": {
             "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "GraphQL operation document"
+                  },
+                  "variables": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "operationName": {
+                    "type": ["string", "null"]
+                  }
+                }
+              },
               "examples": {
                 "list-characters": {
                   "summary": "List characters",
@@ -3853,7 +3880,28 @@
         },
         "responses": {
           "200": {
-            "description": "GraphQL response"
+            "description": "GraphQL response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": ["object", "null"],
+                      "additionalProperties": true
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
           }
         }
       }

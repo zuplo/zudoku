@@ -13,7 +13,7 @@ During build, you can optionally generate:
 - **`llms.txt`** - Summary with links to all pages
 - **`llms-full.txt`** - Complete documentation in one file
 
-All options are disabled by default.
+Per-page `.md` export is enabled by default. The two aggregate `llms.txt` files are opt-in.
 
 ## Configuration
 
@@ -28,12 +28,14 @@ export default {
       llmsTxt: true, // Generate llms.txt
       llmsTxtFull: true, // Generate llms-full.txt
       includeProtected: false, // Exclude protected routes
+      title: "Acme API",
+      description: "Build and operate integrations with the Acme API.",
+      instructions:
+        "Use these docs when creating or debugging an Acme integration. Start with the quickstart, then consult the API reference for request and response schemas.",
     },
   },
 };
 ```
-
-All options are disabled by default.
 
 :::tip
 
@@ -50,11 +52,40 @@ files unless `publishMarkdown: true` is set (see
 Generates an `llms.txt` file with links to all documentation pages:
 
 ```markdown title="llms.txt"
-# Documentation
+# Acme API
+
+> Build and operate integrations with the Acme API.
+
+Use these docs when creating or debugging an Acme integration. Start with the quickstart, then
+consult the API reference for request and response schemas.
+
+## Documentation
 
 - [Quickstart](/docs/quickstart.md): Get started with Zudoku
 - [Writing](/docs/writing.md): A guide to writing documentation
 ```
+
+### `title`
+
+**Type:** `string` **Default:** the configured site title, or `"Documentation"`
+
+Sets the project or site name in the required H1 at the top of `llms.txt`. It also sets the H1 in
+`llms-full.txt` when that file is enabled.
+
+### `description`
+
+**Type:** `string` **Default:** `"Documentation files for Large Language Models"`
+
+Sets the short summary in the blockquote immediately after the H1.
+
+### `instructions`
+
+**Type:** `string` **Default:** `undefined`
+
+Adds optional guidance between the blockquote and the documentation link section. Use it to tell
+agents which concrete jobs the documentation is best suited for and how to navigate or call the
+product. The value can contain Markdown paragraphs and lists, but should not contain headings;
+headings in `llms.txt` are reserved for sections containing link lists.
 
 ### `llmsTxtFull`
 
@@ -81,6 +112,10 @@ dist/
     ├── writing.md
     └── ...
 ```
+
+On Vercel builds, this tree is written beneath `.vercel/output/static/` instead of `dist/`. The
+deployed public URLs remain the same. See the [Vercel deployment guide](/docs/deploy/vercel) for the
+generated routing and Markdown content-negotiation behavior.
 
 **Important:** Individual `.md` files are only kept in the final build if `publishMarkdown: true`.
 If only `llmsTxt` or `llmsTxtFull` is enabled, the `.md` files are generated temporarily during the
