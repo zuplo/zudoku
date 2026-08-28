@@ -10,8 +10,14 @@ import {
   getBuildConfig,
   type Processor,
 } from "../config/validators/BuildSchema.js";
+import {
+  isBuildArtifactPlugin,
+  type BuildApiDocument,
+  type BuildContributionContext,
+  type BuildContributions,
+} from "../lib/core/plugins.js";
 import { getAllTags } from "../lib/oas/graphql/index.js";
-import type { OpenAPIDocument } from "../lib/oas/parser/index.js";
+import { type OpenAPIDocument, validate } from "../lib/oas/parser/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
@@ -28,20 +34,312 @@ import {
   readDocumentType,
 } from "../lib/plugins/openapi/util/documentType.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
+import { matchesAnyProtectedPattern, stripBasePath } from "../lib/util/url.js";
 import {
+  createOpenApiPublication,
   createOpenApiDevMiddleware,
+  type OpenApiPublication,
   writeOpenApiPublications,
 } from "./api/openapi-publication.js";
 import { SchemaManager } from "./api/SchemaManager.js";
+import {
+  collectBuildContributions,
+  createBuildArtifactDevMiddleware,
+  writeBuildContributionManifest,
+  writeBuildArtifacts,
+} from "./build-artifacts.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
 const PROCESSED_STORE_SUBPATH = "node_modules/.zudoku/processed";
 
+export const getCanonicalOrigin = (config: ConfigWithMeta) => {
+  const configured = config.canonicalUrlOrigin;
+  const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  const value =
+    configured ??
+    (vercelHost
+      ? vercelHost.startsWith("http://") || vercelHost.startsWith("https://")
+        ? vercelHost
+        : `https://${vercelHost}`
+      : undefined);
+  if (!value) return undefined;
+
+  try {
+    const url = new URL(value);
+    const isLocalHttp =
+      url.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "::1"].includes(url.hostname);
+    if (url.protocol === "https:" || isLocalHttp) return url.origin;
+    if (configured) {
+      throw new Error(
+        "canonicalUrlOrigin must use HTTPS (HTTP is allowed only for localhost)",
+      );
+    }
+    return undefined;
+  } catch {
+    if (configured) {
+      throw new Error(
+        "canonicalUrlOrigin must be a valid HTTPS origin (HTTP is allowed only for localhost)",
+      );
+    }
+    return undefined;
+  }
+};
+
+type RemoteSchemaInspection = {
+  schema: OpenAPIDocument;
+  sourceContentType?: string;
+  sourceOpenApiVersion?: string;
+};
+
+const protectedPatternIntersectsSubtree = (
+  pattern: string,
+  subtreePath: string,
+) => {
+  const root = subtreePath === "/" ? "/" : subtreePath.replace(/\/+$/, "");
+  if (matchesAnyProtectedPattern([pattern], root)) return true;
+  if (root === "/" || pattern.startsWith(`${root}/`)) return true;
+
+  const patternSegments = pattern.split("/").filter(Boolean);
+  const firstDynamicSegment = patternSegments.findIndex(
+    (segment) =>
+      segment === "*" || segment.startsWith(":") || segment.includes("*"),
+  );
+  if (firstDynamicSegment === -1) return false;
+
+  const staticPrefix = `/${patternSegments
+    .slice(0, firstDynamicSegment)
+    .join("/")}`;
+  return (
+    staticPrefix === "/" ||
+    root === staticPrefix ||
+    root.startsWith(`${staticPrefix}/`)
+  );
+};
+
+const inspectRemoteSchema = async (
+  sourceUrl: string,
+): Promise<RemoteSchemaInspection> => {
+  const response = await fetch(sourceUrl);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to inspect URL API schema "${sourceUrl}": ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const body = await response.text();
+  const raw = parseYaml(body);
+  const sourceOpenApiVersion =
+    raw && typeof raw === "object" && typeof raw.openapi === "string"
+      ? raw.openapi
+      : undefined;
+  const schema = await validate(raw);
+  const responseContentType = response.headers
+    .get("Content-Type")
+    ?.toLowerCase();
+  const sourceContentType = responseContentType?.includes("yaml")
+    ? "application/yaml"
+    : responseContentType?.includes("json")
+      ? "application/json"
+      : body.trimStart().startsWith("{")
+        ? "application/json"
+        : "application/yaml";
+
+  return {
+    schema,
+    sourceContentType,
+    sourceOpenApiVersion,
+  };
+};
+
+export const createBuildContributionContext = async (
+  config: ConfigWithMeta,
+  schemaManager: SchemaManager,
+  remoteSchemas: Map<string, Promise<RemoteSchemaInspection>>,
+): Promise<BuildContributionContext> => {
+  const apis: BuildApiDocument[] = [];
+  const canonicalOrigin = getCanonicalOrigin(config);
+  const protectedPatterns = Object.keys(config.protectedRoutes ?? {});
+  const isProtected = (docsPath: string) => {
+    const unbasedPath = stripBasePath(docsPath, config.basePath);
+    return protectedPatterns.some((pattern) =>
+      protectedPatternIntersectsSubtree(pattern, unbasedPath),
+    );
+  };
+
+  for (const apiConfig of ensureArray(config.apis ?? [])) {
+    if (!apiConfig.path) continue;
+    const discoverable = apiConfig.discoverable !== false;
+    if (!discoverable) continue;
+
+    if (apiConfig.type === "file") {
+      const schemas = schemaManager.getSchemasForPath(apiConfig.path) ?? [];
+      apis.push(
+        ...schemas.flatMap((schema, index) => {
+          const docsPath = joinUrl(
+            config.basePath,
+            apiConfig.path,
+            schemas.length > 1 ? schema.path : undefined,
+          );
+          if (isProtected(docsPath)) return [];
+
+          return [
+            {
+              inputType: "file" as const,
+              apiPath: apiConfig.path ?? "api",
+              docsPath,
+              version: schema.version,
+              versionPath: schemas.length > 1 ? schema.path : "",
+              title: schema.schema.info?.title ?? apiConfig.path ?? "API",
+              description: schema.schema.info?.description,
+              openApiVersion: schema.schema.openapi,
+              schema: { ...schema.schema },
+              explicitPublicationPath:
+                index === 0 && apiConfig.publish
+                  ? apiConfig.publish.path
+                  : undefined,
+              isPrimary: index === 0,
+              discoverable,
+            },
+          ];
+        }),
+      );
+      continue;
+    }
+
+    if (apiConfig.type === "raw") {
+      const docsPath = joinUrl(config.basePath, apiConfig.path);
+      if (isProtected(docsPath)) continue;
+
+      const schema = await validate(apiConfig.input);
+      apis.push({
+        inputType: "raw",
+        apiPath: apiConfig.path,
+        docsPath,
+        version: schema.info?.version ?? "default",
+        versionPath: "",
+        title: schema.info?.title ?? apiConfig.path,
+        description: schema.info?.description,
+        openApiVersion: schema.openapi,
+        schema: { ...schema },
+        explicitPublicationPath: apiConfig.publish
+          ? apiConfig.publish.path
+          : undefined,
+        isPrimary: true,
+        discoverable,
+      });
+      continue;
+    }
+
+    const inputs =
+      typeof apiConfig.input === "string" ? [apiConfig.input] : apiConfig.input;
+    for (const [index, input] of inputs.entries()) {
+      const versioned = typeof input === "string" ? undefined : input;
+      const sourceUrl = typeof input === "string" ? input : input.input;
+      const versionPath = versioned?.path ?? "";
+      const docsPath = joinUrl(
+        config.basePath,
+        apiConfig.path,
+        inputs.length > 1 ? versionPath : undefined,
+      );
+      if (isProtected(docsPath)) continue;
+
+      // An absolute URL is already an authoritative publication and can be
+      // linked from llms.txt without an origin. Defer metadata/MCP inspection
+      // until an origin-bound artifact actually needs it, so local builds do
+      // not become dependent on remote schema uptime.
+      if (!canonicalOrigin) {
+        apis.push({
+          inputType: "url",
+          apiPath: apiConfig.path,
+          docsPath,
+          version: (versioned?.label ?? versionPath) || "default",
+          versionPath: inputs.length > 1 ? versionPath : "",
+          title: apiConfig.path,
+          sourceUrl,
+          isPrimary: index === 0,
+          discoverable,
+        });
+        continue;
+      }
+
+      let schemaPromise = remoteSchemas.get(sourceUrl);
+      if (!schemaPromise) {
+        schemaPromise = inspectRemoteSchema(sourceUrl);
+        remoteSchemas.set(sourceUrl, schemaPromise);
+      }
+      const inspection = await schemaPromise;
+      const schema = inspection.schema;
+      apis.push({
+        inputType: "url",
+        apiPath: apiConfig.path,
+        docsPath,
+        version: schema.info?.version ?? versioned?.label ?? "default",
+        versionPath: inputs.length > 1 ? versionPath : "",
+        title: schema.info?.title ?? apiConfig.path,
+        description: schema.info?.description,
+        sourceUrl,
+        sourceContentType: inspection.sourceContentType,
+        openApiVersion: inspection.sourceOpenApiVersion,
+        schema: { ...schema },
+        isPrimary: index === 0,
+        discoverable,
+      });
+    }
+  }
+
+  return {
+    basePath: config.basePath,
+    canonicalOrigin,
+    siteTitle: config.site?.title,
+    apis,
+  };
+};
+
 export const schemaConfigurationChanged = (
   current: Pick<ConfigWithMeta, "apis" | "basePath">,
   next: Pick<ConfigWithMeta, "apis" | "basePath">,
 ) => current.basePath !== next.basePath || !deepEqual(current.apis, next.apis);
+
+export const createRawOpenApiPublications = async (
+  config: ConfigWithMeta,
+): Promise<OpenApiPublication[]> =>
+  Promise.all(
+    ensureArray(config.apis ?? []).flatMap((apiConfig) => {
+      if (apiConfig.type !== "raw" || !apiConfig.publish || !apiConfig.path) {
+        return [];
+      }
+      const { path: urlPath } = apiConfig.publish;
+      const apiPath = apiConfig.path;
+      return [
+        validate(apiConfig.input).then((schema) =>
+          createOpenApiPublication({
+            apiPath,
+            urlPath,
+            schema,
+          }),
+        ),
+      ];
+    }),
+  );
+
+const mergeOpenApiPublications = (
+  publications: readonly OpenApiPublication[],
+) => {
+  const byPath = new Map<string, OpenApiPublication>();
+  for (const publication of publications) {
+    const existing = byPath.get(publication.urlPath);
+    if (existing) {
+      throw new Error(
+        `OpenAPI publication path "${publication.urlPath}" is configured by both "${existing.apiPath}" and "${publication.apiPath}". Configure a unique path for each published API.`,
+      );
+    }
+    byPath.set(publication.urlPath, publication);
+  }
+  return [...byPath.values()];
+};
 
 const warn = (message: string) => {
   // biome-ignore lint/suspicious/noConsole: Logging allowed here
@@ -112,6 +410,60 @@ const viteApiPlugin = async (): Promise<Plugin> => {
   await fs.mkdir(tmpStoreDir, { recursive: true });
   await schemaManager.processAllSchemas();
 
+  const remoteSchemas = new Map<string, Promise<RemoteSchemaInspection>>();
+  let rawOpenApiPublications =
+    await createRawOpenApiPublications(initialConfig);
+  const getOpenApiPublications = () =>
+    mergeOpenApiPublications([
+      ...schemaManager.getPublishedSchemas(),
+      ...rawOpenApiPublications,
+    ]);
+  getOpenApiPublications();
+  let buildContributions: Required<BuildContributions> = {
+    artifacts: [],
+    aliases: [],
+    routeHeaders: [],
+    llmsSections: [],
+    warnings: [],
+  };
+
+  const refreshBuildContributions = async (config: ConfigWithMeta) => {
+    const plugins = config.plugins ?? [];
+    if (!plugins.some(isBuildArtifactPlugin)) {
+      buildContributions = {
+        artifacts: [],
+        aliases: [],
+        routeHeaders: [],
+        llmsSections: [],
+        warnings: [],
+      };
+      await writeBuildContributionManifest(
+        config.__meta.rootDir,
+        buildContributions,
+      );
+      return;
+    }
+
+    const contributionContext = await createBuildContributionContext(
+      config,
+      schemaManager,
+      remoteSchemas,
+    );
+    buildContributions = await collectBuildContributions(
+      plugins,
+      contributionContext,
+    );
+    await writeBuildContributionManifest(
+      config.__meta.rootDir,
+      buildContributions,
+    );
+    for (const warning of buildContributions.warnings) {
+      warn(warning);
+    }
+  };
+
+  await refreshBuildContributions(initialConfig);
+
   return {
     name: "zudoku-api-plugins",
     async buildStart() {
@@ -120,10 +472,16 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         .forEach((file) => this.addWatchFile(file));
     },
     configureServer(server) {
+      server.middlewares.use(
+        createBuildArtifactDevMiddleware({
+          getContributions: () => buildContributions,
+        }),
+      );
+
       // Serve downloadable and explicitly published OpenAPI schema files.
       server.middlewares.use(
         createOpenApiDevMiddleware({
-          getPublications: () => schemaManager.getPublishedSchemas(),
+          getPublications: getOpenApiPublications,
           getDownloadPathMap: () => schemaManager.getUrlToFilePathMap(),
         }),
       );
@@ -139,6 +497,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
           for (const inputConfig of mainFiles) {
             await schemaManager.processSchema(inputConfig);
           }
+          await refreshBuildContributions(getCurrentConfig());
         } catch (error) {
           const err = error instanceof Error ? error : new Error(String(error));
           server.config.logger.error(
@@ -175,6 +534,8 @@ const viteApiPlugin = async (): Promise<Plugin> => {
       if (schemaConfigurationChanged(schemaManager.config, config)) {
         schemaManager.config = config;
         await schemaManager.processAllSchemas();
+        rawOpenApiPublications = await createRawOpenApiPublications(config);
+        await refreshBuildContributions(config);
         schemaManager
           .getAllTrackedFiles()
           .forEach((file) => this.addWatchFile(file));
@@ -434,7 +795,11 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
       await writeOpenApiPublications(
         path.join(config.__meta.rootDir, "dist"),
-        schemaManager.getPublishedSchemas(),
+        getOpenApiPublications(),
+      );
+      await writeBuildArtifacts(
+        path.join(config.__meta.rootDir, "dist"),
+        buildContributions.artifacts,
       );
     },
   };

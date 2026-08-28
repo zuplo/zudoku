@@ -9,6 +9,11 @@ export type GenerateVercelMarkdownMiddlewareOptions = {
   markdownNotFoundBody: string;
   /** Absolute static file paths that must bypass document negotiation. */
   passthroughPaths?: readonly string[];
+  /** Exact-path response headers contributed by build plugins. */
+  routeHeaders?: readonly {
+    urlPath: string;
+    headers: Record<string, string>;
+  }[];
 };
 
 const normalizePath = (value: string) => {
@@ -53,6 +58,7 @@ export const generateVercelMarkdownMiddleware = ({
   markdownCanonicalRoutePaths,
   markdownNotFoundBody,
   passthroughPaths = [],
+  routeHeaders = [],
 }: GenerateVercelMarkdownMiddlewareOptions): string => {
   const normalizedBasePath = normalizePath(basePath);
   const knownRoutes = new Set(
@@ -67,6 +73,9 @@ export const generateVercelMarkdownMiddleware = ({
     ]),
   );
   const normalizedPassthroughPaths = passthroughPaths.map(normalizePath);
+  const normalizedRouteHeaders = Object.fromEntries(
+    routeHeaders.map((route) => [normalizePath(route.urlPath), route.headers]),
+  );
 
   for (const routePath of markdownRoutes.keys()) {
     if (!knownRoutes.has(routePath)) {
@@ -81,6 +90,7 @@ const BASE_PATH = ${JSON.stringify(normalizedBasePath)};
 const KNOWN_ROUTES = new Set(${JSON.stringify([...knownRoutes])});
 const MARKDOWN_ROUTES = new Map(${JSON.stringify([...markdownRoutes])});
 const PASSTHROUGH_PATHS = new Set(${JSON.stringify(normalizedPassthroughPaths)});
+const ROUTE_HEADERS = ${JSON.stringify(normalizedRouteHeaders)};
 const MARKDOWN_NOT_FOUND_BODY = ${JSON.stringify(markdownNotFoundBody)};
 const NEGOTIATED_VARY = "Accept, Accept-Encoding";
 
@@ -285,10 +295,21 @@ const continueRequest = (headers = undefined) => {
   return response;
 };
 
-const negotiatedHeaders = (markdownPath) => ({
-  Vary: NEGOTIATED_VARY,
-  Link: getAlternateLink(markdownPath),
-});
+const mergeHeader = (headers, name, value) => {
+  const existingName = Object.keys(headers).find(
+    (key) => key.toLowerCase() === name.toLowerCase(),
+  );
+  if (!existingName) return { ...headers, [name]: value };
+  if (!headers[existingName]) return { ...headers, [existingName]: value };
+  return { ...headers, [existingName]: headers[existingName] + ", " + value };
+};
+
+const getRouteHeaders = (pathname) => ({ ...(ROUTE_HEADERS[pathname] ?? {}) });
+
+const negotiatedHeaders = (pathname, markdownPath) => {
+  const withVary = mergeHeader(getRouteHeaders(pathname), "Vary", NEGOTIATED_VARY);
+  return mergeHeader(withVary, "Link", getAlternateLink(markdownPath));
+};
 
 export default function middleware(request) {
   if (request.method !== "GET" && request.method !== "HEAD") {
@@ -301,7 +322,7 @@ export default function middleware(request) {
 
   if (markdownPath) {
     const negotiatedType = negotiateContentType(request.headers.get("Accept"));
-    const headers = negotiatedHeaders(markdownPath);
+    const headers = negotiatedHeaders(pathname, markdownPath);
 
     if (negotiatedType === null) {
       return new Response(request.method === "HEAD" ? null : "Not Acceptable", {
@@ -328,7 +349,7 @@ export default function middleware(request) {
   }
 
   if (KNOWN_ROUTES.has(pathname) || PASSTHROUGH_PATHS.has(pathname)) {
-    return continueRequest();
+    return continueRequest(getRouteHeaders(pathname));
   }
 
   if (isWithinBasePath(pathname) && isMarkdownPath(pathname)) {
@@ -357,7 +378,9 @@ export default function middleware(request) {
   }
 
   if (negotiatedType === "text/html") {
-    return continueRequest({ Vary: NEGOTIATED_VARY });
+    return continueRequest(
+      mergeHeader(getRouteHeaders(pathname), "Vary", NEGOTIATED_VARY),
+    );
   }
 
   return new Response(

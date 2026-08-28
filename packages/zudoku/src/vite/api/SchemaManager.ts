@@ -360,7 +360,7 @@ export class SchemaManager {
       const primarySchema = this.getLatestSchema(apiConfig.path);
       if (!primarySchema) continue;
 
-      const urlPath = joinUrl(this.config.basePath, apiConfig.publish.path);
+      const urlPath = apiConfig.publish.path;
       const existing = publications.get(urlPath);
       if (existing) {
         throw new Error(

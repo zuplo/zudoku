@@ -392,6 +392,32 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it("accepts Open Graph and JSON-LD metadata", () => {
+    const result = validateConfig({
+      metadata: {
+        openGraph: {
+          type: "website",
+          image: ["https://example.com/one.png", "/two.png"],
+        },
+        jsonLd: [
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Example",
+          },
+        ],
+      },
+    });
+
+    expect(result.metadata).toMatchObject({
+      openGraph: {
+        type: "website",
+        image: ["https://example.com/one.png", "/two.png"],
+      },
+      jsonLd: [expect.objectContaining({ "@type": "Organization" })],
+    });
+  });
+
   it("should accept aiAssistants with preset strings", () => {
     const config = {
       aiAssistants: ["claude", "chatgpt"],

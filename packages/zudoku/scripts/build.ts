@@ -22,4 +22,11 @@ await Promise.all([
     entryPoints: ["src/vite/index.ts"],
     outfile: "dist/vite/index.js",
   }),
+  // Build-only plugin hooks are loaded natively after Vite's config runner is
+  // closed, keeping their heavy extractors out of the client configuration.
+  build({
+    ...shared,
+    entryPoints: ["src/lib/plugins/agentic/build.ts"],
+    outfile: "dist/plugins/agentic-build.js",
+  }),
 ]);

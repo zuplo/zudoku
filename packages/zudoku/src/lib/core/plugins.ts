@@ -13,6 +13,86 @@ import type {
 } from "./ZudokuContext.js";
 export { runPluginTransformConfig } from "./transform-config.js";
 
+export type BuildApiDocument = {
+  inputType: "file" | "raw" | "url";
+  apiPath: string;
+  docsPath: string;
+  version: string;
+  versionPath: string;
+  title: string;
+  description?: string;
+  sourceUrl?: string;
+  sourceContentType?: string;
+  openApiVersion?: string;
+  schema?: Record<string, unknown>;
+  explicitPublicationPath?: string;
+  isPrimary: boolean;
+  discoverable: boolean;
+};
+
+export type BuildArtifact = {
+  /** Root-relative public URL, including the configured base path. */
+  urlPath: string;
+  content: string;
+  contentType?: string;
+  headers?: Record<string, string>;
+};
+
+export type BuildRouteHeaders = {
+  /** Exact root-relative request URL to receive these headers. */
+  urlPath: string;
+  headers: Record<string, string>;
+};
+
+export type BuildArtifactAlias = {
+  /** Exact public request URL. */
+  sourcePath: string;
+  /** Root-relative URL of the contributed static artifact. */
+  destinationPath: string;
+};
+
+export type LlmsLink = {
+  title: string;
+  url: string;
+  description?: string;
+};
+
+export type LlmsSection = {
+  title: string;
+  links: LlmsLink[];
+};
+
+export type BuildContributions = {
+  artifacts?: BuildArtifact[];
+  aliases?: BuildArtifactAlias[];
+  routeHeaders?: BuildRouteHeaders[];
+  llmsSections?: LlmsSection[];
+  warnings?: string[];
+};
+
+export type GetBuildContributions = (
+  context: BuildContributionContext,
+) => BuildContributions | Promise<BuildContributions>;
+
+export type BuildContributionContext = {
+  basePath?: string;
+  canonicalOrigin?: string;
+  siteTitle?: string;
+  apis: BuildApiDocument[];
+};
+
+/**
+ * Build-time extension point for plugins that publish static protocol files.
+ * It is deliberately data-only so output writers can validate collisions and
+ * apply the same metadata to portable and provider-specific deployments.
+ */
+export interface BuildArtifactPlugin {
+  /** Direct hook for lightweight plugins. */
+  getBuildContributions?: GetBuildContributions;
+  /** Native ESM module whose default export is the build hook. */
+  buildContributionsModule?: string;
+}
+
 export type ZudokuPlugin =
   | CommonPlugin
   | ProfileMenuPlugin
@@ -21,7 +101,8 @@ export type ZudokuPlugin =
   | SearchProviderPlugin
   | EventConsumerPlugin
   | AuthenticationPlugin
-  | TransformConfigPlugin;
+  | TransformConfigPlugin
+  | BuildArtifactPlugin;
 
 export type { AuthenticationPlugin, RouteObject };
 
@@ -92,7 +173,14 @@ export interface CommonPlugin {
   initialize?: (
     context: ZudokuContext,
   ) => Promise<void | boolean> | void | boolean;
-  getHead?: (args: { location: Location }) => ReactNode | undefined;
+  getHead?: (args: {
+    location: Location;
+    canonicalUrlOrigin?: string;
+  }) => ReactNode | undefined;
+  getHeadLinks?: (args: {
+    location: Location;
+    canonicalUrlOrigin?: string;
+  }) => Array<{ rel: string; href: string; type?: string }> | undefined;
   getMdxComponents?: () => MdxComponentsType;
 }
 
@@ -129,7 +217,8 @@ export const needsInitialization = (obj: ZudokuPlugin): obj is CommonPlugin =>
   "initialize" in obj && typeof obj.initialize === "function";
 
 export const hasHead = (obj: ZudokuPlugin): obj is CommonPlugin =>
-  "getHead" in obj && typeof obj.getHead === "function";
+  ("getHead" in obj && typeof obj.getHead === "function") ||
+  ("getHeadLinks" in obj && typeof obj.getHeadLinks === "function");
 
 export const isMdxProviderPlugin = (obj: ZudokuPlugin): obj is CommonPlugin =>
   "getMdxComponents" in obj && typeof obj.getMdxComponents === "function";
@@ -143,3 +232,11 @@ export const isTransformConfigPlugin = (
   obj: ZudokuPlugin,
 ): obj is TransformConfigPlugin =>
   "transformConfig" in obj && typeof obj.transformConfig === "function";
+
+export const isBuildArtifactPlugin = (
+  obj: ZudokuPlugin,
+): obj is BuildArtifactPlugin =>
+  ("getBuildContributions" in obj &&
+    typeof obj.getBuildContributions === "function") ||
+  ("buildContributionsModule" in obj &&
+    typeof obj.buildContributionsModule === "string");

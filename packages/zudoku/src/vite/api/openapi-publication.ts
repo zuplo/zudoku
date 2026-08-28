@@ -83,6 +83,15 @@ export const createOpenApiDevMiddleware =
     const publication = findOpenApiPublication(req.url, getPublications());
     if (publication) {
       res.setHeader("Content-Type", `${publication.mediaType}; charset=utf-8`);
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=0, s-maxage=3600, must-revalidate",
+      );
+      res.setHeader(
+        "Link",
+        `<${publication.urlPath}>; rel="service-desc"; type="${publication.mediaType}"`,
+      );
       return res.end(req.method === "HEAD" ? undefined : publication.content);
     }
 

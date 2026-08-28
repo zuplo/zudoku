@@ -124,6 +124,7 @@ export const docs: Navigation = [
       "docs/guides/navigation-rules",
       "docs/guides/redirects",
       "docs/guides/mcp-servers",
+      "docs/guides/agent-ready-portals",
       "docs/guides/transforming-examples",
       "docs/guides/processors",
     ],

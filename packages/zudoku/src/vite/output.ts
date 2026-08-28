@@ -6,6 +6,10 @@ import { getZudokuPackageJson } from "../cli/common/package-json.js";
 import type { LoadedConfig } from "../config/config.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import {
+  readBuildContributionManifest,
+  type BuildContributionManifest,
+} from "./build-artifacts.js";
 import type { RouteRewrite } from "./prerender/utils.js";
 import {
   generateVercelMarkdownMiddleware,
@@ -84,6 +88,16 @@ const getCleanUrlOverrides = (
   );
 };
 
+const getMiddlewareRouteHeaderPaths = (
+  config: LoadedConfig,
+  markdownNegotiation?: MarkdownNegotiationOutput,
+) =>
+  new Set(
+    markdownNegotiation?.knownCanonicalRoutePaths.map((routePath) =>
+      joinUrl(config.basePath, routePath),
+    ) ?? [],
+  );
+
 export const cleanVercelOutput = async (dir: string) => {
   if (!process.env.VERCEL) return;
   await rm(path.join(dir, ".vercel/output"), {
@@ -126,10 +140,36 @@ type Handler = {
 };
 
 type Override = {
-  path: string;
+  path?: string;
+  contentType?: string;
 };
 
 type OverrideConfig = Record<string, Override>;
+
+const mergeResponseHeaders = (
+  base: Record<string, string>,
+  contributed: Record<string, string>,
+) => {
+  const merged = { ...base };
+  for (const [name, value] of Object.entries(contributed)) {
+    const existingName = Object.keys(merged).find(
+      (candidate) => candidate.toLowerCase() === name.toLowerCase(),
+    );
+    if (!existingName) {
+      merged[name] = value;
+      continue;
+    }
+    if (merged[existingName] === value) continue;
+    if (["link", "vary"].includes(name.toLowerCase())) {
+      merged[existingName] = `${merged[existingName]}, ${value}`;
+      continue;
+    }
+    throw new Error(
+      `Conflicting response header "${name}" for a generated redirect`,
+    );
+  }
+  return merged;
+};
 
 export function generateOutput({
   config,
@@ -137,14 +177,45 @@ export function generateOutput({
   rewrites = [],
   markdownNegotiation,
   staticHtmlFiles = [],
+  artifacts = [],
+  aliases = [],
+  routeHeaders = [],
 }: {
   config: LoadedConfig;
   redirects: Array<{ from: string; to: string }>;
   rewrites?: RouteRewrite[];
   markdownNegotiation?: MarkdownNegotiationOutput;
   staticHtmlFiles?: readonly string[];
+  artifacts?: BuildContributionManifest["artifacts"];
+  aliases?: BuildContributionManifest["aliases"];
+  routeHeaders?: BuildContributionManifest["routeHeaders"];
 }): Config {
   const routes: Route[] = [];
+  const middlewareRouteHeaderPaths = getMiddlewareRouteHeaderPaths(
+    config,
+    markdownNegotiation,
+  );
+
+  const contributedSources = new Set([
+    ...artifacts.map((artifact) => artifact.urlPath.replace(/\/$/, "")),
+    ...aliases.map((alias) => alias.sourcePath.replace(/\/$/, "")),
+  ]);
+  const configuredSources = [
+    ...redirects.map((redirect) => ({
+      kind: "redirect",
+      source: redirect.from,
+    })),
+    ...rewrites.map((rewrite) => ({
+      kind: "rewrite",
+      source: joinUrl(config.basePath, rewrite.source),
+    })),
+  ];
+  for (const { kind, source } of configuredSources) {
+    if (!contributedSources.has(source.replace(/\/$/, ""))) continue;
+    throw new Error(
+      `Build artifact route "${source}" conflicts with a configured ${kind} source`,
+    );
+  }
 
   if (staticHtmlFiles.length > 0) {
     routes.push(...CLEAN_URL_ROUTES);
@@ -158,12 +229,19 @@ export function generateOutput({
       ]),
     ).values(),
   ];
+  const redirectHeaderPaths = new Set<string>();
   for (const redirect of uniqueRedirects) {
+    const contributedHeaders = routeHeaders.find(
+      (route) => route.urlPath === redirect.from,
+    )?.headers;
+    if (contributedHeaders) redirectHeaderPaths.add(redirect.from);
     routes.push({
       src: redirect.from,
       dest: redirect.to,
       status: 301,
-      headers: { Location: redirect.to },
+      headers: contributedHeaders
+        ? mergeResponseHeaders({ Location: redirect.to }, contributedHeaders)
+        : { Location: redirect.to },
     });
   }
 
@@ -183,6 +261,57 @@ export function generateOutput({
         "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${joinUrl(config.basePath)}; SameSite=Strict; Secure; HttpOnly`,
       },
       continue: true,
+    });
+  }
+
+  const escapeRoutePath = (value: string) =>
+    value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const exactRoute = (value: string) =>
+    value === "/" ? "^/$" : `^${escapeRoutePath(value)}/?$`;
+
+  for (const artifact of artifacts) {
+    const headers = {
+      ...(artifact.contentType && { "Content-Type": artifact.contentType }),
+      ...artifact.headers,
+    };
+    if (Object.keys(headers).length === 0) continue;
+    routes.push({
+      src: exactRoute(artifact.urlPath),
+      methods: ["GET", "HEAD"],
+      headers,
+      continue: true,
+    });
+  }
+
+  for (const route of routeHeaders) {
+    if (
+      middlewareRouteHeaderPaths.has(route.urlPath) ||
+      redirectHeaderPaths.has(route.urlPath)
+    ) {
+      continue;
+    }
+    routes.push({
+      src: exactRoute(route.urlPath),
+      methods: ["GET", "HEAD"],
+      headers: route.headers,
+      continue: true,
+    });
+  }
+
+  for (const alias of aliases) {
+    const target = artifacts.find(
+      (artifact) => artifact.urlPath === alias.destinationPath,
+    );
+    routes.push({
+      src: exactRoute(alias.sourcePath),
+      dest: alias.destinationPath,
+      methods: ["GET", "HEAD"],
+      ...(target && {
+        headers: {
+          ...(target.contentType && { "Content-Type": target.contentType }),
+          ...target.headers,
+        },
+      }),
     });
   }
 
@@ -210,7 +339,21 @@ export function generateOutput({
     }
   }
 
-  const overrides = getCleanUrlOverrides(staticHtmlFiles);
+  const overrides = {
+    ...getCleanUrlOverrides(staticHtmlFiles),
+    ...Object.fromEntries(
+      artifacts.flatMap((artifact) =>
+        artifact.contentType
+          ? [
+              [
+                artifact.urlPath.replace(/^\/+/, ""),
+                { contentType: artifact.contentType },
+              ],
+            ]
+          : [],
+      ),
+    ),
+  };
 
   const output: Config = {
     version: 3,
@@ -238,6 +381,7 @@ export async function writeOutput(
     markdownNegotiation?: MarkdownNegotiationOutput;
   },
 ) {
+  const buildContributions = await readBuildContributionManifest(dir);
   const vercelMarkdownNegotiation = process.env.VERCEL
     ? markdownNegotiation
     : undefined;
@@ -247,6 +391,31 @@ export async function writeOutput(
   const staticHtmlFiles = staticFiles.filter((filename) =>
     filename.endsWith(HTML_EXTENSION),
   );
+  const staticPaths = new Set(staticFiles.map((filename) => `/${filename}`));
+  const cleanStaticPaths = new Set(
+    staticHtmlFiles.map((filename) => `/${getCleanPath(filename)}`),
+  );
+  for (const contribution of [
+    ...buildContributions.artifacts.map((artifact) => ({
+      kind: "artifact",
+      urlPath: artifact.urlPath,
+    })),
+    ...buildContributions.aliases.map((alias) => ({
+      kind: "alias",
+      urlPath: alias.sourcePath,
+    })),
+  ]) {
+    if (!cleanStaticPaths.has(contribution.urlPath)) continue;
+    throw new Error(
+      `Build artifact ${contribution.kind} "${contribution.urlPath}" conflicts with an existing clean URL output`,
+    );
+  }
+  for (const alias of buildContributions.aliases) {
+    if (!staticPaths.has(alias.sourcePath.replace(/\/$/, ""))) continue;
+    throw new Error(
+      `Build artifact alias "${alias.sourcePath}" conflicts with an existing static output`,
+    );
+  }
   const staticPassthroughPaths = staticFiles
     .filter((filename) => {
       const basename = path.posix.basename(filename);
@@ -257,13 +426,27 @@ export async function writeOutput(
       );
     })
     .map((filename) => `/${filename}`);
+  staticPassthroughPaths.push(
+    ...buildContributions.artifacts.map((artifact) => artifact.urlPath),
+    ...buildContributions.aliases.map((alias) => alias.sourcePath),
+  );
   const output = generateOutput({
     config,
     redirects,
     rewrites,
     markdownNegotiation: vercelMarkdownNegotiation,
     staticHtmlFiles,
+    artifacts: buildContributions.artifacts,
+    aliases: buildContributions.aliases,
+    routeHeaders: buildContributions.routeHeaders,
   });
+  const middlewareRouteHeaderPaths = getMiddlewareRouteHeaderPaths(
+    config,
+    vercelMarkdownNegotiation,
+  );
+  const middlewareRouteHeaders = buildContributions.routeHeaders.filter(
+    (route) => middlewareRouteHeaderPaths.has(route.urlPath),
+  );
 
   const outputDir = process.env.VERCEL
     ? path.join(dir, ".vercel/output")
@@ -288,6 +471,7 @@ export async function writeOutput(
             basePath: config.basePath,
             ...vercelMarkdownNegotiation,
             passthroughPaths: staticPassthroughPaths,
+            routeHeaders: middlewareRouteHeaders,
           }),
           "utf-8",
         ),

@@ -39,6 +39,7 @@
     "publint": "^0.3.22",
     "size-limit": "^12.1.0",
     "typescript": "catalog:",
+    "vercel": "59.9.1",
     "vitest": "4.1.10"
   },
   "size-limit": [

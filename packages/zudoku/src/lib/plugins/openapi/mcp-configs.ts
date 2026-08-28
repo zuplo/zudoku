@@ -209,15 +209,16 @@ export type McpTool = { name: string; description?: string };
  * "object". Narrow before reading properties off it.
  */
 export const isMcpServerObject = (
-  data?: McpServerData,
-): data is Record<string, unknown> => typeof data === "object" && data !== null;
+  data?: unknown,
+): data is Record<string, unknown> =>
+  typeof data === "object" && data !== null && !Array.isArray(data);
 
 /**
  * Whether a raw `x-mcp-server` value describes a server at all. Only `true` and
  * an object do; `null`, `false` and scalars are treated as absent.
  */
 export const isMcpServerData = (value: unknown): value is McpServerData =>
-  value === true || (typeof value === "object" && value !== null);
+  value === true || isMcpServerObject(value);
 
 /**
  * Human-readable label for a server. Deliberately the inverse precedence of

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "node build.mjs",
+  "outputDirectory": null,
+  "redirects": [
+    {
+      "source": "/legacy",
+      "destination": "/docs",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/docs",
+      "headers": [{ "key": "X-Zudoku-Contract", "value": "true" }]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/project-rewrite",
+      "destination": "/docs"
+    }
+  ]
+}

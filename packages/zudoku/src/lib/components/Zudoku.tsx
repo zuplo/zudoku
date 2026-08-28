@@ -75,7 +75,11 @@ const ZudokuInner = memo(
 
     return (
       <>
-        <PluginHeads plugins={props.plugins ?? []} location={location} />
+        <PluginHeads
+          plugins={props.plugins ?? []}
+          location={location}
+          canonicalUrlOrigin={props.canonicalUrlOrigin}
+        />
         <ZudokuProvider context={zudokuContext}>
           <RouterEventsEmitter />
           <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>

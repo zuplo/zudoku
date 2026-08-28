@@ -51,8 +51,8 @@ const config = {
 The endpoint is available in development and is written into the production build. Its format and
 media type follow the configured extension: use `.json` for `application/json`, or `.yaml`/`.yml`
 for `application/yaml`. The path must be root-relative, cannot contain traversal, query, or fragment
-components, and is relative to the Zudoku site. For example, with `basePath: "/docs"`, the example
-above is served at `/docs/openapi.json`.
+components, and is served from the origin root. For example, the configuration above is served at
+`/openapi.json` even when the portal uses `basePath: "/docs"`.
 
 Published documents use the processed schema, including bundled external references and configured
 [schema processors](../guides/processors.mdx). If an API has multiple file versions, the first

@@ -9,11 +9,16 @@ const loadMiddleware = async ({
   knownCanonicalRoutePaths = ["/", "/guide", "/custom"],
   markdownCanonicalRoutePaths = ["/", "/guide"],
   passthroughPaths,
+  routeHeaders,
 }: {
   basePath?: string;
   knownCanonicalRoutePaths?: string[];
   markdownCanonicalRoutePaths?: string[];
   passthroughPaths?: string[];
+  routeHeaders?: Array<{
+    urlPath: string;
+    headers: Record<string, string>;
+  }>;
 } = {}): Promise<Middleware> => {
   const source = generateVercelMarkdownMiddleware({
     basePath,
@@ -21,6 +26,7 @@ const loadMiddleware = async ({
     markdownCanonicalRoutePaths,
     markdownNotFoundBody: "# Page not found\n\n- [Documentation home](/docs)\n",
     passthroughPaths,
+    routeHeaders,
   });
   const encodedSource = encodeURIComponent(source);
   const module = await import(`data:text/javascript,${encodedSource}`);
@@ -47,6 +53,30 @@ describe("generateVercelMarkdownMiddleware", () => {
     expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
     expect(response.headers.get("Link")).toBe(
       '</guide.md>; rel="alternate"; type="text/markdown"',
+    );
+  });
+
+  it("merges contributed Link and Vary values exactly once", async () => {
+    const discoveryLink = '</.well-known/ard.json>; rel="ard"';
+    const middleware = await loadMiddleware({
+      basePath: "/docs",
+      routeHeaders: [
+        {
+          urlPath: "/docs/guide",
+          headers: { Link: discoveryLink, Vary: "Origin" },
+        },
+      ],
+    });
+    const response = await middleware(
+      request("/docs/guide", { accept: "text/html" }),
+    );
+
+    expect(response.headers.get("Link")).toBe(
+      `${discoveryLink}, </docs/guide.md>; rel="alternate"; type="text/markdown"`,
+    );
+    expect(response.headers.get("Link")?.match(/rel="ard"/g)).toHaveLength(1);
+    expect(response.headers.get("Vary")).toBe(
+      "Origin, Accept, Accept-Encoding",
     );
   });
 

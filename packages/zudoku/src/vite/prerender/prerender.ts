@@ -14,6 +14,7 @@ import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
 import { getMarkdownNotFound } from "../../lib/util/markdown-representation.js";
+import { readBuildContributionManifest } from "../build-artifacts.js";
 import {
   getMarkdownOutputPath,
   type MarkdownFileInfo,
@@ -242,6 +243,7 @@ export const prerender = async ({
 
   // Generate llms.txt files if markdown export is enabled
   const llmsConfig = config.docs.llms;
+  const buildContributions = await readBuildContributionManifest(dir);
 
   const markdownInfoPath = path.join(
     dir,
@@ -267,6 +269,7 @@ export const prerender = async ({
       title: llmsConfig.title,
       description: llmsConfig.description,
       instructions: llmsConfig.instructions,
+      sections: buildContributions.llmsSections,
       redirectUrls,
     });
   }
