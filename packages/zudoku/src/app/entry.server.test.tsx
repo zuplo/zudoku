@@ -1,4 +1,4 @@
-import { use } from "react";
+import { Suspense, use } from "react";
 import { Outlet, type RouteObject } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RenderContext } from "../lib/components/context/RenderContext.js";
@@ -53,6 +53,10 @@ const ExistingStatus = ({ status }: { status: number }) => {
   renderContext.status = status;
   return <Outlet />;
 };
+
+const DeferredContent = ({ content }: { content: Promise<string> }) => (
+  <section>{use(content)}</section>
+);
 
 const routes: RouteObject[] = [
   { path: "/", element: <main>Home</main> },
@@ -192,5 +196,46 @@ describe("handleRequest", () => {
     );
     expect(response.headers.get("Vary")).toBe("Accept");
     await expect(response.text()).resolves.toBe("");
+  });
+
+  it("serializes large completed Suspense content before following siblings", async () => {
+    const content = `Resolved content ${"x".repeat(20_000)}`;
+    const deferredContent = new Promise<string>((resolve) => {
+      setTimeout(() => resolve(content), 5);
+    });
+    const response = await handleRequest({
+      template,
+      request: new Request("http://localhost/", {
+        headers: { Accept: "text/html" },
+      }),
+      routes: [
+        {
+          path: "/",
+          element: (
+            <>
+              <Suspense fallback={<main>Outer loading</main>}>
+                <main>
+                  <Suspense fallback="Inner loading">
+                    <DeferredContent content={deferredContent} />
+                  </Suspense>
+                </main>
+              </Suspense>
+              <footer>Footer</footer>
+            </>
+          ),
+        },
+      ],
+    });
+    const html = await response.text();
+
+    expect(html).toContain(content);
+    expect(html.indexOf("Resolved content")).toBeLessThan(
+      html.indexOf("<footer>"),
+    );
+    expect(html).not.toContain("loading");
+    expect(html).not.toContain("<!--$?-->");
+    expect(html).not.toContain('<template id="B:');
+    expect(html).not.toContain('hidden id="S:');
+    expect(html).not.toContain("$RC(");
   });
 });

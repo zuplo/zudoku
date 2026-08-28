@@ -186,6 +186,10 @@ export const handleRequest = async ({
 
   try {
     const reactStream = await renderToReadableStream(App, {
+      // The response is held until all Suspense boundaries resolve. Prevent
+      // React from outlining large completed boundaries into late reveal
+      // scripts, which can otherwise reorder content and cause layout shifts.
+      progressiveChunkSize: Number.POSITIVE_INFINITY,
       onError(error) {
         status = 500;
         logger.error(`SSR Error (${request.method} ${request.url}):`, error);
