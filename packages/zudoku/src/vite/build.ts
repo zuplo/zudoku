@@ -23,6 +23,60 @@ import {
 
 const DIST_DIR = "dist";
 
+type CssBuildOutput = {
+  fileName: string;
+  imports?: string[];
+  isEntry?: boolean;
+  type: string;
+  viteMetadata?: { importedCss: Set<string> };
+};
+
+export const getEagerCssEntries = (output: readonly CssBuildOutput[]) => {
+  const cssAssets = output
+    .filter((item) => item.fileName.endsWith(".css"))
+    .map((item) => item.fileName);
+  const chunksByFileName = new Map(
+    output
+      .filter((item) => item.type === "chunk")
+      .map((item) => [item.fileName, item]),
+  );
+  const entryChunk = output.find(
+    (item) => item.type === "chunk" && item.isEntry,
+  );
+
+  if (!entryChunk) return cssAssets;
+
+  const referencedCss = new Set(
+    output.flatMap((item) => [...(item.viteMetadata?.importedCss ?? [])]),
+  );
+
+  // Build adapters that do not expose Vite's chunk metadata retain the
+  // previous behavior of linking every emitted stylesheet.
+  if (referencedCss.size === 0) return cssAssets;
+
+  const eagerCss = new Set<string>();
+  const visitedChunks = new Set<string>();
+  const visitChunk = (fileName: string) => {
+    if (visitedChunks.has(fileName)) return;
+    visitedChunks.add(fileName);
+
+    const chunk = chunksByFileName.get(fileName);
+    if (!chunk) return;
+
+    chunk.viteMetadata?.importedCss.forEach((css) => eagerCss.add(css));
+    chunk.imports?.forEach(visitChunk);
+  };
+
+  visitChunk(entryChunk.fileName);
+
+  // Keep CSS imported by the eager entry graph and standalone/global assets
+  // emitted by custom plugins. Only CSS owned exclusively by lazy chunks is
+  // omitted from the initial document.
+  return cssAssets.filter(
+    (css) => eagerCss.has(css) || !referencedCss.has(css),
+  );
+};
+
 export type SSRAdapter = "node" | "cloudflare" | "vercel" | "lambda";
 
 export type BuildOptions = {
@@ -78,13 +132,12 @@ export async function runBuild(options: BuildOptions) {
   invariant(clientOutDir, "Client build outDir is missing");
   invariant(serverOutDir, "Server build outDir is missing");
 
-  const jsEntry = clientResult.output.find(
+  const jsEntryChunk = clientResult.output.find(
     (o) => "isEntry" in o && o.isEntry,
-  )?.fileName;
+  );
+  const jsEntry = jsEntryChunk?.fileName;
 
-  const cssEntries = clientResult.output
-    .filter((o) => o.fileName.endsWith(".css"))
-    .map((o) => o.fileName);
+  const cssEntries = getEagerCssEntries(clientResult.output);
 
   if (!jsEntry || cssEntries.length === 0) {
     throw new Error("Build failed. No js or css assets found");
