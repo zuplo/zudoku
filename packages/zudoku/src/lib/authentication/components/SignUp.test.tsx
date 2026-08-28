@@ -24,6 +24,8 @@ const buildAuth = (overrides: Partial<UseAuthReturn> = {}): UseAuthReturn => ({
   isAuthenticated: false,
   isPending: false,
   isAuthEnabled: true,
+  isMetadataPending: false,
+  refreshMetadata: vi.fn(),
   disableSignUp: false,
   profile: null,
   providerData: null,

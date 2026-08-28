@@ -32,6 +32,7 @@ export type {
   AuthenticationProviderInitializer,
   VerifyAccessTokenResult,
 } from "./authentication.js";
+export type { GetUserMetadata, GetUserMetadataContext } from "./metadata.js";
 export type {
   CustomClaim,
   CustomClaimArray,

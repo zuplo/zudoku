@@ -61,6 +61,10 @@ export const convertZudokuConfigToOptions = (
       logo: config.site?.logo,
     },
     slots: config.slots,
+    // Read from the raw config (functions survive `virtual:zudoku-config`;
+    // `plugin-auth`'s JSON.stringify would drop it) and executed by core, so
+    // it works for every provider.
+    getUserMetadata: config.authentication?.getMetadata,
     metadata: {
       favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
       title: "%s - Zudoku",

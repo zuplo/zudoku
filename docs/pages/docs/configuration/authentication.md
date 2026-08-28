@@ -214,6 +214,113 @@ fields are used to display the user profile:
 
 If the provider does not return a field, it will be left blank.
 
+### Custom Claims
+
+Custom claims from your identity provider are merged into the profile alongside the standard fields.
+Both the ID token and the User Info response are used as sources, so a claim added by an identity
+provider action (such as an Auth0 Post-Login Action) is available whichever of the two it lands on:
+
+```typescript
+const { profile } = useAuth();
+
+profile["https://example.com/subscription"]; // → { plan: "pro" }
+```
+
+Registered protocol claims (`exp`, `iat`, `iss`, `aud`, `nonce`, and friends) describe the token
+rather than the user, and are not added to the profile. The identity fields above are always derived
+by Zudoku and cannot be overwritten by a claim. The `metadata` key is reserved for the custom user
+data described below.
+
+In server-side rendered deployments, claims are also read from the access token, so the profile is
+the same on the server as it is in the browser. The server-side profile is stored in a cookie: if it
+exceeds the browser's size limit, custom claims are dropped from it (a warning is logged) and
+restored in the browser shortly after the page loads.
+
+## Custom User Data
+
+Beyond the claims the identity provider issues, Zudoku can load custom user data — a subscription,
+entitlements, an internal account record — from your own API after sign-in. Use `getMetadata` to
+avoid maintaining that lookup as an identity provider action:
+
+```typescript title="zudoku.config.ts"
+{
+  authentication: {
+    type: "auth0",
+    domain: "example.auth0.com",
+    clientId: "<your-client-id>",
+    getMetadata: async ({ signRequest, signal }) => {
+      const response = await fetch(
+        await signRequest(
+          new Request("https://api.example.com/me/subscription", { signal }),
+        ),
+      );
+
+      if (!response.ok) {
+        throw new Error(`Subscription lookup failed: ${response.status}`);
+      }
+
+      return await response.json();
+    },
+  },
+}
+```
+
+The returned value is available as `profile.metadata`:
+
+```tsx
+const { profile, isMetadataPending, refreshMetadata } = useAuth();
+
+if (isMetadataPending) return <Spinner />;
+
+return <span>Plan: {profile?.metadata?.plan}</span>;
+```
+
+:::caution
+
+`getMetadata` runs **in the browser**, not on the server. Never close over an API key or any other
+secret — it would be included in the client bundle. Authorize the request with the supplied
+`signRequest`, which attaches the signed-in user's credentials and works across every authentication
+provider.
+
+:::
+
+### Arguments
+
+| Argument      | Description                                                      |
+| ------------- | ---------------------------------------------------------------- |
+| `profile`     | The user profile derived from the identity provider's claims     |
+| `context`     | The [Zudoku context](../custom-pages.md)                         |
+| `signRequest` | Adds the current user's credentials to a `Request`               |
+| `signal`      | Aborts on unmount, on user change, and after a 10 second timeout |
+
+### Behavior
+
+- The returned value **replaces** `profile.metadata` in full; it is not merged with the previous
+  value.
+- It is loaded once per signed-in user and cached for five minutes. Call `refreshMetadata()` to
+  reload it, for example after a plan change.
+- Failures never sign the user out. The error is logged, `profile.metadata` is left `undefined`, and
+  one retry is attempted before giving up.
+- It is not loaded during server-side rendering, so `profile.metadata` is `undefined` on the first
+  paint. Use `isMetadataPending` to render a loading state.
+
+### Typing the metadata
+
+`profile.metadata` is loosely typed by default. Augment `UserMetadata` to describe your own shape:
+
+```typescript title="zudoku.d.ts"
+declare module "zudoku/auth" {
+  interface UserMetadata {
+    plan: "free" | "pro";
+    seatsUsed: number;
+  }
+}
+```
+
+Both the value returned by `getMetadata` and every read of `profile.metadata` are then checked
+against that declaration. The value must be JSON-serializable — it is persisted to local storage in
+static builds.
+
 ## Protected Routes
 
 Once authentication is configured, you can protect specific routes in your documentation to require
