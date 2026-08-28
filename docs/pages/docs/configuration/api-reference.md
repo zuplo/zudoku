@@ -30,6 +30,51 @@ const config = {
 };
 ```
 
+### Publish a canonical OpenAPI document
+
+For agents, API clients, and discovery tools, you can opt a file-based API into a stable public
+OpenAPI URL:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "file",
+    input: "./openapi.json",
+    path: "/api",
+    publish: {
+      path: "/openapi.json",
+    },
+  },
+};
+```
+
+The endpoint is available in development and is written into the production build. Its format and
+media type follow the configured extension: use `.json` for `application/json`, or `.yaml`/`.yml`
+for `application/yaml`. The path must be root-relative, cannot contain traversal, query, or fragment
+components, and is relative to the Zudoku site. For example, with `basePath: "/docs"`, the example
+above is served at `/docs/openapi.json`.
+
+Published documents use the processed schema, including bundled external references and configured
+[schema processors](../guides/processors.mdx). If an API has multiple file versions, the first
+`input` entry is the primary version published at the canonical URL. Publishing is intentionally
+configured per API: Zudoku will not choose an API automatically on multi-API sites, and a build
+fails if two APIs configure the same publication path. The build also fails instead of overwriting
+an existing `public/` file or generated artifact at that path.
+
+To report schema authoring gaps that reduce LLM function-calling compatibility, enable the optional
+agent-quality audit:
+
+```ts title=zudoku.config.ts
+publish: {
+  path: "/openapi.json",
+  agentQuality: true,
+},
+```
+
+The audit reports build warnings for missing or duplicate `operationId` values, missing operation
+descriptions, untyped parameters, missing or untyped request bodies on write operations, and
+responses without typed schemas. It does not modify the published document or fail the build.
+
 ## URL Reference
 
 :::danger{title="Recommendation"}
