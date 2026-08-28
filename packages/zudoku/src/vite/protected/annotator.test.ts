@@ -2,13 +2,11 @@ import { parse } from "vite";
 import { describe, expect, it } from "vitest";
 import { matchPathObject, matchRouteDict } from "./annotator.js";
 
-// biome-ignore lint/suspicious/noExplicitAny: walker-shape AST
 const firstObject = async (code: string): Promise<any> => {
   const { program } = await parse("test.js", code);
   let found: unknown;
   const visit = (n: unknown) => {
     if (found) return;
-    // biome-ignore lint/suspicious/noExplicitAny: generic walker
     const node = n as any;
     if (node?.type === "ObjectExpression") {
       found = node;
@@ -23,6 +21,26 @@ const firstObject = async (code: string): Promise<any> => {
   };
   visit(program);
   return found;
+};
+
+const pathObjectAndBindings = async (code: string) => {
+  const { program } = await parse("test.js", code);
+  const declarations = program.body.flatMap((statement: any) =>
+    statement.type === "VariableDeclaration" ? statement.declarations : [],
+  );
+  const bindings = new Map(
+    declarations.flatMap((declaration: any) =>
+      declaration.id?.type === "Identifier" &&
+      declaration.init?.type === "ObjectExpression"
+        ? [[declaration.id.name, declaration.init] as const]
+        : [],
+    ),
+  );
+  const route = declarations.find(
+    (declaration: any) => declaration.id?.name === "route",
+  )?.init;
+
+  return { route, bindings };
 };
 
 describe("matchPathObject (Shape A)", () => {
@@ -43,6 +61,21 @@ describe("matchPathObject (Shape A)", () => {
     expect(matchPathObject(node)).toEqual({
       root: "/api",
       specs: ["./a", "./b"],
+    });
+  });
+
+  it("follows a shared top-level schema import registry", async () => {
+    const { route, bindings } = await pathObjectAndBindings(`
+      const schemaImports = {
+        "/processed/first.js": () => import("./first.js"),
+        "/processed/second.js": () => import("./second.js"),
+      };
+      const route = { path: "/api", schemaImports };
+    `);
+
+    expect(matchPathObject(route, bindings)).toEqual({
+      root: "/api",
+      specs: ["./first.js", "./second.js"],
     });
   });
 

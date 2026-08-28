@@ -29,14 +29,44 @@ const literalString = (node: AstNode): string | undefined =>
 const propKey = (prop: AstNode): string | undefined =>
   prop.key?.type === "Identifier" ? prop.key.name : literalString(prop.key);
 
-// All dynamic-import specifiers found anywhere inside a subtree.
-const collectImportSpecs = (node: AstNode): string[] => {
+type ObjectBindings = ReadonlyMap<string, AstNode>;
+
+const collectTopLevelObjectBindings = (ast: AstNode): ObjectBindings =>
+  new Map(
+    (ast.body ?? []).flatMap((statement: AstNode) => {
+      if (statement.type !== "VariableDeclaration") return [];
+
+      return (statement.declarations ?? []).flatMap((declaration: AstNode) =>
+        declaration.id?.type === "Identifier" &&
+        declaration.init?.type === "ObjectExpression"
+          ? [[declaration.id.name, declaration.init] as const]
+          : [],
+      );
+    }),
+  );
+
+// All dynamic-import specifiers found anywhere inside a subtree. Follow
+// top-level object bindings so generated route objects can share a loader
+// registry without losing their route-to-import association.
+const collectImportSpecs = (
+  node: AstNode,
+  objectBindings: ObjectBindings,
+  visitedBindings = new Set<string>(),
+): string[] => {
   const out: string[] = [];
+
   walk(node, (n) => {
     if (n.type === "ImportExpression") {
       const spec = literalString(n.source);
       if (spec) out.push(spec);
     }
+
+    if (n.type !== "Identifier" || visitedBindings.has(n.name)) return;
+    const binding = objectBindings.get(n.name);
+    if (!binding) return;
+
+    visitedBindings.add(n.name);
+    out.push(...collectImportSpecs(binding, objectBindings, visitedBindings));
   });
   return out;
 };
@@ -45,6 +75,7 @@ const collectImportSpecs = (node: AstNode): string[] => {
 // RR route objects and plugin-api's `openApiPlugin({path, schemaImports})`.
 export const matchPathObject = (
   node: AstNode,
+  objectBindings: ObjectBindings = new Map(),
 ): { root: string; specs: string[] } | undefined => {
   if (node.type !== "ObjectExpression") return;
   let root: string | undefined;
@@ -57,7 +88,9 @@ export const matchPathObject = (
     else siblingValues.push(prop.value);
   }
   if (!root) return;
-  const specs = siblingValues.flatMap(collectImportSpecs);
+  const specs = siblingValues.flatMap((value) =>
+    collectImportSpecs(value, objectBindings),
+  );
   if (specs.length === 0) return;
   return { root, specs };
 };
@@ -112,8 +145,9 @@ export const protectedAnnotatorPlugin = (): Plugin => ({
     }
 
     const tasks: Array<{ spec: string; root: string }> = [];
+    const objectBindings = collectTopLevelObjectBindings(ast);
     walk(ast, (node) => {
-      const a = matchPathObject(node);
+      const a = matchPathObject(node, objectBindings);
       if (a) for (const spec of a.specs) tasks.push({ spec, root: a.root });
       const b = matchRouteDict(node);
       if (b) for (const { spec, root } of b) tasks.push({ spec, root });
