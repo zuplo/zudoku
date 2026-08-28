@@ -88,6 +88,7 @@ export const docs: Navigation = [
       "docs/configuration/authentication",
       "docs/configuration/oauth-security-schemes",
       "docs/configuration/protected-routes",
+      "docs/configuration/authentication-authorization-params",
       {
         type: "category",
         label: "Supported Providers",
