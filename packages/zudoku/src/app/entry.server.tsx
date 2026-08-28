@@ -114,60 +114,62 @@ export const handleRequest = async ({
   basePath?: string;
   bypassProtection?: boolean;
 }): Promise<Response> => {
-  const ssrAuth = await resolveSsrAuth(request);
-
-  // No-op lazy() on protected subtrees for unauthed requests so loaders
-  // don't run for a 401 render. A bypass render (search-index pass) keeps the
-  // real content so Pagefind can index protected routes.
-  const effectiveRoutes = wrapProtectedRoutesForRender(
-    routes,
-    config.protectedRoutes,
-    {
-      isAuthenticated: !!ssrAuth?.profile,
-      bypassProtection,
-      basePath,
-    },
-  );
-
-  const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {
-    basename: basePath,
-  });
-  const queryClient = new QueryClient();
-
-  const context = await query(request);
-
-  if (context instanceof Response) {
-    if ([301, 302, 303, 307, 308].includes(context.status)) {
-      return new Response(null, {
-        status: context.status,
-        headers: { Location: context.headers.get("Location") ?? "" },
-      });
-    }
-    throw context;
-  }
-
-  let status = 200;
-  if (context.errors) {
-    const firstError = Object.values(context.errors).find(isRouteErrorResponse);
-    if (firstError?.status) {
-      status = firstError.status;
-    }
-  }
-
-  const routePath = resolveDocumentationRoutePath(request.url, basePath);
-  const markdownContent = routePath ? markdownFiles[routePath] : undefined;
-  const matchesNotFoundRoute = context.matches.at(-1)?.route.path === "*";
-  const isRepresentationRequest =
-    request.method === "GET" || request.method === "HEAD";
-  const mayNegotiateMarkdown =
-    isRepresentationRequest &&
-    config.docs?.publishMarkdown !== false &&
-    config.docs?.contentNegotiation !== false &&
-    (markdownContent !== undefined || matchesNotFoundRoute);
-  const negotiatedType = mayNegotiateMarkdown
-    ? negotiateContentType(request.headers.get("Accept"))
-    : "text/html";
   try {
+    const ssrAuth = await resolveSsrAuth(request);
+
+    // No-op lazy() on protected subtrees for unauthed requests so loaders
+    // don't run for a 401 render. A bypass render (search-index pass) keeps the
+    // real content so Pagefind can index protected routes.
+    const effectiveRoutes = wrapProtectedRoutesForRender(
+      routes,
+      config.protectedRoutes,
+      {
+        isAuthenticated: !!ssrAuth?.profile,
+        bypassProtection,
+        basePath,
+      },
+    );
+
+    const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {
+      basename: basePath,
+    });
+    const queryClient = new QueryClient();
+
+    const context = await query(request);
+
+    if (context instanceof Response) {
+      if ([301, 302, 303, 307, 308].includes(context.status)) {
+        return new Response(null, {
+          status: context.status,
+          headers: { Location: context.headers.get("Location") ?? "" },
+        });
+      }
+      throw context;
+    }
+
+    let status = 200;
+    if (context.errors) {
+      const firstError = Object.values(context.errors).find(
+        isRouteErrorResponse,
+      );
+      if (firstError?.status) {
+        status = firstError.status;
+      }
+    }
+
+    const routePath = resolveDocumentationRoutePath(request.url, basePath);
+    const markdownContent = routePath ? markdownFiles[routePath] : undefined;
+    const matchesNotFoundRoute = context.matches.at(-1)?.route.path === "*";
+    const isRepresentationRequest =
+      request.method === "GET" || request.method === "HEAD";
+    const mayNegotiateMarkdown =
+      isRepresentationRequest &&
+      config.docs?.publishMarkdown !== false &&
+      config.docs?.contentNegotiation !== false &&
+      (markdownContent !== undefined || matchesNotFoundRoute);
+    const negotiatedType = mayNegotiateMarkdown
+      ? negotiateContentType(request.headers.get("Accept"))
+      : "text/html";
     const zudokuContext = new ZudokuContext(
       convertZudokuConfigToOptions(config),
       queryClient,

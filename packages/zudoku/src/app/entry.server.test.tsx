@@ -271,6 +271,23 @@ describe("handleRequest", () => {
     expect(html).toContain("Error: Async plugin initialization failed");
   });
 
+  it("returns an HTML 500 when request setup fails", async () => {
+    const response = await handleRequest({
+      template,
+      request: new Request("http://localhost/"),
+      routes: [],
+    });
+    const html = await response.text();
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(html).toContain(
+      "You must provide a non-empty routes array to createStaticHandler",
+    );
+  });
+
   it("serves a Markdown representation from the canonical URL", async () => {
     const response = await renderPath("/", { accept: "text/markdown" });
 
