@@ -12,26 +12,38 @@ import type {
   VerifyAccessTokenResult,
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
+import { buildProfileFromClaims } from "../claims.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { LogoutCallbackHandler } from "../components/LogoutCallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { fetchServerSession } from "../cookie-sync.js";
 import { DEFAULT_SESSION_MAX_AGE, SESSION_ENDPOINT_PATH } from "../cookies.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
-import { type UserProfile, useAuthState } from "../state.js";
+import {
+  type CustomClaimRecord,
+  type UserProfile,
+  useAuthState,
+} from "../state.js";
 import { redirectToSignUpUrl } from "./util.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
 
-const decodeJwtExp = async (token: string): Promise<number | undefined> => {
+const decodeJwtPayload = async (
+  token: string,
+): Promise<CustomClaimRecord | undefined> => {
   try {
     const { decodeJwt } = await import("jose");
-    const payload = decodeJwt(token);
-    return typeof payload.exp === "number" ? payload.exp : undefined;
+    // Opaque (non-JWT) tokens just throw and yield undefined.
+    return decodeJwt(token) as CustomClaimRecord;
   } catch {
     return undefined;
   }
+};
+
+const decodeJwtExp = async (token: string): Promise<number | undefined> => {
+  const payload = await decodeJwtPayload(token);
+  return typeof payload?.exp === "number" ? payload.exp : undefined;
 };
 
 export interface OpenIdProviderData {
@@ -263,14 +275,18 @@ export class OpenIDAuthenticationProvider
   ): UserProfile {
     const emailVerified =
       userInfo.email_verified ?? claims?.email_verified ?? false;
-    return {
-      ...userInfo,
+
+    // ID token first, userinfo second: userinfo is the purpose-built profile
+    // source and wins on overlap. Custom claims set by an IdP action (e.g. an
+    // Auth0 Post-Login Action) often live only on the ID token, so both are
+    // merged rather than picking one.
+    return buildProfileFromClaims([claims, userInfo], {
       sub: userInfo.sub,
       email: userInfo.email,
       name: userInfo.name,
       emailVerified: Boolean(emailVerified),
       pictureUrl: userInfo.picture,
-    };
+    });
   }
 
   public async verifyAccessToken(
@@ -283,22 +299,28 @@ export class OpenIDAuthenticationProvider
       token,
     );
     if (!response.ok) return undefined;
-    const userInfo = (await response.json()) as Record<string, unknown>;
+    const userInfo = (await response.json()) as CustomClaimRecord;
     if (!userInfo.sub) return undefined;
 
-    // userInfoRequest authenticated the token upstream; parsing `exp` here
-    // lets us bound the cookie lifetime to the token's. Opaque tokens just
-    // yield undefined and fall back to the handler's default.
-    const expiresAt = await decodeJwtExp(token);
+    // userInfoRequest authenticated the token upstream, so the payload is
+    // genuine even though the signature isn't re-verified here. Parsing it
+    // yields both `exp` (to bound the cookie lifetime to the token's) and any
+    // custom claims, which is how the server-rendered profile reaches parity
+    // with the client one. Opaque tokens yield undefined and fall back to the
+    // handler's default.
+    const payload = await decodeJwtPayload(token);
+    const expiresAt =
+      typeof payload?.exp === "number" ? payload.exp : undefined;
 
     return {
-      profile: {
+      profile: buildProfileFromClaims([payload, userInfo], {
         sub: String(userInfo.sub),
-        email: userInfo.email as string | undefined,
-        name: userInfo.name as string | undefined,
+        email: typeof userInfo.email === "string" ? userInfo.email : undefined,
+        name: typeof userInfo.name === "string" ? userInfo.name : undefined,
         emailVerified: Boolean(userInfo.email_verified),
-        pictureUrl: userInfo.picture as string | undefined,
-      },
+        pictureUrl:
+          typeof userInfo.picture === "string" ? userInfo.picture : undefined,
+      }),
       expiresAt,
     };
   }

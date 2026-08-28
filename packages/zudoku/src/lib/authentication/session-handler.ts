@@ -8,6 +8,7 @@ import {
   DEFAULT_SESSION_MAX_AGE,
   REFRESH_TOKEN_COOKIE,
 } from "./cookies.js";
+import type { UserProfile } from "./state.js";
 
 export type VerifyAccessToken = (
   token: string,
@@ -33,6 +34,34 @@ const cookieMaxAge = (
 
 const MAX_COOKIE_SIZE = 3900; // Leave margin under 4096 browser limit
 const MAX_BODY_SIZE = 64 * 1024;
+
+const CORE_PROFILE_KEYS = [
+  "sub",
+  "email",
+  "emailVerified",
+  "name",
+  "pictureUrl",
+] as const;
+
+const serializeProfile = (profile: Partial<UserProfile>) =>
+  JSON.stringify(profile);
+
+// Cookie values are URL-encoded on write (see parseCookies), and JSON is
+// quote-heavy, so the encoded length is what has to fit the browser's limit.
+const cookieSize = (value: string) => encodeURIComponent(value).length;
+
+const coreProfile = (profile: UserProfile): Partial<UserProfile> =>
+  Object.fromEntries(
+    CORE_PROFILE_KEYS.filter((key) => profile[key] !== undefined).map((key) => [
+      key,
+      profile[key],
+    ]),
+  );
+
+const droppedClaimNames = (profile: UserProfile) =>
+  Object.keys(profile).filter(
+    (key) => !CORE_PROFILE_KEYS.some((core) => core === key),
+  );
 
 const clearAuthCookies = (c: Context) => {
   deleteCookie(c, ACCESS_TOKEN_COOKIE, baseCookieOptions);
@@ -179,12 +208,30 @@ export const createSessionHandler = (verify: VerifyAccessToken | undefined) =>
 
       let profileJson: string;
       try {
-        profileJson = JSON.stringify(verified.profile);
+        profileJson = serializeProfile(verified.profile);
       } catch {
         return c.json({ error: "Profile is not serializable" }, 500);
       }
-      if (profileJson.length > MAX_COOKIE_SIZE) {
-        return c.json({ error: "Profile exceeds cookie size limit" }, 413);
+
+      // Custom claims make the profile unbounded, so an oversized one degrades
+      // to the core identity fields rather than failing the session: a 413 here
+      // leaves the cookie unset, and SSR mode has no localStorage to fall back
+      // on, so the user would appear signed out after any full reload. The
+      // client refetches userinfo shortly after load and restores the claims.
+      if (cookieSize(profileJson) > MAX_COOKIE_SIZE) {
+        const core = coreProfile(verified.profile);
+        const coreJson = serializeProfile(core);
+
+        if (cookieSize(coreJson) > MAX_COOKIE_SIZE) {
+          return c.json({ error: "Profile exceeds cookie size limit" }, 413);
+        }
+
+        // biome-ignore lint/suspicious/noConsole: Surface dropped claims
+        console.warn(
+          `[Zudoku] Profile exceeds the cookie size limit; dropping custom claims ` +
+            `from the server-side session. Dropped: ${droppedClaimNames(verified.profile).join(", ")}`,
+        );
+        profileJson = coreJson;
       }
 
       setCookie(c, AUTH_PROFILE_COOKIE, profileJson, sessionOptions);
