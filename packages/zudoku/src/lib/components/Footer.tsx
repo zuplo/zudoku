@@ -2,6 +2,7 @@ import { ExternalLink as ExternalLinkIcon } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import type { FooterSocialIcons } from "../../config/validators/ZudokuConfig.js";
 import { cn } from "../util/cn.js";
+import { getIntrinsicImageDimensions } from "../util/getIntrinsicImageDimensions.js";
 import { AnchorLink } from "./AnchorLink.js";
 import { useZudoku } from "./index.js";
 import { Slot } from "./Slot.js";
@@ -17,6 +18,8 @@ const SocialIcon = ({
         src={`https://cdn.simpleicons.org/${icon}/000000/ffffff`}
         className="size-5"
         alt={icon}
+        width={20}
+        height={20}
         loading="lazy"
       />
     );
@@ -103,16 +106,30 @@ export const Footer = () => {
               <img
                 src={footer.logo.src.light}
                 alt={footer.logo.alt}
+                {...getIntrinsicImageDimensions(
+                  footer.logo.width,
+                  footer.logo.height,
+                )}
                 className="w-8 dark:hidden"
-                style={{ width: footer.logo.width }}
+                style={{
+                  width: footer.logo.width,
+                  height: footer.logo.height,
+                }}
                 loading="lazy"
               />
               <img
                 src={footer.logo.src.dark}
                 alt={footer.logo.alt}
+                {...getIntrinsicImageDimensions(
+                  footer.logo.width,
+                  footer.logo.height,
+                )}
                 className="w-8 hidden dark:block"
                 loading="lazy"
-                style={{ width: footer.logo.width }}
+                style={{
+                  width: footer.logo.width,
+                  height: footer.logo.height,
+                }}
               />
             </>
           )}
