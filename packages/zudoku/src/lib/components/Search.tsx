@@ -13,13 +13,14 @@ import { isSearchPlugin } from "../core/plugins.js";
 import { focusRing } from "../ui/util.js";
 import { cn } from "../util/cn.js";
 import { getOS } from "../util/os.js";
+import { requestIdle } from "../util/requestIdle.js";
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
 /** `null` when no search plugin is configured, `undefined` outside a provider */
-const SearchContext = createContext<{ onOpen: () => void } | null | undefined>(
-  undefined,
-);
+const SearchContext = createContext<
+  { onOpen: () => void; onPreload: () => void } | null | undefined
+>(undefined);
 
 /**
  * Owns the search modal and the ⌘K / Ctrl+K shortcut for all `Search` buttons
@@ -33,6 +34,18 @@ export const SearchProvider = ({ children }: PropsWithChildren) => {
   const onClose = useCallback(() => setIsOpen(false), []);
 
   const searchPlugin = ctx.options.plugins?.find(isSearchPlugin);
+  const onPreload = useCallback(
+    () => searchPlugin?.preloadSearch?.(),
+    [searchPlugin],
+  );
+
+  // The search UI is lazily loaded, so opening it cold shows nothing until its
+  // chunk arrives. Warm it once the page is idle; hover/focus covers the rest.
+  useEffect(() => {
+    if (!searchPlugin?.preloadSearch) return;
+
+    return requestIdle(() => searchPlugin.preloadSearch?.());
+  }, [searchPlugin]);
 
   useEffect(() => {
     if (isOpen || !searchPlugin) return;
@@ -50,8 +63,8 @@ export const SearchProvider = ({ children }: PropsWithChildren) => {
   }, [isOpen, searchPlugin]);
 
   const value = useMemo(
-    () => (searchPlugin ? { onOpen } : null),
-    [searchPlugin, onOpen],
+    () => (searchPlugin ? { onOpen, onPreload } : null),
+    [searchPlugin, onOpen, onPreload],
   );
 
   return (
@@ -80,6 +93,8 @@ export const Search = ({ className }: { className?: string }) => {
       <button
         type="button"
         onClick={search.onOpen}
+        onPointerEnter={search.onPreload}
+        onFocus={search.onPreload}
         className={cn(
           "relative w-full md:w-56 flex items-center border bg-clip-padding h-8 rounded-lg px-3 pr-14 text-sm transition-all",
           "border-input text-muted-foreground bg-background hover:bg-muted/50 hover:text-foreground shadow-xs",

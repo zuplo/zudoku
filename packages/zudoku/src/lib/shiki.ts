@@ -175,6 +175,7 @@ export const highlight = (
       code: ({ inline: _inline, ...props }) =>
         createElement("code", {
           ...props,
+          "data-zudoku-runtime-shiki": true,
           className: cn(props.className, HIGHLIGHT_CODE_BLOCK_CLASS),
         }),
     },
