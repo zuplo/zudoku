@@ -24,14 +24,27 @@ export function getDevHtml({
 export function getBuildHtml({
   jsEntry,
   cssEntries,
+  deferredStylesheetActivator,
   dir,
 }: {
   jsEntry: string;
   cssEntries: string[];
+  deferredStylesheetActivator?: string;
   dir?: "ltr" | "rtl";
 }) {
   const cssLinks = cssEntries
     .map((css) => `    <link rel="stylesheet" crossorigin href="${css}">`)
+    .join("\n");
+  const deferredStylesheetScript = deferredStylesheetActivator
+    ? `    <script defer src="${deferredStylesheetActivator}"></script>`
+    : "";
+  const applicationScript = `    <script type="module" crossorigin src="${jsEntry}"></script>`;
+  const headAssets = (
+    deferredStylesheetActivator
+      ? [cssLinks, deferredStylesheetScript, applicationScript]
+      : [applicationScript, cssLinks]
+  )
+    .filter(Boolean)
     .join("\n");
 
   return `
@@ -40,8 +53,7 @@ export function getBuildHtml({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-    <script type="module" crossorigin src="${jsEntry}"></script>
-${cssLinks}
+${headAssets}
     <link rel="preconnect" href="https://cdn.zudoku.dev/">
   </head>
   <body>
