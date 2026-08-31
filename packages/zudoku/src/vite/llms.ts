@@ -1,6 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import colors from "picocolors";
+import type { LlmsSection } from "../lib/core/plugins.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import {
   encodeDocumentationRoutePath,
@@ -43,6 +44,7 @@ export async function generateLlmsTxtFiles({
   title: configuredTitle,
   description: configuredDescription,
   instructions,
+  sections = [],
   redirectUrls,
 }: {
   markdownFileInfos: MarkdownFileInfo[];
@@ -55,6 +57,7 @@ export async function generateLlmsTxtFiles({
   title?: string;
   description?: string;
   instructions?: string;
+  sections?: LlmsSection[];
   redirectUrls: Set<string>;
 }) {
   const nonRedirectUrls = outputUrls.filter((url) => !redirectUrls.has(url));
@@ -101,6 +104,17 @@ export async function generateLlmsTxtFiles({
       ...(documentationLinks.length > 0
         ? ["## Documentation", documentationLinks.join("\n")]
         : []),
+      ...sections.flatMap((section) => {
+        const links = section.links.map((link) => {
+          const description = link.description
+            ? `: ${toSingleLine(link.description)}`
+            : "";
+          return `- [${escapeMarkdownLinkLabel(link.title)}](${link.url})${description}`;
+        });
+        return links.length > 0
+          ? [`## ${toSingleLine(section.title)}`, links.join("\n")]
+          : [];
+      }),
     ];
 
     await writeFile(

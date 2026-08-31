@@ -4,6 +4,12 @@ import { useLocation } from "react-router";
 import { joinUrl } from "../util/joinUrl.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
+const serializeJsonLd = (value: Record<string, unknown>) =>
+  JSON.stringify(value)
+    .replaceAll("<", "\\u003c")
+    .replaceAll(">", "\\u003e")
+    .replaceAll("&", "\\u0026");
+
 export const Meta = ({ children }: PropsWithChildren) => {
   const { options } = useZudoku();
   const { metadata: meta } = options;
@@ -55,7 +61,34 @@ export const Meta = ({ children }: PropsWithChildren) => {
         ? [{ name: "publisher", content: meta.publisher }]
         : []),
       ...(meta?.robots ? [{ name: "robots", content: meta.robots }] : []),
+      ...(meta?.openGraph?.type
+        ? [{ property: "og:type", content: meta.openGraph.type }]
+        : []),
+      ...(meta?.openGraph?.title
+        ? [{ property: "og:title", content: meta.openGraph.title }]
+        : []),
+      ...(meta?.openGraph?.description
+        ? [
+            {
+              property: "og:description",
+              content: meta.openGraph.description,
+            },
+          ]
+        : []),
+      ...(meta?.openGraph?.url
+        ? [{ property: "og:url", content: meta.openGraph.url }]
+        : []),
+      ...(meta?.openGraph?.image
+        ? (Array.isArray(meta.openGraph.image)
+            ? meta.openGraph.image
+            : [meta.openGraph.image]
+          ).map((image) => ({ property: "og:image", content: image }))
+        : []),
     ],
+    script: meta?.jsonLd?.map((value) => ({
+      type: "application/ld+json",
+      innerHTML: serializeJsonLd(value),
+    })),
   });
 
   return children;

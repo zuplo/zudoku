@@ -186,4 +186,44 @@ Call the documented endpoints with a sandbox API key.
     expect(result).not.toContain("Old guide");
     expect(result).not.toContain("Not found");
   });
+
+  it("appends plugin-contributed API and MCP sections", async () => {
+    await generateLlmsTxtFiles({
+      markdownFileInfos: [markdownInfo("/guide", "Guide")],
+      outputUrls: ["/guide"],
+      baseOutputDir: outputDir,
+      basePath: "/docs",
+      llmsTxt: true,
+      sections: [
+        {
+          title: "APIs",
+          links: [
+            {
+              title: "Orders API",
+              url: "/docs/orders",
+              description: "Create orders.\nInspect orders.",
+            },
+          ],
+        },
+        {
+          title: "MCP Servers",
+          links: [
+            {
+              title: "Orders MCP",
+              url: "https://api.example.com/mcp",
+            },
+          ],
+        },
+      ],
+      redirectUrls: new Set(),
+    });
+
+    const result = await readFile(path.join(outputDir, "llms.txt"), "utf-8");
+    expect(result).toContain(`## APIs
+
+- [Orders API](/docs/orders): Create orders. Inspect orders.`);
+    expect(result).toContain(`## MCP Servers
+
+- [Orders MCP](https://api.example.com/mcp)`);
+  });
 });

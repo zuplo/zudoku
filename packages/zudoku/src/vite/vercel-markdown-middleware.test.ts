@@ -9,11 +9,16 @@ const loadMiddleware = async ({
   knownCanonicalRoutePaths = ["/", "/guide", "/custom"],
   markdownCanonicalRoutePaths = ["/", "/guide"],
   passthroughPaths,
+  routeHeaders,
 }: {
   basePath?: string;
   knownCanonicalRoutePaths?: string[];
   markdownCanonicalRoutePaths?: string[];
   passthroughPaths?: string[];
+  routeHeaders?: Array<{
+    urlPath: string;
+    headers: Record<string, string>;
+  }>;
 } = {}): Promise<Middleware> => {
   const source = generateVercelMarkdownMiddleware({
     basePath,
@@ -21,6 +26,7 @@ const loadMiddleware = async ({
     markdownCanonicalRoutePaths,
     markdownNotFoundBody: "# Page not found\n\n- [Documentation home](/docs)\n",
     passthroughPaths,
+    routeHeaders,
   });
   const encodedSource = encodeURIComponent(source);
   const module = await import(`data:text/javascript,${encodedSource}`);
@@ -47,6 +53,30 @@ describe("generateVercelMarkdownMiddleware", () => {
     expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
     expect(response.headers.get("Link")).toBe(
       '</guide.md>; rel="alternate"; type="text/markdown"',
+    );
+  });
+
+  it("merges contributed Link and Vary values exactly once", async () => {
+    const discoveryLink = '</.well-known/ard.json>; rel="ard"';
+    const middleware = await loadMiddleware({
+      basePath: "/docs",
+      routeHeaders: [
+        {
+          urlPath: "/docs/guide",
+          headers: { Link: discoveryLink, Vary: "Origin" },
+        },
+      ],
+    });
+    const response = await middleware(
+      request("/docs/guide", { accept: "text/html" }),
+    );
+
+    expect(response.headers.get("Link")).toBe(
+      `${discoveryLink}, </docs/guide.md>; rel="alternate"; type="text/markdown"`,
+    );
+    expect(response.headers.get("Link")?.match(/rel="ard"/g)).toHaveLength(1);
+    expect(response.headers.get("Vary")).toBe(
+      "Origin, Accept, Accept-Encoding",
     );
   });
 
@@ -235,6 +265,35 @@ describe("generateVercelMarkdownMiddleware", () => {
     expect(await response.text()).toBe("Not Acceptable");
   });
 
+  it("negotiates known HTML-only pages without manufacturing Markdown", async () => {
+    const middleware = await loadMiddleware();
+
+    for (const accept of [undefined, "text/html", "*/*"]) {
+      const response = await middleware(request("/custom", { accept }));
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+      expect(response.headers.get("Link")).toBeNull();
+      expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
+    }
+
+    for (const method of ["GET", "HEAD"]) {
+      const response = await middleware(
+        request("/custom", { accept: "text/markdown", method }),
+      );
+
+      expect(response.status).toBe(406);
+      expect(response.headers.get("x-middleware-next")).toBeNull();
+      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+      expect(response.headers.get("Link")).toBeNull();
+      expect(response.headers.get("Vary")).toBe("Accept, Accept-Encoding");
+      expect(await response.text()).toBe(
+        method === "HEAD" ? "" : "Not Acceptable",
+      );
+    }
+  });
+
   it("returns a Markdown recovery document for unknown extensionless paths", async () => {
     const middleware = await loadMiddleware({ basePath: "/docs" });
     const response = await middleware(
@@ -318,13 +377,12 @@ describe("generateVercelMarkdownMiddleware", () => {
     expect(await notAcceptable.text()).toBe("");
   });
 
-  it("leaves non-document requests and non-Markdown routes alone", async () => {
+  it("leaves non-document requests alone", async () => {
     const middleware = await loadMiddleware({ basePath: "/docs" });
 
     for (const currentRequest of [
       request("/outside", { accept: "text/markdown" }),
       request("/docs/app.js", { accept: "text/markdown" }),
-      request("/docs/custom", { accept: "text/markdown" }),
       request("/docs/guide", { accept: "text/markdown", method: "POST" }),
     ]) {
       const response = await middleware(currentRequest);

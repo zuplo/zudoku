@@ -72,6 +72,13 @@ describe("OpenAPI publication", () => {
       expect(headers.get("Content-Type")).toBe(
         "application/json; charset=utf-8",
       );
+      expect(headers.get("Access-Control-Allow-Origin")).toBe("*");
+      expect(headers.get("Cache-Control")).toBe(
+        "public, max-age=0, s-maxage=3600, must-revalidate",
+      );
+      expect(headers.get("Link")).toBe(
+        '</docs/openapi.json>; rel="service-desc"; type="application/json"',
+      );
       expect(body).toBe(method === "GET" ? publication.content : undefined);
     }
     expect(next).not.toHaveBeenCalled();

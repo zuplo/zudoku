@@ -49,6 +49,12 @@ minimumReleaseAgeExclude:
   - zudoku
   - unhead
   - "@unhead/*"
+  # The finalized Build Output contract is tested against this exact CLI. Its
+  # release train publishes the CLI and @vercel packages together.
+  - "vercel@59.9.1"
+  - "@vercel/*"
+  - "bare-events@2.9.2"
+  - "streamx@2.28.1"
 
 overrides:
   "@grpc/grpc-js": ">=1.9.16 <2"

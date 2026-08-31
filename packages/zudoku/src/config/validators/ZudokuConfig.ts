@@ -124,6 +124,11 @@ const ApiConfigSchema = z
     path: z.string(),
     categories: z.array(ApiCatalogCategorySchema),
     options: ApiOptionsSchema,
+    discoverable: z
+      .boolean()
+      .describe(
+        "Whether this API is included in generated agentic discovery artifacts. Defaults to true.",
+      ),
   })
   .partial();
 
@@ -168,6 +173,7 @@ const ApiSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("raw"),
     input: z.string(),
+    publish: OpenApiPublicationSchema.optional(),
     ...ApiConfigSchema.shape,
   }),
 ]);
@@ -622,6 +628,18 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
+const OpenGraphSchema = z
+  .object({
+    type: z.string(),
+    title: z.string(),
+    description: z.string(),
+    url: z.string(),
+    image: z.union([z.string(), z.array(z.string())]),
+  })
+  .partial();
+
+const JsonLdSchema = z.array(z.record(z.string(), z.unknown()));
+
 const MetadataSchema = z
   .object({
     title: z.string(),
@@ -636,6 +654,8 @@ const MetadataSchema = z
     authors: z.array(z.string()),
     creator: z.string(),
     publisher: z.string(),
+    openGraph: OpenGraphSchema,
+    jsonLd: JsonLdSchema,
     robots: z
       .string()
       .describe(

@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as esbuild } from "esbuild";
 import { createBuilder, type Rolldown } from "vite";
@@ -22,6 +22,12 @@ import {
 } from "./protected/build.js";
 
 const DIST_DIR = "dist";
+
+export const copyVercelStaticOutput = async (dir: string) => {
+  const outputDir = path.join(dir, ".vercel/output/static");
+  await mkdir(outputDir, { recursive: true });
+  await cp(path.join(dir, DIST_DIR), outputDir, { recursive: true });
+};
 
 export type SSRAdapter = "node" | "cloudflare" | "vercel" | "lambda";
 
@@ -197,11 +203,7 @@ const runPrerender = async (options: PrerenderOptions) => {
     await rm(serverOutDir, { recursive: true, force: true });
 
     if (process.env.VERCEL) {
-      await mkdir(path.join(dir, ".vercel/output/static"), { recursive: true });
-      await rename(
-        path.join(dir, DIST_DIR),
-        path.join(dir, ".vercel/output/static"),
-      );
+      await copyVercelStaticOutput(dir);
     }
 
     await writeOutput(dir, {

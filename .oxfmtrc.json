@@ -1,5 +1,8 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "packages/zudoku/src/lib/plugins/agentic/spec/schemas/ard-entry.schema.json"
+  ],
   "printWidth": 80,
   "experimentalSortPackageJson": false,
   "experimentalSortImports": {

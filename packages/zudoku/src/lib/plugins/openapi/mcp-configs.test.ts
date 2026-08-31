@@ -419,6 +419,7 @@ describe("malformed x-mcp-server values", () => {
     expect(isMcpServerData(false)).toBe(false);
     expect(isMcpServerData("x-mcp-server")).toBe(false);
     expect(isMcpServerData(1)).toBe(false);
+    expect(isMcpServerData([])).toBe(false);
   });
 });
 

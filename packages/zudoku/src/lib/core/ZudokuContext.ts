@@ -67,6 +67,14 @@ type Metadata = Partial<{
   authors: string[];
   creator: string;
   publisher: string;
+  openGraph: {
+    type?: string;
+    title?: string;
+    description?: string;
+    url?: string;
+    image?: string | string[];
+  };
+  jsonLd: Record<string, unknown>[];
   robots: string;
 }>;
 

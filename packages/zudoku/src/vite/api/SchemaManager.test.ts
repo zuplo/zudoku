@@ -136,7 +136,7 @@ describe("SchemaManager", () => {
     expect(publications).toHaveLength(1);
     expect(publications[0]).toMatchObject({
       apiPath: "test-api",
-      urlPath: "/docs/openapi.json",
+      urlPath: "/openapi.json",
       mediaType: "application/json",
     });
     expect(JSON.parse(publications[0]?.content ?? "{}").info.version).toBe(
@@ -144,7 +144,7 @@ describe("SchemaManager", () => {
     );
   });
 
-  it("regenerates base-path-dependent outputs after reprocessing", async () => {
+  it("keeps canonical publications at the origin root while regenerating scoped downloads", async () => {
     const schemaPath = path.join(tempDir, "openapi.json");
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
     const config: ConfigWithMeta = {
@@ -167,9 +167,7 @@ describe("SchemaManager", () => {
     });
 
     await manager.processAllSchemas();
-    expect(manager.getPublishedSchemas()[0]?.urlPath).toBe(
-      "/docs/openapi.json",
-    );
+    expect(manager.getPublishedSchemas()[0]?.urlPath).toBe("/openapi.json");
     expect(manager.getLatestSchema("test-api")?.downloadUrl).toBe(
       "/docs/test-api/1.0.0/schema.json",
     );
@@ -177,9 +175,7 @@ describe("SchemaManager", () => {
     manager.config = { ...config, basePath: "/reference" };
     await manager.processAllSchemas();
 
-    expect(manager.getPublishedSchemas()[0]?.urlPath).toBe(
-      "/reference/openapi.json",
-    );
+    expect(manager.getPublishedSchemas()[0]?.urlPath).toBe("/openapi.json");
     expect(manager.getLatestSchema("test-api")?.downloadUrl).toBe(
       "/reference/test-api/1.0.0/schema.json",
     );

@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import type { ZudokuConfig } from "zudoku";
 import { defaultLanguages } from "zudoku";
+import { agenticPlugin } from "zudoku/plugins/agentic";
 import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
@@ -98,6 +99,7 @@ const config: ZudokuConfig = {
     },
   ],
   plugins: [
+    agenticPlugin(),
     {
       getHead: () => {
         return (

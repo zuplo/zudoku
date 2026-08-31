@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { LoadedConfig } from "../config/config.js";
 import { validateConfig } from "../config/validators/ZudokuConfig.js";
+import { writeBuildContributionManifest } from "./build-artifacts.js";
 import { cleanVercelOutput, generateOutput, writeOutput } from "./output.js";
 
 const createConfig = (basePath = "/docs"): LoadedConfig => ({
@@ -77,6 +78,214 @@ describe("Vercel Build Output", () => {
       },
     ]);
   });
+
+  it("carries contributed discovery headers on an exact redirect", () => {
+    const output = generateOutput({
+      config: createConfig(),
+      redirects: [{ from: "/docs", to: "/docs/quickstart" }],
+      routeHeaders: [
+        {
+          urlPath: "/docs",
+          headers: {
+            Link: '</.well-known/ard.json>; rel="ard"',
+            Vary: "Accept",
+            location: "/docs/quickstart",
+          },
+        },
+      ],
+    });
+
+    expect(output.routes).toEqual([
+      {
+        src: "/docs",
+        dest: "/docs/quickstart",
+        status: 301,
+        headers: {
+          Location: "/docs/quickstart",
+          Link: '</.well-known/ard.json>; rel="ard"',
+          Vary: "Accept",
+        },
+      },
+    ]);
+  });
+
+  it("emits exact discovery aliases before Markdown middleware", () => {
+    const output = generateOutput({
+      config: createConfig(),
+      redirects: [],
+      markdownNegotiation,
+      artifacts: [
+        {
+          urlPath: "/docs/.well-known/ard.json",
+          contentType: "application/json; charset=utf-8",
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            Link: '</.well-known/ard.json>; rel="ard"',
+          },
+        },
+      ],
+      aliases: [
+        {
+          sourcePath: "/.well-known/ard.json",
+          destinationPath: "/docs/.well-known/ard.json",
+        },
+      ],
+      routeHeaders: [
+        {
+          urlPath: "/docs",
+          headers: { Link: '</.well-known/ard.json>; rel="ard"' },
+        },
+      ],
+    });
+
+    expect(output.routes).toEqual([
+      {
+        src: "^/docs/\\.well-known/ard\\.json/?$",
+        methods: ["GET", "HEAD"],
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+          Link: '</.well-known/ard.json>; rel="ard"',
+        },
+        continue: true,
+      },
+      {
+        src: "^/\\.well-known/ard\\.json/?$",
+        dest: "/docs/.well-known/ard.json",
+        methods: ["GET", "HEAD"],
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+          Link: '</.well-known/ard.json>; rel="ard"',
+        },
+      },
+      {
+        src: "/docs(?:/(.*))?",
+        methods: ["GET", "HEAD"],
+        middlewarePath: "zudoku-markdown",
+        continue: true,
+      },
+    ]);
+    expect(output.overrides).toMatchObject({
+      "docs/.well-known/ard.json": {
+        contentType: "application/json; charset=utf-8",
+      },
+    });
+  });
+
+  it.each([
+    {
+      kind: "redirect",
+      redirects: [{ from: "/.well-known/ard.json", to: "/legacy-ard.json" }],
+      rewrites: [],
+    },
+    {
+      kind: "rewrite",
+      redirects: [],
+      rewrites: [
+        {
+          source: "/.well-known/ard.json",
+          destination: "/legacy-ard.json",
+        },
+      ],
+    },
+  ])("rejects an alias that conflicts with a configured $kind", (value) => {
+    expect(() =>
+      generateOutput({
+        config: createConfig("/"),
+        redirects: value.redirects,
+        rewrites: value.rewrites,
+        aliases: [
+          {
+            sourcePath: "/.well-known/ard.json",
+            destinationPath: "/docs/.well-known/ard.json",
+          },
+        ],
+      }),
+    ).toThrow("conflicts with a configured");
+  });
+
+  it("rejects an alias that shadows an existing static asset", async () => {
+    const rootDir = await mkdtemp(
+      path.join(os.tmpdir(), "zudoku-output-test-"),
+    );
+    tempDirs.push(rootDir);
+    vi.stubEnv("VERCEL", "1");
+    const staticFile = path.join(
+      rootDir,
+      ".vercel/output/static/.well-known/ard.json",
+    );
+    await mkdir(path.dirname(staticFile), { recursive: true });
+    await writeFile(staticFile, "legacy");
+    await writeBuildContributionManifest(rootDir, {
+      artifacts: [
+        {
+          urlPath: "/docs/.well-known/ard.json",
+          content: "{}",
+        },
+      ],
+      aliases: [
+        {
+          sourcePath: "/.well-known/ard.json",
+          destinationPath: "/docs/.well-known/ard.json",
+        },
+      ],
+      routeHeaders: [],
+      llmsSections: [],
+      warnings: [],
+    });
+
+    await expect(
+      writeOutput(rootDir, { config: createConfig(), redirects: [] }),
+    ).rejects.toThrow("conflicts with an existing static output");
+  });
+
+  it.each(["artifact", "alias"] as const)(
+    "rejects a contributed %s that shadows a prerendered clean URL",
+    async (kind) => {
+      const rootDir = await mkdtemp(
+        path.join(os.tmpdir(), "zudoku-output-test-"),
+      );
+      tempDirs.push(rootDir);
+      vi.stubEnv("VERCEL", "1");
+      const staticFile = path.join(
+        rootDir,
+        ".vercel/output/static/.well-known/api-catalog.html",
+      );
+      await mkdir(path.dirname(staticFile), { recursive: true });
+      await writeFile(staticFile, "legacy page");
+      await writeBuildContributionManifest(rootDir, {
+        artifacts: [
+          {
+            urlPath:
+              kind === "artifact"
+                ? "/.well-known/api-catalog"
+                : "/docs/.well-known/api-catalog",
+            content: "{}",
+            contentType: "application/linkset+json",
+          },
+        ],
+        aliases:
+          kind === "alias"
+            ? [
+                {
+                  sourcePath: "/.well-known/api-catalog",
+                  destinationPath: "/docs/.well-known/api-catalog",
+                },
+              ]
+            : [],
+        routeHeaders: [],
+        llmsSections: [],
+        warnings: [],
+      });
+
+      await expect(
+        writeOutput(rootDir, { config: createConfig(), redirects: [] }),
+      ).rejects.toThrow(
+        `Build artifact ${kind} "/.well-known/api-catalog" conflicts with an existing clean URL output`,
+      );
+    },
+  );
 
   it("canonicalizes clean URLs before applying user redirects", () => {
     const output = generateOutput({
