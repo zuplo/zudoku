@@ -79,6 +79,39 @@ describe("matchPathObject (Shape A)", () => {
     });
   });
 
+  it("ignores identifiers that are not value references", async () => {
+    // `admin` here is a property key, a member property, and a parameter name.
+    // None of them reference the top-level `admin` registry, so its import
+    // must not be attributed to "/public".
+    const { route, bindings } = await pathObjectAndBindings(`
+      const admin = { load: () => import("./admin-secret.js") };
+      const route = {
+        path: "/public",
+        handle: { admin: false },
+        element: layouts.admin,
+        loader: (admin) => admin.data,
+        lazy: () => import("./public.js"),
+      };
+    `);
+
+    expect(matchPathObject(route, bindings)).toEqual({
+      root: "/public",
+      specs: ["./public.js"],
+    });
+  });
+
+  it("follows a registry referenced by a nested property value", async () => {
+    const { route, bindings } = await pathObjectAndBindings(`
+      const schemaImports = { "/processed/first.js": () => import("./first.js") };
+      const route = { path: "/api", options: { schemaImports } };
+    `);
+
+    expect(matchPathObject(route, bindings)).toEqual({
+      root: "/api",
+      specs: ["./first.js"],
+    });
+  });
+
   it("returns undefined without a string path", async () => {
     const node = await firstObject(
       `const r = { path: dynamicPath, lazy: () => import("./x") };`,

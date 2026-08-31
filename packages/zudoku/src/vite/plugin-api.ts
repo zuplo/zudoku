@@ -43,6 +43,22 @@ export const schemaConfigurationChanged = (
   next: Pick<ConfigWithMeta, "apis" | "basePath">,
 ) => current.basePath !== next.basePath || !deepEqual(current.apis, next.apis);
 
+// Emitted once per virtual module. Every API spreads it, so authored
+// `options` still override these and per-API keys stay next to the spread.
+export const generateDefaultApiOptionsCode = () => [
+  `const defaultApiOptions = {`,
+  `  examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+  `  supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
+  `  disablePlayground: config.defaults?.apis?.disablePlayground,`,
+  `  disableSidecar: config.defaults?.apis?.disableSidecar,`,
+  `  disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
+  `  disableMcpAuthInstructions: config.defaults?.apis?.disableMcpAuthInstructions,`,
+  `  showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
+  `  showInfoPage: config.defaults?.apis?.showInfoPage,`,
+  `  schemaDownload: config.defaults?.apis?.schemaDownload,`,
+  `};`,
+];
+
 export const generateSchemaImportsCode = (
   schemaImports: { importKey: string; processedTime: number }[],
 ) => [
@@ -209,19 +225,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         code.push(
           `const apis = Array.isArray(config.apis) ? config.apis : [config.apis]`,
         );
-        code.push(
-          `const defaultApiOptions = {`,
-          `  examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
-          `  supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
-          `  disablePlayground: config.defaults?.apis?.disablePlayground,`,
-          `  disableSidecar: config.defaults?.apis?.disableSidecar,`,
-          `  disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
-          `  disableMcpAuthInstructions: config.defaults?.apis?.disableMcpAuthInstructions,`,
-          `  showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
-          `  showInfoPage: config.defaults?.apis?.showInfoPage,`,
-          `  schemaDownload: config.defaults?.apis?.schemaDownload,`,
-          `};`,
-        );
+        code.push(...generateDefaultApiOptionsCode());
         const apis = ensureArray(config.apis);
         const apiMetadata: ApiCatalogItem[] = [];
         const schemaImports = schemaManager.getSchemaImports();

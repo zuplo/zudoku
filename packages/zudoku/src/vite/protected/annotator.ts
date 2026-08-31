@@ -48,26 +48,47 @@ const collectTopLevelObjectBindings = (ast: AstNode): ObjectBindings =>
 // All dynamic-import specifiers found anywhere inside a subtree. Follow
 // top-level object bindings so generated route objects can share a loader
 // registry without losing their route-to-import association.
+//
+// Only identifiers in *value* position resolve to a binding. `walk` is neither
+// scope- nor parent-aware, so property keys (`{ admin: false }`), member
+// properties (`layouts.admin`), and parameter names (`(admin) => ...`) all
+// arrive as plain `Identifier` nodes; treating those as references would
+// attribute an unrelated registry's imports to this route.
 const collectImportSpecs = (
   node: AstNode,
   objectBindings: ObjectBindings,
   visitedBindings = new Set<string>(),
 ): string[] => {
   const out: string[] = [];
+  const referenced: AstNode[] = [];
+
+  const considerReference = (candidate: AstNode) => {
+    if (candidate?.type !== "Identifier") return;
+    if (visitedBindings.has(candidate.name)) return;
+    const binding = objectBindings.get(candidate.name);
+    if (!binding) return;
+
+    visitedBindings.add(candidate.name);
+    referenced.push(binding);
+  };
+
+  // A shared registry reaches a route either as the sibling value itself
+  // (`{ path, schemaImports }`) or as a nested property value.
+  considerReference(node);
 
   walk(node, (n) => {
     if (n.type === "ImportExpression") {
       const spec = literalString(n.source);
       if (spec) out.push(spec);
+      return;
     }
 
-    if (n.type !== "Identifier" || visitedBindings.has(n.name)) return;
-    const binding = objectBindings.get(n.name);
-    if (!binding) return;
-
-    visitedBindings.add(n.name);
-    out.push(...collectImportSpecs(binding, objectBindings, visitedBindings));
+    if (n.type === "Property") considerReference(n.value);
   });
+
+  for (const binding of referenced) {
+    out.push(...collectImportSpecs(binding, objectBindings, visitedBindings));
+  }
   return out;
 };
 
