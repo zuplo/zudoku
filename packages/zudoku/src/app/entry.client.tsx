@@ -13,6 +13,7 @@ import { SESSION_ENDPOINT_PATH } from "../lib/authentication/cookies.js";
 import { authState } from "../lib/authentication/state.js";
 import { BootstrapClient } from "../lib/components/Bootstrap.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { requestIdle } from "../lib/util/requestIdle.js";
 import { getRoutesByConfig, getShikiReady } from "./main.js";
 
 if (import.meta.env.ZUDOKU_HAS_SERVER) {
@@ -104,11 +105,20 @@ async function hydrateLazyRoutes(routes: RouteObject[]) {
   }
 }
 
+// Keeping Shiki off the hydration path is only a win if it is warm before the
+// user needs it. Without this, the first navigation to a page that renders
+// runtime-highlighted content suspends inside a router transition and the
+// previous page stays frozen until the chunk and its grammars arrive.
+function warmShiki() {
+  requestIdle(() => void getShikiReady());
+}
+
 function render(routes: RouteObject[]) {
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });
   createRoot(root).render(<BootstrapClient router={router} head={head} />);
+  warmShiki();
 }
 
 async function hydrate(routes: RouteObject[]) {
@@ -123,6 +133,9 @@ async function hydrate(routes: RouteObject[]) {
   });
 
   hydrateRoot(root, <BootstrapClient hydrate router={router} head={head} />);
+
+  // Pages whose HTML already contained highlighted output resolved Shiki above.
+  if (!runtimeShiki) warmShiki();
 }
 
 // Reload on chunk preload failures to recover from version skew.

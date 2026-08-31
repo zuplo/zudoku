@@ -10,7 +10,6 @@ export const Navigation = ({
   navigation,
   topNavItem,
 }: {
-  onRequestClose?: () => void;
   navigation: NavigationItemType[];
   topNavItem?: NavigationItemType;
 }) => {

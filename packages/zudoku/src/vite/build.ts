@@ -139,8 +139,14 @@ export async function runBuild(options: BuildOptions) {
 
   const cssEntries = getEagerCssEntries(clientResult.output);
 
-  if (!jsEntry || cssEntries.length === 0) {
-    throw new Error("Build failed. No js or css assets found");
+  if (!jsEntry) {
+    throw new Error("Build failed. No js entry chunk found");
+  }
+
+  if (cssEntries.length === 0) {
+    throw new Error(
+      "Build failed. No stylesheet reachable from the eager entry chunk was found",
+    );
   }
 
   const html = getBuildHtml({
