@@ -649,7 +649,7 @@ importers:
         version: 3.2.0(graphql@16.14.2)
       '@hono/node-server':
         specifier: 2.0.11
-        version: 2.0.11(hono@4.12.32)
+        version: 2.0.11(hono@4.12.34)
       '@lekoarts/rehype-meta-as-attributes':
         specifier: 3.0.3
         version: 3.0.3
@@ -849,8 +849,8 @@ importers:
         specifier: 3.0.1
         version: 3.0.1
       hono:
-        specifier: 4.12.32
-        version: 4.12.32
+        specifier: 4.12.34
+        version: 4.12.34
       http-terminator:
         specifier: 3.2.0
         version: 3.2.0
@@ -5857,6 +5857,11 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
+  acorn@8.18.0:
+    resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+
   address@2.0.3:
     resolution: {integrity: sha512-XNAb/a6TCqou+TufU8/u11HCu9x1gYvOoxLwtlXgIqmkrYQADVv6ljyW2zwiPhHz9R1gItAWpuDrdJMmrOBFEA==}
     engines: {node: '>= 16.0.0'}
@@ -7144,8 +7149,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.12.32:
-    resolution: {integrity: sha512-XcuyW9qE2kJn07PkecMOBd5Vq/hMy7mmGw+idz1yblbg9N17ijJODrvPkn7/dwL3Kulj8LcRJ69DLOWf91dRUg==}
+  hono@4.12.34:
+    resolution: {integrity: sha512-GqXJqY/xJkJmuloTrnV1ZEXG3fqte+VjkUqoRNZXcrUidiUOP4fMSIHHY4tsqZBK++kVyWmt/AAfSUuy57/eSA==}
     engines: {node: '>=16.9.0'}
 
   hookable@6.1.1:
@@ -11929,9 +11934,9 @@ snapshots:
       protobufjs: 7.5.8
       yargs: 17.7.2
 
-  '@hono/node-server@2.0.11(hono@4.12.32)':
+  '@hono/node-server@2.0.11(hono@4.12.34)':
     dependencies:
-      hono: 4.12.32
+      hono: 4.12.34
 
   '@iconify/types@2.0.0': {}
 
@@ -14660,6 +14665,9 @@ snapshots:
 
   acorn@8.17.0: {}
 
+  acorn@8.18.0:
+    optional: true
+
   address@2.0.3: {}
 
   ajv-draft-04@1.0.0(ajv@8.20.0):
@@ -16096,7 +16104,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.12.32: {}
+  hono@4.12.34: {}
 
   hookable@6.1.1: {}
 
@@ -18569,7 +18577,7 @@ snapshots:
   terser@5.46.1:
     dependencies:
       '@jridgewell/source-map': 0.3.11
-      acorn: 8.17.0
+      acorn: 8.18.0
       commander: 2.20.3
       source-map-support: 0.5.21
     optional: true
