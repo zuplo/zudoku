@@ -268,8 +268,11 @@ export class ZudokuContext {
 
   // Skip plugins for unauthed users on protected paths. Plugins often load
   // protected resources inside getNavigation; that work would leak.
-  getPluginNavigation = async (path: string): Promise<Navigation> => {
-    if (this.shouldSkipNavigationForProtected(path)) return [];
+  getPluginNavigation = async (
+    path: string,
+    isAuthenticated?: boolean,
+  ): Promise<Navigation> => {
+    if (this.shouldSkipNavigationForProtected(path, isAuthenticated)) return [];
     const navigations = await Promise.all(
       this.plugins
         .filter(isNavigationPlugin)
@@ -293,7 +296,7 @@ export class ZudokuContext {
     return {
       enabled: shouldLoadNavigation,
       initialData: shouldLoadNavigation ? undefined : [],
-      queryFn: () => this.getPluginNavigation(path),
+      queryFn: () => this.getPluginNavigation(path, isAuthenticated),
       queryKey: ["plugin-navigation", path, isAuthenticated] as const,
       // Navigation comes from static build-time sources, so it never changes at
       // runtime in production. In dev, recompute on mount so an HMR schema swap

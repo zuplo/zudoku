@@ -271,6 +271,24 @@ describe("handleRequest", () => {
     expect(html).toContain("Error: Async plugin initialization failed");
   });
 
+  it("returns an HTML 500 when plugin navigation rejects", async () => {
+    navigationMocks.getNavigation.mockRejectedValueOnce(
+      new Error("Navigation failed"),
+    );
+
+    const response = await renderPath("/");
+    const html = await response.text();
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(html).toContain("Error: Navigation failed");
+    // A swallowed rejection would render as a still-pending query, i.e. a
+    // spinner-only page served with a 200 that prerendering accepts as valid.
+    expect(html).not.toContain("Loading navigation");
+  });
+
   it("returns an HTML 500 when request setup fails", async () => {
     const response = await handleRequest({
       template,

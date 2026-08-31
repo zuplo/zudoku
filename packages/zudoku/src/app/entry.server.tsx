@@ -183,12 +183,19 @@ export const handleRequest = async ({
     const pathname = joinUrl(
       stripBasePath(new URL(request.url).pathname, basePath),
     );
-    await queryClient.prefetchQuery(
-      zudokuContext.getPluginNavigationQueryOptions(
-        pathname,
-        !!ssrAuth?.profile,
-      ),
+    const navigationQuery = zudokuContext.getPluginNavigationQueryOptions(
+      pathname,
+      !!ssrAuth?.profile,
     );
+    // `fetchQuery`, not `prefetchQuery`: a rejected `getNavigation` has to reach
+    // the fatal-error boundary below. `prefetchQuery` swallows it, and the
+    // render then reads the failed, data-less query as pending, which would
+    // emit a spinner-only page with a 200 instead of the established 500.
+    // `fetchQuery` ignores `enabled`, so honor it here to keep skipping
+    // navigation for unauthed users on protected paths.
+    if (navigationQuery.enabled) {
+      await queryClient.fetchQuery(navigationQuery);
+    }
 
     const router = createStaticRouter(dataRoutes, context);
     const head = createHead();

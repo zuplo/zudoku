@@ -86,6 +86,37 @@ describe("ZudokuContext.getPluginNavigation", () => {
     expect(getNavigation).not.toHaveBeenCalled();
   });
 
+  // The query options decide whether to run navigation from an explicit
+  // isAuthenticated; queryFn must use that same value rather than re-reading
+  // the global auth state, or the two can disagree mid-flight.
+  it("honors the explicit isAuthenticated over the ambient auth state", async () => {
+    setAuth(false);
+    const { ctx, getNavigation } = buildContext({ "/protected/*": () => true });
+
+    expect(await ctx.getPluginNavigation("/protected/page", true)).toHaveLength(
+      1,
+    );
+    expect(getNavigation).toHaveBeenCalledOnce();
+
+    setAuth(true);
+    getNavigation.mockClear();
+    expect(await ctx.getPluginNavigation("/protected/page", false)).toEqual([]);
+    expect(getNavigation).not.toHaveBeenCalled();
+  });
+
+  it("passes isAuthenticated from the query options through to queryFn", async () => {
+    setAuth(true);
+    const { ctx, getNavigation } = buildContext({ "/protected/*": () => true });
+    const options = ctx.getPluginNavigationQueryOptions(
+      "/protected/page",
+      false,
+    );
+
+    expect(options.enabled).toBe(false);
+    expect(await options.queryFn()).toEqual([]);
+    expect(getNavigation).not.toHaveBeenCalled();
+  });
+
   // On the server, SSR auth must come from ssrAuth, since zustand state isn't available.
   // This prevents mismatches between SSR and client nav rendering.
   it("uses ssrAuth on the server path", async () => {
