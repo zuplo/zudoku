@@ -43,6 +43,33 @@ export const schemaConfigurationChanged = (
   next: Pick<ConfigWithMeta, "apis" | "basePath">,
 ) => current.basePath !== next.basePath || !deepEqual(current.apis, next.apis);
 
+// Emitted once per virtual module. Every API spreads it, so authored
+// `options` still override these and per-API keys stay next to the spread.
+export const generateDefaultApiOptionsCode = () => [
+  `const defaultApiOptions = {`,
+  `  examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+  `  supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
+  `  disablePlayground: config.defaults?.apis?.disablePlayground,`,
+  `  disableSidecar: config.defaults?.apis?.disableSidecar,`,
+  `  disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
+  `  disableMcpAuthInstructions: config.defaults?.apis?.disableMcpAuthInstructions,`,
+  `  showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
+  `  showInfoPage: config.defaults?.apis?.showInfoPage,`,
+  `  schemaDownload: config.defaults?.apis?.schemaDownload,`,
+  `};`,
+];
+
+export const generateSchemaImportsCode = (
+  schemaImports: { importKey: string; processedTime: number }[],
+) => [
+  "const schemaImports = {",
+  ...schemaImports.map(
+    (schema) =>
+      `  ${JSON.stringify(schema.importKey)}: () => import(${JSON.stringify(`${schema.importKey.replaceAll("\\", "/")}?d=${schema.processedTime}`)}),`,
+  ),
+  "};",
+];
+
 const warn = (message: string) => {
   // biome-ignore lint/suspicious/noConsole: Logging allowed here
   console.warn(`[zudoku] ${message}`);
@@ -198,8 +225,16 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         code.push(
           `const apis = Array.isArray(config.apis) ? config.apis : [config.apis]`,
         );
+        code.push(...generateDefaultApiOptionsCode());
         const apis = ensureArray(config.apis);
         const apiMetadata: ApiCatalogItem[] = [];
+        const schemaImports = schemaManager.getSchemaImports();
+
+        // Every file API uses the same registry so the local GraphQL server can
+        // resolve schemas across the whole portal. Emit it once: inlining the
+        // complete map into every plugin duplicates all loader closures and
+        // import paths in the client entry chunk.
+        code.push(...generateSchemaImportsCode(schemaImports));
 
         for (const apiConfig of apis) {
           if (apiConfig.type === "file" && apiConfig.path) {
@@ -272,8 +307,6 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             const tags = Array.from(allSlugs);
 
-            const schemaImports = schemaManager.getSchemaImports();
-
             // Catalog mode renders a single page, so it reads the flag from the
             // latest schema only and ignores the other versions entirely.
             const latest = schemas.at(0);
@@ -304,26 +337,13 @@ const viteApiPlugin = async (): Promise<Plugin> => {
                 ? [`  documentType: ${JSON.stringify(documentType)},`]
                 : []),
               `  options: {`,
-              `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
-              `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
-              `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
-              `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
-              `    disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
-              `    disableMcpAuthInstructions: config.defaults?.apis?.disableMcpAuthInstructions,`,
-              `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
+              `    ...defaultApiOptions,`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
-              `    showInfoPage: config.defaults?.apis?.showInfoPage,`,
-              `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    transformExamples: config.defaults?.apis?.transformExamples,`,
               `    generateCodeSnippet: config.defaults?.apis?.generateCodeSnippet,`,
               `    ...(apis[${apiIndex}].options ?? {}),`,
               `  },`,
-              `  schemaImports: {`,
-              ...schemaImports.map(
-                (s) =>
-                  `    "${s.importKey.replaceAll("\\", "\\\\")}": () => import("${s.importKey.replaceAll("\\", "/")}?d=${s.processedTime}"),`,
-              ),
-              `  },`,
+              `  schemaImports,`,
               "}));",
             );
           } else {
@@ -342,16 +362,8 @@ const viteApiPlugin = async (): Promise<Plugin> => {
                 ? [`  documentType: ${JSON.stringify(documentType)},`]
                 : []),
               "  options: {",
-              `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
-              `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
-              `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
-              `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
-              `    disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
-              `    disableMcpAuthInstructions: config.defaults?.apis?.disableMcpAuthInstructions,`,
-              `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
+              `    ...defaultApiOptions,`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? false,`,
-              `    showInfoPage: config.defaults?.apis?.showInfoPage,`,
-              `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    ...${JSON.stringify(apiConfig.options ?? {})},`,
               "  },",
               "}));",
