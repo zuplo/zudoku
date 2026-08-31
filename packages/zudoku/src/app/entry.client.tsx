@@ -17,7 +17,7 @@ import { joinUrl } from "../lib/util/joinUrl.js";
 import { requestIdle } from "../lib/util/requestIdle.js";
 import { getRoutesByConfig, getShikiReady } from "./main.js";
 
-activateDeferredStylesheets();
+const deferredStylesheetsActivated = activateDeferredStylesheets();
 
 if (import.meta.env.ZUDOKU_HAS_SERVER) {
   setupCookieSync(authState, joinUrl(config.basePath, SESSION_ENDPOINT_PATH));
@@ -129,7 +129,11 @@ async function hydrate(routes: RouteObject[]) {
     ? getShikiReady()
     : undefined;
 
-  await Promise.all([hydrateLazyRoutes(routes), runtimeShiki]);
+  await Promise.all([
+    hydrateLazyRoutes(routes),
+    runtimeShiki,
+    deferredStylesheetsActivated,
+  ]);
 
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
