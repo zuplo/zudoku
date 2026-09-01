@@ -126,9 +126,9 @@ const processFontConfig = (fontConfig?: FontConfig) => {
 const processFonts = async (themeConfig: ZudokuConfig["theme"]) => {
   const imports: string[] = [];
   const families = {
-    sans: "Geist, sans-serif",
+    sans: '"Geist Variable", sans-serif',
     serif: undefined as string | undefined,
-    mono: '"Geist Mono", monospace',
+    mono: '"Geist Mono Variable", monospace',
   };
 
   // Process user fonts
@@ -179,23 +179,14 @@ const processFonts = async (themeConfig: ZudokuConfig["theme"]) => {
 
   // Determine final font families with priority: user > registry > defaults
   families.sans =
-    userFonts.sans.fontFamily || registryFonts.sans || "Geist, sans-serif";
+    userFonts.sans.fontFamily ||
+    registryFonts.sans ||
+    '"Geist Variable", sans-serif';
   families.serif = userFonts.serif.fontFamily || registryFonts.serif;
   families.mono =
     userFonts.mono.fontFamily ||
     registryFonts.mono ||
-    '"Geist Mono", monospace';
-
-  // Add default font imports if no user or registry fonts
-  if (!userFonts.sans.fontFamily && !registryFonts.sans) {
-    imports.push(getGoogleFontUrl("Geist"));
-  }
-  if (!userFonts.serif.fontFamily && !registryFonts.serif) {
-    imports.push(getGoogleFontUrl("Playfair Display"));
-  }
-  if (!userFonts.mono.fontFamily && !registryFonts.mono) {
-    imports.push(getGoogleFontUrl("Geist Mono"));
-  }
+    '"Geist Mono Variable", monospace';
 
   return { imports, families };
 };

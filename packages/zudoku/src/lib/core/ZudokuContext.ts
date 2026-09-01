@@ -85,6 +85,7 @@ type Site = Partial<{
       dark: string;
     };
     width?: string | number;
+    height?: string | number;
     alt?: string;
     href?: string;
     reloadDocument?: boolean;
