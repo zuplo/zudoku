@@ -30,7 +30,7 @@
     "@types/prompts": "2.4.9",
     "@types/tar": "7.0.87",
     "@types/validate-npm-package-name": "4.0.2",
-    "@vercel/ncc": "0.38.4",
+    "@vercel/ncc": "0.44.1",
     "async-retry": "1.3.3",
     "ci-info": "4.4.0",
     "commander": "14.0.3",
