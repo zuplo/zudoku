@@ -24,6 +24,16 @@ const EMPLOYEE_MCP_PATH = "/employee-mcp";
 // plain endpoints kept alongside them would never be shown.
 const GATEWAY_DIRECTORY_PATH = "/catalog/api-gateway-directory";
 
+// Custom user data loaded after sign-in and exposed as `profile.metadata`.
+// Augmenting `UserMetadata` types both what `getMetadata` returns and every
+// read of `profile.metadata`.
+declare module "zudoku/auth" {
+  interface UserMetadata {
+    clearance: "standard" | "warp";
+    fleetCredits: number;
+  }
+}
+
 // Clerk publishable keys are shipped to the browser by design, so both are safe
 // to commit. The production instance is served from clerk.cosmocargo.dev and is
 // scoped to that domain, so it only authenticates on the production deployment;
@@ -257,6 +267,15 @@ const config: ZudokuConfig = {
       auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
     "/only-members": ({ auth, reasonCode }) =>
       auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
+    // Gated on custom user data rather than on the identity itself. While the
+    // clearance is still loading the route is undecided, not denied.
+    "/premium-fleet-services": ({ auth, reasonCode }) => {
+      if (!auth.isAuthenticated) return reasonCode.UNAUTHORIZED;
+
+      return auth.profile?.metadata?.clearance === "warp"
+        ? true
+        : reasonCode.FORBIDDEN;
+    },
     "/vip-lounge": ({ auth, reasonCode }) =>
       !auth.isAuthenticated
         ? reasonCode.UNAUTHORIZED
@@ -483,6 +502,17 @@ const config: ZudokuConfig = {
     clerkPubKey: CLERK_PUB_KEY,
     redirectToAfterSignIn: "/documentation",
     redirectToAfterSignUp: "/documentation",
+    // A real portal would fetch this from its own API, authorizing the request
+    // with the supplied `signRequest`:
+    //
+    //   const res = await fetch(await signRequest(
+    //     new Request("https://api.cosmo-cargo.space/me/clearance", { signal }),
+    //   ));
+    //   return await res.json();
+    //
+    // This runs in the browser, so it must never close over a secret. The demo
+    // returns a fixed manifest so it works without a backing service.
+    getMetadata: () => ({ clearance: "warp", fleetCredits: 4200 }),
   },
   defaults: {
     apis: {

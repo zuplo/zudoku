@@ -218,6 +218,72 @@ describe("sessionHandler POST", () => {
     expect(res.status).toBe(400);
   });
 
+  test("degrades an oversized profile to core fields instead of failing", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    verifyAccessToken.mockResolvedValueOnce({
+      profile: {
+        ...VERIFIED_PROFILE,
+        subscription: { notes: "x".repeat(5000) },
+      },
+    });
+
+    const res = await handler.fetch(post({ accessToken: "t" }));
+
+    expect(res.status).toBe(200);
+    const cookie = res.headers
+      .getSetCookie()
+      .find((c) => c.startsWith("zudoku-auth-profile="));
+    expect(cookie).toBeDefined();
+
+    const value = decodeURIComponent(
+      // biome-ignore lint/style/noNonNullAssertion: asserted above
+      cookie!.slice("zudoku-auth-profile=".length).split(";")[0]!,
+    );
+    const profile = JSON.parse(value);
+    expect(profile).toEqual({
+      sub: "u1",
+      email: "u@example.com",
+      emailVerified: true,
+      name: "U",
+    });
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("subscription"));
+    warn.mockRestore();
+  });
+
+  test("keeps custom claims that fit inside the cookie budget", async () => {
+    verifyAccessToken.mockResolvedValueOnce({
+      profile: { ...VERIFIED_PROFILE, subscription: { plan: "pro" } },
+    });
+
+    const res = await handler.fetch(post({ accessToken: "t" }));
+
+    const cookie = res.headers
+      .getSetCookie()
+      .find((c) => c.startsWith("zudoku-auth-profile="));
+    // biome-ignore lint/style/noNonNullAssertion: the cookie is always set on 200
+    expect(decodeURIComponent(cookie!)).toContain('"plan":"pro"');
+  });
+
+  test("measures the encoded cookie value against the size limit", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    // Under the limit as raw JSON, over it once URL-encoded: every character
+    // of this claim expands to three bytes (%E2%80%A6 style escapes).
+    verifyAccessToken.mockResolvedValueOnce({
+      profile: { ...VERIFIED_PROFILE, note: "\u2026".repeat(1500) },
+    });
+
+    const res = await handler.fetch(post({ accessToken: "t" }));
+
+    expect(res.status).toBe(200);
+    const cookie = res.headers
+      .getSetCookie()
+      .find((c) => c.startsWith("zudoku-auth-profile="));
+    // biome-ignore lint/style/noNonNullAssertion: the cookie is always set on 200
+    expect(cookie!.length).toBeLessThan(4096);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
   test("body exceeding the size limit is rejected with 413", async () => {
     const huge = "x".repeat(64 * 1024 + 1);
     const req = new Request("http://localhost/", {

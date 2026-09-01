@@ -5,6 +5,7 @@ import {
   type StateStorage,
 } from "zustand/middleware";
 import { syncZustandState } from "../util/syncZustandState.js";
+import type { UserMetadata } from "./index.js";
 
 /**
  * Registry interface for provider-specific data types.
@@ -123,6 +124,12 @@ export interface UserProfile {
   emailVerified: boolean;
   name: string | undefined;
   pictureUrl: string | undefined;
+  /**
+   * Custom user data returned by `authentication.getMetadata`. Reserved: the
+   * IdP claim merge never writes this key, so anything here was fetched by
+   * Zudoku rather than signed by the identity provider.
+   */
+  metadata?: UserMetadata;
   [key: string]: CustomClaim;
 }
 

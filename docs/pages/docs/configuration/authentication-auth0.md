@@ -176,6 +176,60 @@ authentication: {
 }
 ```
 
+### Custom User Data
+
+There are two ways to attach data such as a subscription or entitlements to the signed-in user.
+
+**Load it from your own API.** Zudoku calls `getMetadata` after sign-in and puts the result on
+`profile.metadata`, so the lookup does not have to live in an Auth0 Action:
+
+```typescript title="zudoku.config.ts"
+{
+  authentication: {
+    type: "auth0",
+    domain: "your-domain.us.auth0.com",
+    clientId: "<your-client-id>",
+    getMetadata: async ({ signRequest, signal }) => {
+      const response = await fetch(
+        await signRequest(
+          new Request("https://api.example.com/me/subscription", { signal }),
+        ),
+      );
+
+      if (!response.ok) {
+        throw new Error(`Subscription lookup failed: ${response.status}`);
+      }
+
+      return await response.json();
+    },
+  },
+}
+```
+
+`signRequest` attaches the user's Auth0 access token to the request, so your API can identify the
+caller without a shared secret. This runs in the browser — never put a secret in the callback.
+
+**Or use a claim from a Post-Login Action.** If the data already comes from Auth0, set it on both
+tokens so it is available in the browser and during server-side rendering:
+
+```javascript title="Auth0 Post-Login Action"
+exports.onExecutePostLogin = async (event, api) => {
+  const subscription = { plan: "pro" };
+
+  api.idToken.setCustomClaim("https://example.com/subscription", subscription);
+  api.accessToken.setCustomClaim("https://example.com/subscription", subscription);
+};
+```
+
+The claim is then available on the profile:
+
+```typescript
+const { profile } = useAuth();
+profile["https://example.com/subscription"]; // → { plan: "pro" }
+```
+
+See [Custom User Data](./authentication.md#custom-user-data) for the full reference.
+
 ## Troubleshooting
 
 ### Common Issues
