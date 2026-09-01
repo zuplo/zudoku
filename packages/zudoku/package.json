@@ -231,7 +231,7 @@
     "@typescript/native-preview": "catalog:",
     "@vitest/coverage-v8": "4.1.10",
     "happy-dom": "catalog:",
-    "oxc-parser": "^0.135.0",
+    "oxc-parser": "^0.142.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsx": "4.23.1",
