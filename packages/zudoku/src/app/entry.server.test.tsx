@@ -2,6 +2,18 @@ import { use } from "react";
 import { Outlet, type RouteObject } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RenderContext } from "../lib/components/context/RenderContext.js";
+import { useCurrentNavigation } from "../lib/components/context/ZudokuContext.js";
+import { Layout } from "../lib/components/Layout.js";
+import { Zudoku } from "../lib/components/Zudoku.js";
+
+const navigationMocks = vi.hoisted(() => ({
+  getNavigation: vi.fn(() =>
+    Promise.resolve([
+      { type: "link" as const, label: "API reference", to: "/reference" },
+    ]),
+  ),
+  initialize: vi.fn(),
+}));
 
 vi.mock("virtual:zudoku-auth", () => ({
   configuredAuthProvider: undefined,
@@ -35,6 +47,15 @@ vi.mock("../lib/manifest.js", () => ({
 }));
 
 vi.mock("./main.js", () => ({
+  convertZudokuConfigToOptions: () => ({
+    plugins: [
+      {
+        getNavigation: navigationMocks.getNavigation,
+        getRoutes: () => [],
+        initialize: navigationMocks.initialize,
+      },
+    ],
+  }),
   getRoutesByConfig: vi.fn(),
 }));
 
@@ -52,6 +73,21 @@ const ExistingStatus = ({ status }: { status: number }) => {
   const renderContext = use(RenderContext);
   renderContext.status = status;
   return <Outlet />;
+};
+
+const AsyncPluginNavigation = () => {
+  const { navigation, isPending } = useCurrentNavigation();
+
+  return (
+    <main>
+      <nav>
+        {isPending
+          ? "Loading navigation"
+          : navigation.map((item) => item.label).join(", ")}
+      </nav>
+      <article>API documentation</article>
+    </main>
+  );
 };
 
 const routes: RouteObject[] = [
@@ -101,6 +137,173 @@ describe("handleRequest", () => {
 
     expect(response.status).toBe(status);
     expect(response.headers.get("Cache-Control")).toBe(cacheControl);
+  });
+
+  it("preserves async plugin navigation in HTML and dehydrated state", async () => {
+    const response = await handleRequest({
+      template,
+      request: new Request("http://localhost/", {
+        headers: { Accept: "text/html" },
+      }),
+      routes: [
+        {
+          path: "/",
+          element: (
+            <Zudoku
+              plugins={[
+                {
+                  getNavigation: navigationMocks.getNavigation,
+                  getRoutes: () => [],
+                },
+              ]}
+            >
+              <Layout>
+                <AsyncPluginNavigation />
+              </Layout>
+            </Zudoku>
+          ),
+        },
+      ],
+    });
+    const html = await response.text();
+    const serializedState = html.match(
+      /window\.ZUDOKU_DATA=([\s\S]*?)<\/script>/,
+    )?.[1];
+
+    expect(html).toContain("<nav>API reference</nav>");
+    expect(html).toContain("<article>API documentation</article>");
+    expect(html).not.toContain("Loading navigation");
+    expect(html).not.toContain('<div hidden id="S:');
+    expect(html).not.toContain("$RC(");
+    expect(serializedState).toBeDefined();
+    expect(response.headers.get("Vary")).toBe("Accept");
+    expect(response.headers.get("Link")).toBe(
+      '</index.md>; rel="alternate"; type="text/markdown"',
+    );
+
+    const dehydratedState = JSON.parse(serializedState ?? "{}");
+    expect(dehydratedState.queries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          queryKey: ["plugin-navigation", "/", false],
+          state: expect.objectContaining({
+            data: [
+              {
+                type: "link",
+                label: "API reference",
+                to: "/reference",
+              },
+            ],
+          }),
+        }),
+      ]),
+    );
+  });
+
+  it("prefetches navigation with the router-relative path under a base path", async () => {
+    navigationMocks.getNavigation.mockClear();
+
+    const response = await handleRequest({
+      template,
+      request: new Request("http://localhost/docs/guide"),
+      basePath: "/docs",
+      routes: [
+        {
+          path: "/guide",
+          element: (
+            <Zudoku
+              plugins={[
+                {
+                  getNavigation: navigationMocks.getNavigation,
+                  getRoutes: () => [],
+                },
+              ]}
+            >
+              <Layout>
+                <AsyncPluginNavigation />
+              </Layout>
+            </Zudoku>
+          ),
+        },
+      ],
+    });
+    const html = await response.text();
+
+    expect(navigationMocks.getNavigation).toHaveBeenCalledTimes(1);
+    expect(navigationMocks.getNavigation).toHaveBeenCalledWith(
+      "/guide",
+      expect.anything(),
+    );
+    expect(html).toContain("<nav>API reference</nav>");
+    expect(html).not.toContain("Loading navigation");
+    expect(html).not.toContain('<div hidden id="S:');
+    expect(html).not.toContain("$RC(");
+    expect(html).toContain('"queryKey":["plugin-navigation","/guide",false]');
+  });
+
+  it("returns an HTML 500 when plugin initialization throws synchronously", async () => {
+    navigationMocks.initialize.mockImplementationOnce(() => {
+      throw new Error("Plugin initialization failed");
+    });
+
+    const response = await renderPath("/", { accept: "text/markdown" });
+    const html = await response.text();
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(html).toContain("Error: Plugin initialization failed");
+  });
+
+  it("returns an HTML 500 when plugin initialization rejects", async () => {
+    navigationMocks.initialize.mockRejectedValueOnce(
+      new Error("Async plugin initialization failed"),
+    );
+
+    const response = await renderPath("/");
+    const html = await response.text();
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(html).toContain("Error: Async plugin initialization failed");
+  });
+
+  it("returns an HTML 500 when plugin navigation rejects", async () => {
+    navigationMocks.getNavigation.mockRejectedValueOnce(
+      new Error("Navigation failed"),
+    );
+
+    const response = await renderPath("/");
+    const html = await response.text();
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(html).toContain("Error: Navigation failed");
+    // A swallowed rejection would render as a still-pending query, i.e. a
+    // spinner-only page served with a 200 that prerendering accepts as valid.
+    expect(html).not.toContain("Loading navigation");
+  });
+
+  it("returns an HTML 500 when request setup fails", async () => {
+    const response = await handleRequest({
+      template,
+      request: new Request("http://localhost/"),
+      routes: [],
+    });
+    const html = await response.text();
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(html).toContain(
+      "You must provide a non-empty routes array to createStaticHandler",
+    );
   });
 
   it("serves a Markdown representation from the canonical URL", async () => {

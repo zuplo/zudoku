@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import type { UserProfile } from "../../authentication/state.js";
+import type { ZudokuContext } from "../../core/ZudokuContext.js";
 
 export type SSRAuthState = {
   accessToken?: string;
@@ -11,6 +12,7 @@ export type RenderContextValue = {
   status: number;
   bypassProtection: boolean;
   ssrAuth?: SSRAuthState;
+  zudokuContext?: ZudokuContext;
 };
 
 export const RenderContext = createContext<RenderContextValue>({

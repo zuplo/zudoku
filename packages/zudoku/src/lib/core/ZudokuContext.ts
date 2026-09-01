@@ -268,8 +268,11 @@ export class ZudokuContext {
 
   // Skip plugins for unauthed users on protected paths. Plugins often load
   // protected resources inside getNavigation; that work would leak.
-  getPluginNavigation = async (path: string): Promise<Navigation> => {
-    if (this.shouldSkipNavigationForProtected(path)) return [];
+  getPluginNavigation = async (
+    path: string,
+    isAuthenticated?: boolean,
+  ): Promise<Navigation> => {
+    if (this.shouldSkipNavigationForProtected(path, isAuthenticated)) return [];
     const navigations = await Promise.all(
       this.plugins
         .filter(isNavigationPlugin)
@@ -279,15 +282,42 @@ export class ZudokuContext {
     return navigations.flatMap((nav) => nav ?? []);
   };
 
-  private shouldSkipNavigationForProtected(path: string): boolean {
+  getPluginNavigationQueryOptions = (
+    path: string,
+    isAuthenticated: boolean,
+  ) => {
+    const hasPluginNavigation = this.plugins.some(
+      (plugin) => isNavigationPlugin(plugin) && plugin.getNavigation,
+    );
+    const shouldLoadNavigation =
+      hasPluginNavigation &&
+      !this.shouldSkipNavigationForProtected(path, isAuthenticated);
+
+    return {
+      enabled: shouldLoadNavigation,
+      initialData: shouldLoadNavigation ? undefined : [],
+      queryFn: () => this.getPluginNavigation(path, isAuthenticated),
+      queryKey: ["plugin-navigation", path, isAuthenticated] as const,
+      // Navigation comes from static build-time sources, so it never changes at
+      // runtime in production. In dev, recompute on mount so an HMR schema swap
+      // doesn't leave a stale sidebar.
+      staleTime: import.meta.env.DEV ? 0 : undefined,
+    };
+  };
+
+  private shouldSkipNavigationForProtected(
+    path: string,
+    isAuthenticated?: boolean,
+  ): boolean {
     const patterns = Object.keys(this.protectedRoutes ?? {});
     if (patterns.length === 0) return false;
     if (!matchesAnyProtectedPattern(patterns, path)) return false;
     // Server: per-request ssrAuth. Client: live zustand state.
     const isAuthed =
-      typeof window === "undefined"
+      isAuthenticated ??
+      (typeof window === "undefined"
         ? !!this.ssrAuth?.profile
-        : this.getAuthState().isAuthenticated;
+        : this.getAuthState().isAuthenticated);
     return !isAuthed;
   }
 

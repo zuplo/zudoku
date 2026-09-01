@@ -1,5 +1,5 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { useContext, useEffect, useMemo, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { use, useContext, useEffect, useMemo, useRef } from "react";
 import { matchPath, useLocation } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { useAuthState } from "../../authentication/state.js";
@@ -7,6 +7,7 @@ import { applyRules } from "../../navigation/applyRules.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS, useCache } from "../cache.js";
 import { getItemPath, traverseNavigation } from "../navigation/utils.js";
+import { RenderContext } from "./RenderContext.js";
 import { ZudokuReactContext } from "./ZudokuReactContext.js";
 
 export const useZudoku = () => {
@@ -56,7 +57,7 @@ const extractAllPaths = (items: NavigationItem[]) => {
 
 export const useCurrentNavigation = () => {
   const context = useZudoku();
-  const { getPluginNavigation, navigation, navigationRules } = context;
+  const { navigation, navigationRules } = context;
   const location = useLocation();
   const loggedWarnings = useRef(new Set<string>());
 
@@ -69,14 +70,18 @@ export const useCurrentNavigation = () => {
     }
   });
 
-  const { isAuthenticated } = useAuthState();
-  const { data } = useSuspenseQuery({
-    queryFn: () => getPluginNavigation(pathname),
-    queryKey: ["plugin-navigation", pathname, isAuthenticated],
-    // Navigation comes from static build-time sources, so it never changes at
-    // runtime in production. In dev, recompute on mount so an HMR schema swap doesn't leave a stale sidebar.
-    staleTime: import.meta.env.DEV ? 0 : undefined,
-  });
+  const authState = useAuthState();
+  const renderContext = use(RenderContext);
+  const isAuthenticated =
+    typeof window === "undefined"
+      ? !!renderContext.ssrAuth?.profile
+      : authState.isAuthenticated;
+  const query = useQuery(
+    context.getPluginNavigationQueryOptions(pathname, isAuthenticated),
+  );
+  if (query.isError && query.data === undefined) throw query.error;
+
+  const data = query.data ?? [];
 
   let topNavItem = navItem;
 
@@ -130,5 +135,6 @@ export const useCurrentNavigation = () => {
   return {
     navigation: finalNavigation,
     topNavItem,
+    isPending: query.isPending,
   };
 };

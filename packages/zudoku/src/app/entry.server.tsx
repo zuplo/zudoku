@@ -20,6 +20,7 @@ import { cachedVerifyAccessToken } from "../lib/authentication/verify-cache.js";
 import { BootstrapStatic } from "../lib/components/Bootstrap.js";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
 import type { SSRAuthState } from "../lib/components/context/RenderContext.js";
+import { ZudokuContext } from "../lib/core/ZudokuContext.js";
 import { ServerError } from "../lib/errors/ServerError.js";
 import { buildManifest } from "../lib/manifest.js";
 import { highlighterPromise } from "../lib/shiki.js";
@@ -27,13 +28,15 @@ import {
   addAcceptToVary,
   negotiateContentType,
 } from "../lib/util/contentNegotiation.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import {
   getMarkdownAlternateLink,
   getMarkdownNotFound,
   resolveDocumentationRoutePath,
 } from "../lib/util/markdown-representation.js";
+import { stripBasePath } from "../lib/util/url.js";
 import type { Adapter } from "./adapter.js";
-import { getRoutesByConfig } from "./main.js";
+import { convertZudokuConfigToOptions, getRoutesByConfig } from "./main.js";
 import { protectChunks as rawProtectChunks } from "./protectChunks.js";
 import { getSsrCacheControl } from "./ssrCacheControl.js";
 import { wrapProtectedRoutesForRender } from "./wrapProtectedRoutes.js";
@@ -111,80 +114,109 @@ export const handleRequest = async ({
   basePath?: string;
   bypassProtection?: boolean;
 }): Promise<Response> => {
-  const ssrAuth = await resolveSsrAuth(request);
-
-  // No-op lazy() on protected subtrees for unauthed requests so loaders
-  // don't run for a 401 render. A bypass render (search-index pass) keeps the
-  // real content so Pagefind can index protected routes.
-  const effectiveRoutes = wrapProtectedRoutesForRender(
-    routes,
-    config.protectedRoutes,
-    {
-      isAuthenticated: !!ssrAuth?.profile,
-      bypassProtection,
-      basePath,
-    },
-  );
-
-  const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {
-    basename: basePath,
-  });
-  const queryClient = new QueryClient();
-
-  const context = await query(request);
-
-  if (context instanceof Response) {
-    if ([301, 302, 303, 307, 308].includes(context.status)) {
-      return new Response(null, {
-        status: context.status,
-        headers: { Location: context.headers.get("Location") ?? "" },
-      });
-    }
-    throw context;
-  }
-
-  let status = 200;
-  if (context.errors) {
-    const firstError = Object.values(context.errors).find(isRouteErrorResponse);
-    if (firstError?.status) {
-      status = firstError.status;
-    }
-  }
-
-  const routePath = resolveDocumentationRoutePath(request.url, basePath);
-  const markdownContent = routePath ? markdownFiles[routePath] : undefined;
-  const matchesNotFoundRoute = context.matches.at(-1)?.route.path === "*";
-  const isRepresentationRequest =
-    request.method === "GET" || request.method === "HEAD";
-  const mayNegotiateMarkdown =
-    isRepresentationRequest &&
-    config.docs?.publishMarkdown !== false &&
-    config.docs?.contentNegotiation !== false &&
-    (markdownContent !== undefined || matchesNotFoundRoute);
-  const negotiatedType = mayNegotiateMarkdown
-    ? negotiateContentType(request.headers.get("Accept"))
-    : "text/html";
-
-  const router = createStaticRouter(dataRoutes, context);
-  const head = createHead();
-  const renderContext = {
-    status: 200,
-    bypassProtection: bypassProtection ?? false,
-    ssrAuth,
-  };
-
-  const App = (
-    <BootstrapStatic
-      router={router}
-      context={context}
-      queryClient={queryClient}
-      head={head}
-      bypassProtection={bypassProtection}
-      renderContext={renderContext}
-    />
-  );
-
   try {
+    const ssrAuth = await resolveSsrAuth(request);
+
+    // No-op lazy() on protected subtrees for unauthed requests so loaders
+    // don't run for a 401 render. A bypass render (search-index pass) keeps the
+    // real content so Pagefind can index protected routes.
+    const effectiveRoutes = wrapProtectedRoutesForRender(
+      routes,
+      config.protectedRoutes,
+      {
+        isAuthenticated: !!ssrAuth?.profile,
+        bypassProtection,
+        basePath,
+      },
+    );
+
+    const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {
+      basename: basePath,
+    });
+    const queryClient = new QueryClient();
+
+    const context = await query(request);
+
+    if (context instanceof Response) {
+      if ([301, 302, 303, 307, 308].includes(context.status)) {
+        return new Response(null, {
+          status: context.status,
+          headers: { Location: context.headers.get("Location") ?? "" },
+        });
+      }
+      throw context;
+    }
+
+    let status = 200;
+    if (context.errors) {
+      const firstError = Object.values(context.errors).find(
+        isRouteErrorResponse,
+      );
+      if (firstError?.status) {
+        status = firstError.status;
+      }
+    }
+
+    const routePath = resolveDocumentationRoutePath(request.url, basePath);
+    const markdownContent = routePath ? markdownFiles[routePath] : undefined;
+    const matchesNotFoundRoute = context.matches.at(-1)?.route.path === "*";
+    const isRepresentationRequest =
+      request.method === "GET" || request.method === "HEAD";
+    const mayNegotiateMarkdown =
+      isRepresentationRequest &&
+      config.docs?.publishMarkdown !== false &&
+      config.docs?.contentNegotiation !== false &&
+      (markdownContent !== undefined || matchesNotFoundRoute);
+    const negotiatedType = mayNegotiateMarkdown
+      ? negotiateContentType(request.headers.get("Accept"))
+      : "text/html";
+    const zudokuContext = new ZudokuContext(
+      convertZudokuConfigToOptions(config),
+      queryClient,
+      import.meta.env,
+      ssrAuth,
+    );
+    if (zudokuContext.initialize) {
+      await zudokuContext.initialize;
+    }
+
+    const pathname = joinUrl(
+      stripBasePath(new URL(request.url).pathname, basePath),
+    );
+    const navigationQuery = zudokuContext.getPluginNavigationQueryOptions(
+      pathname,
+      !!ssrAuth?.profile,
+    );
+    // `fetchQuery`, not `prefetchQuery`: a rejected `getNavigation` has to reach
+    // the fatal-error boundary below. `prefetchQuery` swallows it, and the
+    // render then reads the failed, data-less query as pending, which would
+    // emit a spinner-only page with a 200 instead of the established 500.
+    // `fetchQuery` ignores `enabled`, so honor it here to keep skipping
+    // navigation for unauthed users on protected paths.
+    if (navigationQuery.enabled) {
+      await queryClient.fetchQuery(navigationQuery);
+    }
+
+    const router = createStaticRouter(dataRoutes, context);
+    const head = createHead();
+    const renderContext = {
+      status: 200,
+      bypassProtection: bypassProtection ?? false,
+      ssrAuth,
+      zudokuContext,
+    };
+
+    const App = (
+      <BootstrapStatic
+        router={router}
+        context={context}
+        queryClient={queryClient}
+        head={head}
+        bypassProtection={bypassProtection}
+        renderContext={renderContext}
+      />
+    );
+
     const reactStream = await renderToReadableStream(App, {
       onError(error) {
         status = 500;

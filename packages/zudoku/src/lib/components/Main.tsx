@@ -7,13 +7,22 @@ import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { Navigation } from "./navigation/Navigation.js";
 import { SidebarToggle } from "./navigation/SidebarToggle.js";
 import { Slot } from "./Slot.js";
+import { Spinner } from "./Spinner.js";
 
 export const Main = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { navigation, topNavItem } = useCurrentNavigation();
+  const { navigation, topNavItem, isPending } = useCurrentNavigation();
   const hasNavigation = navigation.length > 0;
   const isNavigating = useNavigation().state === "loading";
   const { options } = useZudoku();
+
+  if (isPending) {
+    return (
+      <div className="col-span-full row-span-full grid place-items-center">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <Drawer

@@ -65,13 +65,17 @@ const ZudokuInner = memo(
 
     const renderContext = use(RenderContext);
     if (typeof window === "undefined") {
-      // Fresh context per SSR request to avoid leaking
-      zudokuContext = new ZudokuContext(
-        props,
-        queryClient,
-        env,
-        renderContext.ssrAuth,
-      );
+      // Fresh context per SSR request to avoid leaking. `entry.server` prepares
+      // one from the resolved config so navigation can be prefetched before the
+      // render; when it does, that context wins over `props`. Both are built
+      // from `convertZudokuConfigToOptions`, so they agree in a real app — but
+      // rendering `<Zudoku>` with hand-written props under `handleRequest` will
+      // take plugins from the config for navigation and auth while
+      // `PluginHeads`, `SlotProvider`, and the MDX components below still read
+      // `props`.
+      zudokuContext =
+        renderContext.zudokuContext ??
+        new ZudokuContext(props, queryClient, env, renderContext.ssrAuth);
     } else {
       zudokuContext ??= new ZudokuContext(props, queryClient, env);
     }
