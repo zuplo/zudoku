@@ -276,7 +276,7 @@ Available options:
   schemes section on the info page, and the Authorize dialog in the playground). Disabled by default
   (`true`). Set to `false` to enable security scheme support
 - `disableMcpAuthInstructions`: Hide the authentication instructions on
-  [MCP server](../guides/mcp-servers.md) endpoints. The MCP card normally derives a credential
+  [MCP server](/docs/guides/mcp-servers) endpoints. The MCP card normally derives a credential
   header from the operation's security scheme and shows it in every install snippet. Set to `true`
   to render the server as unauthenticated instead — no header snippets and no "replace
   `YOUR_API_KEY`" steps
