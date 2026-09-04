@@ -94,14 +94,14 @@ jobs:
 
       - name: Coverage report comment (with comparison)
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key != ''
-        uses: davelosert/vitest-coverage-report-action@8b157684c6a6b259b97d45e72b44242865c0f6a5 # v2
+        uses: davelosert/vitest-coverage-report-action@c4bbc33a89b7ace0e63d35f1f7d4bcee31155a73 # v2
         with:
           json-summary-path: coverage/coverage-summary.json
           json-summary-compare-path: coverage-base/coverage-summary.json
 
       - name: Coverage report comment
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key == ''
-        uses: davelosert/vitest-coverage-report-action@8b157684c6a6b259b97d45e72b44242865c0f6a5 # v2
+        uses: davelosert/vitest-coverage-report-action@c4bbc33a89b7ace0e63d35f1f7d4bcee31155a73 # v2
         with:
           json-summary-path: coverage/coverage-summary.json
 
