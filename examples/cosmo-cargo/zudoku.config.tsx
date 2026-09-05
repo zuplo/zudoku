@@ -144,7 +144,19 @@ const config: ZudokuConfig = {
   },
   docs: {
     publishMarkdown: true,
-    llms: { llmsTxt: true, llmsTxtFull: true },
+    contentNegotiation: true,
+    llms: {
+      llmsTxt: true,
+      llmsTxtFull: true,
+      title: "Cosmo Cargo Developer Platform",
+      description:
+        "Build interstellar shipping, tracking, fleet, and cargo automation with Cosmo Cargo APIs.",
+      instructions:
+        "Use these docs when planning, booking, tracking, or automating interstellar cargo shipments. Start with the documentation guide for platform concepts, then use the published Shipment API specification at /openapi.json for callable operations and typed request and response schemas.",
+    },
+  },
+  sitemap: {
+    siteUrl: "https://cosmocargo.dev",
   },
   site: {
     sidebar: {
@@ -489,6 +501,10 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/shipments.json",
       path: "api-shipments",
+      publish: {
+        path: "/openapi.json",
+        agentQuality: true,
+      },
       categories: [
         { label: "Core", tags: ["Shipments", "Logistics"] },
         { label: "Logistics", tags: ["Shipments"] },

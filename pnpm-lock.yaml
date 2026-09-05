@@ -433,6 +433,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
+      react-hook-form:
+        specifier: ^7.83.0
+        version: 7.83.0(react@19.2.8)
       zudoku:
         specifier: workspace:*
         version: link:../../../packages/zudoku
