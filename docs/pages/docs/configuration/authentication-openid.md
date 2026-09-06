@@ -1,8 +1,7 @@
 ---
 title: OpenID Connect (OIDC)
 sidebar_label: OpenID Connect
-description:
-  Configure any OpenID Connect compliant identity provider (Okta, Keycloak, Authentik, etc.) as the
+description: Configure any OpenID Connect compliant identity provider (Okta, Keycloak, Authentik, etc.) as the
   authentication provider for Zudoku.
 ---
 
@@ -91,6 +90,29 @@ enable **Standard Flow** (Authorization Code).
 You can confirm your issuer URL is correct by opening `<issuer>/.well-known/openid-configuration` in
 a browser. It should return a JSON document listing `authorization_endpoint`, `token_endpoint`,
 `userinfo_endpoint`, and `jwks_uri`.
+
+## Custom Authorization Parameters
+
+You can pass extra query parameters to the IdP's `/authorize` endpoint on every sign-in and sign-up
+request using `authorizationParams`, or forward dynamic values from the page URL with
+`forwardAuthorizationParams`:
+
+```typescript title="zudoku.config.ts"
+{
+  authentication: {
+    type: "openid",
+    clientId: "<your-client-id>",
+    issuer: "<the-issuer-url>",
+    authorizationParams: {
+      ui_locales: "fr-CA",
+    },
+    forwardAuthorizationParams: ["tenant_id"],
+  },
+}
+```
+
+For the full guide on static parameters, URL forwarding, precedence rules, and multi-tenant recipes,
+see [Customizing the OAuth Authorize Request](./authentication-authorization-params.md).
 
 ## Customizing Sign-up
 
