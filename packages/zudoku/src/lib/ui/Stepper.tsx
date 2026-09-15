@@ -17,12 +17,12 @@ const Stepper = ({ children }: StepperProps) => {
   const { observe, unobserve } = useViewportAnchor();
 
   useEffect(() => {
-    // Anchors sit on the title paragraph of a loose step — always its first
-    // element — or on the `<li>` of a tight one. Highlighting them keeps the
-    // toc in sync while scrolling. Ids further into a step body belong to
-    // something else (a heading, say) that registers itself.
+    // `rehype-extract-toc-with-jsx` marks the step anchors the toc renders —
+    // on the title paragraph of a loose step, or on the `<li>` of a tight one.
+    // Steps too deep to appear in the toc keep their id but aren't marked, so
+    // scrolling through them can't blank out the enclosing heading.
     const anchors = ref.current?.querySelectorAll<HTMLElement>(
-      ":scope > ol > li[id], :scope > ol > li > p[id]:first-child",
+      ":scope > ol > li[data-toc-anchor], :scope > ol > li > p[data-toc-anchor]",
     );
 
     if (!anchors?.length) return;

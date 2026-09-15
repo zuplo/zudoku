@@ -1,15 +1,19 @@
 import { compile, nodeTypes } from "@mdx-js/mdx";
 import rehypeRaw from "rehype-raw";
 import rehypeSlug from "rehype-slug";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { describe, expect, it } from "vitest";
 import rehypeExtractTocWithJsx, {
   type Toc,
   type TocEntry,
 } from "./rehype-extract-toc-with-jsx.js";
 
-const getToc = async (mdx: string): Promise<Toc> => {
-  const file = await compile(mdx, {
+// Mirrors the plugins `plugin-mdx` puts around the toc extractor.
+const compileMdx = async (mdx: string) =>
+  await compile(mdx, {
     format: "mdx",
+    remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
     rehypePlugins: [
       [rehypeRaw, { passThrough: nodeTypes }],
       rehypeSlug,
@@ -17,8 +21,8 @@ const getToc = async (mdx: string): Promise<Toc> => {
     ],
   });
 
-  return file.data.toc ?? [];
-};
+const getToc = async (mdx: string): Promise<Toc> =>
+  (await compileMdx(mdx)).data.toc ?? [];
 
 /** Flattens to `depth:text` lines so nesting is readable in assertions. */
 const outline = (entries: TocEntry[]): string[] =>
@@ -309,6 +313,95 @@ ${STEPS}
       "3:A heading buried in a step",
       "2:Book Your Shipment",
     ]);
+  });
+
+  it("pins the depth even when the first step is skipped", async () => {
+    // The skipped step buries a heading, which must not push the titled steps
+    // that follow it past the depth the toc renders.
+    const toc = await getToc(`# Shipping Process
+
+<Stepper>
+
+1. \`\`\`sh
+   pnpm deploy
+   \`\`\`
+
+   ### A heading buried in a skipped step
+
+1. **Book Your Shipment**
+
+   Pick a lane.
+
+</Stepper>
+`);
+
+    expect(outline(toc)).toEqual([
+      "1:Shipping Process",
+      "3:A heading buried in a skipped step",
+      "2:Book Your Shipment",
+    ]);
+  });
+
+  it("does not reuse the id the frontmatter title will claim", async () => {
+    // `MdxPage` renders the frontmatter title as an `h1` with a slugified id,
+    // which never appears in this tree.
+    const toc = await getToc(`---
+title: Prepare Your Cargo
+---
+
+<Stepper>
+
+1. **Prepare Your Cargo**
+
+   Vacuum-seal everything.
+
+</Stepper>
+`);
+
+    const [step] = toc;
+
+    expect(step?.text).toBe("Prepare Your Cargo");
+    expect(step?.id).toBe("prepare-your-cargo-2");
+  });
+});
+
+describe("stepper anchors in the compiled output", () => {
+  const compileToJs = async (mdx: string) => String(await compileMdx(mdx));
+
+  it("marks the steps the toc renders so Stepper can track them", async () => {
+    const out = await compileToJs(`# Shipping Process
+
+<Stepper>
+
+1. **Prepare Your Cargo**
+
+   Vacuum-seal everything.
+
+</Stepper>
+`);
+
+    expect(out).toContain('id: "prepare-your-cargo"');
+    expect(out).toContain('"data-toc-anchor"');
+  });
+
+  it("leaves steps too deep for the toc linkable but unmarked", async () => {
+    const out = await compileToJs(`# Shipping Process
+
+## Booking a Freighter
+
+### Manifest Details
+
+<Stepper>
+
+1. **Prepare Your Cargo**
+
+   Vacuum-seal everything.
+
+</Stepper>
+`);
+
+    expect(out).toContain('id: "prepare-your-cargo"');
+    expect(out).not.toContain("data-toc-anchor");
   });
 
   it("leaves documents without a stepper untouched", async () => {
