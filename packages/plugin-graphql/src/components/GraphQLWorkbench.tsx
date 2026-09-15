@@ -269,6 +269,10 @@ const GraphQLWorkbenchDrawer = ({
   const endpoint =
     resolveEndpointUrl(configuredEndpoint, gatewayUrl) ??
     (gatewayUrl ? joinUrl(gatewayUrl, "graphql") : undefined);
+  // GraphiQL rebuilds its schema whenever this object's identity changes, which
+  // resets the docs explorer to the root page. Typing in the query or variables
+  // editor re-renders this component, so the wrapper has to stay stable.
+  const introspection = useMemo(() => ({ __schema: schema }), [schema]);
   const drawerRef = useRef<HTMLDivElement>(null);
   const hasOpened = useRef(false);
   if (state !== "collapsed") hasOpened.current = true;
@@ -366,9 +370,7 @@ const GraphQLWorkbenchDrawer = ({
           // The full-width container must let clicks through its empty side
           // gutters; interactive children re-enable pointer events.
           "pointer-events-none fixed",
-          isDetached
-            ? "inset-4 z-50 mx-auto my-auto h-[80vh] max-h-[calc(100vh-3rem)] max-w-7xl"
-            : "inset-x-0 bottom-0 z-40 px-3",
+          isDetached ? "inset-4 z-50" : "inset-x-0 bottom-0 z-40 px-3",
           !isResizing && !isDetached && "transition-[height] duration-200",
         )}
         style={isDetached ? undefined : { height: drawerHeight }}
@@ -423,7 +425,7 @@ const GraphQLWorkbenchDrawer = ({
         <div
           className={cn(
             "pointer-events-auto mx-auto flex h-full flex-col overflow-hidden border bg-background shadow-2xl",
-            isDetached ? "max-w-7xl rounded-lg" : "max-w-6xl rounded-t-lg",
+            isDetached ? "rounded-lg" : "max-w-6xl rounded-t-lg",
           )}
           style={{ viewTransitionName: "graphql-workbench" }}
         >
@@ -485,7 +487,7 @@ const GraphQLWorkbenchDrawer = ({
             <GraphQLPlayground
               endpoint={endpoint}
               headers={options.playground?.headers}
-              schema={{ __schema: schema }}
+              schema={introspection}
               operation={operation}
               onOperationChange={updateWorkbenchOperation}
               className="h-full min-h-0 rounded-none border-0"
