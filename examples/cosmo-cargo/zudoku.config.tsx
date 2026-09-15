@@ -328,6 +328,8 @@ const config: ZudokuConfig = {
           label: "Space Operations",
           items: [
             "shipping-process",
+            "warp-lane-tutorial",
+            "cargo-manifest-guide",
             "tracking",
             "quantum-express",
             "ship-states",
