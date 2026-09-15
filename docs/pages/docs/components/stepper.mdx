@@ -41,7 +41,7 @@ Wrap Markdown lists with the `Stepper` component to create a vertical stepper li
   </div>
   <div className="flex-1">
 
-    <Stepper>
+    <Stepper toc={false}>
 
 1. **Identify the Problem**
 1. **Plan Your Project**
@@ -51,6 +51,39 @@ Wrap Markdown lists with the `Stepper` component to create a vertical stepper li
 </Stepper>
   </div>
 </div>
+
+## Table of Contents
+
+Steps are anchorable and show up in the "On this page" sidebar, nested one level below the heading
+they follow:
+
+| Stepper placed after…                 | Steps appear as…                                |
+| ------------------------------------- | ----------------------------------------------- |
+| The page title (or no heading at all) | Top-level entries                               |
+| An `h2`                               | Sub-entries of that `h2`                        |
+| An `h3` or deeper                     | Nothing — the same cut-off an `h4` heading hits |
+
+That means a page that is nothing but a stepper (a tutorial, for example) gets a usable table of
+contents automatically, while a stepper buried inside an existing section doesn't flood it.
+
+Each step's title — the first line of the list item — becomes the entry. A step whose first block
+isn't text (a code block, for instance) is skipped.
+
+### Opting out
+
+Set `toc={false}` for a stepper that is a quick checklist rather than a section of the page worth
+linking to:
+
+<!-- prettier-ignore -->
+```tsx
+<Stepper toc={false}>
+
+1. **Find the reason code**
+1. **Look up the code**
+1. **Re-file**
+
+</Stepper>
+```
 
 ## Advanced Example
 
