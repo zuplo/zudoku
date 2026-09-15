@@ -17,10 +17,12 @@ const Stepper = ({ children }: StepperProps) => {
   const { observe, unobserve } = useViewportAnchor();
 
   useEffect(() => {
-    // Anchors sit on the title paragraph of a loose step, or on the `<li>` of a
-    // tight one. Highlighting them keeps the toc in sync while scrolling.
+    // Anchors sit on the title paragraph of a loose step — always its first
+    // element — or on the `<li>` of a tight one. Highlighting them keeps the
+    // toc in sync while scrolling. Ids further into a step body belong to
+    // something else (a heading, say) that registers itself.
     const anchors = ref.current?.querySelectorAll<HTMLElement>(
-      ":scope > ol > li[id], :scope > ol > li > p[id]",
+      ":scope > ol > li[id], :scope > ol > li > p[id]:first-child",
     );
 
     if (!anchors?.length) return;
