@@ -5,6 +5,7 @@ import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { matchesAnyProtectedPattern } from "../../lib/util/url.js";
+import { createCriticalCssProcessor } from "../critical-css.js";
 import type { WorkerResult } from "./prerender.js";
 
 type EntryServer = typeof import("../../app/entry.server.js");
@@ -15,12 +16,19 @@ export type StaticWorkerData = {
   serverConfigPath: string;
   entryServerPath: string;
   writeRedirects: boolean;
+  criticalCss: boolean;
 };
 
 export type WorkerData = { urlPath: string };
 
-const { template, distDir, serverConfigPath, entryServerPath, writeRedirects } =
-  Piscina.workerData as StaticWorkerData;
+const {
+  template,
+  distDir,
+  serverConfigPath,
+  entryServerPath,
+  writeRedirects,
+  criticalCss,
+} = Piscina.workerData as StaticWorkerData;
 
 const server: EntryServer = await import(entryServerPath);
 // Same order as the loader: transform the raw bundle config, then parse.
@@ -29,6 +37,16 @@ const config = validateConfig(await runPluginTransformConfig(rawConfig));
 
 const routes = server.getRoutesByConfig(config);
 const { basePath } = config;
+// Critical CSS depends on the rendered DOM, so it belongs in the SSG worker.
+// SSR keeps its streaming response and regular blocking stylesheet unchanged.
+const processCriticalCss = criticalCss
+  ? createCriticalCssProcessor({
+      assetsPath: distDir,
+      publicPath: config.cdnUrl?.base
+        ? joinUrl(config.cdnUrl.base, basePath)
+        : joinUrl(basePath),
+    })
+  : async (html: string) => html;
 
 const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;
@@ -77,6 +95,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
 
   // Get HTML content for file write
   const fileContent = response.body ? await response.text() : "";
+  const optimizedFileContent = await processCriticalCss(fileContent);
 
   // For protected routes, do a second render with protection bypassed so the
   // search index gets the full content instead of the gated sign-in page. The
@@ -106,7 +125,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
 
   // Write the file
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
-  await fs.writeFile(outputPath, fileContent);
+  await fs.writeFile(outputPath, optimizedFileContent);
 
   return {
     outputPath,

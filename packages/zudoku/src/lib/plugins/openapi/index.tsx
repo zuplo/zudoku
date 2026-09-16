@@ -6,8 +6,10 @@ import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
 import { createQuery } from "./client/useCreateQuery.js";
-import type { GetNavigationOperationsQuery as GetNavigationOperationsQueryResult } from "./graphql/graphql.js";
-import { graphql } from "./graphql/index.js";
+import {
+  GetNavigationOperationsDocument,
+  type GetNavigationOperationsQuery as GetNavigationOperationsQueryResult,
+} from "./graphql/graphql.js";
 import { MCP_CATALOG, type OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { buildTagCategories } from "./util/buildTagCategories.js";
@@ -21,32 +23,7 @@ const PlaygroundDialog = lazy(() =>
   })),
 );
 
-export const GetNavigationOperationsQuery = graphql(`
-  query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
-    schema(input: $input, type: $type) {
-      extensions
-      description
-      tags {
-        slug
-        name
-        extensions
-        operations {
-          summary
-          slug
-          method
-          operationId
-          path
-          isMcpServer
-        }
-      }
-      components {
-        schemas {
-          __typename
-        }
-      }
-    }
-  }
-`);
+export const GetNavigationOperationsQuery = GetNavigationOperationsDocument;
 
 export type OperationResult =
   GetNavigationOperationsQueryResult["schema"]["tags"][number]["operations"][number];

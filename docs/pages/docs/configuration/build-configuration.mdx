@@ -128,6 +128,9 @@ Configuration for the prerendering process that generates static HTML pages duri
 
 - `workers`: Number of parallel workers to use for prerendering. Defaults to 80% of available CPU
   cores.
+- `criticalCss`: Inline the CSS needed for each statically generated page and defer the full
+  stylesheet. This is opt-in because the generated inline styles require an appropriate Content
+  Security Policy.
 
 ```ts
 import os from "node:os";
@@ -135,6 +138,7 @@ import os from "node:os";
 export default {
   prerender: {
     workers: 4, // Fixed number of workers
+    criticalCss: true,
   },
 };
 

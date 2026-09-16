@@ -31,6 +31,9 @@ const HeaderNavItemSchema = z.union([
 
 export const HeaderNavigationSchema = z.array(HeaderNavItemSchema);
 
+// Kept for backwards compatibility with consumers importing the validator
+// helper directly. Runtime UI code uses the schema-free equivalent in lib so
+// this export does not pull Zod into the browser entry path.
 export const isHeaderNavGroup = (
   item: HeaderNavItem | HeaderNavLinkItem | HeaderNavGroup,
 ): item is HeaderNavGroup => "items" in item;
