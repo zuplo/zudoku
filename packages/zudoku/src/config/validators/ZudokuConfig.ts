@@ -93,6 +93,7 @@ const ApiOptionsSchema = z
     supportedLanguages: z.array(LanguageOption),
     disablePlayground: z.boolean(),
     disableSidecar: z.boolean(),
+    disableRequestBox: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
