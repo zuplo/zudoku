@@ -186,6 +186,12 @@ export const handleRequest = async ({
 
   try {
     const reactStream = await renderToReadableStream(App, {
+      // The stream is only read after `allReady`, so nothing is streamed
+      // progressively anyway. Without this, React outlines completed Suspense
+      // boundaries larger than the default chunk size (12.8 kB) into a hidden
+      // segment swapped in by an inline script, leaving only the fallback
+      // visible to clients that don't run JS (AI crawlers, curl, reader mode).
+      progressiveChunkSize: Number.MAX_SAFE_INTEGER,
       onError(error) {
         status = 500;
         logger.error(`SSR Error (${request.method} ${request.url}):`, error);
