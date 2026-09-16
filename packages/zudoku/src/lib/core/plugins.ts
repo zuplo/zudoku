@@ -49,6 +49,12 @@ export interface SearchProviderPlugin {
     onOpen: () => void;
     onClose: () => void;
   }) => React.JSX.Element | null;
+  /**
+   * Start loading whatever `renderSearch` needs, without opening it. Called
+   * when the page goes idle and again on hover/focus of a search trigger, so
+   * a lazily loaded search UI is warm by the time it is opened.
+   */
+  preloadSearch?: () => void;
 }
 
 export interface ProfileMenuPlugin {
