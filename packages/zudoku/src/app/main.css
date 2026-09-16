@@ -1,3 +1,5 @@
+@import "./default-fonts.css";
+
 /* @vite-plugin-inject defaultTheme */
 @import "tailwindcss" source("..");
 @import "tw-animate-css";
