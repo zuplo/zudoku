@@ -139,6 +139,7 @@ export const prerender = async ({
       serverConfigPath,
       entryServerPath,
       writeRedirects,
+      criticalCss: buildConfig?.prerender?.criticalCss === true,
     } satisfies StaticWorkerData,
   });
 

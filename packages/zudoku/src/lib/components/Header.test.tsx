@@ -4,6 +4,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render as testRender, screen } from "@testing-library/react";
+import { createHead, UnheadProvider } from "@unhead/react/client";
 import type { ComponentProps } from "react";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -33,14 +34,16 @@ const render = async (options: Partial<ZudokuContextOptions> = {}) => {
     [
       {
         element: (
-          <QueryClientProvider client={queryClient}>
-            <ZudokuProvider context={context}>
-              <SlotProvider slots={{}}>
-                <Header />
-                <Outlet />
-              </SlotProvider>
-            </ZudokuProvider>
-          </QueryClientProvider>
+          <UnheadProvider head={createHead()}>
+            <QueryClientProvider client={queryClient}>
+              <ZudokuProvider context={context}>
+                <SlotProvider slots={{}}>
+                  <Header />
+                  <Outlet />
+                </SlotProvider>
+              </ZudokuProvider>
+            </QueryClientProvider>
+          </UnheadProvider>
         ),
         children: [{ path: "*", element: null }],
       },
@@ -73,6 +76,26 @@ describe("Header", () => {
 
       const props = getLogoLinkProps();
       expect(props?.reloadDocument).toBe(true);
+    });
+
+    it("renders intrinsic dimensions for configured logos", async () => {
+      await render({
+        site: {
+          title: "Test Site",
+          logo: {
+            src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
+            width: 120,
+            height: 32,
+          },
+        },
+      });
+
+      const logos = screen.getAllByRole("img", { name: "Test Site" });
+      expect(logos).toHaveLength(2);
+      for (const logo of logos) {
+        expect(logo).toHaveAttribute("width", "120");
+        expect(logo).toHaveAttribute("height", "32");
+      }
     });
   });
 
