@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -6,6 +7,7 @@ import { createBuilder, type Rolldown } from "vite";
 import { ZuploEnv } from "../app/env.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { type ConfigWithMeta, loadZudokuConfig } from "../config/loader.js";
+import { getBuildConfig } from "../config/validators/BuildSchema.js";
 import { getIssuer } from "../lib/auth/issuer.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -22,6 +24,79 @@ import {
 } from "./protected/build.js";
 
 const DIST_DIR = "dist";
+
+const DEFERRED_STYLESHEET_ACTIVATOR =
+  'requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const link of document.querySelectorAll("link[data-zudoku-deferred-stylesheet]")){link.rel="stylesheet";link.removeAttribute("data-zudoku-deferred-stylesheet")}}));';
+
+const writeDeferredStylesheetActivator = async (clientOutDir: string) => {
+  const hash = createHash("sha256")
+    .update(DEFERRED_STYLESHEET_ACTIVATOR)
+    .digest("hex")
+    .slice(0, 8);
+  const fileName = `assets/zudoku-critical-css-${hash}.js`;
+
+  await writeFile(
+    path.join(clientOutDir, fileName),
+    DEFERRED_STYLESHEET_ACTIVATOR,
+    "utf-8",
+  );
+
+  return fileName;
+};
+
+type CssBuildOutput = {
+  fileName: string;
+  imports?: string[];
+  isEntry?: boolean;
+  type: string;
+  viteMetadata?: { importedCss: Set<string> };
+};
+
+export const getEagerCssEntries = (output: readonly CssBuildOutput[]) => {
+  const cssAssets = output
+    .filter((item) => item.fileName.endsWith(".css"))
+    .map((item) => item.fileName);
+  const chunksByFileName = new Map(
+    output
+      .filter((item) => item.type === "chunk")
+      .map((item) => [item.fileName, item]),
+  );
+  const entryChunk = output.find(
+    (item) => item.type === "chunk" && item.isEntry,
+  );
+
+  if (!entryChunk) return cssAssets;
+
+  const referencedCss = new Set(
+    output.flatMap((item) => [...(item.viteMetadata?.importedCss ?? [])]),
+  );
+
+  // Build adapters that do not expose Vite's chunk metadata retain the
+  // previous behavior of linking every emitted stylesheet.
+  if (referencedCss.size === 0) return cssAssets;
+
+  const eagerCss = new Set<string>();
+  const visitedChunks = new Set<string>();
+  const visitChunk = (fileName: string) => {
+    if (visitedChunks.has(fileName)) return;
+    visitedChunks.add(fileName);
+
+    const chunk = chunksByFileName.get(fileName);
+    if (!chunk) return;
+
+    chunk.viteMetadata?.importedCss.forEach((css) => eagerCss.add(css));
+    chunk.imports?.forEach(visitChunk);
+  };
+
+  visitChunk(entryChunk.fileName);
+
+  // Keep CSS imported by the eager entry graph and standalone/global assets
+  // emitted by custom plugins. Only CSS owned exclusively by lazy chunks is
+  // omitted from the initial document.
+  return cssAssets.filter(
+    (css) => eagerCss.has(css) || !referencedCss.has(css),
+  );
+};
 
 export type SSRAdapter = "node" | "cloudflare" | "vercel" | "lambda";
 
@@ -78,21 +153,33 @@ export async function runBuild(options: BuildOptions) {
   invariant(clientOutDir, "Client build outDir is missing");
   invariant(serverOutDir, "Server build outDir is missing");
 
-  const jsEntry = clientResult.output.find(
+  const jsEntryChunk = clientResult.output.find(
     (o) => "isEntry" in o && o.isEntry,
-  )?.fileName;
+  );
+  const jsEntry = jsEntryChunk?.fileName;
 
-  const cssEntries = clientResult.output
-    .filter((o) => o.fileName.endsWith(".css"))
-    .map((o) => o.fileName);
+  const cssEntries = getEagerCssEntries(clientResult.output);
 
-  if (!jsEntry || cssEntries.length === 0) {
-    throw new Error("Build failed. No js or css assets found");
+  if (!jsEntry) {
+    throw new Error("Build failed. No js entry chunk found");
   }
+
+  if (cssEntries.length === 0) {
+    throw new Error(
+      "Build failed. No stylesheet reachable from the eager entry chunk was found",
+    );
+  }
+
+  const buildConfig = ssr ? undefined : await getBuildConfig();
+  const deferredStylesheetActivator =
+    buildConfig?.prerender?.criticalCss === true
+      ? joinUrl(base, await writeDeferredStylesheetActivator(clientOutDir))
+      : undefined;
 
   const html = getBuildHtml({
     jsEntry: joinUrl(base, jsEntry),
     cssEntries: cssEntries.map((css) => joinUrl(base, css)),
+    deferredStylesheetActivator,
     dir: config.site?.dir,
   });
 
