@@ -91,6 +91,8 @@
     "@apidevtools/json-schema-ref-parser": "15.5.0",
     "@base-ui/react": "^1.6.0",
     "@envelop/core": "5.5.1",
+    "@fontsource-variable/geist": "5.3.0",
+    "@fontsource-variable/geist-mono": "5.3.0",
     "@graphiql/toolkit": "0.12.1",
     "@graphql-typed-document-node/core": "3.2.0",
     "@hono/node-server": "2.0.11",

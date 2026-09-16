@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/DropdownMenu.js";
 import { cn } from "../util/cn.js";
+import { getIntrinsicImageDimensions } from "../util/getIntrinsicImageDimensions.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
 import { useZudoku } from "./context/ZudokuContext.js";
@@ -176,13 +177,27 @@ export const Header = memo(function HeaderInner() {
                       <img
                         src={logoLightSrc}
                         alt={site.logo.alt ?? site.title}
-                        style={{ width: site.logo.width }}
+                        {...getIntrinsicImageDimensions(
+                          site.logo.width,
+                          site.logo.height,
+                        )}
+                        style={{
+                          width: site.logo.width,
+                          height: site.logo.height,
+                        }}
                         className="max-h-(--top-header-height) dark:hidden"
                       />
                       <img
                         src={logoDarkSrc}
                         alt={site.logo.alt ?? site.title}
-                        style={{ width: site.logo.width }}
+                        {...getIntrinsicImageDimensions(
+                          site.logo.width,
+                          site.logo.height,
+                        )}
+                        style={{
+                          width: site.logo.width,
+                          height: site.logo.height,
+                        }}
                         className="max-h-(--top-header-height) hidden dark:block"
                       />
                     </>

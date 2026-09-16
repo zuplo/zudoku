@@ -59,6 +59,9 @@ describe("Markdown", () => {
     const { container } = await renderMarkdown("Hello **world**");
 
     expect(container.querySelector("strong")?.textContent).toBe("world");
+    expect(
+      container.querySelector("[data-zudoku-runtime-shiki]"),
+    ).not.toBeNull();
   });
 
   it("renders custom PascalCase components from MDXProvider", async () => {
