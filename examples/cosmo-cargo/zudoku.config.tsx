@@ -167,6 +167,7 @@ const config: ZudokuConfig = {
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       width: 165,
+      height: 24,
       alt: "Cosmo Cargo Inc.",
     },
     banner: {
@@ -236,6 +237,7 @@ const config: ZudokuConfig = {
         },
         alt: "Zudoku by Zuplo",
         width: 120,
+        height: 24,
       },
     },
   },

@@ -1,3 +1,6 @@
+@import "@fontsource-variable/geist/wght.css";
+@import "@fontsource-variable/geist-mono/wght.css";
+
 /* @vite-plugin-inject defaultTheme */
 @import "tailwindcss" source("..");
 @import "tw-animate-css";
