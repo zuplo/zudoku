@@ -318,6 +318,83 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
     });
   });
 
+  describe("custom claims", () => {
+    const setupProfile = (
+      userInfo: Record<string, unknown>,
+      claims?: Record<string, unknown>,
+    ) => {
+      const provider = createProvider();
+
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: {
+          sub: "user-1",
+          email: "user@example.com",
+          emailVerified: true,
+          name: "Test",
+          pictureUrl: undefined,
+        },
+        providerData: {
+          type: "openid",
+          accessToken: FAKE_ACCESS_TOKEN,
+          expiresOn: new Date(Date.now() + 3600_000),
+          tokenType: "bearer",
+          claims: claims as oauth.IDToken | undefined,
+        } satisfies OpenIdProviderData,
+      });
+
+      vi.mocked(oauth.userInfoRequest).mockResolvedValue(
+        Response.json(userInfo),
+      );
+
+      return provider;
+    };
+
+    test("merges custom claims that exist only on the ID token", async () => {
+      const provider = setupProfile(
+        { sub: "user-1", email: "user@example.com", name: "Test" },
+        {
+          sub: "user-1",
+          nonce: "should-be-dropped",
+          "https://acme.com/subscription": { plan: "pro" },
+        },
+      );
+
+      await provider.refreshUserProfile();
+
+      const profile = useAuthState.getState().profile;
+      expect(profile?.["https://acme.com/subscription"]).toEqual({
+        plan: "pro",
+      });
+      expect(profile?.nonce).toBeUndefined();
+    });
+
+    test("userinfo wins over the ID token on overlapping claims", async () => {
+      const provider = setupProfile(
+        { sub: "user-1", email: "user@example.com", plan: "pro" },
+        { sub: "user-1", plan: "free" },
+      );
+
+      await provider.refreshUserProfile();
+
+      expect(useAuthState.getState().profile?.plan).toBe("pro");
+    });
+
+    test("a claim cannot overwrite the identity fields", async () => {
+      const provider = setupProfile(
+        { sub: "user-1", email: "user@example.com", name: "Test" },
+        { sub: "attacker", emailVerified: true, pictureUrl: "https://evil" },
+      );
+
+      await provider.refreshUserProfile();
+
+      const profile = useAuthState.getState().profile;
+      expect(profile?.sub).toBe("user-1");
+      expect(profile?.pictureUrl).toBeUndefined();
+    });
+  });
+
   describe("signUp config", () => {
     const mockLocation = () => {
       const loc = {
@@ -815,16 +892,51 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         }),
       );
       const result = await provider.verifyAccessToken(TOKEN_WITH_EXP);
+      // Raw userinfo claims are kept alongside the normalized fields, matching
+      // what the client-side profile has always contained.
       expect(result).toEqual({
         profile: {
           sub: "u1",
           email: "u@example.com",
           name: "U",
           emailVerified: true,
+          email_verified: true,
           pictureUrl: "https://example.com/p.png",
+          picture: "https://example.com/p.png",
         },
         expiresAt: 1_700_000_000,
       });
+    });
+
+    test("merges custom claims from the access token and userinfo", async () => {
+      // payload: {"sub":"u1","exp":1700000000,"https://acme.com/plan":"pro"}
+      const payload = Buffer.from(
+        JSON.stringify({
+          sub: "u1",
+          exp: 1_700_000_000,
+          "https://acme.com/plan": "pro",
+        }),
+      ).toString("base64url");
+      const token = `eyJhbGciOiJub25lIn0.${payload}.sig`;
+
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockResolvedValueOnce(
+        Response.json({
+          sub: "u1",
+          email: "u@example.com",
+          department: "engineering",
+        }),
+      );
+
+      const result = await provider.verifyAccessToken(token);
+
+      expect(result?.profile).toMatchObject({
+        sub: "u1",
+        "https://acme.com/plan": "pro",
+        department: "engineering",
+      });
+      expect(result?.profile.exp).toBeUndefined();
+      expect(result?.expiresAt).toBe(1_700_000_000);
     });
 
     test("returns null when userInfo responds not-ok", async () => {

@@ -19,6 +19,7 @@ import type {
   FooterSchema,
 } from "../../config/validators/ZudokuConfig.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
+import type { GetUserMetadata } from "../authentication/metadata.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { SSRAuthState } from "../components/context/RenderContext.js";
 import type { SlotType } from "../components/context/SlotProvider.js";
@@ -118,6 +119,12 @@ export type ZudokuContextOptions = {
   header?: HeaderConfig;
   aiAssistants?: AiAssistantsConfig;
   authentication?: AuthenticationPlugin;
+  /**
+   * Loads custom user data into `profile.metadata` after sign-in. Held here
+   * rather than on the provider so every provider gets it — Clerk's provider
+   * is a plain object, not a `CoreAuthenticationPlugin` subclass.
+   */
+  getUserMetadata?: GetUserMetadata;
   navigation?: Navigation;
   navigationRules?: ResolvedNavigationRule[];
   plugins?: ZudokuPlugin[];
@@ -157,6 +164,7 @@ export class ZudokuContext {
   public navigation: Navigation;
   public navigationRules: ResolvedNavigationRule[];
   public readonly authentication?: AuthenticationPlugin;
+  public readonly getUserMetadata?: GetUserMetadata;
   public readonly getAuthState: () => AuthState;
   public readonly queryClient: QueryClient;
   public readonly options: ZudokuContextOptions;
@@ -183,6 +191,7 @@ export class ZudokuContext {
     this.notFoundPage = options.site?.notFoundPage;
     this.plugins = options.plugins ?? [];
     this.authentication = this.plugins.find(isAuthenticationPlugin);
+    this.getUserMetadata = options.getUserMetadata;
     this.getAuthState = useAuthState.getState;
 
     const pluginsToInit = this.plugins.filter(needsInitialization);

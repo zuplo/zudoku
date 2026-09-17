@@ -124,6 +124,33 @@ but lack permission. This is useful for building role-based or attribute-based a
 }
 ```
 
+## Gating on Custom User Data
+
+Checks can read [custom user data](./authentication.md#custom-user-data) loaded by `getMetadata`,
+for example to gate pages on a subscription tier:
+
+```typescript title="zudoku.config.ts"
+{
+  protectedRoutes: {
+    "/enterprise/*": ({ auth, reasonCode }) => {
+      if (!auth.isAuthenticated) return reasonCode.UNAUTHORIZED;
+
+      return auth.profile?.metadata?.plan === "enterprise"
+        ? true
+        : reasonCode.FORBIDDEN;
+    },
+  },
+}
+```
+
+While the metadata is still loading, the route is treated as undecided rather than denied — nothing
+is rendered until the check can be evaluated against a resolved value. If loading fails, the check
+runs with `metadata` left `undefined` and the route therefore fails closed.
+
+Because the metadata is only loaded in the browser, a check that depends on it cannot be evaluated
+during server-side rendering. Route protection at the bundle level (see below) is unaffected: it is
+based on whether the user is authenticated, not on the result of the check.
+
 ## Navigation Blocking
 
 When a user navigates to a route that returns `false` or `UNAUTHORIZED`, navigation is intercepted

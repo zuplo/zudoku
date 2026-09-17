@@ -70,6 +70,8 @@ const createWrapper = ({
     isAuthenticated: false,
     isPending: false,
     isAuthEnabled: false,
+    isMetadataPending: false,
+    refreshMetadata: vi.fn(),
     disableSignUp: false,
     profile: null,
     providerData: null,
@@ -505,6 +507,78 @@ describe("RouteGuard", () => {
 
       // Should render content because path doesn't match exactly
       expect(screen.getByText("Public")).toBeInTheDocument();
+    });
+  });
+
+  describe("pending user metadata", () => {
+    const PROFILE = {
+      sub: "123",
+      email: "user@example.com",
+      emailVerified: false,
+      name: "Test",
+      pictureUrl: undefined,
+    };
+
+    const planCheck = ({ auth }: CallbackContext): ProtectedRouteResult =>
+      auth.profile?.metadata?.plan === "pro" ? true : REASON_CODES.FORBIDDEN;
+
+    it("does not render ForbiddenPage while metadata is still loading", async () => {
+      await render(
+        { path: "/vip", element: <div>VIP Content</div> },
+        {
+          initialPath: "/vip",
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: true,
+            isMetadataPending: true,
+            profile: PROFILE,
+          },
+          protectedRoutes: { "/vip": planCheck },
+        },
+      );
+
+      expect(screen.queryByText("Access Denied")).not.toBeInTheDocument();
+      expect(screen.queryByText("VIP Content")).not.toBeInTheDocument();
+    });
+
+    it("renders the route once metadata grants access", async () => {
+      await render(
+        { path: "/vip", element: <div>VIP Content</div> },
+        {
+          initialPath: "/vip",
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: true,
+            isMetadataPending: false,
+            profile: { ...PROFILE, metadata: { plan: "pro" } },
+          },
+          protectedRoutes: { "/vip": planCheck },
+        },
+      );
+
+      expect(screen.getByText("VIP Content")).toBeInTheDocument();
+    });
+
+    it("fails closed once metadata has settled without granting access", async () => {
+      await render(
+        { path: "/vip", element: <div>VIP Content</div> },
+        {
+          initialPath: "/vip",
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: true,
+            isMetadataPending: false,
+            profile: PROFILE,
+          },
+          protectedRoutes: { "/vip": planCheck },
+        },
+      );
+
+      expect(screen.getByText("Access Denied")).toBeInTheDocument();
+      expect(screen.queryByText("VIP Content")).not.toBeInTheDocument();
     });
   });
 

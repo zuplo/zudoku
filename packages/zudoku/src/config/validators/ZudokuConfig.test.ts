@@ -15,6 +15,60 @@ describe("validateConfig", () => {
     process.env.NODE_ENV = originalNodeEnv;
   });
 
+  describe("authentication.getMetadata", () => {
+    // One minimal config per provider, so the shared-field spread can't
+    // silently miss a member of the discriminated union.
+    const providers = [
+      { type: "auth0" as const, clientId: "c", domain: "example.auth0.com" },
+      { type: "clerk" as const, clerkPubKey: "pk_test_abc" },
+      {
+        type: "openid" as const,
+        clientId: "c",
+        issuer: "https://issuer.example.com",
+      },
+      { type: "entra" as const, clientId: "c" },
+      {
+        type: "azureb2c" as const,
+        clientId: "c",
+        tenantName: "t",
+        policyName: "p",
+        issuer: "https://issuer.example.com",
+      },
+      { type: "supabase" as const, supabaseUrl: "u", supabaseKey: "k" },
+      {
+        type: "firebase" as const,
+        apiKey: "k",
+        authDomain: "d",
+        projectId: "p",
+        appId: "a",
+      },
+    ];
+
+    it.each(providers)("survives validation for $type", (provider) => {
+      const getMetadata = vi.fn();
+
+      const result = validateConfig({
+        authentication: { ...provider, getMetadata },
+      });
+
+      expect(mockConsoleLog).not.toHaveBeenCalled();
+      expect(result.authentication?.getMetadata).toBe(getMetadata);
+    });
+
+    it("rejects a non-function getMetadata", () => {
+      validateConfig({
+        authentication: {
+          type: "auth0" as const,
+          clientId: "c",
+          domain: "example.auth0.com",
+          getMetadata: "https://api.example.com/me",
+        },
+      });
+
+      expect(mockConsoleLog).toHaveBeenCalled();
+    });
+  });
+
   it("should validate auth0 domain format correctly", () => {
     const configWithValidAuth0 = {
       authentication: {

@@ -5,6 +5,7 @@ import { isValidElement } from "react";
 import type { BundledLanguage, BundledTheme } from "shiki";
 import { z } from "zod";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
+import type { GetUserMetadata } from "../../lib/authentication/metadata.js";
 import type { AuthState } from "../../lib/authentication/state.js";
 import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
@@ -475,9 +476,30 @@ const SignUpOpenIdSchema = z.union([
     .strict(),
 ]);
 
+/**
+ * Fields every authentication provider accepts. Spread into each member of the
+ * discriminated union below (`signUp` stays per-provider: its shape differs).
+ */
+const SharedAuthenticationFields = {
+  redirectToAfterSignUp: z.string().optional(),
+  redirectToAfterSignIn: z.string().optional(),
+  redirectToAfterSignOut: z.string().optional(),
+  disableSignUp: z.boolean().optional(),
+  /**
+   * Loads custom user data after sign-in into `profile.metadata`.
+   *
+   * Runs in the browser, so it must not close over secrets. Authorize the
+   * request with the supplied `signRequest` instead.
+   */
+  getMetadata: z
+    .custom<GetUserMetadata>((val) => typeof val === "function")
+    .optional(),
+};
+
 const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
+    ...SharedAuthenticationFields,
     clerkPubKey: z
       .custom<`pk_test_${string}` | `pk_live_${string}`>()
       .refine((val) => /^pk_(test|live)_\w+$/.test(val), {
@@ -486,14 +508,11 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     // No default: an absent template must stay absent so Clerk issues its
     // standard session token instead of requesting a non-existent template.
     jwtTemplateName: z.string().optional(),
-    redirectToAfterSignUp: z.string().optional(),
-    redirectToAfterSignIn: z.string().optional(),
-    redirectToAfterSignOut: z.string().optional(),
     signUp: SignUpUrlSchema.optional(),
-    disableSignUp: z.boolean().optional(),
   }),
   z.object({
     type: z.literal("firebase"),
+    ...SharedAuthenticationFields,
     apiKey: z.string(),
     authDomain: z.string(),
     projectId: z.string(),
@@ -516,30 +535,24 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
         ]),
       )
       .optional(),
-    disableSignUp: z.boolean().optional(),
-    redirectToAfterSignUp: z.string().optional(),
-    redirectToAfterSignIn: z.string().optional(),
-    redirectToAfterSignOut: z.string().optional(),
     signUp: SignUpUrlSchema.optional(),
   }),
   z.object({
     type: z.literal("openid"),
+    ...SharedAuthenticationFields,
     basePath: z.string().optional(),
     clientId: z.string(),
     issuer: z.string(),
     audience: z.string().optional(),
     scopes: z.array(z.string()).optional(),
     allowInsecureRequests: z.boolean().optional(),
-    redirectToAfterSignUp: z.string().optional(),
-    redirectToAfterSignIn: z.string().optional(),
-    redirectToAfterSignOut: z.string().optional(),
     signUp: SignUpOpenIdSchema.optional(),
-    disableSignUp: z.boolean().optional(),
     authorizationParams: z.record(z.string(), z.string()).optional(),
     forwardAuthorizationParams: z.array(z.string()).optional(),
   }),
   z.object({
     type: z.literal("entra"),
+    ...SharedAuthenticationFields,
     basePath: z.string().optional(),
     clientId: z.string(),
     // Tenant id or one of Entra's multi-tenant authorities
@@ -549,31 +562,25 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     issuer: z.string().optional(),
     audience: z.string().optional(),
     scopes: z.array(z.string()).optional(),
-    redirectToAfterSignUp: z.string().optional(),
-    redirectToAfterSignIn: z.string().optional(),
-    redirectToAfterSignOut: z.string().optional(),
     signUp: SignUpOpenIdSchema.optional(),
-    disableSignUp: z.boolean().optional(),
     authorizationParams: z.record(z.string(), z.string()).optional(),
     forwardAuthorizationParams: z.array(z.string()).optional(),
   }),
   z.object({
     type: z.literal("azureb2c"),
+    ...SharedAuthenticationFields,
     basePath: z.string().optional(),
     clientId: z.string(),
     tenantName: z.string(),
     policyName: z.string(),
     scopes: z.array(z.string()).optional(),
     issuer: z.string(),
-    redirectToAfterSignUp: z.string().optional(),
-    redirectToAfterSignIn: z.string().optional(),
-    redirectToAfterSignOut: z.string().optional(),
     signUp: SignUpUrlSchema.optional(),
-    disableSignUp: z.boolean().optional(),
   }),
 
   z.object({
     type: z.literal("auth0"),
+    ...SharedAuthenticationFields,
     clientId: z.string(),
     domain: z.string().refine(
       (val) => {
@@ -592,9 +599,6 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     ),
     audience: z.string().optional(),
     scopes: z.array(z.string()).optional(),
-    redirectToAfterSignUp: z.string().optional(),
-    redirectToAfterSignIn: z.string().optional(),
-    redirectToAfterSignOut: z.string().optional(),
     authorizationParams: z.record(z.string(), z.string()).optional(),
     forwardAuthorizationParams: z.array(z.string()).optional(),
     options: z
@@ -604,20 +608,16 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
       })
       .optional(),
     signUp: SignUpOpenIdSchema.optional(),
-    disableSignUp: z.boolean().optional(),
   }),
   z.object({
     type: z.literal("supabase"),
+    ...SharedAuthenticationFields,
     basePath: z.string().optional(),
     supabaseUrl: z.string(),
     supabaseKey: z.string(),
     provider: z.string().optional(),
     providers: z.array(z.string()).optional(),
     onlyThirdPartyProviders: z.boolean().optional(),
-    disableSignUp: z.boolean().optional(),
-    redirectToAfterSignUp: z.string().optional(),
-    redirectToAfterSignIn: z.string().optional(),
-    redirectToAfterSignOut: z.string().optional(),
     signUp: SignUpUrlSchema.optional(),
   }),
 ]);

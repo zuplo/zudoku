@@ -159,6 +159,8 @@ export const RouteGuard = () => {
 
   const blocker = useBlocker(({ nextLocation }) => {
     if (shouldBypass) return false;
+    // Metadata may decide the outcome; don't prompt for login before it lands.
+    if (auth.isMetadataPending) return false;
     const check = getAuthCheck(nextLocation.pathname);
     if (!check) return false;
     const result = check(authCheckContext);
@@ -168,7 +170,7 @@ export const RouteGuard = () => {
   const isBlocked = blocker.state === "blocked";
 
   useEffect(() => {
-    if (!auth.isAuthenticated || !isBlocked) return;
+    if (!auth.isAuthenticated || !isBlocked || auth.isMetadataPending) return;
     const check = getAuthCheck(blocker.location.pathname);
     if (!check) {
       blocker.proceed?.();
@@ -181,11 +183,18 @@ export const RouteGuard = () => {
     }
   }, [
     auth.isAuthenticated,
+    auth.isMetadataPending,
     isBlocked,
     blocker,
     authCheckContext,
     getAuthCheck,
   ]);
+
+  // A check that reads `profile.metadata` would see `undefined` until
+  // `getMetadata` resolves, so the route is undecided rather than denied —
+  // otherwise every metadata-gated page renders a 403 on first paint (and in
+  // the server-rendered HTML, where metadata never loads at all).
+  if (isProtectedRoute && auth.isMetadataPending) return null;
 
   if (isForbidden) return <ForbiddenPage />;
   if (shouldBypass) return <BypassRoute isProtectedRoute={isProtectedRoute} />;
