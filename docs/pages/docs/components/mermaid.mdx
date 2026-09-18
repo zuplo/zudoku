@@ -25,6 +25,14 @@ Install the `mermaid` peer dependency:
 npm install mermaid
 ```
 
+:::warning{title="Mermaid must be declared in your project"}
+
+Mermaid is only bundled when it's listed in your project's `package.json`. Without it, the diagram
+renders an "install mermaid" message instead. In a monorepo, declare it in the package that builds
+your docs (the nearest `package.json`), not just the workspace root.
+
+:::
+
 ## Import
 
 ```tsx
