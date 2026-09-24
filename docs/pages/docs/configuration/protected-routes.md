@@ -45,7 +45,15 @@ authenticated to access these routes.
 
 When a user tries to access a protected route, a login dialog will appear prompting them to sign in
 or register. After logging in, they are automatically redirected back to the route they were trying
-to access.
+to access, including its query string.
+
+:::caution{title="redirectToAfterSignIn takes precedence"}
+
+If `authentication.redirectToAfterSignIn` is set, users are sent to that path after every sign-in
+instead of the page they were trying to open. Leave it unset to return users to where they were. See
+[Redirects after sign-in](./authentication.md#redirects-after-sign-in).
+
+:::
 
 ## Object Format
 
