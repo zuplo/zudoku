@@ -235,9 +235,9 @@ return users to where they were. `redirectToAfterSignUp` behaves the same way fo
 }
 ```
 
-This applies to Auth0, Clerk, OpenID, Microsoft Entra ID, and Azure B2C. For Supabase,
-`redirectToAfterSignIn` only applies to social (OAuth) sign-in, where it replaces the default of
-your site's root. Firebase does not currently use `redirectToAfterSignIn`.
+This applies to all built-in providers. For Supabase social (OAuth) sign-in, the return URL must
+also be allowed under **Redirect URLs** in your Supabase project's authentication settings, and a
+return URL on another origin falls back to your site's root.
 
 ## Protected Routes
 
