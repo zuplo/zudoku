@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import * as oauth from "oauth4webapi";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { OAuthAuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
 import auth0Auth from "./auth0.js";
 import {
@@ -9,9 +8,8 @@ import {
   type OpenIdProviderData,
 } from "./openid.js";
 
-// Fake JWT-shaped tokens (3 dot-separated segments) to pass the opaque token check
-const FAKE_ACCESS_TOKEN = "header.payload.signature";
-const FAKE_NEW_ACCESS_TOKEN = "header.newpayload.signature";
+const OPAQUE_ACCESS_TOKEN = "opaque-access-token";
+const NEW_OPAQUE_ACCESS_TOKEN = "new-opaque-access-token";
 
 vi.mock("oauth4webapi", async (importOriginal) => {
   const actual = await importOriginal<typeof oauth>();
@@ -88,7 +86,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
 
       const hasIdToken = claimsEmailVerified !== undefined;
       vi.mocked(oauth.processAuthorizationCodeResponse).mockResolvedValue({
-        access_token: FAKE_ACCESS_TOKEN,
+        access_token: OPAQUE_ACCESS_TOKEN,
         token_type: "bearer",
         expires_in: 3600,
         id_token: hasIdToken ? "test-id-token" : undefined,
@@ -154,34 +152,24 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       expect(useAuthState.getState().profile?.emailVerified).toBe(true);
     });
 
-    test("throws OAuthAuthorizationError for opaque access tokens", async () => {
-      const provider = createProvider();
-
-      Object.defineProperty(window, "location", {
-        configurable: true,
-        value: new URL(
-          "http://localhost/oauth/callback?state=test-state&code=test-code",
-        ),
+    test("accepts opaque access tokens regardless of configured audience", async () => {
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        audience: "https://api.example.com",
       });
+      setupCallback({});
 
-      sessionStorage.setItem("oauth-state", "test-state");
-      sessionStorage.setItem("code-verifier", "test-verifier");
+      await expect(provider.handleCallback()).resolves.toBeDefined();
 
-      vi.mocked(oauth.validateAuthResponse).mockReturnValue(
-        new URLSearchParams({ code: "test-code" }),
-      );
-      vi.mocked(oauth.authorizationCodeGrantRequest).mockResolvedValue(
-        new Response(),
-      );
-      vi.mocked(oauth.processAuthorizationCodeResponse).mockResolvedValue({
-        access_token: "opaque-token-without-dots",
-        token_type: "bearer",
-        expires_in: 3600,
-      } as oauth.TokenEndpointResponse);
-
-      await expect(provider.handleCallback()).rejects.toThrow(
-        OAuthAuthorizationError,
-      );
+      expect(useAuthState.getState()).toMatchObject({
+        isAuthenticated: true,
+        providerData: {
+          type: "openid",
+          accessToken: OPAQUE_ACCESS_TOKEN,
+        },
+      });
     });
 
     test("emailVerified defaults to false when absent everywhere", async () => {
@@ -231,7 +219,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         },
         providerData: {
           type: "openid",
-          accessToken: FAKE_ACCESS_TOKEN,
+          accessToken: OPAQUE_ACCESS_TOKEN,
           expiresOn: new Date(Date.now() + 3600_000),
           tokenType: "bearer",
           claims: undefined,
@@ -724,7 +712,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         },
         providerData: {
           type: "openid",
-          accessToken: FAKE_ACCESS_TOKEN,
+          accessToken: OPAQUE_ACCESS_TOKEN,
           expiresOn: new Date(Date.now() - 1000),
           refreshToken: "test-refresh-token",
           tokenType: "bearer",
@@ -736,7 +724,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         new Response(),
       );
       vi.mocked(oauth.processRefreshTokenResponse).mockResolvedValue({
-        access_token: FAKE_NEW_ACCESS_TOKEN,
+        access_token: NEW_OPAQUE_ACCESS_TOKEN,
         token_type: "bearer",
         expires_in: 3600,
       } as oauth.TokenEndpointResponse);
@@ -775,7 +763,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         },
         providerData: {
           type: "openid",
-          accessToken: FAKE_ACCESS_TOKEN,
+          accessToken: OPAQUE_ACCESS_TOKEN,
           expiresOn: new Date(Date.now() + 3600_000),
           tokenType: "bearer",
           claims: undefined,
@@ -865,7 +853,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       },
       providerData: {
         type: undefined,
-        accessToken: FAKE_ACCESS_TOKEN,
+        accessToken: OPAQUE_ACCESS_TOKEN,
         expiresOn: new Date(Date.now() - 1000),
         refreshToken: "test-refresh-token",
         tokenType: "bearer",
@@ -875,7 +863,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
 
     vi.mocked(oauth.refreshTokenGrantRequest).mockResolvedValue(new Response());
     vi.mocked(oauth.processRefreshTokenResponse).mockResolvedValue({
-      access_token: FAKE_NEW_ACCESS_TOKEN,
+      access_token: NEW_OPAQUE_ACCESS_TOKEN,
       token_type: "bearer",
       expires_in: 3600,
     } as oauth.TokenEndpointResponse);
