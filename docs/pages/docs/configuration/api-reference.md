@@ -251,6 +251,7 @@ const config = {
       ],
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
+      disableRequestBox: false, // Disable the request/code snippet box in the sidecar
       disableSecurity: true, // Disable security scheme display and playground auth (default)
       disableMcpAuthInstructions: false, // Hide auth steps in the MCP server card
       showVersionSelect: "if-available", // Control version selector visibility
@@ -272,6 +273,7 @@ Available options:
   identifier) and `label` (display name)
 - `disablePlayground`: Disable the interactive API playground globally
 - `disableSidecar`: Disable the sidecar panel completely
+- `disableRequestBox`: Disable the request/code snippet box in the sidecar globally
 - `disableSecurity`: Disable OpenAPI security scheme display (auth badges on operations, security
   schemes section on the info page, and the Authorize dialog in the playground). Disabled by default
   (`true`). Set to `false` to enable security scheme support
@@ -310,6 +312,7 @@ const config = {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
+      disableRequestBox: false, // Disable the request/code snippet box in the sidecar
       disableSecurity: true, // Disable security scheme display and playground auth (default)
       disableMcpAuthInstructions: false, // Hide auth steps in the MCP server card
       showVersionSelect: "if-available", // Control version selector visibility
@@ -399,7 +402,11 @@ different levels of your API documentation.
 ### Operations
 
 - `x-zudoku-playground-enabled`: Control playground visibility for an operation (default: `true`)
-- `x-explorer-enabled`: Alias for `x-zudoku-playground-enabled` for compatibility Example:
+- `x-explorer-enabled`: Alias for `x-zudoku-playground-enabled` for compatibility
+- `x-zudoku-request-box-enabled`: Control request/code snippet box visibility for an operation
+  (default: `true`)
+
+Example:
 
 ```json
 {
@@ -407,7 +414,8 @@ different levels of your API documentation.
     "/users": {
       "get": {
         "summary": "Get users",
-        "x-zudoku-playground-enabled": false // Disable playground for this operation
+        "x-zudoku-playground-enabled": false, // Disable playground for this operation
+        "x-zudoku-request-box-enabled": false // Disable request/code snippet box for this operation
       }
     }
   }
