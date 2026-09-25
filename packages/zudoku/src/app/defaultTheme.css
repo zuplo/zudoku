@@ -49,6 +49,37 @@
   --callout-zap: oklch(0.68 0.17 95);
   --callout-lock: oklch(0.52 0.06 230);
   --callout-megaphone: oklch(0.62 0.15 220);
+
+  /*
+   * Badge palette, shared by navigation badges and OpenAPI method labels.
+   * One token per color: the filled and text treatments are both derived from
+   * it in `main.css`, so overriding these seven re-colors every badge surface.
+   * Values are the Tailwind 400 shades the badges used to hardcode.
+   */
+  --badge-green: oklch(79.2% 0.209 151.711);
+  --badge-blue: oklch(74.6% 0.16 232.661);
+  --badge-yellow: oklch(85.2% 0.199 91.936);
+  --badge-red: oklch(70.4% 0.191 22.216);
+  --badge-purple: oklch(71.4% 0.203 305.504);
+  --badge-indigo: oklch(67.3% 0.182 276.935);
+  --badge-gray: oklch(70.7% 0.022 261.325);
+
+  /*
+   * How far each treatment is shaded toward `--badge-shade` (the dark end of
+   * the theme). A palette token is already the right color for a light-mode
+   * fill, so that stays at 100% and only the text treatment is darkened.
+   *
+   * The text mix is set by the hue that needs it most. At 50% every color
+   * clears WCAG AA (4.5:1) as label text on `--background` and `--sidebar`,
+   * and every hue beats what it replaced. The mix shades toward `--foreground`,
+   * so a theme with a lighter foreground lands lighter: 50% keeps the margin
+   * for one as light as `#262626` (yellow, the binding hue, holds ~4.5:1).
+   * Sites overriding the palette with lighter colors should lower this.
+   */
+  --badge-shade: var(--foreground);
+  --badge-fill-mix: 100%;
+  --badge-text-mix: 50%;
+  --badge-fill-foreground: var(--background);
 }
 
 .dark {
@@ -96,4 +127,16 @@
   --callout-zap: oklch(0.85 0.16 90);
   --callout-lock: oklch(0.7 0.06 230);
   --callout-megaphone: oklch(0.75 0.14 220);
+
+  /*
+   * On dark backgrounds the palette token is the readable text color, and the
+   * fill is shaded down into the background instead. 50% keeps chroma near the
+   * ~0.10-0.12 the old `-800` fills carried, so the colors stay separable by
+   * saturation and not hue alone, while `--badge-fill-foreground` still clears
+   * AA on every fill (5.83:1 at the worst hue, 4.95:1 on a lighter dark theme).
+   */
+  --badge-shade: var(--background);
+  --badge-fill-mix: 50%;
+  --badge-text-mix: 100%;
+  --badge-fill-foreground: oklch(0.985 0 0);
 }

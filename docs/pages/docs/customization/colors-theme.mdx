@@ -114,6 +114,57 @@ While shadcn/ui defines additional theme variables, Zudoku currently uses only t
 
 :::
 
+## Badge Colors
+
+Navigation badges and the HTTP method labels on OpenAPI pages share one palette of seven CSS
+variables. Both the filled and the text treatment are derived from the same token, so setting one
+variable re-colors every surface that uses that color, in both light and dark mode.
+
+| Variable         | Used for              |
+| ---------------- | --------------------- |
+| `--badge-green`  | `GET`                 |
+| `--badge-blue`   | `POST`                |
+| `--badge-yellow` | `PUT`                 |
+| `--badge-red`    | `DELETE`              |
+| `--badge-purple` | `PATCH`               |
+| `--badge-indigo` | `OPTIONS`, MCP badges |
+| `--badge-gray`   | `HEAD`, `TRACE`       |
+
+These are CSS variables rather than `theme` config keys, so set them through
+[`customCss`](#custom-css) or your own stylesheet:
+
+```ts title=zudoku.config.ts
+const config = {
+  theme: {
+    customCss: {
+      ":root": {
+        "--badge-green": "oklch(76% 0.18 160)",
+      },
+    },
+  },
+};
+```
+
+Give each token the _light, saturated_ shade of the color. Each treatment is produced by shading
+that token toward the dark end of the current theme, so the token itself is used directly as the
+light-mode fill and as the dark-mode label color, and the other treatments are derived from it.
+
+Badges also accept a `color` of `outline`, which renders from `--border` and `--foreground` instead
+of the palette.
+
+### Tuning the derivation
+
+Four more variables control how far each treatment is shaded. The defaults keep every color at WCAG
+AA as label text, so lower the mix values rather than raising them if you override the palette with
+lighter colors.
+
+| Variable                  | Light               | Dark                | Effect                               |
+| ------------------------- | ------------------- | ------------------- | ------------------------------------ |
+| `--badge-shade`           | `var(--foreground)` | `var(--background)` | What each treatment is shaded toward |
+| `--badge-fill-mix`        | `100%`              | `50%`               | Token retained in the filled badge   |
+| `--badge-text-mix`        | `50%`               | `100%`              | Token retained in label text         |
+| `--badge-fill-foreground` | `var(--background)` | `oklch(0.985 0 0)`  | Label color on a filled badge        |
+
 ## shadcn Registry Integration
 
 The easiest way to customize your theme is by using a Shadcn registry theme. For example you can use
