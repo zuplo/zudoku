@@ -338,10 +338,41 @@ SchemaTag.implement({
   }),
 });
 
+type ServerVariableData = {
+  name: string;
+  default: string;
+  enum?: string[];
+  description?: string;
+};
+
+const ServerVariableItem = builder
+  .objectRef<ServerVariableData>("ServerVariable")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      default: t.exposeString("default"),
+      enum: t.exposeStringList("enum", { nullable: true }),
+      description: t.exposeString("description", { nullable: true }),
+    }),
+  });
+
 const ServerItem = builder.objectRef<ServerObject>("Server").implement({
   fields: (t) => ({
     url: t.exposeString("url"),
+    // OAS 3.2+ `name`, intended for identifying a server independent of its
+    // (possibly templated/rich-text-described) `url`/`description`.
+    name: t.exposeString("name", { nullable: true }),
     description: t.exposeString("description", { nullable: true }),
+    variables: t.field({
+      type: [ServerVariableItem],
+      resolve: (parent) =>
+        Object.entries(parent.variables ?? {}).map(([name, variable]) => ({
+          name,
+          default: variable.default,
+          enum: variable.enum,
+          description: variable.description,
+        })),
+    }),
   }),
 });
 
