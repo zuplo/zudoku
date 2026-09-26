@@ -281,6 +281,7 @@ export class OpenIDAuthenticationProvider
       authServer,
       this.client,
       token,
+      this.oauthOptions,
     );
     if (!response.ok) return undefined;
     const userInfo = (await response.json()) as Record<string, unknown>;

@@ -28,11 +28,12 @@ Add the `authentication` property to your [Zudoku configuration](./overview.md):
 }
 ```
 
-| Option     | Required | Description                                                                                  |
-| ---------- | -------- | -------------------------------------------------------------------------------------------- |
-| `clientId` | Yes      | The OAuth client ID issued by your provider.                                                 |
-| `issuer`   | Yes      | The issuer URL. Zudoku discovers endpoints from `<issuer>/.well-known/openid-configuration`. |
-| `scopes`   | No       | Scopes to request. Defaults to `["openid", "profile", "email"]`.                             |
+| Option                  | Required | Description                                                                                                                                                 |
+| ----------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clientId`              | Yes      | The OAuth client ID issued by your provider.                                                                                                                |
+| `issuer`                | Yes      | The issuer URL. Zudoku discovers endpoints from `<issuer>/.well-known/openid-configuration`.                                                                |
+| `scopes`                | No       | Scopes to request. Defaults to `["openid", "profile", "email"]`.                                                                                            |
+| `allowInsecureRequests` | No       | Allow discovery and token requests against an `http://` issuer. Defaults to `false`. Intended only for local development — never enable this in production. |
 
 ## Provider Setup
 
@@ -125,6 +126,27 @@ After sign-in Zudoku calls the provider's
 [UserInfo endpoint](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo) and reads
 `name`, `email`, `picture`, and `email_verified` from the response. Map these claims in your
 provider if they are not emitted by default.
+
+## Local Development with an HTTP Issuer
+
+`oauth4webapi` (the library Zudoku uses under the hood) rejects issuers that don't use `https://` by
+default, since OIDC requires TLS in production. If you're running an identity provider locally over
+plain HTTP (e.g. a dockerized Keycloak on `http://localhost:9090`), set `allowInsecureRequests` to
+`true` so discovery and token requests are allowed to use `http://`:
+
+```typescript title="zudoku.config.ts"
+{
+  authentication: {
+    type: "openid",
+    clientId: "<your-client-id>",
+    issuer: "http://localhost:9090/auth/realms/<your-realm>",
+    allowInsecureRequests: true,
+  },
+}
+```
+
+Only enable this for local development. Never set `allowInsecureRequests` to `true` against a
+production issuer.
 
 ## Troubleshooting
 
