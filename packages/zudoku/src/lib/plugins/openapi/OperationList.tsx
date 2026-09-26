@@ -30,7 +30,14 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     extensions
     servers {
       url
+      name
       description
+      variables {
+        name
+        default
+        enum
+        description
+      }
     }
     parameters {
       name
@@ -145,6 +152,14 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
     schema(input: $input, type: $type) {
       servers {
         url
+        name
+        description
+        variables {
+          name
+          default
+          enum
+          description
+        }
       }
       description
       summary
@@ -192,7 +207,7 @@ export const OperationList = ({
     untagged,
   });
   const schema = useSuspenseQuery(query).data.schema;
-  const { selectedServer: globalSelectedServer } = useSelectedServer(
+  const { resolvedServer: globalSelectedServer } = useSelectedServer(
     schema.servers,
   );
   const title = schema.title;
