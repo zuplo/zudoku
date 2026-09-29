@@ -86,7 +86,11 @@ const toText = (value: SecurityCredentialValue | undefined) =>
   typeof value === "string" ? value : "";
 
 const toBasicCredentials = (value: SecurityCredentialValue | undefined) =>
-  typeof value === "object" ? value : EMPTY_BASIC_CREDENTIALS;
+  typeof value === "object" &&
+  typeof value.username === "string" &&
+  typeof value.password === "string"
+    ? value
+    : EMPTY_BASIC_CREDENTIALS;
 
 const httpScheme = (scheme: SecuritySchemeData) =>
   scheme.type === "http" ? scheme.scheme?.toLowerCase() : undefined;

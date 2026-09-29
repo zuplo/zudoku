@@ -53,6 +53,7 @@ const CredentialsEntry = ({ schemes }: { schemes: SecuritySchemeData[] }) => {
   const pendingSchemes = schemes.filter(
     (scheme) => !credentials[scheme.name]?.isAuthorized,
   );
+  const hasAnyAuthorized = pendingSchemes.length < schemes.length;
   const canAuthorize = pendingSchemes.every((scheme) =>
     isCredentialComplete(scheme, values[scheme.name]),
   );
@@ -92,10 +93,16 @@ const CredentialsEntry = ({ schemes }: { schemes: SecuritySchemeData[] }) => {
             </code>
           )}
         </div>
-        {isAuthorized && (
+        {hasAnyAuthorized && (
           <div className="flex items-center gap-2">
-            <CheckCircle2Icon size={14} className="text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Configured</span>
+            {isAuthorized && (
+              <>
+                <CheckCircle2Icon size={14} className="text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  Configured
+                </span>
+              </>
+            )}
             <Button
               variant="ghost"
               size="icon-xs"
