@@ -2,14 +2,15 @@ import { useMemo } from "react";
 import { GraphiQLViewer, type GraphiQLTab } from "../../../graphiql/index.js";
 import { useApiIdentitySelection } from "../../../hooks/useApiIdentitySelection.js";
 import {
+  securitySchemeNamesLabel,
   useIdentityStore,
   valueToIdentitySelection,
 } from "../../../hooks/useIdentityStore.js";
 import { useLatest } from "../../../util/useLatest.js";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 import {
-  applySecurityCredentials,
-  getSecurityQueryParams,
+  createAuthorizedRequest,
+  resolveSelectedRequirement,
   useSecurityCredentialsStore,
 } from "./securityCredentialsStore.js";
 
@@ -26,30 +27,23 @@ export type GraphiQLPanelProps = {
 const applySchemeAuth = (
   input: RequestInfo | URL,
   init: RequestInit | undefined,
-  schemeName: string,
+  schemeNames: string[],
   security: OperationSecurity | undefined,
 ): Request | undefined => {
-  const { credentials } = useSecurityCredentialsStore.getState();
-  const cred = credentials[schemeName];
-  const schemeInOperation = security?.some((req) =>
-    req.schemes.some((s) => s.scheme.name === schemeName),
-  );
-  if (!cred?.isAuthorized || !schemeInOperation) return;
-
-  const schemeCredentials = { [schemeName]: cred };
-  const url = new URL(
-    input instanceof Request ? input.url : input,
-    window.location.href,
-  );
-  for (const [name, value] of getSecurityQueryParams(
+  const selected = resolveSelectedRequirement(
     security,
-    schemeCredentials,
-  )) {
-    url.searchParams.set(name, value);
+    schemeNames,
+    useSecurityCredentialsStore.getState().credentials,
+  );
+  if (!selected) {
+    return;
   }
-  const request = new Request(url, input instanceof Request ? input : init);
-  applySecurityCredentials(request, security, schemeCredentials);
-  return request;
+
+  return createAuthorizedRequest(
+    new URL(input instanceof Request ? input.url : input, window.location.href),
+    input instanceof Request ? input : init,
+    selected,
+  );
 };
 
 export const GraphiQLPanel = ({
@@ -65,18 +59,12 @@ export const GraphiQLPanel = ({
   // The footer must only claim auth that `fetchFn` will actually apply, so
   // the scheme label uses the same guards as `applySchemeAuth`.
   const selection = valueToIdentitySelection(rememberedIdentity);
-  const schemeApplies =
+  const schemeLabel =
     selection.type === "scheme" &&
-    (credentials[selection.name]?.isAuthorized ?? false) &&
-    security?.some((req) =>
-      req.schemes.some((s) => s.scheme.name === selection.name),
-    );
-  const authLabel =
-    selection.type === "scheme"
-      ? schemeApplies
-        ? selection.name
-        : undefined
-      : selectedIdentity?.label;
+    resolveSelectedRequirement(security, selection.names, credentials)
+      ? securitySchemeNamesLabel(selection.names)
+      : undefined;
+  const authLabel = schemeLabel ?? selectedIdentity?.label;
 
   // The selection is read at request time so a change takes effect without
   // recreating the fetcher. Security schemes are handled here; API identities
@@ -91,7 +79,7 @@ export const GraphiQLPanel = ({
         const request = applySchemeAuth(
           input,
           init,
-          selection.name,
+          selection.names,
           latestSecurity.current,
         );
         return request ? fetch(request) : fetch(input, init);
