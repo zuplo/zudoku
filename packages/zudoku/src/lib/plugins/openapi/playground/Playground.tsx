@@ -235,7 +235,9 @@ export const Playground = ({
     servers.map((url) => ({ url })),
   );
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
-  const [showAuthorizeDialog, setShowAuthorizeDialog] = useState(false);
+  const [authorizeSchemeNames, setAuthorizeSchemeNames] = useState<
+    string[] | undefined
+  >();
   const identities = useApiIdentities();
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
@@ -311,10 +313,9 @@ export const Playground = ({
     () => valueToIdentitySelection(identity),
     [identity],
   );
-  const selectedSecurityOption =
-    identitySelection.type === "scheme"
-      ? findSecurityOption(securityOptions, identitySelection.names)
-      : undefined;
+  const authorizeSchemes = authorizeSchemeNames
+    ? findSecurityOption(securityOptions, authorizeSchemeNames)?.schemes
+    : undefined;
 
   const securityLockedHeaders = useMemo(() => {
     if (identitySelection.type !== "scheme") {
@@ -668,7 +669,7 @@ export const Playground = ({
                           next.type === "scheme" &&
                           !areSchemesAuthorized(next.names, securityCredentials)
                         ) {
-                          setShowAuthorizeDialog(true);
+                          setAuthorizeSchemeNames(next.names);
                         }
                         setValue("identity", identitySelectionToValue(next));
                       }}
@@ -676,13 +677,17 @@ export const Playground = ({
                         securityOptions.length > 0 ? securityOptions : undefined
                       }
                       securityCredentials={securityCredentials}
-                      onConfigureScheme={() => setShowAuthorizeDialog(true)}
+                      onConfigureScheme={setAuthorizeSchemeNames}
                     />
-                    {selectedSecurityOption && (
+                    {authorizeSchemes && (
                       <AuthorizeDialog
-                        securitySchemes={selectedSecurityOption.schemes}
-                        open={showAuthorizeDialog}
-                        onOpenChange={setShowAuthorizeDialog}
+                        securitySchemes={authorizeSchemes}
+                        open
+                        onOpenChange={(open) => {
+                          if (!open) {
+                            setAuthorizeSchemeNames(undefined);
+                          }
+                        }}
                       />
                     )}
                   </CollapsibleContent>
