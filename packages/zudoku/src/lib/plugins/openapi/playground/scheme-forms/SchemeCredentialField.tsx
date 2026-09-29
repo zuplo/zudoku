@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 import { Input } from "zudoku/ui/Input.js";
 import { Label } from "zudoku/ui/Label.js";
 import type {
@@ -19,21 +19,27 @@ const SecretField = ({
   value: string;
   onChange: (value: string) => void;
   children?: ReactNode;
-}) => (
-  <div className="flex flex-col gap-2">
-    <Label className="text-xs text-muted-foreground">{label}</Label>
-    <div className="flex gap-2">
-      <Input
-        type="password"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="flex-1"
-      />
-      {children}
+}) => {
+  const inputId = useId();
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={inputId} className="text-xs text-muted-foreground">
+        {label}
+      </Label>
+      <div className="flex gap-2">
+        <Input
+          id={inputId}
+          type="password"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1"
+        />
+        {children}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const BasicCredentialsField = ({
   value,
@@ -43,26 +49,33 @@ const BasicCredentialsField = ({
   value: BasicCredentials;
   onChange: (value: BasicCredentials) => void;
   children?: ReactNode;
-}) => (
-  <div className="flex flex-col gap-2">
-    <Label className="text-xs text-muted-foreground">HTTP Basic</Label>
-    <Input
-      placeholder="Username"
-      value={value.username}
-      onChange={(e) => onChange({ ...value, username: e.target.value })}
-    />
-    <div className="flex gap-2">
+}) => {
+  const usernameId = useId();
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={usernameId} className="text-xs text-muted-foreground">
+        HTTP Basic
+      </Label>
       <Input
-        type="password"
-        placeholder="Password"
-        value={value.password}
-        onChange={(e) => onChange({ ...value, password: e.target.value })}
-        className="flex-1"
+        id={usernameId}
+        placeholder="Username"
+        value={value.username}
+        onChange={(e) => onChange({ ...value, username: e.target.value })}
       />
-      {children}
+      <div className="flex gap-2">
+        <Input
+          type="password"
+          aria-label="Password"
+          placeholder="Password"
+          value={value.password}
+          onChange={(e) => onChange({ ...value, password: e.target.value })}
+          className="flex-1"
+        />
+        {children}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const EMPTY_BASIC_CREDENTIALS: BasicCredentials = {
   username: "",
