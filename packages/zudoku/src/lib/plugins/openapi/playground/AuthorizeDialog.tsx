@@ -64,6 +64,7 @@ const CredentialsEntry = ({ schemes }: { schemes: SecuritySchemeData[] }) => {
         setCredential(scheme.name, value);
       }
     }
+    setValues({});
   };
 
   const [firstScheme] = schemes;
