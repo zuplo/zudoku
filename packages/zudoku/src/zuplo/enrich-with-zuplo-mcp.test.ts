@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { OpenAPIDocument } from "../lib/oas/parser/index.js";
 import { removeExtensions } from "../lib/plugins/openapi/processors/removeExtensions.js";
-import { removeInternal } from "../lib/plugins/openapi/processors/removeInternal.js";
+import { removePaths } from "../lib/plugins/openapi/processors/removePaths.js";
 import { enrichWithZuploMcpServerData } from "./enrich-with-zuplo-mcp.js";
 
 const mcpRouteHandler = (
@@ -291,8 +291,10 @@ describe("enrichWithZuploMcpServerData", () => {
       },
     } as unknown as OpenAPIDocument;
 
-    // 1. removeInternal (built-in, runs before Zuplo processors)
-    let result = removeInternal()(processorArg(schema));
+    // 1. removePaths (remove x-internal operations)
+    let result = removePaths({
+      shouldRemove: ({ operation }) => operation["x-internal"],
+    })(processorArg(schema));
 
     expect(result.paths?.["/users"]?.get).toBeUndefined();
     expect(result.paths?.["/mcp"]).toBeDefined();

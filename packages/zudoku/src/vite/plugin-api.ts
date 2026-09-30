@@ -44,15 +44,6 @@ export const schemaConfigurationChanged = (
   next: Pick<ConfigWithMeta, "apis" | "basePath">,
 ) => current.basePath !== next.basePath || !deepEqual(current.apis, next.apis);
 
-/**
- * Built-in `x-internal` removal runs for every build: after user processors
- * (so they can still mark items as internal) and before Zuplo processors.
- */
-export const composeProcessors = (
-  buildProcessors: Processor[],
-  zuploProcessors: Processor[] = [],
-): Processor[] => [...buildProcessors, removeInternal(), ...zuploProcessors];
-
 const warn = (message: string) => {
   // biome-ignore lint/suspicious/noConsole: Logging allowed here
   console.warn(`[zudoku] ${message}`);
@@ -111,7 +102,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
     PROCESSED_STORE_SUBPATH,
   );
 
-  const processors = composeProcessors(buildProcessors, zuploProcessors);
+  const processors = [...buildProcessors, removeInternal(), ...zuploProcessors];
   const schemaManager = new SchemaManager({
     storeDir: tmpStoreDir,
     config: initialConfig,

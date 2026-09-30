@@ -2,213 +2,38 @@ import { describe, expect, it } from "vitest";
 import type { OpenAPIDocument } from "../../../oas/parser/index.js";
 import { removeInternal } from "./removeInternal.js";
 
-const run = (schema: unknown) =>
-  removeInternal()({
-    schema: schema as OpenAPIDocument,
-    file: "/file.json",
-    params: {},
-    dereference: async (s) => s,
-  });
-
 describe("removeInternal", () => {
-  it("removes path items marked as internal", () => {
-    const result = run({
+  it("removes x-internal paths, operations and parameters", () => {
+    const schema = {
       openapi: "3.1.0",
       paths: {
-        "/admin": {
-          "x-internal": true,
-          get: { summary: "Admin" },
-          post: { summary: "Admin post" },
-        },
-        "/users": { get: { summary: "Users" } },
-      },
-    });
-
-    expect(result.paths?.["/admin"]).toBeUndefined();
-    expect(result.paths?.["/users"]?.get).toBeDefined();
-  });
-
-  it("removes operations marked as internal and keeps siblings", () => {
-    const result = run({
-      openapi: "3.1.0",
-      paths: {
+        "/admin": { "x-internal": true, get: { summary: "Admin" } },
         "/users": {
-          get: { summary: "List" },
-          delete: { summary: "Delete all", "x-internal": true },
-        },
-      },
-    });
-
-    expect(result.paths?.["/users"]?.get).toBeDefined();
-    expect(result.paths?.["/users"]?.delete).toBeUndefined();
-  });
-
-  it("does not remove items with x-internal: false", () => {
-    const result = run({
-      openapi: "3.1.0",
-      paths: {
-        "/users": {
-          "x-internal": false,
+          parameters: [{ name: "tenant", in: "query", "x-internal": true }],
           get: {
-            "x-internal": false,
-            parameters: [{ name: "q", in: "query", "x-internal": false }],
-          },
-        },
-      },
-    });
-
-    expect(result.paths?.["/users"]?.get?.parameters).toHaveLength(1);
-  });
-
-  it("removes internal parameters at path, operation and component level", () => {
-    const result = run({
-      openapi: "3.1.0",
-      components: {
-        parameters: {
-          TraceId: { name: "X-Trace-Id", in: "header", "x-internal": true },
-          Limit: { name: "limit", in: "query" },
-        },
-      },
-      paths: {
-        "/users": {
-          parameters: [
-            { name: "tenant", in: "query", "x-internal": true },
-            { name: "region", in: "query" },
-          ],
-          get: {
+            summary: "List",
             parameters: [
               { name: "debug", in: "query", "x-internal": true },
-              { $ref: "#/components/parameters/TraceId" },
-              { $ref: "#/components/parameters/Limit" },
-            ],
-          },
-        },
-      },
-    });
-
-    expect(result.components?.parameters).toEqual({
-      Limit: { name: "limit", in: "query" },
-    });
-    expect(result.paths?.["/users"]?.parameters).toEqual([
-      { name: "region", in: "query" },
-    ]);
-    expect(result.paths?.["/users"]?.get?.parameters).toEqual([
-      { $ref: "#/components/parameters/Limit" },
-    ]);
-  });
-
-  it("decodes JSON pointer tokens in parameter $refs", () => {
-    const result = run({
-      openapi: "3.1.0",
-      components: {
-        parameters: {
-          "Trace Id": { name: "X-Trace-Id", in: "header", "x-internal": true },
-          "a/b~c": { name: "slashed", in: "query", "x-internal": true },
-        },
-      },
-      paths: {
-        "/users": {
-          get: {
-            parameters: [
-              { $ref: "#/components/parameters/Trace%20Id" },
-              { $ref: "#/components/parameters/a~1b~0c" },
               { name: "limit", in: "query" },
             ],
           },
+          delete: { summary: "Delete all", "x-internal": true },
         },
       },
+    } as unknown as OpenAPIDocument;
+
+    const result = removeInternal()({
+      schema,
+      file: "/file.json",
+      params: {},
+      dereference: async (s) => s,
     });
 
-    expect(result.components?.parameters).toEqual({});
+    expect(result.paths?.["/admin"]).toBeUndefined();
+    expect(result.paths?.["/users"]?.delete).toBeUndefined();
+    expect(result.paths?.["/users"]?.parameters).toEqual([]);
     expect(result.paths?.["/users"]?.get?.parameters).toEqual([
       { name: "limit", in: "query" },
     ]);
-  });
-
-  it("treats component parameter aliases of internal parameters as internal", () => {
-    const result = run({
-      openapi: "3.1.0",
-      components: {
-        parameters: {
-          TraceId: { name: "X-Trace-Id", in: "header", "x-internal": true },
-          TraceAlias: { $ref: "#/components/parameters/TraceId" },
-          TraceAliasAlias: { $ref: "#/components/parameters/TraceAlias" },
-          Limit: { name: "limit", in: "query" },
-          LimitAlias: { $ref: "#/components/parameters/Limit" },
-          CycleA: { $ref: "#/components/parameters/CycleB" },
-          CycleB: { $ref: "#/components/parameters/CycleA" },
-        },
-      },
-      paths: {
-        "/users": {
-          get: {
-            parameters: [
-              { $ref: "#/components/parameters/TraceAliasAlias" },
-              { $ref: "#/components/parameters/LimitAlias" },
-              { $ref: "#/components/parameters/CycleA" },
-            ],
-          },
-        },
-      },
-    });
-
-    expect(Object.keys(result.components?.parameters ?? {})).toEqual([
-      "Limit",
-      "LimitAlias",
-      "CycleA",
-      "CycleB",
-    ]);
-    expect(result.paths?.["/users"]?.get?.parameters).toEqual([
-      { $ref: "#/components/parameters/LimitAlias" },
-      { $ref: "#/components/parameters/CycleA" },
-    ]);
-  });
-
-  it("follows path item $refs to components.pathItems", () => {
-    const result = run({
-      openapi: "3.1.0",
-      components: {
-        pathItems: {
-          Admin: { "x-internal": true, get: { summary: "Admin" } },
-          AdminAlias: { $ref: "#/components/pathItems/Admin" },
-          Users: {
-            parameters: [{ name: "tenant", in: "query", "x-internal": true }],
-            get: { summary: "List" },
-            delete: { summary: "Delete all", "x-internal": true },
-          },
-        },
-      },
-      paths: {
-        "/admin": { $ref: "#/components/pathItems/Admin" },
-        "/admin-alias": { $ref: "#/components/pathItems/AdminAlias" },
-        "/users": { $ref: "#/components/pathItems/Users" },
-      },
-    });
-
-    expect(Object.keys(result.paths ?? {})).toEqual(["/users"]);
-    const users = result.components?.pathItems?.Users as Record<
-      string,
-      unknown
-    >;
-    expect(users.get).toBeDefined();
-    expect(users.delete).toBeUndefined();
-    expect(users.parameters).toEqual([]);
-  });
-
-  it("leaves schemas without x-internal unchanged", () => {
-    const schema = {
-      openapi: "3.1.0",
-      info: { title: "API", version: "1.0.0" },
-      paths: {
-        "/users": {
-          get: {
-            parameters: [{ name: "q", in: "query" }],
-            responses: { "200": { description: "OK" } },
-          },
-        },
-      },
-    };
-
-    expect(run(schema)).toEqual(schema);
   });
 });

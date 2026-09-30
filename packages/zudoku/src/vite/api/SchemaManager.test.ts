@@ -8,7 +8,6 @@ import type { ConfigWithMeta } from "../../config/loader.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
 import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
-import { removeInternal } from "../../lib/plugins/openapi/processors/removeInternal.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
 import invariant from "../../lib/util/invariant.js";
 import { SchemaManager } from "./SchemaManager.js";
@@ -366,86 +365,6 @@ describe("SchemaManager", () => {
 
     expect(manager.getAllTrackedFiles().length).toBeGreaterThan(0);
     expect(manager.getAllTrackedFiles()).toContain(schemaPath);
-  });
-
-  it("should generate code after removing x-internal items that are referenced", async () => {
-    const schemaWithInternal = {
-      openapi: "3.1.0",
-      info: { title: "Test API", version: "1.0.0" },
-      paths: {
-        "/items": {
-          get: {
-            parameters: [
-              { $ref: "#/components/parameters/TraceId" },
-              { $ref: "#/components/parameters/TraceAlias" },
-              { $ref: "#/components/parameters/Debug%20Flag" },
-              { $ref: "#/components/parameters/Limit" },
-            ],
-            responses: { "200": { description: "Success" } },
-          },
-          delete: {
-            "x-internal": true,
-            responses: { "204": { description: "Deleted" } },
-          },
-        },
-        "/admin": { $ref: "#/components/pathItems/Admin" },
-      },
-      components: {
-        pathItems: {
-          Admin: {
-            "x-internal": true,
-            get: { responses: { "200": { description: "Admin" } } },
-          },
-        },
-        parameters: {
-          TraceAlias: { $ref: "#/components/parameters/TraceId" },
-          "Debug Flag": {
-            name: "X-Debug",
-            in: "header",
-            "x-internal": true,
-            schema: { type: "boolean" },
-          },
-          TraceId: {
-            name: "X-Trace-Id",
-            in: "header",
-            "x-internal": true,
-            schema: { type: "string" },
-          },
-          Limit: { name: "limit", in: "query", schema: { type: "integer" } },
-        },
-      },
-    };
-
-    const schemaPath = path.join(tempDir, "openapi.json");
-    await fs.writeFile(schemaPath, JSON.stringify(schemaWithInternal));
-
-    const config: ConfigWithMeta = {
-      ...baseConfig,
-      apis: [{ type: "file", path: "test-api", input: schemaPath }],
-    };
-
-    const manager = new SchemaManager({
-      storeDir,
-      config,
-      processors: [removeInternal()],
-    });
-
-    await manager.processAllSchemas();
-    const processed = manager.getLatestSchema("test-api");
-    invariant(processed?.importKey, "Processed schema not found");
-
-    expect(processed.schema.paths?.["/items"]?.delete).toBeUndefined();
-    expect(processed.schema.paths?.["/items"]?.get?.parameters).toEqual([
-      { $ref: "#/components/parameters/Limit" },
-    ]);
-    expect(Object.keys(processed.schema.components?.parameters ?? {})).toEqual([
-      "Limit",
-    ]);
-    expect(processed.schema.paths?.["/admin"]).toBeUndefined();
-
-    const generatedCode = await fs.readFile(processed.importKey, "utf-8");
-    expect(generatedCode).not.toContain("X-Trace-Id");
-    expect(generatedCode).not.toContain("X-Debug");
   });
 
   it("should preserve $refs outside allOf while flattening allOf", async () => {

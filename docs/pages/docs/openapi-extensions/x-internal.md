@@ -22,19 +22,18 @@ called. Don't rely on it to secure anything.
 
 The extension can be added at the following levels:
 
-| Level                | Effect                                                              |
-| -------------------- | ------------------------------------------------------------------- |
-| **Path Item Object** | Removes the whole path, including all of its operations.            |
-| **Operation Object** | Removes only that operation. Other methods on the same path stay.   |
-| **Parameter Object** | Removes the parameter from path items, operations and `components`. |
+| Level                | Effect                                                            |
+| -------------------- | ----------------------------------------------------------------- |
+| **Path Item Object** | Removes the whole path, including all of its operations.          |
+| **Operation Object** | Removes only that operation. Other methods on the same path stay. |
+| **Parameter Object** | Removes the parameter from the path item or operation.            |
 
 | Option       | Type      | Description                                          |
 | ------------ | --------- | ---------------------------------------------------- |
 | `x-internal` | `boolean` | Set to `true` to remove the item from documentation. |
 
-Local `$ref`s are followed. Parameters defined in `components.parameters` are removed along with
-every `$ref` (and alias) that points to them. A path that references an internal path item in
-`components.pathItems` is removed too.
+`$ref`s are not resolved, so add `x-internal` to the parameter where it is used rather than to a
+shared `components.parameters` entry.
 
 Other objects such as tags, schemas, schema properties and responses are not covered. Use a custom
 [schema processor](/docs/guides/processors#custom-processors) if you need to hide those.
@@ -63,7 +62,6 @@ paths:
           x-internal: true # hides only this parameter
           schema:
             type: boolean
-        - $ref: "#/components/parameters/TraceId"
       responses:
         "200":
           description: OK
@@ -73,19 +71,10 @@ paths:
       responses:
         "204":
           description: Deleted
-components:
-  parameters:
-    TraceId:
-      name: X-Trace-Id
-      in: header
-      x-internal: true # hides the parameter everywhere it is referenced
-      schema:
-        type: string
 ```
 
 In this example, the documentation shows `GET /users` with only the `limit` parameter. The `/admin`
-path, the `DELETE /users` operation, the `debug` parameter and the `X-Trace-Id` header are all
-hidden.
+path, the `DELETE /users` operation, and the `debug` parameter are all hidden.
 
 ## Notes
 
