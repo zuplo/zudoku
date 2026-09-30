@@ -21,6 +21,7 @@ import {
   type OasDocumentType,
   type VersionedInput,
 } from "../lib/plugins/openapi/interfaces.js";
+import { removeInternal } from "../lib/plugins/openapi/processors/removeInternal.js";
 import {
   countMcpServers,
   countOperations,
@@ -42,6 +43,15 @@ export const schemaConfigurationChanged = (
   current: Pick<ConfigWithMeta, "apis" | "basePath">,
   next: Pick<ConfigWithMeta, "apis" | "basePath">,
 ) => current.basePath !== next.basePath || !deepEqual(current.apis, next.apis);
+
+/**
+ * Built-in `x-internal` removal runs for every build: after user processors
+ * (so they can still mark items as internal) and before Zuplo processors.
+ */
+export const composeProcessors = (
+  buildProcessors: Processor[],
+  zuploProcessors: Processor[] = [],
+): Processor[] => [...buildProcessors, removeInternal(), ...zuploProcessors];
 
 const warn = (message: string) => {
   // biome-ignore lint/suspicious/noConsole: Logging allowed here
@@ -101,7 +111,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
     PROCESSED_STORE_SUBPATH,
   );
 
-  const processors = [...buildProcessors, ...zuploProcessors];
+  const processors = composeProcessors(buildProcessors, zuploProcessors);
   const schemaManager = new SchemaManager({
     storeDir: tmpStoreDir,
     config: initialConfig,
