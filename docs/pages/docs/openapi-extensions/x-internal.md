@@ -32,8 +32,9 @@ The extension can be added at the following levels:
 | ------------ | --------- | ---------------------------------------------------- |
 | `x-internal` | `boolean` | Set to `true` to remove the item from documentation. |
 
-Parameters defined in `components.parameters` are removed along with every `$ref` that points to
-them.
+Local `$ref`s are followed. Parameters defined in `components.parameters` are removed along with
+every `$ref` (and alias) that points to them. A path that references an internal path item in
+`components.pathItems` is removed too.
 
 Other objects such as tags, schemas, schema properties and responses are not covered. Use a custom
 [schema processor](/docs/guides/processors#custom-processors) if you need to hide those.

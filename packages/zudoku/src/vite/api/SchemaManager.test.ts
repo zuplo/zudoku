@@ -377,6 +377,8 @@ describe("SchemaManager", () => {
           get: {
             parameters: [
               { $ref: "#/components/parameters/TraceId" },
+              { $ref: "#/components/parameters/TraceAlias" },
+              { $ref: "#/components/parameters/Debug%20Flag" },
               { $ref: "#/components/parameters/Limit" },
             ],
             responses: { "200": { description: "Success" } },
@@ -386,9 +388,23 @@ describe("SchemaManager", () => {
             responses: { "204": { description: "Deleted" } },
           },
         },
+        "/admin": { $ref: "#/components/pathItems/Admin" },
       },
       components: {
+        pathItems: {
+          Admin: {
+            "x-internal": true,
+            get: { responses: { "200": { description: "Admin" } } },
+          },
+        },
         parameters: {
+          TraceAlias: { $ref: "#/components/parameters/TraceId" },
+          "Debug Flag": {
+            name: "X-Debug",
+            in: "header",
+            "x-internal": true,
+            schema: { type: "boolean" },
+          },
           TraceId: {
             name: "X-Trace-Id",
             in: "header",
@@ -422,10 +438,14 @@ describe("SchemaManager", () => {
     expect(processed.schema.paths?.["/items"]?.get?.parameters).toEqual([
       { $ref: "#/components/parameters/Limit" },
     ]);
-    expect(processed.schema.components?.parameters?.TraceId).toBeUndefined();
+    expect(Object.keys(processed.schema.components?.parameters ?? {})).toEqual([
+      "Limit",
+    ]);
+    expect(processed.schema.paths?.["/admin"]).toBeUndefined();
 
     const generatedCode = await fs.readFile(processed.importKey, "utf-8");
     expect(generatedCode).not.toContain("X-Trace-Id");
+    expect(generatedCode).not.toContain("X-Debug");
   });
 
   it("should preserve $refs outside allOf while flattening allOf", async () => {

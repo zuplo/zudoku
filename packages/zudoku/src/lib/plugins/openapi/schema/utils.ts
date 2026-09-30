@@ -39,7 +39,7 @@ export const isArrayCircularRef = (
 const COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/";
 
 // Unescape a JSON Pointer token per RFC 6901: ~1 → /, ~0 → ~, then URI decode.
-const unescapeJsonPointer = (token: string) =>
+export const unescapeJsonPointer = (token: string) =>
   decodeURIComponent(token.replace(/~1/g, "/").replace(/~0/g, "~"));
 
 export const getSchemaRefName = (

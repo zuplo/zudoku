@@ -97,6 +97,104 @@ describe("removeInternal", () => {
     ]);
   });
 
+  it("decodes JSON pointer tokens in parameter $refs", () => {
+    const result = run({
+      openapi: "3.1.0",
+      components: {
+        parameters: {
+          "Trace Id": { name: "X-Trace-Id", in: "header", "x-internal": true },
+          "a/b~c": { name: "slashed", in: "query", "x-internal": true },
+        },
+      },
+      paths: {
+        "/users": {
+          get: {
+            parameters: [
+              { $ref: "#/components/parameters/Trace%20Id" },
+              { $ref: "#/components/parameters/a~1b~0c" },
+              { name: "limit", in: "query" },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(result.components?.parameters).toEqual({});
+    expect(result.paths?.["/users"]?.get?.parameters).toEqual([
+      { name: "limit", in: "query" },
+    ]);
+  });
+
+  it("treats component parameter aliases of internal parameters as internal", () => {
+    const result = run({
+      openapi: "3.1.0",
+      components: {
+        parameters: {
+          TraceId: { name: "X-Trace-Id", in: "header", "x-internal": true },
+          TraceAlias: { $ref: "#/components/parameters/TraceId" },
+          TraceAliasAlias: { $ref: "#/components/parameters/TraceAlias" },
+          Limit: { name: "limit", in: "query" },
+          LimitAlias: { $ref: "#/components/parameters/Limit" },
+          CycleA: { $ref: "#/components/parameters/CycleB" },
+          CycleB: { $ref: "#/components/parameters/CycleA" },
+        },
+      },
+      paths: {
+        "/users": {
+          get: {
+            parameters: [
+              { $ref: "#/components/parameters/TraceAliasAlias" },
+              { $ref: "#/components/parameters/LimitAlias" },
+              { $ref: "#/components/parameters/CycleA" },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(Object.keys(result.components?.parameters ?? {})).toEqual([
+      "Limit",
+      "LimitAlias",
+      "CycleA",
+      "CycleB",
+    ]);
+    expect(result.paths?.["/users"]?.get?.parameters).toEqual([
+      { $ref: "#/components/parameters/LimitAlias" },
+      { $ref: "#/components/parameters/CycleA" },
+    ]);
+  });
+
+  it("follows path item $refs to components.pathItems", () => {
+    const result = run({
+      openapi: "3.1.0",
+      components: {
+        pathItems: {
+          Admin: { "x-internal": true, get: { summary: "Admin" } },
+          AdminAlias: { $ref: "#/components/pathItems/Admin" },
+          Users: {
+            parameters: [{ name: "tenant", in: "query", "x-internal": true }],
+            get: { summary: "List" },
+            delete: { summary: "Delete all", "x-internal": true },
+          },
+        },
+      },
+      paths: {
+        "/admin": { $ref: "#/components/pathItems/Admin" },
+        "/admin-alias": { $ref: "#/components/pathItems/AdminAlias" },
+        "/users": { $ref: "#/components/pathItems/Users" },
+      },
+    });
+
+    expect(Object.keys(result.paths ?? {})).toEqual(["/users"]);
+    const users = result.components?.pathItems?.Users as Record<
+      string,
+      unknown
+    >;
+    expect(users.get).toBeDefined();
+    expect(users.delete).toBeUndefined();
+    expect(users.parameters).toEqual([]);
+  });
+
   it("leaves schemas without x-internal unchanged", () => {
     const schema = {
       openapi: "3.1.0",
