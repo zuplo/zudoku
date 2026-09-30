@@ -21,6 +21,7 @@ import {
   type OasDocumentType,
   type VersionedInput,
 } from "../lib/plugins/openapi/interfaces.js";
+import { removeInternal } from "../lib/plugins/openapi/processors/removeInternal.js";
 import {
   countMcpServers,
   countOperations,
@@ -101,7 +102,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
     PROCESSED_STORE_SUBPATH,
   );
 
-  const processors = [...buildProcessors, ...zuploProcessors];
+  const processors = [...buildProcessors, removeInternal(), ...zuploProcessors];
   const schemaManager = new SchemaManager({
     storeDir: tmpStoreDir,
     config: initialConfig,

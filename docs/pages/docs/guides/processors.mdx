@@ -19,6 +19,14 @@ For information on how to configure processors in your project, see the
 
 Zudoku provides several built-in processors that you can use to transform your schemas:
 
+:::note
+
+Items marked with [`x-internal`](../openapi-extensions/x-internal) are removed automatically in
+every build, so you don't need to configure `removePaths` or `removeParameters` for that. The
+`x-internal` examples below show how the processors work.
+
+:::
+
 ### `removeExtensions`
 
 Removes OpenAPI extensions (`x-` prefixed properties) from your schema:
