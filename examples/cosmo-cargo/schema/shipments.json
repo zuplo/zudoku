@@ -48,7 +48,8 @@
     {
       "name": "Tracking & Notifications",
       "description": "Endpoints for tracking shipments and configuring notifications for shipment status updates.",
-      "x-displayName": "Notifications"
+      "x-displayName": "Notifications",
+      "x-zudoku-page-title": "Interstellar Shipment Tracking & Notifications"
     },
     {
       "name": "System",

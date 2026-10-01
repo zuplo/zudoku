@@ -269,7 +269,14 @@ export const OperationList = ({
     ? "Other endpoints"
     : (schema.tag.extensions?.["x-displayName"] ?? schema.tag.name);
 
-  const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
+  // Overrides only the browser title, so tags sharing an `x-displayName`
+  // (e.g. across tag groups) can still get unique titles
+  const pageTitle = schema.tag.extensions?.["x-zudoku-page-title"];
+
+  const helmetTitle =
+    typeof pageTitle === "string" && pageTitle.trim()
+      ? pageTitle
+      : [tagTitle, title].filter(Boolean).join(" - ");
 
   return (
     <div
