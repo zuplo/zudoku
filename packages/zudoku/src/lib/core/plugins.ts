@@ -21,7 +21,8 @@ export type ZudokuPlugin =
   | SearchProviderPlugin
   | EventConsumerPlugin
   | AuthenticationPlugin
-  | TransformConfigPlugin;
+  | TransformConfigPlugin
+  | ProviderPlugin;
 
 export type { AuthenticationPlugin, RouteObject };
 
@@ -96,6 +97,12 @@ export interface CommonPlugin {
   getMdxComponents?: () => MdxComponentsType;
 }
 
+export interface ProviderPlugin {
+  getProvider: (args: { children: ReactNode }) => ReactNode;
+
+  providerPriority?: number;
+}
+
 export type EventConsumerPlugin<Event extends ZudokuEvents = ZudokuEvents> = {
   events: { [K in keyof Event]?: Event[K] };
 };
@@ -133,6 +140,9 @@ export const hasHead = (obj: ZudokuPlugin): obj is CommonPlugin =>
 
 export const isMdxProviderPlugin = (obj: ZudokuPlugin): obj is CommonPlugin =>
   "getMdxComponents" in obj && typeof obj.getMdxComponents === "function";
+
+export const hasProvider = (obj: ZudokuPlugin): obj is ProviderPlugin =>
+  "getProvider" in obj && typeof obj.getProvider === "function";
 
 export const isApiIdentityPlugin = (
   obj: ZudokuPlugin,
