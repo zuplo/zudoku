@@ -338,10 +338,48 @@ SchemaTag.implement({
   }),
 });
 
+type ServerVariableData = {
+  name: string;
+  default: string;
+  enum?: string[];
+  description?: string;
+};
+
+const ServerVariableItem = builder
+  .objectRef<ServerVariableData>("ServerVariable")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      default: t.exposeString("default"),
+      enum: t.exposeStringList("enum", { nullable: true }),
+      description: t.exposeString("description", { nullable: true }),
+    }),
+  });
+
 const ServerItem = builder.objectRef<ServerObject>("Server").implement({
   fields: (t) => ({
     url: t.exposeString("url"),
+    // OAS 3.2+ `name`, intended for identifying a server independent of its
+    // (possibly templated/rich-text-described) `url`/`description`.
+    name: t.exposeString("name", { nullable: true }),
     description: t.exposeString("description", { nullable: true }),
+    variables: t.field({
+      type: [ServerVariableItem],
+      resolve: (parent) =>
+        Object.entries(parent.variables ?? {}).map(([name, variable]) => {
+          // YAML parses unquoted values such as `443` as numbers.
+          const enumValues = variable.enum?.map(String);
+          return {
+            name,
+            // `default` is required by the spec but often missing in real-world
+            // schemas, fall back to the first enum value (or an empty string)
+            // instead of failing the whole query on a non-null field.
+            default: String(variable.default ?? enumValues?.[0] ?? ""),
+            enum: enumValues,
+            description: variable.description,
+          };
+        }),
+    }),
   }),
 });
 

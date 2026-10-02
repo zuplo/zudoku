@@ -19,6 +19,11 @@ import "./custom.css";
 // highlighted at the same time as the Employee MCP one.
 const EMPLOYEE_MCP_PATH = "/employee-mcp";
 
+// The REST side of the same registry. It lives in its own schema because
+// `x-zudoku-type: mcp-catalog` renders only the MCP servers in a document, so
+// plain endpoints kept alongside them would never be shown.
+const GATEWAY_DIRECTORY_PATH = "/catalog/api-gateway-directory";
+
 // Clerk publishable keys are shipped to the browser by design, so both are safe
 // to commit. The production instance is served from clerk.cosmocargo.dev and is
 // scoped to that domain, so it only authenticates on the production deployment;
@@ -139,7 +144,19 @@ const config: ZudokuConfig = {
   },
   docs: {
     publishMarkdown: true,
-    llms: { llmsTxt: true, llmsTxtFull: true },
+    contentNegotiation: true,
+    llms: {
+      llmsTxt: true,
+      llmsTxtFull: true,
+      title: "Cosmo Cargo Developer Platform",
+      description:
+        "Build interstellar shipping, tracking, fleet, and cargo automation with Cosmo Cargo APIs.",
+      instructions:
+        "Use these docs when planning, booking, tracking, or automating interstellar cargo shipments. Start with the documentation guide for platform concepts, then use the published Shipment API specification at /openapi.json for callable operations and typed request and response schemas.",
+    },
+  },
+  sitemap: {
+    siteUrl: "https://cosmocargo.dev",
   },
   site: {
     sidebar: {
@@ -236,6 +253,8 @@ const config: ZudokuConfig = {
   protectedRoutes: {
     [`${EMPLOYEE_MCP_PATH}/*`]: ({ auth, reasonCode }) =>
       auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
+    [`${GATEWAY_DIRECTORY_PATH}/*`]: ({ auth, reasonCode }) =>
+      auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
     "/only-members": ({ auth, reasonCode }) =>
       auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
     "/vip-lounge": ({ auth, reasonCode }) =>
@@ -309,6 +328,8 @@ const config: ZudokuConfig = {
           label: "Space Operations",
           items: [
             "shipping-process",
+            "warp-lane-tutorial",
+            "cargo-manifest-guide",
             "tracking",
             "quantum-express",
             "ship-states",
@@ -453,7 +474,11 @@ const config: ZudokuConfig = {
     filterItems: (items, { auth }) =>
       auth.isAuthenticated
         ? items
-        : items.filter((item) => item.path !== EMPLOYEE_MCP_PATH),
+        : items.filter(
+            (item) =>
+              item.path !== EMPLOYEE_MCP_PATH &&
+              item.path !== GATEWAY_DIRECTORY_PATH,
+          ),
   },
   authentication: {
     type: "clerk",
@@ -478,6 +503,10 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/shipments.json",
       path: "api-shipments",
+      publish: {
+        path: "/openapi.json",
+        agentQuality: true,
+      },
       categories: [
         { label: "Core", tags: ["Shipments", "Logistics"] },
         { label: "Logistics", tags: ["Shipments"] },
@@ -600,6 +629,12 @@ const config: ZudokuConfig = {
         },
         { label: "Internal", tags: ["Employee Tools"] },
       ],
+    },
+    {
+      type: "file",
+      input: "./schema/gateway-directory.json",
+      path: GATEWAY_DIRECTORY_PATH,
+      categories: [{ label: "Internal", tags: ["Employee Tools"] }],
     },
     {
       type: "file",

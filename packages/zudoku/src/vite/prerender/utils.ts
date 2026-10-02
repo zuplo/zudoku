@@ -72,6 +72,17 @@ const collectRewrites = (resolved: ResolvedRoute[]): RouteRewrite[] =>
 export const routesToPaths = (routes: RouteObject[]): string[] =>
   collectPaths(resolveRoutes(routes), "");
 
+export const routesToPrerenderPaths = (
+  routes: RouteObject[],
+  redirects: readonly { from: string }[] = [],
+): string[] =>
+  Array.from(
+    new Set([
+      ...routesToPaths(routes),
+      ...redirects.map(({ from }) => joinUrl(from)),
+    ]),
+  );
+
 export const routesToRewrites = (routes: RouteObject[]): RouteRewrite[] =>
   collectRewrites(resolveRoutes(routes));
 

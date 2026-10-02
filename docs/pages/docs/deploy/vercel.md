@@ -50,38 +50,81 @@ No framework detected. Default Project Settings:
 ? Want to modify these settings? (y/N)
 ```
 
-Answer _Yes_ and select to modify the Output Directory.
+You can accept these defaults as long as the Output Directory override remains disabled. Do not set
+it to `dist`, `public`, or another directory. When Vercel runs the build, Zudoku detects the
+`VERCEL` environment variable and emits a
+[Build Output API](https://vercel.com/docs/build-output-api) deployment to `.vercel/output`. Vercel
+detects and deploys this directory automatically.
 
-By default Vercel looks for a directory named `public`, but the Zudoku build will be found in
-`dist`. Set the output directory like this:
+If your project already has an Output Directory saved in Vercel, disable the override in Project
+Settings or add a `vercel.json` file at the project root. A minimal configuration is:
 
-```ansi
-? What's your Output Directory? dist
+```json title="vercel.json"
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": null
+}
 ```
+
+The `framework: null` setting selects Vercel's **Other** framework preset. Adjust the build command
+if your project uses a different script.
 
 After this is complete, your site will build and Vercel will respond with the URL for you to test
 it.
 
-:::tip{title="Clean URLs"}
+## Generated Vercel output
 
-You will almost certainly want to enable clean URLs for your site. This will remove the `.html`
-extension from your URLs. You can do this by adding a `cleanUrls` property to your `vercel.json`
-file. See the
-[Vercel Configuration](https://vercel.com/docs/projects/project-configuration#cleanurls) for more
-information.
+For a standard static build, Zudoku writes the following directly into `.vercel/output`:
 
-:::
+- Static pages and assets under `.vercel/output/static`
+- Clean URL routes and overrides, including redirects from your Zudoku configuration
+- Vercel Routing Middleware for Markdown content negotiation when it is enabled
 
-:::caution{title="Redirects"}
+You do not need to add `cleanUrls`, copy Zudoku redirects, or define the generated middleware in
+`vercel.json`. To inspect the same artifact locally, use `vercel build`; a plain `npm run build`
+outside Vercel produces the portable `dist` output instead.
 
-If you have redirects configured in your Zudoku configuration, you will need to also add those to
-your `vercel.json` file. See the
-[Vercel Configuration](https://vercel.com/docs/projects/project-configuration#redirects) for more
-information.
+### Markdown content negotiation
 
-This is a current limitation. See [#115](https://github.com/zuplo/zudoku/issues/151).
+[`publishMarkdown`](/docs/configuration/docs#publishmarkdown) is enabled by default, and
+[`contentNegotiation`](/docs/configuration/docs#contentnegotiation) defaults to the same value. When
+both are enabled, Zudoku's generated Routing Middleware:
 
-:::
+- Serves Markdown from a canonical documentation URL when a `GET` or `HEAD` request prefers
+  `text/markdown`
+- Honors media-range specificity and `q` values, returning `406 Not Acceptable` when neither HTML
+  nor Markdown is acceptable
+- Includes `Vary: Accept, Accept-Encoding` so Vercel's cache keeps HTML and Markdown separate
+- Advertises the `.md` representation with a `Link` header
+- Preserves real `404` responses with a short Markdown recovery body
+- Passes assets, published API schemas, and non-document routes through unchanged
+
+Set `contentNegotiation: false` to disable the middleware while continuing to publish the explicit
+`.md` files.
+
+After deployment, verify a known page and a missing Markdown path:
+
+```bash
+curl -sS -D - -o /dev/null \
+  -H 'Accept: text/markdown' \
+  https://docs.example.com/quickstart
+
+curl -sS -D - -o /dev/null \
+  -H 'Accept: text/markdown' \
+  https://docs.example.com/path-that-does-not-exist
+
+curl -sS -D - -o /dev/null \
+  -H 'Accept: application/json' \
+  https://docs.example.com/quickstart
+```
+
+The first response should be `200` with `Content-Type: text/markdown; charset=utf-8` and a `Vary`
+header containing both `Accept` and `Accept-Encoding`. The missing path should return `404` with a
+Markdown content type; missing explicit `.md` and `.mdx` paths should do the same. The final request
+should return `406`. If the first request returns HTML, confirm that Vercel deployed
+`.vercel/output` and that no Output Directory override points to `dist`.
 
 ## Accurate Last Modified Dates
 

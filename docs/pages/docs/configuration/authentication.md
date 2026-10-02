@@ -214,6 +214,31 @@ fields are used to display the user profile:
 
 If the provider does not return a field, it will be left blank.
 
+## Redirects after sign-in
+
+By default, users return to the page they started from after signing in. For
+[protected routes](./protected-routes.md) that is the path and query string they tried to open; for
+`useAuth().login({ redirectTo })` it is the `redirectTo` you pass.
+
+Setting `redirectToAfterSignIn` overrides that return URL: every sign-in lands on the configured
+path instead. Only set it if you always want users to land on the same page, and leave it unset to
+return users to where they were. `redirectToAfterSignUp` behaves the same way for sign-up.
+
+```typescript title="zudoku.config.ts"
+{
+  authentication: {
+    type: "auth0",
+    // ...
+    // Omit to return users to the page they came from
+    redirectToAfterSignIn: "/docs",
+  },
+}
+```
+
+This applies to all built-in providers. For Supabase social (OAuth) sign-in, the return URL must
+also be allowed under **Redirect URLs** in your Supabase project's authentication settings, and a
+return URL on another origin falls back to your site's root.
+
 ## Protected Routes
 
 Once authentication is configured, you can protect specific routes in your documentation to require

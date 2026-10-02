@@ -8,6 +8,9 @@ export type ApiCatalogItem = {
   categories: CatalogCategory[];
   version?: string;
   operationCount?: number;
+  /** Noun for `operationCount`, defaulting to "ops". MCP catalogs count
+   * servers rather than endpoints. */
+  countLabel?: string;
 };
 
 export type CatalogCategory = {

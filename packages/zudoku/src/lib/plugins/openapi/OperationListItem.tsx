@@ -16,6 +16,7 @@ import { ParameterList } from "./ParameterList.js";
 import { SchemaView } from "./schema/SchemaView.js";
 import { SecurityRequirements } from "./SecurityRequirements.js";
 import { Sidecar } from "./Sidecar.js";
+import { useResolvedServerUrl } from "./state.js";
 import { getGraphQLEndpoint } from "./util/graphqlEndpoint.js";
 import { methodColorProps } from "./util/methodToColor.js";
 
@@ -40,7 +41,8 @@ export const OperationListItem = ({
 
   // Manual server selection takes precedence over the server hierarchy.
   // If no manual selection, fall back to operation's first server (already respects operation > path > global hierarchy)
-  const displayServerUrl = globalSelectedServer || operation.servers.at(0)?.url;
+  const fallbackServerUrl = useResolvedServerUrl(operation.servers.at(0));
+  const displayServerUrl = globalSelectedServer || fallbackServerUrl;
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);

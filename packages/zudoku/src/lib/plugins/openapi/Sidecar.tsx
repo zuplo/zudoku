@@ -23,6 +23,7 @@ import { GraphiQLDialog } from "./playground/GraphiQLDialog.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
+import { useResolvedServerUrl } from "./state.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 import {
@@ -40,6 +41,14 @@ export const GetServerQuery = graphql(/* GraphQL */ `
       url
       servers {
         url
+        name
+        description
+        variables {
+          name
+          default
+          enum
+          description
+        }
       }
     }
   }
@@ -180,9 +189,10 @@ export const Sidecar = ({
   );
 
   // Manual server selection takes precedence over the server hierarchy.
-  // If no manual selection, fall back to operation's first server (already respects operation > path > global hierarchy)
-  const selectedServer =
-    globalSelectedServer || operation.servers.at(0)?.url || "";
+  // If no manual selection, fall back to operation's first server (already respects operation > path > global hierarchy).
+  // Its variables are resolved against the same persisted overrides the playground uses.
+  const fallbackServerUrl = useResolvedServerUrl(operation.servers.at(0));
+  const selectedServer = globalSelectedServer || fallbackServerUrl || "";
   const operationUrl = joinUrl(selectedServer, operation.path);
 
   const securitySchemes = useMemo(
@@ -351,7 +361,7 @@ export const Sidecar = ({
                 />
               ) : (
                 <PlaygroundDialogWrapper
-                  servers={operation.servers.map((server) => server.url)}
+                  servers={operation.servers}
                   operation={operation}
                   examples={requestBodyContent ?? undefined}
                 />

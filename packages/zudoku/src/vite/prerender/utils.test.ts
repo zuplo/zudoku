@@ -2,6 +2,7 @@ import type { RouteObject } from "react-router";
 import { describe, expect, it } from "vitest";
 import {
   routesToPaths,
+  routesToPrerenderPaths,
   routesToRewrites,
   selectPagesToIndex,
 } from "./utils.js";
@@ -79,6 +80,28 @@ describe("routesToPaths", () => {
 
   it("returns empty for empty input", () => {
     expect(routesToPaths([])).toEqual([]);
+  });
+});
+
+describe("routesToPrerenderPaths", () => {
+  it("deduplicates redirect sources already present in the route paths", () => {
+    const routes: RouteObject[] = [{ path: "about" }, { path: "contact" }];
+
+    expect(
+      routesToPrerenderPaths(routes, [{ from: "/about" }, { from: "about" }]),
+    ).toEqual(["/about", "/contact"]);
+  });
+
+  it("appends distinct redirect sources in configuration order", () => {
+    const routes: RouteObject[] = [{ path: "about" }];
+
+    expect(
+      routesToPrerenderPaths(routes, [
+        { from: "/old-home" },
+        { from: "/legacy/contact" },
+        { from: "/old-home" },
+      ]),
+    ).toEqual(["/about", "/old-home", "/legacy/contact"]);
   });
 });
 
