@@ -92,7 +92,8 @@ const ServerVariableInput = ({
 
   return (
     <Input
-      className="h-8 font-mono text-xs"
+      // 16px text on small screens keeps iOS Safari from zooming on focus
+      className="h-9 sm:h-8 font-mono text-base sm:text-xs"
       value={draft}
       placeholder={placeholder}
       aria-label={`Value for server variable ${name}`}
@@ -133,7 +134,11 @@ const ServerVariablesPopover = ({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-80 flex flex-col gap-3">
+      <PopoverContent
+        align="end"
+        collisionPadding={16}
+        className="w-80 max-w-(--radix-popover-content-available-width) max-h-(--radix-popover-content-available-height) overflow-y-auto flex flex-col gap-3"
+      >
         <div className="flex flex-col gap-1">
           <span className="text-sm font-medium">Server variables</span>
           <code className="text-xs text-muted-foreground break-all">
@@ -147,7 +152,7 @@ const ServerVariablesPopover = ({
             </span>
             {variable.enum && variable.enum.length > 0 ? (
               <SimpleSelect
-                className="font-mono text-xs border-input bg-transparent dark:bg-input/30 dark:hover:bg-input/50 py-1.5"
+                className="font-mono text-base sm:text-xs border-input bg-transparent dark:bg-input/30 dark:hover:bg-input/50 py-1.5"
                 value={getServerVariableValue(variable, variableValues)}
                 showChevrons
                 aria-label={`Value for server variable ${variable.name}`}
@@ -217,10 +222,11 @@ export const Endpoint = () => {
           }))}
         />
       ) : (
-        <span className="font-mono text-xs max-w-[450px] truncate">
+        <span className="font-mono text-xs min-w-0 max-w-[450px] truncate">
           {resolvedServer}
         </span>
       )}
+      <CopyButton url={resolvedServer} />
       {variables.length > 0 && (
         <ServerVariablesPopover
           // Remount when switching servers so input drafts start from that
@@ -232,7 +238,6 @@ export const Endpoint = () => {
           setVariable={setVariable}
         />
       )}
-      <CopyButton url={resolvedServer} />
     </div>
   );
 };
