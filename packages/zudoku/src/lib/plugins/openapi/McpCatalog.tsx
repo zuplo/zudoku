@@ -40,7 +40,12 @@ import {
   type McpServerData,
 } from "./mcp-configs.js";
 import { MCPEndpoint } from "./MCPEndpoint.js";
+import { useSelectedServerStore } from "./state.js";
 import { MCP_SERVER_EXTENSION } from "./util/documentType.js";
+import {
+  resolveServerUrl,
+  type ServerVariableDefinition,
+} from "./util/resolveServerUrl.js";
 import {
   sanitizeMarkdownForMetatag,
   stripMarkdown,
@@ -63,12 +68,30 @@ export const GetMcpCatalogQuery = graphql(`
           extensions
           servers {
             url
+            variables {
+              name
+              default
+              enum
+            }
           }
         }
       }
     }
   }
 `);
+
+const resolveFirstServer = (
+  servers: Array<{ url: string; variables: ServerVariableDefinition[] }>,
+  overridesByTemplate: Record<string, Record<string, string>>,
+) => {
+  const server = servers.at(0);
+  if (!server) return undefined;
+  return resolveServerUrl(
+    server.url,
+    server.variables,
+    overridesByTemplate[server.url],
+  );
+};
 
 const ALL_SERVERS = "all";
 const UNTAGGED_LABEL = "Other";
@@ -115,6 +138,9 @@ export const McpCatalog = () => {
 
   // Operations may carry more than one tag, so the same server can appear under
   // several tags. Collapse by slug and collect the tags it belongs to.
+  const serverVariables = useSelectedServerStore(
+    (state) => state.serverVariables,
+  );
   const servers = useMemo(() => {
     const bySlug = new Map<string, McpServerEntry>();
 
@@ -146,7 +172,7 @@ export const McpCatalog = () => {
           ),
           description: operation.description ?? "",
           operationPath: operation.path,
-          serverUrl: operation.servers.at(0)?.url,
+          serverUrl: resolveFirstServer(operation.servers, serverVariables),
           summary: operation.summary ?? undefined,
           data,
           tags: [tagLabel],
@@ -156,7 +182,7 @@ export const McpCatalog = () => {
     }
 
     return [...bySlug.values()];
-  }, [schema.tags]);
+  }, [schema.tags, serverVariables]);
 
   const filterChips = useMemo(() => {
     const seen = new Set<string>();
