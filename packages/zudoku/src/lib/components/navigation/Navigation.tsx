@@ -6,7 +6,7 @@ import { NavigationFilterProvider } from "./NavigationFilterContext.js";
 import { NavigationFrames } from "./NavigationFrames.js";
 import { NavigationWrapper } from "./NavigationWrapper.js";
 import { useNavigationFrame } from "./useNavigationFrame.js";
-import { getItemPath } from "./utils.js";
+import { sectionLanding } from "./utils.js";
 
 export const Navigation = ({
   onRequestClose,
@@ -18,8 +18,10 @@ export const Navigation = ({
   topNavItem?: NavigationItemType;
 }) => {
   const frame = useNavigationFrame(navigation, topNavItem);
+  // Linkless sections fall back to their first page, so two sections with the
+  // same label still get distinct keys.
   const section = topNavItem
-    ? (getItemPath(topNavItem) ?? topNavItem.label)
+    ? sectionLanding(topNavItem) || topNavItem.label
     : "";
 
   return (

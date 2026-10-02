@@ -124,6 +124,68 @@ describe("Navigation", () => {
     ).not.toHaveLength(0);
   });
 
+  it("does not share category open state between linkless sections with the same label", async () => {
+    const router = await render(
+      {
+        navigation: [
+          {
+            type: "category",
+            label: "Reference",
+            items: [
+              {
+                type: "category",
+                label: "Locations",
+                collapsed: false,
+                items: [
+                  {
+                    type: "custom-page",
+                    label: "Search",
+                    path: "/api/locations",
+                    element: null,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "category",
+            label: "Reference",
+            items: [
+              {
+                type: "category",
+                label: "Locations",
+                collapsible: false,
+                items: [
+                  {
+                    type: "custom-page",
+                    label: "Location Keys",
+                    path: "/docs/location-keys",
+                    element: null,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      "/api/locations",
+    );
+
+    await act(async () => {
+      const toggle = getLocationsToggle();
+      if (toggle) fireEvent.click(toggle);
+    });
+    expect(getLocationsToggle()?.getAttribute("aria-expanded")).toBe("false");
+
+    await act(async () => {
+      await router.navigate("/docs/location-keys");
+    });
+
+    expect(
+      screen.queryAllByRole("link", { name: "Location Keys", hidden: true }),
+    ).not.toHaveLength(0);
+  });
+
   it("keeps category open state when navigating within the same section", async () => {
     const router = await render(
       {

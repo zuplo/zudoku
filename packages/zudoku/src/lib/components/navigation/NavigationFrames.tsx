@@ -91,9 +91,11 @@ export const NavigationFrames = ({
                 </span>
               </Link>
             )}
-            {/* Keyed by section so same-label categories in different sections
-                don't share open state. The frame itself stays mounted (no slide
-                on a plain section switch). */}
+            {/* Categories keep their open state in local useState and are keyed
+                by label, so without this key a same-label category in another
+                section would be reused with its state. Keying by section remounts
+                the items on a section switch, while the frame itself stays
+                mounted so a plain section switch doesn't slide. */}
             <Fragment key={section}>
               {frame.items.map((item) => (
                 <NavigationItem
