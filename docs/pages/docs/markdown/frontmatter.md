@@ -35,6 +35,25 @@ description: This page explains how to use Zudoku's markdown features.
 ---
 ```
 
+### `seo`
+
+Overrides the browser title (the HTML `<title>`) and meta description without changing the page
+heading or sidebar label. Use it when the visible title is short but search results need more
+context. Both properties are optional and fall back to `title` and `description`.
+
+```md
+---
+title: Location Key
+seo:
+  title: Daily Forecasts by Location Key
+  description: Get daily weather forecasts for a location key, up to 15 days ahead.
+---
+```
+
+The site-wide [`metadata.title`](/docs/configuration/overview#metadata) template still applies to
+`seo.title`. To do the same for an API tag page, use the
+[`x-zudoku-seo`](/docs/openapi-extensions/x-zudoku-seo) extension.
+
 ### `category`
 
 Assigns the page to a specific category for organizational purposes. This will be shown above the

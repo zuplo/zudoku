@@ -4,7 +4,8 @@ sidebar_icon: search
 ---
 
 Use `x-zudoku-seo` to set the browser title (the HTML `<title>`) and meta description of a tag's
-page without changing its sidebar label or page heading.
+page without changing its sidebar label or page heading. It works like the
+[`seo` frontmatter](/docs/markdown/frontmatter#seo) on Markdown pages.
 
 By default, the title of a tag page is built from the tag's [`x-displayName`](./x-display-name) (or
 `name`) and the API title, for example `Location Key - Weather API`. When several tags share the
@@ -66,3 +67,4 @@ hourly page keeps the meta description derived from its tag description.
 - [`x-displayName`](./x-display-name) — change the label shown in the sidebar, headings and default
   page title
 - [`x-tagGroups`](./x-tag-groups) — group tags into sidebar sections
+- [`seo` frontmatter](/docs/markdown/frontmatter#seo) — the same settings for Markdown pages
