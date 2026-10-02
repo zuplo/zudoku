@@ -31,7 +31,12 @@ export const BuildConfigSchema = z.object({
   processors: z.array(BuildProcessorSchema).optional(),
   remarkPlugins: PluginConfigSchema.optional(),
   rehypePlugins: PluginConfigSchema.optional(),
-  prerender: z.object({ workers: z.number().optional() }).optional(),
+  prerender: z
+    .object({
+      workers: z.number().optional(),
+      criticalCss: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 const zudokuBuildConfigFiles = [

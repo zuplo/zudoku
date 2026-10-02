@@ -25,6 +25,7 @@ const buildConfig: ZudokuBuildConfig = {
   ],
   prerender: {
     workers: Math.floor(os.cpus().length * 0.75),
+    criticalCss: true,
   },
 };
 

@@ -1,10 +1,9 @@
 import type { LucideIcon } from "lucide-react";
 import { Link } from "react-router";
-import {
-  isHeaderNavGroup,
-  type HeaderNavGroup,
-  type HeaderNavItem,
-  type HeaderNavLinkItem,
+import type {
+  HeaderNavGroup,
+  HeaderNavItem,
+  HeaderNavLinkItem,
 } from "../../config/validators/HeaderNavigationSchema.js";
 import {
   NavigationMenu,
@@ -16,6 +15,7 @@ import {
   navigationMenuTriggerStyle,
 } from "../ui/NavigationMenu.js";
 import { cn } from "../util/cn.js";
+import { isHeaderNavGroup } from "../util/isHeaderNavGroup.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
 const NavLinkItem = ({ item }: { item: HeaderNavLinkItem }) => {
