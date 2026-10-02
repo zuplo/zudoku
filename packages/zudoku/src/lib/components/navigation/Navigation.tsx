@@ -26,7 +26,7 @@ export const Navigation = ({
     <NavigationFilterProvider resetKey={`${section}\n${frame.id}`}>
       <NavigationWrapper>
         <Slot.Target name="navigation-before" />
-        <NavigationFrames frame={frame} />
+        <NavigationFrames frame={frame} section={section} />
         <Slot.Target name="navigation-after" />
       </NavigationWrapper>
       <DrawerContent
@@ -38,7 +38,11 @@ export const Navigation = ({
           <VisuallyHidden>
             <DrawerTitle>Navigation</DrawerTitle>
           </VisuallyHidden>
-          <NavigationFrames frame={frame} onRequestClose={onRequestClose} />
+          <NavigationFrames
+            frame={frame}
+            section={section}
+            onRequestClose={onRequestClose}
+          />
         </div>
       </DrawerContent>
     </NavigationFilterProvider>
