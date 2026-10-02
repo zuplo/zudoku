@@ -46,6 +46,27 @@ describe("InputNavigationSchema", () => {
     expect(InputNavigationSchema.parse(input)).toEqual(input);
   });
 
+  it("parses a category `landing` in all three forms", () => {
+    const input = [
+      { type: "category", label: "A", landing: "docs/overview", items: [] },
+      {
+        type: "category",
+        label: "B",
+        landing: { type: "doc", file: "docs/overview", path: "/overview" },
+        items: [],
+      },
+      {
+        type: "category",
+        label: "C",
+        link: { type: "link", to: "/apis" },
+        landing: { type: "link", to: "/apis/overview" },
+        items: [],
+      },
+    ];
+
+    expect(InputNavigationSchema.parse(input)).toEqual(input);
+  });
+
   it("strips unknown keys from items", () => {
     const result = InputNavigationSchema.parse([
       { type: "doc", file: "docs/intro", unknown: true },
