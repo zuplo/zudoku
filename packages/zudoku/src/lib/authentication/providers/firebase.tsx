@@ -64,6 +64,7 @@ class FirebaseAuthenticationProvider
   public readonly disableSignUp: boolean;
   private readonly redirectToAfterSignOut: string;
   private readonly signUpConfig?: FirebaseAuthenticationConfig["signUp"];
+  private initialAuthStatePromise?: Promise<void>;
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
@@ -87,13 +88,55 @@ class FirebaseAuthenticationProvider
     this.enableUsernamePassword =
       config.providers?.includes("password") ?? false;
     this.enableEmailLink = config.providers?.includes("emailLink") ?? false;
+
+    // Restoring Firebase's persisted session can involve IndexedDB and token
+    // refresh work. Start it eagerly so protected routes remain fail-closed,
+    // but don't expose it as plugin initialize() because ZudokuProvider waits
+    // for initialize promises before rendering public content.
+    void this.restoreInitialAuthState();
   }
 
-  async initialize() {
-    await this.auth.authStateReady();
+  private restoreInitialAuthState() {
+    if (this.initialAuthStatePromise) return this.initialAuthStatePromise;
+
+    if (typeof window === "undefined") {
+      return Promise.resolve();
+    }
+
+    const hasSsrAuth = window.ZUDOKU_SSR_AUTH !== undefined;
+    if (!hasSsrAuth) {
+      useAuthState.setState({
+        isAuthenticated: false,
+        isPending: true,
+        profile: null,
+        providerData: null,
+      });
+    }
+
+    this.initialAuthStatePromise = this.auth
+      .authStateReady()
+      .then(async () => {
+        const user = this.auth.currentUser;
+        if (user) {
+          await this.setUserLoggedIn(user);
+        } else if (!hasSsrAuth) {
+          useAuthState.getState().setLoggedOut();
+        }
+      })
+      .catch((error: unknown) => {
+        if (!hasSsrAuth) useAuthState.getState().setLoggedOut();
+        // biome-ignore lint/suspicious/noConsole: Auth restoration failures should be visible without blocking the page
+        console.warn(
+          "Firebase failed to restore the initial auth state:",
+          error,
+        );
+      });
+
+    return this.initialAuthStatePromise;
   }
 
   async signRequest(request: Request): Promise<Request> {
+    await this.restoreInitialAuthState();
     const accessToken = await this.auth.currentUser?.getIdToken();
     if (!accessToken) {
       throw new AuthorizationError("User is not authenticated");
@@ -378,14 +421,8 @@ class FirebaseAuthenticationProvider
     void navigate(this.redirectToAfterSignOut, { replace: true });
   };
 
-  onPageLoad = async () => {
-    const user = this.auth.currentUser;
-
-    if (user) {
-      await this.setUserLoggedIn(user);
-    } else {
-      useAuthState.setState({ isPending: false });
-    }
+  onPageLoad = () => {
+    void this.restoreInitialAuthState();
   };
 
   private async setUserLoggedIn(user: User) {
