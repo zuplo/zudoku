@@ -97,7 +97,7 @@ export default {
           authorizeRequest: (request) => {
             // We get the access token from the
             // authentication provider (Auth0) and add it to the request headers
-            return context.authentication?.signRequest(request);
+            return context.authentication?.signRequest(request) ?? request;
           },
         },
       ],
