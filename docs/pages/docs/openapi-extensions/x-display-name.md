@@ -29,3 +29,6 @@ tags:
 
 Without `x-displayName`, the sidebar would show `ai-ops` and `user-mgmt`. With it, the sidebar
 displays `AI Operations` and `User Management` instead.
+
+The display name is also used in the page's browser title. To set a different title or meta
+description without changing the sidebar label or heading, use [`x-zudoku-seo`](./x-zudoku-seo).
