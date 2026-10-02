@@ -422,8 +422,8 @@ Extensions that can be applied to tag categories:
 
 - `x-zudoku-collapsed`: Control initial collapsed state of a tag category (default: `true`)
 - `x-zudoku-collapsible`: Control if a tag category can be collapsed (default: `true`)
-- `x-zudoku-page-title`: Set the browser title of a tag's page without changing its sidebar label or
-  heading
+- `x-zudoku-seo`: Set the browser title and meta description of a tag's page without changing its
+  sidebar label or heading
 
 Example:
 
@@ -463,6 +463,7 @@ in the page's `head`.
 | description       | `info.summary`   | `info.summary` is preferred as it is shorter and plaintext-only, but Zudoku will fall back to the `info.description` if no summary is provided |
 
 Tag pages are titled `<tag> - <info.title>`, using the tag's
-[`x-displayName`](../openapi-extensions/x-display-name) when set. To set a different browser title
-for a tag page without changing its sidebar label or heading, use
-[`x-zudoku-page-title`](../openapi-extensions/x-zudoku-page-title).
+[`x-displayName`](../openapi-extensions/x-display-name) when set, and use the tag's `description`
+for the meta description. To set a different browser title or meta description for a tag page
+without changing its sidebar label or heading, use
+[`x-zudoku-seo`](../openapi-extensions/x-zudoku-seo).

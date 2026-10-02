@@ -14,6 +14,7 @@ import { graphql } from "./graphql/index.js";
 import { UNTAGGED_PATH } from "./index.js";
 import { OperationListItem } from "./OperationListItem.js";
 import { useSelectedServer } from "./state.js";
+import { getSeoExtension } from "./util/getSeoExtension.js";
 import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
 import { useWarmupSchema } from "./util/useWarmupSchema.js";
 
@@ -232,16 +233,22 @@ export const OperationList = ({
   // This is to avoid the performance issues when there are a lot of operations
   const shouldLazyHighlight = operations.length > LAZY_OPERATION_LIST_THRESHOLD;
 
+  // `x-zudoku-seo` sets the browser title and meta description without
+  // changing the sidebar label or heading (both come from `x-displayName`)
+  const seo = getSeoExtension(schema.tag.extensions);
+
   // The summary property is preferable here as it is a short description of
   // the API, whereas the description property is typically longer and supports
   // commonmark formatting, making it ill-suited for use in the meta description
-  const metaDescription = tagDescription
-    ? sanitizeMarkdownForMetatag(tagDescription)
-    : summary
-      ? summary
-      : description
-        ? sanitizeMarkdownForMetatag(description)
-        : undefined;
+  const metaDescription =
+    seo.description ??
+    (tagDescription
+      ? sanitizeMarkdownForMetatag(tagDescription)
+      : summary
+        ? summary
+        : description
+          ? sanitizeMarkdownForMetatag(description)
+          : undefined);
 
   const paginationProps = {
     prev: prev
@@ -269,14 +276,8 @@ export const OperationList = ({
     ? "Other endpoints"
     : (schema.tag.extensions?.["x-displayName"] ?? schema.tag.name);
 
-  // Overrides only the browser title, so tags sharing an `x-displayName`
-  // (e.g. across tag groups) can still get unique titles
-  const pageTitle = schema.tag.extensions?.["x-zudoku-page-title"];
-
   const helmetTitle =
-    typeof pageTitle === "string" && pageTitle.trim()
-      ? pageTitle
-      : [tagTitle, title].filter(Boolean).join(" - ");
+    seo.title ?? [tagTitle, title].filter(Boolean).join(" - ");
 
   return (
     <div
