@@ -66,7 +66,7 @@ export const Markdown = memo(
     );
 
     return (
-      <Typography className={className}>
+      <Typography className={className} data-zudoku-runtime-shiki>
         <ReactMarkdown
           remarkPlugins={remarkPlugins}
           rehypePlugins={rehypePlugins}

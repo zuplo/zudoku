@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { lazy, type ReactNode } from "react";
 import type {
   ApiIdentity,
   ApiIdentityPlugin,
@@ -7,11 +7,24 @@ import type {
 } from "zudoku";
 import { Callout } from "zudoku/components";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
-import { Landingpage } from "./src/Landingpage";
-import { MembersOnly } from "./src/MembersOnly";
 import { NotFound } from "./src/NotFound";
-import { VipLounge } from "./src/VipLounge";
 import "./custom.css";
+
+const Landingpage = lazy(() =>
+  import("./src/Landingpage").then((module) => ({
+    default: module.Landingpage,
+  })),
+);
+const MembersOnly = lazy(() =>
+  import("./src/MembersOnly").then((module) => ({
+    default: module.MembersOnly,
+  })),
+);
+const VipLounge = lazy(() =>
+  import("./src/VipLounge").then((module) => ({
+    default: module.VipLounge,
+  })),
+);
 
 // The Employee MCP Servers API documents internal tooling, so it is hidden from
 // the catalog and its routes are blocked unless the crew member is signed in.
