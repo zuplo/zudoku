@@ -114,6 +114,87 @@ While shadcn/ui defines additional theme variables, Zudoku currently uses only t
 
 :::
 
+## Badge Colors
+
+Navigation badges and the HTTP method labels on OpenAPI pages share one palette of seven CSS
+variables. Each token is used for both badge styles: as the text color of a label, and as the
+background of a filled badge with a `--background`-colored label.
+
+| Variable         | Used for              |
+| ---------------- | --------------------- |
+| `--badge-green`  | `GET`                 |
+| `--badge-blue`   | `POST`                |
+| `--badge-yellow` | `PUT`                 |
+| `--badge-red`    | `DELETE`              |
+| `--badge-purple` | `PATCH`               |
+| `--badge-indigo` | `OPTIONS`, MCP badges |
+| `--badge-gray`   | `HEAD`, `TRACE`       |
+
+These are CSS variables rather than `theme` config keys, so set them through
+[`customCss`](#custom-css) or your own stylesheet. Like the other theme colors, they're defined
+separately for light and dark mode:
+
+```ts title=zudoku.config.ts
+const config = {
+  theme: {
+    customCss: {
+      ":root": {
+        "--badge-green": "oklch(45% 0.13 160)",
+      },
+      ".dark": {
+        "--badge-green": "oklch(75% 0.18 160)",
+      },
+    },
+  },
+};
+```
+
+To keep badges readable, pick each color so it reaches a contrast ratio of at least 4.5:1 against
+your `--background` in that mode. Contrast works the same in both directions, so that one check
+covers both styles: a dark color on a light page, and a light page color on a dark badge. In
+practice that means a dark shade in light mode and a light shade in dark mode.
+
+Badges also accept a `color` of `outline`, which uses `--border` and `--foreground` instead of the
+palette.
+
+### Badge colors with `noDefaultTheme`
+
+The badge tokens are part of the default theme. If you set [`noDefaultTheme`](#default-theme), you
+need to define all seven yourself, for both light and dark mode.
+
+:::caution
+
+Without them, badges render with no color: text badges take the color of the surrounding text, and
+filled badges become invisible, because their label is your background color on a transparent fill.
+
+:::
+
+The build warns if any of the seven are missing from your CSS.
+
+To keep the default palette, copy these values into your stylesheet or `customCss`:
+
+```css
+:root {
+  --badge-green: oklch(44.8% 0.119 151.328);
+  --badge-blue: oklch(50% 0.134 242.749);
+  --badge-yellow: oklch(47.6% 0.114 61.907);
+  --badge-red: oklch(50.5% 0.213 27.518);
+  --badge-purple: oklch(55.8% 0.288 302.321);
+  --badge-indigo: oklch(51.1% 0.262 276.966);
+  --badge-gray: oklch(44.6% 0.03 256.802);
+}
+
+.dark {
+  --badge-green: oklch(72.3% 0.219 149.579);
+  --badge-blue: oklch(68.5% 0.169 237.323);
+  --badge-yellow: oklch(79.5% 0.184 86.047);
+  --badge-red: oklch(70.4% 0.191 22.216);
+  --badge-purple: oklch(71.4% 0.203 305.504);
+  --badge-indigo: oklch(67.3% 0.182 276.935);
+  --badge-gray: oklch(70.7% 0.022 261.325);
+}
+```
+
 ## shadcn Registry Integration
 
 The easiest way to customize your theme is by using a Shadcn registry theme. For example you can use
@@ -261,6 +342,9 @@ const config = {
 
 When `noDefaultTheme` is set to `true`, no default colors or styling will be applied, giving you
 complete control over your theme. Changing this requires to restart the development server.
+
+This includes the [badge colors](#badge-colors-with-nodefaulttheme) used for navigation badges and
+HTTP method labels: define the `--badge-*` tokens yourself, or those badges render without color.
 
 ## Complete Example
 

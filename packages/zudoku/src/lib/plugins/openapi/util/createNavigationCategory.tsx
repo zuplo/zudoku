@@ -1,6 +1,6 @@
 import type { NavigationItem } from "../../../../config/validators/NavigationSchema.js";
 import type { OperationResult } from "../index.js";
-import { MethodColorMap } from "./methodColorMap.js";
+import { methodToColor } from "./methodToColor.js";
 
 export const createNavigationCategory = ({
   label,
@@ -35,8 +35,7 @@ export const createNavigationCategory = ({
         { label: "MCP", color: "indigo" as const, invert: true }
       : {
           label: operation.method,
-          // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
-          color: MethodColorMap[operation.method.toLowerCase()]!,
+          color: methodToColor(operation.method),
           invert: true,
         },
   })),
