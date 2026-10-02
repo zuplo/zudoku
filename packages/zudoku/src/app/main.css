@@ -51,23 +51,12 @@
   --font-serif: var(--font-serif);
 
   /*
-   * Badge treatments, derived from the `--badge-*` palette. `inline` inlines
-   * the `color-mix()` into each utility so `--badge-color`, set per element,
-   * resolves there rather than at `:root`. Registering them as real color
-   * utilities also lets `cn()`/twMerge resolve them against other `text-*`
-   * classes instead of leaving both in the class list.
+   * Badge color. Elements pick a palette token by setting `--badge-color`
+   * (see `badgeColorClass`); `inline` makes the `var()` resolve per element
+   * rather than at `:root`. Falls back to gray so a `text-badge` / `bg-badge`
+   * without a color is visible rather than silently inheriting.
    */
-  --color-badge-fill: color-mix(
-    in oklab,
-    var(--badge-color) var(--badge-fill-mix),
-    var(--badge-shade)
-  );
-  --color-badge-text: color-mix(
-    in oklab,
-    var(--badge-color) var(--badge-text-mix),
-    var(--badge-shade)
-  );
-  --color-badge-fill-foreground: var(--badge-fill-foreground);
+  --color-badge: var(--badge-color, var(--badge-gray));
 }
 
 @utility typography {

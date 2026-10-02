@@ -1,7 +1,5 @@
-import {
-  type BadgeColor,
-  badgeColorStyle,
-} from "../../../components/navigation/NavigationBadge.js";
+import { type BadgeColor, badgeColorClass } from "../../../util/badgeColor.js";
+import { cn } from "../../../util/cn.js";
 
 /**
  * Single source of truth for HTTP method colors. The sidebar badge and the
@@ -22,8 +20,6 @@ const MethodColorMap: Record<string, BadgeColor> = {
 export const methodToColor = (method: string): BadgeColor =>
   MethodColorMap[method.toLowerCase()] ?? "gray";
 
-/** Renders a method label in its palette color. */
-export const methodColorProps = (method: string) => ({
-  className: "text-badge-text",
-  style: badgeColorStyle(methodToColor(method)),
-});
+/** Classes that render a method label as text in its palette color. */
+export const methodColorClass = (method: string) =>
+  cn(badgeColorClass(methodToColor(method)), "text-badge");
