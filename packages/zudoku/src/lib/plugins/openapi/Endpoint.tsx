@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Input } from "zudoku/ui/Input.js";
 import { Button } from "../../ui/Button.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
@@ -8,7 +8,10 @@ import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
 import { SimpleSelect } from "./SimpleSelect.js";
 import { useSelectedServer } from "./state.js";
-import { getServerLabel } from "./util/resolveServerUrl.js";
+import {
+  getServerLabel,
+  getServerVariableValue,
+} from "./util/resolveServerUrl.js";
 
 const ServersQuery = graphql(/* GraphQL */ `
   query ServersQuery($input: JSON!, $type: SchemaType!) {
@@ -50,6 +53,44 @@ const CopyButton = ({ url }: { url: string }) => {
         <CopyIcon size={14} strokeWidth={1.3} aria-hidden="true" />
       )}
     </Button>
+  );
+};
+
+const COMMIT_DELAY_MS = 300;
+
+// Free-text values are kept as a local draft and committed (debounced, or on
+// blur) so typing doesn't write to storage and re-render every operation on
+// each keystroke.
+const ServerVariableInput = ({
+  name,
+  placeholder,
+  value,
+  onCommit,
+}: {
+  name: string;
+  placeholder: string;
+  value: string;
+  onCommit: (name: string, value: string) => void;
+}) => {
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => {
+    if (draft === value) return;
+    const timeout = setTimeout(() => onCommit(name, draft), COMMIT_DELAY_MS);
+    return () => clearTimeout(timeout);
+  }, [draft, value, name, onCommit]);
+
+  return (
+    <Input
+      className="h-7 w-32 font-mono text-xs py-1"
+      value={draft}
+      placeholder={placeholder}
+      aria-label={`Value for server variable ${name}`}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => {
+        if (draft !== value) onCommit(name, draft);
+      }}
+    />
   );
 };
 
@@ -109,7 +150,7 @@ export const Endpoint = () => {
               {variable.enum && variable.enum.length > 0 ? (
                 <SimpleSelect
                   className="font-mono text-xs border-input bg-transparent dark:bg-input/30 dark:hover:bg-input/50 py-1 max-w-40"
-                  value={variableValues[variable.name] ?? variable.default}
+                  value={getServerVariableValue(variable, variableValues)}
                   showChevrons
                   aria-label={`Value for server variable ${variable.name}`}
                   onChange={(e) =>
@@ -123,16 +164,14 @@ export const Endpoint = () => {
                   }))}
                 />
               ) : (
-                <Input
-                  className="h-7 w-32 font-mono text-xs py-1"
-                  value={variableValues[variable.name] ?? ""}
+                <ServerVariableInput
+                  // Remount when switching servers so the draft starts from
+                  // that server's stored value.
+                  key={selectedServer}
+                  name={variable.name}
                   placeholder={variable.default}
-                  aria-label={`Value for server variable ${variable.name}`}
-                  onChange={(e) =>
-                    startTransition(() =>
-                      setVariable(variable.name, e.target.value),
-                    )
-                  }
+                  value={variableValues[variable.name] ?? ""}
+                  onCommit={setVariable}
                 />
               )}
             </div>

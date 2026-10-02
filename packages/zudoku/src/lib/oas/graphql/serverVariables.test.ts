@@ -184,4 +184,35 @@ describe("Server variables GraphQL", () => {
       },
     ]);
   });
+
+  it("falls back to the first enum value or an empty string when `default` is missing", async () => {
+    const schema = createTestSchema({
+      servers: [
+        {
+          url: "https://{region}.example.com:{port}/{basePath}",
+          // `default` is required by the spec but missing in many real schemas
+          variables: {
+            region: { enum: ["eu", "us"] },
+            port: { enum: [443, 8443] },
+            basePath: {},
+          } as unknown as Record<string, { default: string }>,
+        },
+      ],
+    });
+
+    const data = await executeQuery(
+      schema,
+      `query ($input: JSON!, $type: SchemaType!) {
+        schema(input: $input, type: $type) {
+          servers { variables { name default enum } }
+        }
+      }`,
+    );
+
+    expect(data.schema.servers[0].variables).toEqual([
+      { name: "region", default: "eu", enum: ["eu", "us"] },
+      { name: "port", default: "443", enum: ["443", "8443"] },
+      { name: "basePath", default: "", enum: null },
+    ]);
+  });
 });

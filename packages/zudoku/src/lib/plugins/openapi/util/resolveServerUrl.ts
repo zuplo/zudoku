@@ -2,16 +2,39 @@ export type ServerVariableDefinition = {
   name: string;
   default: string;
   enum?: string[] | null;
+  description?: string | null;
+};
+
+/**
+ * The value a server variable resolves to: the override when it is a usable
+ * value, otherwise the variable's `default`. An override is ignored when it
+ * is an empty string (the variable inputs use the default as a placeholder
+ * rather than an initial value, so clearing an input resets it to the
+ * default) or, for `enum` variables, when it is not one of the allowed values
+ * (overrides are persisted per URL template and may be stale or come from
+ * another API sharing the same template).
+ */
+export const getServerVariableValue = (
+  variable: ServerVariableDefinition,
+  overrides: Record<string, string> = {},
+): string => {
+  const override = Object.hasOwn(overrides, variable.name)
+    ? overrides[variable.name]
+    : undefined;
+
+  if (!override) return variable.default;
+  if (variable.enum?.length && !variable.enum.includes(override)) {
+    return variable.default;
+  }
+  return override;
 };
 
 /**
  * Substitutes OpenAPI server variable tokens (e.g. `{scheme}`) in a server URL
  * template with the provided override values, falling back to each variable's
- * `default` when no override is present, or when an override is an empty
- * string (the variable inputs use the default as a placeholder rather than an
- * initial value, so clearing an input is how a user resets it to the
- * default). Tokens that don't correspond to a known server variable (e.g.
- * path parameters accidentally present in the template) are left untouched.
+ * `default` (see `getServerVariableValue`). Tokens that don't correspond to a
+ * known server variable (e.g. path parameters accidentally present in the
+ * template) are left untouched.
  */
 export const resolveServerUrl = (
   template: string,
@@ -26,7 +49,7 @@ export const resolveServerUrl = (
     const variable = variableByName.get(name);
     if (!variable) return match;
 
-    return overrides[name] || variable.default;
+    return getServerVariableValue(variable, overrides);
   });
 };
 

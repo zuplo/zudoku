@@ -62,7 +62,14 @@ export type GetMcpCatalogQuery = {
         operationId: string | null;
         path: string;
         extensions: any;
-        servers: Array<{ url: string }>;
+        servers: Array<{
+          url: string;
+          variables: Array<{
+            name: string;
+            default: string;
+            enum: Array<string> | null;
+          }>;
+        }>;
       }>;
     }>;
   };
@@ -551,6 +558,11 @@ export const GetMcpCatalogDocument = new TypedDocumentString(`
         extensions
         servers {
           url
+          variables {
+            name
+            default
+            enum
+          }
         }
       }
     }

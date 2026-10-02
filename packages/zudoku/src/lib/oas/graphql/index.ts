@@ -366,12 +366,19 @@ const ServerItem = builder.objectRef<ServerObject>("Server").implement({
     variables: t.field({
       type: [ServerVariableItem],
       resolve: (parent) =>
-        Object.entries(parent.variables ?? {}).map(([name, variable]) => ({
-          name,
-          default: variable.default,
-          enum: variable.enum,
-          description: variable.description,
-        })),
+        Object.entries(parent.variables ?? {}).map(([name, variable]) => {
+          // YAML parses unquoted values such as `443` as numbers.
+          const enumValues = variable.enum?.map(String);
+          return {
+            name,
+            // `default` is required by the spec but often missing in real-world
+            // schemas, fall back to the first enum value (or an empty string)
+            // instead of failing the whole query on a non-null field.
+            default: String(variable.default ?? enumValues?.[0] ?? ""),
+            enum: enumValues,
+            description: variable.description,
+          };
+        }),
     }),
   }),
 });

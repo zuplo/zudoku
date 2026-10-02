@@ -81,6 +81,39 @@ describe("resolveServerUrl", () => {
       ),
     ).toBe("https://staging.example.com");
   });
+
+  it("ignores overrides that are not in the variable's enum", () => {
+    expect(
+      resolveServerUrl(
+        "https://{region}.example.com",
+        [{ name: "region", default: "prod", enum: ["prod", "eu"] }],
+        { region: "staging" },
+      ),
+    ).toBe("https://prod.example.com");
+  });
+
+  it("uses overrides that are in the variable's enum", () => {
+    expect(
+      resolveServerUrl(
+        "https://{region}.example.com",
+        [{ name: "region", default: "prod", enum: ["prod", "eu"] }],
+        { region: "eu" },
+      ),
+    ).toBe("https://eu.example.com");
+  });
+
+  it("does not read inherited Object.prototype properties as overrides", () => {
+    expect(
+      resolveServerUrl(
+        "https://{constructor}.{toString}.example.com",
+        [
+          { name: "constructor", default: "a" },
+          { name: "toString", default: "b" },
+        ],
+        {},
+      ),
+    ).toBe("https://a.b.example.com");
+  });
 });
 
 describe("getServerLabel", () => {

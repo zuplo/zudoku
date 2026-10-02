@@ -1,10 +1,12 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   resolveServerUrl,
   type ServerVariableDefinition,
 } from "./util/resolveServerUrl.js";
+
+const NO_OVERRIDES: Record<string, string> = Object.freeze({});
 
 interface SelectedServerState {
   selectedServer?: string;
@@ -33,19 +35,28 @@ export const useSelectedServerStore = create<SelectedServerState>()(
           },
         })),
     }),
-    {
-      name: "zudoku-selected-server",
-      version: 1,
-      // Older persisted state (version < 1) predates `serverVariables`.
-      migrate: (persistedState, version) => {
-        const state = persistedState as Partial<SelectedServerState>;
-        return version < 1
-          ? { ...state, serverVariables: state.serverVariables ?? {} }
-          : state;
-      },
-    },
+    { name: "zudoku-selected-server" },
   ),
 );
+
+/**
+ * Resolves a server that has no selection UI of its own (e.g. an operation or
+ * path-level server) against the same persisted variable overrides the
+ * playground uses, so displayed URLs, code samples and requests agree.
+ */
+export const useResolvedServerUrl = (server?: ServerWithVariables) => {
+  const overrides = useSelectedServerStore((state) =>
+    server ? state.serverVariables[server.url] : undefined,
+  );
+
+  return useMemo(
+    () =>
+      server
+        ? resolveServerUrl(server.url, server.variables ?? [], overrides)
+        : undefined,
+    [server, overrides],
+  );
+};
 
 export type ServerWithVariables = {
   url: string;
@@ -79,15 +90,18 @@ export const useSelectedServer = (servers: Array<ServerWithVariables>) => {
     [servers, finalSelectedServer],
   );
 
-  const variableValues = serverVariables[finalSelectedServer] ?? {};
+  const variableValues = serverVariables[finalSelectedServer] ?? NO_OVERRIDES;
 
   const resolvedServer = useMemo(
     () => resolveServerUrl(finalSelectedServer, variables, variableValues),
     [finalSelectedServer, variables, variableValues],
   );
 
-  const setVariable = (name: string, value: string) =>
-    setServerVariable(finalSelectedServer, name, value);
+  const setVariable = useCallback(
+    (name: string, value: string) =>
+      setServerVariable(finalSelectedServer, name, value),
+    [setServerVariable, finalSelectedServer],
+  );
 
   return {
     selectedServer: finalSelectedServer,

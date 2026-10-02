@@ -23,6 +23,7 @@ import { GraphiQLDialog } from "./playground/GraphiQLDialog.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
+import { useResolvedServerUrl } from "./state.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 import {
@@ -32,7 +33,6 @@ import {
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { getGraphQLEndpoint } from "./util/graphqlEndpoint.js";
 import { methodForColor } from "./util/methodToColor.js";
-import { resolveServerUrl } from "./util/resolveServerUrl.js";
 import { useResolvedAuth } from "./util/useResolvedAuth.js";
 
 export const GetServerQuery = graphql(/* GraphQL */ `
@@ -190,14 +190,9 @@ export const Sidecar = ({
 
   // Manual server selection takes precedence over the server hierarchy.
   // If no manual selection, fall back to operation's first server (already respects operation > path > global hierarchy).
-  // Operation/path-level servers have no dedicated selection UI (yet), so any of their
-  // variables are resolved using their OpenAPI-defined defaults.
-  const fallbackServer = operation.servers.at(0);
-  const selectedServer =
-    globalSelectedServer ||
-    (fallbackServer
-      ? resolveServerUrl(fallbackServer.url, fallbackServer.variables, {})
-      : "");
+  // Its variables are resolved against the same persisted overrides the playground uses.
+  const fallbackServerUrl = useResolvedServerUrl(operation.servers.at(0));
+  const selectedServer = globalSelectedServer || fallbackServerUrl || "";
   const operationUrl = joinUrl(selectedServer, operation.path);
 
   const securitySchemes = useMemo(
