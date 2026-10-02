@@ -399,6 +399,8 @@ different levels of your API documentation.
 ### Operations
 
 - `x-zudoku-playground-enabled`: Control playground visibility for an operation (default: `true`)
+- `x-internal`: Hide an operation from the documentation. Also works on path items and parameters.
+  See [`x-internal`](../openapi-extensions/x-internal)
 - `x-explorer-enabled`: Alias for `x-zudoku-playground-enabled` for compatibility Example:
 
 ```json

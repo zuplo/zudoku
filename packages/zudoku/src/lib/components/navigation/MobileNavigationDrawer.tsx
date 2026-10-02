@@ -5,7 +5,7 @@ import { Drawer, DrawerContent, DrawerTitle } from "../../ui/Drawer.js";
 import { NavigationFilterProvider } from "./NavigationFilterContext.js";
 import { NavigationFrames } from "./NavigationFrames.js";
 import { useNavigationFrame } from "./useNavigationFrame.js";
-import { getItemPath } from "./utils.js";
+import { sectionLanding } from "./utils.js";
 
 export const MobileNavigationDrawer = ({
   id,
@@ -25,8 +25,10 @@ export const MobileNavigationDrawer = ({
   triggerRef: RefObject<HTMLButtonElement | null>;
 }) => {
   const frame = useNavigationFrame(navigation, topNavItem);
+  // Linkless sections fall back to their first page, so two sections with the
+  // same label still get distinct keys.
   const section = topNavItem
-    ? (getItemPath(topNavItem) ?? topNavItem.label)
+    ? sectionLanding(topNavItem) || topNavItem.label
     : "";
 
   return (
@@ -47,6 +49,7 @@ export const MobileNavigationDrawer = ({
             </VisuallyHidden>
             <NavigationFrames
               frame={frame}
+              section={section}
               onRequestClose={() => onOpenChange(false)}
             />
           </div>
