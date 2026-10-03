@@ -667,6 +667,7 @@ const config: ZudokuConfig = {
         },
       ],
       path: "/catalog/api-fleet-ops",
+      options: { disableSecurity: false },
       categories: [
         { label: "Core", tags: ["Fleet Command"] },
         { label: "Operations", tags: ["Fleet Command"] },
