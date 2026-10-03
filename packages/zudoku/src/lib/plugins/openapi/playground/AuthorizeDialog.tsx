@@ -15,6 +15,7 @@ import {
 import { Markdown } from "../../../components/Markdown.js";
 import type { SecuritySchemeType } from "../graphql/graphql.js";
 import { ApiKeySchemeForm } from "./scheme-forms/ApiKeySchemeForm.js";
+import { ClientCredentialsSchemeForm } from "./scheme-forms/ClientCredentialsSchemeForm.js";
 import { HttpBasicSchemeForm } from "./scheme-forms/HttpBasicSchemeForm.js";
 import { HttpBearerSchemeForm } from "./scheme-forms/HttpBearerSchemeForm.js";
 import type { SecuritySchemeData } from "./scheme-forms/types.js";
@@ -105,7 +106,16 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
                 playground. Configure it via custom headers.
               </p>
             )}
-          {(scheme.type === "oauth2" || scheme.type === "openIdConnect") && (
+          {scheme.type === "oauth2" &&
+            scheme.flows?.clientCredentials &&
+            scheme.flows.clientCredentials.tokenUrl && (
+              <ClientCredentialsSchemeForm
+                scheme={scheme}
+                onAuthorize={(value) => setCredential(scheme.name, value)}
+              />
+            )}
+          {((scheme.type === "oauth2" && !scheme.flows?.clientCredentials) ||
+            scheme.type === "openIdConnect") && (
             <p className="text-xs text-muted-foreground">
               {scheme.type === "oauth2" ? "OAuth 2.0" : "OpenID Connect"}{" "}
               requires a Zudoku authentication provider.{" "}
