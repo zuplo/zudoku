@@ -154,8 +154,13 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       expect(useAuthState.getState().profile?.emailVerified).toBe(true);
     });
 
-    test("throws OAuthAuthorizationError for opaque access tokens", async () => {
-      const provider = createProvider();
+    test("throws OAuthAuthorizationError for opaque access tokens when audience is configured", async () => {
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        audience: "https://api.example.com",
+      });
 
       Object.defineProperty(window, "location", {
         configurable: true,
@@ -182,6 +187,44 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       await expect(provider.handleCallback()).rejects.toThrow(
         OAuthAuthorizationError,
       );
+    });
+
+    test("accepts opaque access tokens when no audience is configured", async () => {
+      const provider = createProvider();
+
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: new URL(
+          "http://localhost/oauth/callback?state=test-state&code=test-code",
+        ),
+      });
+
+      sessionStorage.setItem("oauth-state", "test-state");
+      sessionStorage.setItem("code-verifier", "test-verifier");
+
+      vi.mocked(oauth.validateAuthResponse).mockReturnValue(
+        new URLSearchParams({ code: "test-code" }),
+      );
+      vi.mocked(oauth.authorizationCodeGrantRequest).mockResolvedValue(
+        new Response(),
+      );
+      vi.mocked(oauth.processAuthorizationCodeResponse).mockResolvedValue({
+        access_token: "opaque-token-without-dots",
+        token_type: "bearer",
+        expires_in: 3600,
+      } as oauth.TokenEndpointResponse);
+      vi.mocked(oauth.userInfoRequest).mockImplementation(() =>
+        Promise.resolve(
+          Response.json({ sub: "user-1", email: "u@e.com", name: "U" }),
+        ),
+      );
+
+      await expect(provider.handleCallback()).resolves.toBeDefined();
+      const providerData = useAuthState.getState().providerData;
+      expect(providerData?.type).toBe("openid");
+      if (providerData?.type === "openid") {
+        expect(providerData.accessToken).toBe("opaque-token-without-dots");
+      }
     });
 
     test("emailVerified defaults to false when absent everywhere", async () => {
