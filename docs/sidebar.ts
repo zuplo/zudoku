@@ -72,6 +72,7 @@ export const docs: Navigation = [
           "docs/openapi-extensions/x-code-samples",
           "docs/openapi-extensions/x-tag-groups",
           "docs/openapi-extensions/x-display-name",
+          "docs/openapi-extensions/x-internal",
           "docs/openapi-extensions/x-zudoku-collapsed",
           "docs/openapi-extensions/x-zudoku-collapsible",
           "docs/openapi-extensions/x-zudoku-playground-enabled",

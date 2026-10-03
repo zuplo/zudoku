@@ -35,11 +35,12 @@ import type {
   SecuritySchemeType,
 } from "../graphql/graphql.js";
 import type { Content } from "../interfaces.js";
-import { useSelectedServer } from "../state.js";
+import { type ServerWithVariables, useSelectedServer } from "../state.js";
 import {
   findSecurityOption,
   type SecurityOption,
 } from "../util/extractOperationSecurityOptions.js";
+import { getServerLabel } from "../util/resolveServerUrl.js";
 import { AuthorizeDialog } from "./AuthorizeDialog.js";
 import BodyPanel from "./BodyPanel.js";
 import { buildRequestBody } from "./buildRequestBody.js";
@@ -198,7 +199,7 @@ type PlaygroundSecurityScheme = {
 
 export type PlaygroundContentProps = {
   server?: string;
-  servers?: string[];
+  servers?: ServerWithVariables[];
   url: string;
   method: string;
   headers?: Header[];
@@ -231,9 +232,12 @@ export const Playground = ({
   onSignUp,
   responseSchemas,
 }: PlaygroundContentProps) => {
-  const { selectedServer, setSelectedServer } = useSelectedServer(
-    servers.map((url) => ({ url })),
-  );
+  const {
+    selectedServer,
+    setSelectedServer,
+    resolvedServer,
+    serverVariableOverrides,
+  } = useSelectedServer(servers);
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
   const [authorizeSchemeNames, setAuthorizeSchemeNames] = useState<
     string[] | undefined
@@ -361,7 +365,7 @@ export const Playground = ({
       }
 
       const upperMethod = method.toUpperCase();
-      const requestUrl = createUrl(server ?? selectedServer, url, data);
+      const requestUrl = createUrl(server ?? resolvedServer, url, data);
 
       const dataSelection = valueToIdentitySelection(data.identity);
       const selectedRequirement =
@@ -519,12 +523,18 @@ export const Playground = ({
             defaultValue={selectedServer}
           >
             <SelectTrigger className="p-0! h-6! shadow-none border-none flex-row-reverse bg-transparent text-xs gap-0.5">
-              <SelectValue />
+              {/* The trigger always shows the calculated request url (never a server's
+                  `name`/`description`), matching the url shown next to it. */}
+              <SelectValue>
+                {resolvedServer.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {servers.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                <SelectItem key={s.url} value={s.url}>
+                  {getServerLabel(s, serverVariableOverrides[s.url])
+                    .replace(/^https?:\/\//, "")
+                    .replace(/\/$/, "")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -609,7 +619,7 @@ export const Playground = ({
                     onClick={() => {
                       copyToClipboard(
                         createUrl(
-                          server ?? selectedServer,
+                          server ?? resolvedServer,
                           url,
                           form.getValues(),
                         ).toString(),

@@ -16,7 +16,7 @@ export const PlaygroundDialogWrapper = ({
   examples,
 }: {
   server?: string;
-  servers?: string[];
+  servers?: OperationsFragmentFragment["servers"];
   operation: OperationsFragmentFragment;
   examples?: Content[];
 }) => {
