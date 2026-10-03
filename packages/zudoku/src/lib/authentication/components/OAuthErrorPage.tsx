@@ -1,9 +1,13 @@
-import { HomeIcon } from "lucide-react";
+import { ChevronDownIcon, HomeIcon } from "lucide-react";
 import { Link } from "react-router";
-import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
 import { Typography } from "../../components/Typography.js";
 import { Button } from "../../ui/Button.js";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../../ui/Collapsible.js";
 import { OAuthAuthorizationError } from "../errors.js";
 import { useAuth } from "../hook.js";
 
@@ -98,29 +102,41 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
             {details?.message}
           </Typography>
 
-          <DeveloperHint>
-            <p>
-              <strong>Error:</strong> <code>{type}</code>
-            </p>
-            {oauthError?.error_description != null && (
+          {oauthError?.error_description != null && (
+            <Typography className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              {oauthError.error_description}
+            </Typography>
+          )}
+
+          <Collapsible className="text-left">
+            <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:underline mx-auto group">
+              <ChevronDownIcon className="size-3 transition-transform group-data-[state=open]:rotate-180" />
+              Technical details
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 text-xs space-y-1 bg-muted/40 rounded border p-3">
               <p>
-                <strong>Description:</strong> {oauthError.error_description}
+                <strong>Error:</strong> <code>{type}</code>
               </p>
-            )}
-            {oauthError?.error_uri?.startsWith("http") && (
-              <p>
-                <strong>More info:</strong>{" "}
-                <a
-                  href={oauthError.error_uri}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline"
-                >
-                  {oauthError.error_uri}
-                </a>
-              </p>
-            )}
-          </DeveloperHint>
+              {error.message && (
+                <p>
+                  <strong>Message:</strong> {error.message}
+                </p>
+              )}
+              {oauthError?.error_uri?.startsWith("http") && (
+                <p>
+                  <strong>More info:</strong>{" "}
+                  <a
+                    href={oauthError.error_uri}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    {oauthError.error_uri}
+                  </a>
+                </p>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
         </div>
 
         <div className="space-y-3 pt-4">
