@@ -422,6 +422,8 @@ Extensions that can be applied to tag categories:
 
 - `x-zudoku-collapsed`: Control initial collapsed state of a tag category (default: `true`)
 - `x-zudoku-collapsible`: Control if a tag category can be collapsed (default: `true`)
+- `x-zudoku-seo`: Set the page title and meta description of a tag's page without changing its
+  sidebar label or heading. See [`x-zudoku-seo`](../openapi-extensions/x-zudoku-seo)
 
 Example:
 
