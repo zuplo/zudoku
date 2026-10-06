@@ -130,7 +130,6 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
       : [...defaultRemarkPlugins, ...(buildConfig?.remarkPlugins ?? [])];
 
   const defaultRehypePlugins = [
-    [rehypeRaw, { passThrough: nodeTypes }],
     rehypeSlug,
     rehypeExtractTocWithJsx,
     rehypeExtractTocWithJsxExport,
@@ -138,6 +137,11 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
     rehypeNormalizeMdxImages,
     rehypeMdxImportMedia,
     rehypeMetaAsAttributes,
+    // rehype-raw re-parses raw HTML embedded in the tree, which drops code-block
+    // meta (e.g. `title="..."`) that rehype-meta-as-attributes already turned into
+    // node properties -- so it must run after that and the other default plugins,
+    // not before them. See https://github.com/zuplo/zudoku/issues/2809
+    [rehypeRaw, { passThrough: nodeTypes }],
     ...createConfiguredShikiRehypePlugins(
       highlighter,
       config.syntaxHighlighting?.themes,
