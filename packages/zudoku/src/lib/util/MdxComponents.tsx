@@ -6,6 +6,7 @@ import { AnchorLink } from "../components/AnchorLink.js";
 import { Framed } from "../components/Framed.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
+import { ScrollableTable } from "../components/ScrollableTable.js";
 import { HIGHLIGHT_CODE_BLOCK_CLASS } from "../shiki-constants.js";
 import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
@@ -118,14 +119,7 @@ export const MdxComponents = {
     </Suspense>
   ),
   CodeTabPanel,
-  // Wide tables scroll inside the content column instead of overflowing it.
-  // The wrapper takes over the prose table margins so the scrollbar sits
-  // right below the last row.
-  table: ({ node: _node, ...props }) => (
-    <div className="my-[1.75em] overflow-x-auto [&>table]:my-0">
-      <table {...props} />
-    </div>
-  ),
+  table: ({ node: _node, ...props }) => <ScrollableTable {...props} />,
   pre: (props) => (
     <pre className={cn("not-prose my-4", props.className)} {...props} />
   ),
