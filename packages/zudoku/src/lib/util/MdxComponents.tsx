@@ -118,6 +118,14 @@ export const MdxComponents = {
     </Suspense>
   ),
   CodeTabPanel,
+  // Wide tables scroll inside the content column instead of overflowing it.
+  // The wrapper takes over the prose table margins so the scrollbar sits
+  // right below the last row.
+  table: ({ node: _node, ...props }) => (
+    <div className="my-[1.75em] overflow-x-auto [&>table]:my-0">
+      <table {...props} />
+    </div>
+  ),
   pre: (props) => (
     <pre className={cn("not-prose my-4", props.className)} {...props} />
   ),
