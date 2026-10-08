@@ -52,6 +52,7 @@ export const generateDefaultApiOptionsCode = () => [
   `  supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
   `  disablePlayground: config.defaults?.apis?.disablePlayground,`,
   `  disableSidecar: config.defaults?.apis?.disableSidecar,`,
+  `  disableRequestBox: config.defaults?.apis?.disableRequestBox,`,
   `  disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
   `  disableMcpAuthInstructions: config.defaults?.apis?.disableMcpAuthInstructions,`,
   `  showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
