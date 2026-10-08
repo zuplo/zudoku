@@ -5,7 +5,7 @@ import {
   transformerMetaHighlight,
   transformerMetaWordHighlight,
 } from "@shikijs/transformers";
-import type { Root } from "hast";
+import type { Element, Parents, Root } from "hast";
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { createElement, Fragment } from "react";
 import { jsx, jsxs } from "react/jsx-runtime";
@@ -16,8 +16,8 @@ import type {
 } from "shiki";
 import { getSingletonHighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-import type { Pluggable } from "unified";
-import { visit } from "unist-util-visit";
+import type { Pluggable, Transformer } from "unified";
+import { SKIP, visit } from "unist-util-visit";
 import { HIGHLIGHT_CODE_BLOCK_CLASS } from "./shiki-constants.js";
 import { cn } from "./util/cn.js";
 
@@ -49,6 +49,8 @@ const warnUnloadedLanguage = (lang: string, highlighter: HighlighterCore) => {
     warnedLanguages.has(lang) ||
     resolved === "ansi" ||
     resolved === "text" ||
+    // math blocks are not highlighted but left for math plugins (rehype-katex)
+    resolved === "math" ||
     highlighter.getLoadedLanguages().includes(resolved)
   )
     return;
@@ -102,7 +104,12 @@ const rehypeCodeBlockPlugin = () => (tree: Root) => {
       node.properties = {
         ...node.properties,
         ...structuredClone(parent.properties),
-        class: cn(node.properties.class, parent.properties.class),
+        // `className` is only set on blocks Shiki left alone (e.g. math)
+        class: cn(
+          node.properties.className,
+          node.properties.class,
+          parent.properties.class,
+        ),
       };
       parent.properties = {};
     }
@@ -123,13 +130,62 @@ const rehypeWarnUnloadedLanguages =
     });
   };
 
+const isMathCodeBlock = (node: Element) => {
+  const code = node.children[0];
+  return (
+    node.tagName === "pre" &&
+    code?.type === "element" &&
+    code.tagName === "code" &&
+    Array.isArray(code.properties.className) &&
+    code.properties.className.includes("language-math")
+  );
+};
+
+// Shiki highlights every `<pre><code>` and falls back to plain text for unknown
+// languages. For `math` blocks (```math fences and remark-math display math)
+// that drops the `language-math` markup, so math plugins from `rehypePlugins`
+// like rehype-katex, which run after the highlighter, can't render them
+// anymore. Keep those blocks away from Shiki and leave them as they are.
+const rehypeShikiSkipMath = (
+  highlighter: HighlighterCore,
+  options: RehypeShikiCoreOptions,
+): Transformer<Root> => {
+  const highlight = rehypeShikiFromHighlighter(highlighter, options);
+
+  // Stays synchronous (unless Shiki lazy-loads languages) so it keeps working
+  // with react-markdown's `runSync` in the runtime `Markdown` component.
+  return (tree, file) => {
+    const mathBlocks: Array<[parent: Parents, index: number, node: Element]> =
+      [];
+
+    visit(tree, "element", (node, index, parent) => {
+      if (!parent || index === undefined || !isMathCodeBlock(node)) return;
+      mathBlocks.push([parent, index, node]);
+      // Shiki replaces nodes in place, so a placeholder keeps indices stable
+      parent.children[index] = { type: "comment", value: "" };
+      return SKIP;
+    });
+
+    const restoreMathBlocks = () => {
+      for (const [parent, index, node] of mathBlocks) {
+        parent.children[index] = node;
+      }
+    };
+
+    const result = highlight(tree, file, () => undefined);
+    if (result instanceof Promise) return result.then(restoreMathBlocks);
+
+    restoreMathBlocks();
+  };
+};
+
 export const createConfiguredShikiRehypePlugins = (
   highlighterInstance: HighlighterCore,
   themes: ThemesRecord = defaultHighlightOptions.themes,
 ) => [
   rehypeWarnUnloadedLanguages(highlighterInstance),
   [
-    rehypeShikiFromHighlighter,
+    rehypeShikiSkipMath,
     highlighterInstance,
     { ...defaultHighlightOptions, themes },
   ] satisfies Pluggable,
