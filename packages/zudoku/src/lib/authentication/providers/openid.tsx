@@ -145,18 +145,14 @@ export class OpenIDAuthenticationProvider
     }
 
     const accessToken = response.access_token;
-    // Only require a JWT-shaped access token when an audience was explicitly
-    // configured. Without an audience, providers like Auth0 issue opaque
-    // tokens intended for the /userinfo endpoint, which is fine when the
-    // token isn't used to call an API.
-    if (this.audience && accessToken.split(".").length !== 3) {
+    if (accessToken.split(".").length !== 3) {
       throw new OAuthAuthorizationError(
         "The access token received is not a valid JWT.",
         {
           error: "configuration_error",
           error_description:
             "The authentication provider is issuing opaque tokens instead of JWTs. " +
-            "Ensure the configured `audience` matches an API registered with your authentication provider.",
+            "Ensure you have configured the correct `audience` in your authentication settings.",
         },
       );
     }
