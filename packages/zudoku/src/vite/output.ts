@@ -8,8 +8,7 @@ import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import {
   isDynamicRedirect,
-  sortByRouteRank,
-  toBuildOutputRedirect,
+  toBuildOutputRedirects,
 } from "../lib/util/redirectPattern.js";
 import type { RouteRewrite } from "./prerender/utils.js";
 import {
@@ -207,9 +206,10 @@ export function generateOutput({
 
   // Dynamic redirects can't be prerendered, so match them with a regex. They
   // run after the filesystem so real pages win, like React Router's ranking.
-  const dynamicRedirects = sortByRouteRank(
+  const dynamicRedirects = toBuildOutputRedirects(
     (config.redirects ?? []).filter(isDynamicRedirect),
-  ).map((redirect) => toBuildOutputRedirect(redirect, config.basePath));
+    config.basePath,
+  );
 
   if (rewrites.length > 0 || dynamicRedirects.length > 0) {
     routes.push({ handle: "filesystem" });

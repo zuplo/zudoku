@@ -4,8 +4,7 @@ import { joinUrl } from "./joinUrl.js";
 import {
   isDynamicRedirect,
   resolveRedirectTarget,
-  sortByRouteRank,
-  toBuildOutputRedirect,
+  toBuildOutputRedirects,
 } from "./redirectPattern.js";
 
 describe("isDynamicRedirect", () => {
@@ -76,91 +75,124 @@ describe("resolveRedirectTarget", () => {
   });
 });
 
-describe("toBuildOutputRedirect", () => {
+describe("toBuildOutputRedirects", () => {
   it("converts a splat to a capture group", () => {
     expect(
-      toBuildOutputRedirect({
-        from: "/dashboard/*",
-        to: "https://oauth.example.com/dashboard/*",
-      }),
-    ).toEqual({
-      src: "^/dashboard(/.*)?$",
-      location: "https://oauth.example.com/dashboard$1",
-    });
+      toBuildOutputRedirects([
+        { from: "/dashboard/*", to: "https://oauth.example.com/dashboard/*" },
+      ]),
+    ).toEqual([
+      {
+        src: "^/dashboard(/.*)?$",
+        location: "https://oauth.example.com/dashboard$1",
+      },
+    ]);
   });
 
   it("numbers named params in from order and prefixes basePath", () => {
     expect(
-      toBuildOutputRedirect(
-        { from: "/v1.0/:year/:slug", to: "/posts/:slug/:year" },
+      toBuildOutputRedirects(
+        [{ from: "/v1.0/:year/:slug", to: "/posts/:slug/:year" }],
         "/docs",
       ),
-    ).toEqual({
-      src: "^/docs/v1\\.0(/[^/]+)(/[^/]+)/?$",
-      location: "/docs/posts$2$1",
-    });
+    ).toEqual([
+      {
+        src: "^/docs/v1\\.0(/[^/]+)(/[^/]+)/?$",
+        location: "/docs/posts$2$1",
+      },
+    ]);
   });
 
-  it("makes optional params optional", () => {
+  it("expands optional params into one route per variant", () => {
     expect(
-      toBuildOutputRedirect({ from: "/:lang?/old", to: "/:lang/new" }),
-    ).toEqual({ src: "^(/[^/]+)?/old/?$", location: "$1/new" });
+      toBuildOutputRedirects([{ from: "/:lang?/old", to: "/:lang/new" }]),
+    ).toEqual([
+      { src: "^(/[^/]+)/old/?$", location: "$1/new" },
+      { src: "^/old/?$", location: "/new" },
+    ]);
   });
 
   it("does not prefix basePath to absolute targets", () => {
     expect(
-      toBuildOutputRedirect(
-        { from: "/old/*", to: "https://example.com/new/*" },
+      toBuildOutputRedirects(
+        [{ from: "/old/*", to: "https://example.com/new/*" }],
         "/docs",
       ),
-    ).toEqual({
-      src: "^/docs/old(/.*)?$",
-      location: "https://example.com/new$1",
-    });
-  });
-});
-
-describe("sortByRouteRank", () => {
-  const redirects = [
-    { from: "/*", to: "/" },
-    { from: "/docs/*", to: "/" },
-    { from: "/docs/:slug", to: "/" },
-    { from: "/docs/:section/:slug", to: "/" },
-    { from: "/:lang?/docs/intro", to: "/" },
-    { from: "/docs/:id", to: "/" },
-  ];
-
-  it("orders the most specific patterns first and keeps ties in order", () => {
-    expect(sortByRouteRank(redirects).map(({ from }) => from)).toEqual([
-      "/:lang?/docs/intro",
-      "/docs/:section/:slug",
-      "/docs/:slug",
-      "/docs/:id",
-      "/docs/*",
-      "/*",
+    ).toEqual([
+      { src: "^/docs/old(/.*)?$", location: "https://example.com/new$1" },
     ]);
   });
 
-  it.each([
-    "/docs",
-    "/docs/intro",
-    "/docs/a",
-    "/docs/a/b",
-    "/docs/a/b/c",
-    "/en/docs/intro",
-    "/other",
-  ])(
-    "first matching Build Output route for %s agrees with React Router",
-    (path) => {
-      const routerMatch = matchRoutes(
-        redirects.map(({ from }) => ({ path: joinUrl(from) })),
-        path,
-      )?.at(-1)?.route.path;
-      const outputMatch = sortByRouteRank(redirects).find(({ from }) =>
-        new RegExp(toBuildOutputRedirect({ from, to: "/" }).src).test(path),
-      )?.from;
+  // Simulates the platform: the first matching route wins and `$n` is replaced
+  // with the capture group (empty when it didn't participate).
+  const resolveWithBuildOutput = (
+    redirects: { from: string; to: string }[],
+    path: string,
+  ) => {
+    const route = toBuildOutputRedirects(redirects).find(({ src }) =>
+      new RegExp(src).test(path),
+    );
+    return route && path.replace(new RegExp(route.src), route.location);
+  };
 
-      expect(outputMatch).toBe(routerMatch);
-    },
-  );
+  const resolveWithRouter = (
+    redirects: { from: string; to: string }[],
+    path: string,
+  ) => {
+    const match = matchRoutes(
+      redirects.map((redirect) => ({ path: joinUrl(redirect.from), redirect })),
+      path,
+    )?.at(-1);
+    return match && resolveRedirectTarget(match.route.redirect, match.params);
+  };
+
+  it.each([
+    [
+      [
+        { from: "/*", to: "/catch-all/*" },
+        { from: "/docs/*", to: "/docs-splat/*" },
+        { from: "/docs/:slug", to: "/docs-slug/:slug" },
+        { from: "/docs/:section/:slug", to: "/docs-two/:section/:slug" },
+        { from: "/:lang?/docs/intro", to: "/intro/:lang" },
+        { from: "/docs/:id", to: "/docs-id/:id" },
+      ],
+      [
+        "/docs",
+        "/docs/intro",
+        "/docs/a",
+        "/docs/a/b",
+        "/docs/a/b/c",
+        "/en/docs/intro",
+        "/other",
+      ],
+    ],
+    [
+      [
+        { from: "/:id", to: "/id/:id" },
+        { from: "/:x?/:y?", to: "/xy/:x/:y" },
+      ],
+      ["/", "/one", "/one/two"],
+    ],
+    [
+      [
+        { from: "/:lang?/docs/:slug", to: "/lang/:lang/:slug" },
+        { from: "/docs/:slug", to: "/plain/:slug" },
+      ],
+      ["/docs/a", "/en/docs/a"],
+    ],
+    [
+      [
+        { from: "/docs/:slug", to: "/plain/:slug" },
+        { from: "/:lang?/docs/:slug", to: "/lang/:lang/:slug" },
+      ],
+      ["/docs/a", "/en/docs/a"],
+    ],
+    [[{ from: "/dup/:id/:id", to: "/dup/:id" }], ["/dup/a/b"]],
+  ])("picks the same target as React Router for %j", (redirects, paths) => {
+    for (const path of paths) {
+      expect(resolveWithBuildOutput(redirects, path), path).toBe(
+        resolveWithRouter(redirects, path),
+      );
+    }
+  });
 });

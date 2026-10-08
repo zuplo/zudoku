@@ -66,59 +66,88 @@ export const resolveRedirectTarget = (
     return value ? `/${encodeParam(name, value)}` : "";
   });
 
-// Mirrors React Router's `computeScore`. Build Output routes match top to
-// bottom, so they must be ordered the way the router ranks the same paths.
+// Mirrors React Router's `computeScore` for a concrete (non-optional) path.
 const rankPath = (path: string) => {
   const segments = joinUrl(path).split("/");
   return segments.reduce(
     (score, segment) => {
       if (segment === SPLAT) return score;
-      if (/^:[\w-]+\??$/.test(segment)) return score + 3;
+      if (segment.startsWith(":")) return score + 3;
       return score + (segment === "" ? 1 : 10);
     },
     segments.length - (segments.includes(SPLAT) ? 2 : 0),
   );
 };
 
-// Most specific first; ties keep configuration order, like the router.
-export const sortByRouteRank = <T extends Pick<Redirect, "from">>(
-  redirects: readonly T[],
-) => redirects.toSorted((a, b) => rankPath(b.from) - rankPath(a.from));
+const segmentToPath = (segment: Segment) => {
+  if (segment.type === "static") return segment.value;
+  if (segment.type === "splat") return SPLAT;
+  return `:${segment.name}`;
+};
+
+// React Router ranks each concrete variant of a path with optional segments,
+// in this order: `/:a?/:b?` becomes `/:a/:b`, `/:a`, `/:b` and `/`.
+const explodeOptional = (segments: Segment[]): Segment[][] => {
+  const [first, ...rest] = segments;
+  if (!first) return [[]];
+  const variants = explodeOptional(rest);
+  const withFirst = variants.map((variant) => [first, ...variant]);
+  return first.type === "param" && first.optional
+    ? [...withFirst, ...variants]
+    : withFirst;
+};
 
 const escapeRegex = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
- * Converts a dynamic redirect into a Build Output API route: `from` becomes a
- * regex with one capture group per param (including its leading slash) and the
- * tokens in `to` become the matching `$n` references.
+ * Converts dynamic redirects into Build Output API routes. Each concrete
+ * variant of a `from` path becomes a regex with one capture group per param
+ * (including its leading slash), and the tokens in `to` become the matching
+ * `$n` references. Build Output routes match top to bottom, so they are sorted
+ * the way React Router ranks the same paths, keeping configuration order for
+ * ties.
  */
-export const toBuildOutputRedirect = (
-  redirect: Redirect,
+export const toBuildOutputRedirects = (
+  redirects: readonly Redirect[],
   basePath?: string,
 ) => {
-  const names = getParamNames(redirect.from);
-  const segments = parseSegments(joinUrl(basePath, redirect.from));
-  const pattern = segments
-    .map((segment) => {
-      if (segment.type === "static") return `/${escapeRegex(segment.value)}`;
-      if (segment.type === "splat") return "(/.*)?";
-      return segment.optional ? "(/[^/]+)?" : "(/[^/]+)";
+  const base = joinUrl(basePath);
+  const prefix = base === "/" ? "" : escapeRegex(base);
+
+  return redirects
+    .flatMap((redirect) => {
+      const names = getParamNames(redirect.from);
+      const to = ABSOLUTE_URL_REGEX.test(redirect.to)
+        ? redirect.to
+        : joinUrl(basePath, redirect.to);
+
+      return explodeOptional(parseSegments(redirect.from)).map((segments) => {
+        const captured = segments.flatMap((segment) => {
+          if (segment.type === "param") return [segment.name];
+          if (segment.type === "splat") return [SPLAT];
+          return [];
+        });
+        const pattern = segments
+          .map((segment) => {
+            if (segment.type === "static") {
+              return `/${escapeRegex(segment.value)}`;
+            }
+            return segment.type === "splat" ? "(/.*)?" : "(/[^/]+)";
+          })
+          .join("");
+        const endsWithSplat = segments.at(-1)?.type === "splat";
+
+        return {
+          rank: rankPath(`/${segments.map(segmentToPath).join("/")}`),
+          src: `^${prefix}${pattern}${endsWithSplat ? "" : "/?"}$`,
+          // Like React Router, a repeated param name takes the last value
+          location: replaceTokens(to, names, (name) =>
+            captured.includes(name) ? `$${captured.lastIndexOf(name) + 1}` : "",
+          ),
+        };
+      });
     })
-    .join("");
-  const endsWithSplat = segments.at(-1)?.type === "splat";
-
-  const to = ABSOLUTE_URL_REGEX.test(redirect.to)
-    ? redirect.to
-    : joinUrl(basePath, redirect.to);
-  const location = replaceTokens(
-    to,
-    names,
-    (name) => `$${names.indexOf(name) + 1}`,
-  );
-
-  return {
-    src: `^${pattern}${endsWithSplat ? "" : "/?"}$`,
-    location,
-  };
+    .toSorted((a, b) => b.rank - a.rank)
+    .map(({ src, location }) => ({ src, location }));
 };
