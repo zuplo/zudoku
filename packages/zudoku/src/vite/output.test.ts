@@ -96,8 +96,8 @@ describe("Vercel Build Output", () => {
     expect(output.routes).toEqual([
       expect.objectContaining({ src: "/docs/old", status: 301 }),
       { handle: "filesystem" },
-      expect.objectContaining({ src: "^/docs/blog(/[^/]+)/?$" }),
-      expect.objectContaining({ src: "^/docs/dashboard(/[^/]+)/?$" }),
+      expect.objectContaining({ src: "^/docs/blog(/[^/]+)/*$" }),
+      expect.objectContaining({ src: "^/docs/dashboard(/[^/]+)/*$" }),
       {
         src: "^/docs/dashboard(/.+)$",
         dest: "https://oauth.example.com/dashboard$1",
@@ -105,7 +105,7 @@ describe("Vercel Build Output", () => {
         headers: { Location: "https://oauth.example.com/dashboard$1" },
       },
       expect.objectContaining({
-        src: "^/docs/dashboard/?$",
+        src: "^/docs/dashboard/*$",
         dest: "https://oauth.example.com/dashboard",
       }),
       expect.objectContaining({

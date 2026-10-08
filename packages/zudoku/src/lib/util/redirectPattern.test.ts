@@ -94,7 +94,7 @@ describe("toBuildOutputRedirects", () => {
         location: "https://oauth.example.com/dashboard$1",
       },
       {
-        src: "^/dashboard/?$",
+        src: "^/dashboard/*$",
         location: "https://oauth.example.com/dashboard",
       },
     ]);
@@ -108,7 +108,7 @@ describe("toBuildOutputRedirects", () => {
       ),
     ).toEqual([
       {
-        src: "^/docs/v1\\.0(/[^/]+)(/[^/]+)/?$",
+        src: "^/docs/v1\\.0(/[^/]+)(/[^/]+)/*$",
         location: "/docs/posts$2$1",
       },
     ]);
@@ -118,8 +118,8 @@ describe("toBuildOutputRedirects", () => {
     expect(
       toBuildOutputRedirects([{ from: "/:lang?/old", to: "/:lang/new" }]),
     ).toEqual([
-      { src: "^(/[^/]+)/old/?$", location: "$1/new" },
-      { src: "^/old/?$", location: "/new" },
+      { src: "^(/[^/]+)/old/*$", location: "$1/new" },
+      { src: "^/old/*$", location: "/new" },
     ]);
   });
 
@@ -131,7 +131,7 @@ describe("toBuildOutputRedirects", () => {
       ),
     ).toEqual([
       { src: "^/docs/old(/.+)$", location: "https://example.com/new$1" },
-      { src: "^/docs/old/?$", location: "https://example.com/new" },
+      { src: "^/docs/old/*$", location: "https://example.com/new" },
     ]);
   });
 
@@ -201,6 +201,7 @@ describe("toBuildOutputRedirects", () => {
     ],
     [[{ from: "/dup/:id/:id", to: "/dup/:id" }], ["/dup/a/b"]],
     [[{ from: "/v1/*", to: "/*" }], ["/v1", "/v1/", "/v1/a/b", "/v1/a/"]],
+    [[{ from: "/blog/:slug", to: "/posts/:slug" }], ["/blog/a/", "/blog/a///"]],
     [[{ from: "/:lang?/old", to: "/:lang?ref=x" }], ["/old", "/en/old"]],
   ])("picks the same target as React Router for %j", (redirects, paths) => {
     for (const path of paths) {

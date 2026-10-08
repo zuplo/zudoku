@@ -146,7 +146,8 @@ export const toBuildOutputRedirects = (
         const endsWithSplat = segments.at(-1)?.type === "splat";
 
         return {
-          src: `^${prefix}${pattern}${endsWithSplat ? "" : "/?"}$`,
+          // React Router accepts any number of trailing slashes
+          src: `^${prefix}${pattern}${endsWithSplat ? "" : "/*"}$`,
           // Like React Router, a repeated param name takes the last value
           location: withPath(
             replaceTokens(to, names, (name) =>
