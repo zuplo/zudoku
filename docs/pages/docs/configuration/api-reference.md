@@ -95,7 +95,7 @@ const config = {
   // ...
   apis: {
     type: "url",
-    input: "https://rickandmorty.zuplo.io/openapi.json",
+    input: "https://api.rickandmorty.zuplo.io/openapi.json",
     path: "/api",
   },
   // ...
