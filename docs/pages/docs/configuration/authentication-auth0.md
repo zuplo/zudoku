@@ -1,8 +1,7 @@
 ---
 title: Auth0 Setup
 sidebar_label: Auth0
-description:
-  Learn how to set up Auth0 authentication for Zudoku, including application configuration and
+description: Learn how to set up Auth0 authentication for Zudoku, including application configuration and
   integration steps for secure API documentation access.
 ---
 
@@ -153,6 +152,31 @@ When the prompt parameter is omitted (empty string), Auth0 will:
 
 - Silently authenticate the user if they have a valid session
 - Redirect to the login page if no valid session exists
+
+### Custom Authorization Parameters
+
+You can pass extra query parameters to Auth0's `/authorize` endpoint on every sign-in and sign-up
+request using `authorizationParams`. This is commonly used with
+[Auth0 Organizations](https://auth0.com/docs/manage-users/organizations) for multi-tenant portals:
+
+```typescript
+authentication: {
+  type: "auth0",
+  domain: "your-domain.us.auth0.com",
+  clientId: "<your-auth0-client-id>",
+  audience: "https://your-domain.com/api",
+  authorizationParams: {
+    organization: "org_xxxxxxxxxxxxxxxx",
+  },
+}
+```
+
+You can also forward dynamic parameters from the page URL — for example, `organization` and
+`invitation` from an invitation link. The Auth0 provider forwards `organization`, `invitation`, and
+`connection` by default.
+
+For the full guide on static parameters, URL forwarding, and multi-tenant recipes, see
+[Customizing the OAuth Authorize Request](./authentication-authorization-params.md).
 
 ### Customizing Sign-up
 
