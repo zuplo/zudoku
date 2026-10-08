@@ -112,13 +112,14 @@ export default {
 ### `rehypePlugins`
 
 An array of [Rehype](https://github.com/rehypejs/rehype) plugins to transform HTML content. These
-plugins run after Markdown is converted to HTML.
+plugins run after Markdown is converted to HTML. An array is appended after the built-in plugins
+(including syntax highlighting); pass a function to control the order instead.
 
 ```ts
 import rehypeKatex from "rehype-katex";
 
 export default {
-  rehypePlugins: [rehypeKatex],
+  rehypePlugins: (plugins) => [rehypeKatex, ...plugins],
 };
 ```
 
