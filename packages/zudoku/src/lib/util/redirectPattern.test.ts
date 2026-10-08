@@ -65,6 +65,13 @@ describe("resolveRedirectTarget", () => {
     ).toBe("/new");
   });
 
+  it("falls back to the root when the whole path is removed", () => {
+    expect(resolveRedirectTarget({ from: "/v1/*", to: "/*" }, {})).toBe("/");
+    expect(
+      resolveRedirectTarget({ from: "/:lang?/old", to: "/:lang?ref=x" }, {}),
+    ).toBe("/?ref=x");
+  });
+
   it("ignores tokens that are not defined in from", () => {
     expect(
       resolveRedirectTarget(
@@ -83,8 +90,12 @@ describe("toBuildOutputRedirects", () => {
       ]),
     ).toEqual([
       {
-        src: "^/dashboard(/.*)?$",
+        src: "^/dashboard(/.+)$",
         location: "https://oauth.example.com/dashboard$1",
+      },
+      {
+        src: "^/dashboard/?$",
+        location: "https://oauth.example.com/dashboard",
       },
     ]);
   });
@@ -119,7 +130,8 @@ describe("toBuildOutputRedirects", () => {
         "/docs",
       ),
     ).toEqual([
-      { src: "^/docs/old(/.*)?$", location: "https://example.com/new$1" },
+      { src: "^/docs/old(/.+)$", location: "https://example.com/new$1" },
+      { src: "^/docs/old/?$", location: "https://example.com/new" },
     ]);
   });
 
@@ -188,6 +200,8 @@ describe("toBuildOutputRedirects", () => {
       ["/docs/a", "/en/docs/a"],
     ],
     [[{ from: "/dup/:id/:id", to: "/dup/:id" }], ["/dup/a/b"]],
+    [[{ from: "/v1/*", to: "/*" }], ["/v1", "/v1/", "/v1/a/b", "/v1/a/"]],
+    [[{ from: "/:lang?/old", to: "/:lang?ref=x" }], ["/old", "/en/old"]],
   ])("picks the same target as React Router for %j", (redirects, paths) => {
     for (const path of paths) {
       expect(resolveWithBuildOutput(redirects, path), path).toBe(

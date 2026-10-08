@@ -47,6 +47,11 @@ const replaceTokens = (
     return names.includes(key) ? replace(key) : token;
   });
 
+// Removing empty params can leave no path at all (`/*` for `/v1/*` at `/v1`),
+// which would redirect back to the same URL, so fall back to the root.
+const withPath = (target: string) =>
+  target === "" || /^[?#]/.test(target) ? `/${target}` : target;
+
 const encodeParam = (name: string, value: string) =>
   name === SPLAT
     ? value.split("/").map(encodeURIComponent).join("/")
@@ -61,10 +66,12 @@ export const resolveRedirectTarget = (
   { from, to }: Redirect,
   params: Record<string, string | undefined>,
 ) =>
-  replaceTokens(to, getParamNames(from), (name) => {
-    const value = params[name];
-    return value ? `/${encodeParam(name, value)}` : "";
-  });
+  withPath(
+    replaceTokens(to, getParamNames(from), (name) => {
+      const value = params[name];
+      return value ? `/${encodeParam(name, value)}` : "";
+    }),
+  );
 
 // Mirrors React Router's `computeScore` for a concrete (non-optional) path.
 const rankPath = (path: string) => {
@@ -122,7 +129,7 @@ export const toBuildOutputRedirects = (
         ? redirect.to
         : joinUrl(basePath, redirect.to);
 
-      return explodeOptional(parseSegments(redirect.from)).map((segments) => {
+      const toRoute = (segments: Segment[]) => {
         const captured = segments.flatMap((segment) => {
           if (segment.type === "param") return [segment.name];
           if (segment.type === "splat") return [SPLAT];
@@ -133,20 +140,36 @@ export const toBuildOutputRedirects = (
             if (segment.type === "static") {
               return `/${escapeRegex(segment.value)}`;
             }
-            return segment.type === "splat" ? "(/.*)?" : "(/[^/]+)";
+            return segment.type === "splat" ? "(/.+)" : "(/[^/]+)";
           })
           .join("");
         const endsWithSplat = segments.at(-1)?.type === "splat";
 
         return {
-          rank: rankPath(`/${segments.map(segmentToPath).join("/")}`),
           src: `^${prefix}${pattern}${endsWithSplat ? "" : "/?"}$`,
           // Like React Router, a repeated param name takes the last value
-          location: replaceTokens(to, names, (name) =>
-            captured.includes(name) ? `$${captured.lastIndexOf(name) + 1}` : "",
+          location: withPath(
+            replaceTokens(to, names, (name) =>
+              captured.includes(name)
+                ? `$${captured.lastIndexOf(name) + 1}`
+                : "",
+            ),
           ),
         };
-      });
+      };
+
+      return explodeOptional(parseSegments(redirect.from)).flatMap(
+        (segments) => {
+          const rank = rankPath(`/${segments.map(segmentToPath).join("/")}`);
+          // An empty splat gets its own route so its target is resolved here
+          // rather than from an empty `$n` at request time
+          const variants =
+            segments.at(-1)?.type === "splat"
+              ? [segments, segments.slice(0, -1)]
+              : [segments];
+          return variants.map((variant) => ({ rank, ...toRoute(variant) }));
+        },
+      );
     })
     .toSorted((a, b) => b.rank - a.rank)
     .map(({ src, location }) => ({ src, location }));

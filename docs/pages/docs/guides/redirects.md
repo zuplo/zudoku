@@ -70,7 +70,8 @@ redirects: [
 
 - **`:name`** matches exactly one segment. Add `?` (`:name?`) to make it optional.
 - **`*`** must be the last segment of `from`. It also matches the prefix itself, so `/dashboard/*`
-  redirects `/dashboard` too. In that case the `/*` in `to` is dropped.
+  redirects `/dashboard` too. In that case the `/*` in `to` is dropped, leaving `/` if nothing else
+  remains.
 - In `to`, `/:name` and `/*` must each fill a whole path segment, so `/posts/:slug` works and
   `/posts-:slug` doesn't. Tokens that don't appear in `from` are left as they are.
 - Zudoku doesn't copy the incoming query string to the target.

@@ -99,11 +99,15 @@ describe("Vercel Build Output", () => {
       expect.objectContaining({ src: "^/docs/blog(/[^/]+)/?$" }),
       expect.objectContaining({ src: "^/docs/dashboard(/[^/]+)/?$" }),
       {
-        src: "^/docs/dashboard(/.*)?$",
+        src: "^/docs/dashboard(/.+)$",
         dest: "https://oauth.example.com/dashboard$1",
         status: 301,
         headers: { Location: "https://oauth.example.com/dashboard$1" },
       },
+      expect.objectContaining({
+        src: "^/docs/dashboard/?$",
+        dest: "https://oauth.example.com/dashboard",
+      }),
       expect.objectContaining({
         src: "/docs/guide/(.+)",
         dest: "/docs/guide.html",
