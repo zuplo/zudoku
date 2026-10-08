@@ -41,3 +41,6 @@ tags:
 
 Both tags show `Location Key` in the sidebar and as the page heading, but each page has its own
 browser title and description.
+
+To do the same for a Markdown page, use the [`seo`](/docs/markdown/frontmatter#seo) frontmatter
+property.
