@@ -94,19 +94,24 @@ const CheckoutFlow = ({ planId }: { planId: string }) => {
   const { data } = usePlans();
   const multipleSubscriptionsEnabled =
     data.multipleSubscriptionsEnabled ?? false;
+  // The cached list (prefetched on initialize, 5 min staleTime) may predate a
+  // subscription made elsewhere, so decide on a fresh fetch.
   const subscriptions = useQuery({
     ...subscriptionsQuery(zudoku),
     enabled: !multipleSubscriptionsEnabled,
+    refetchOnMount: "always",
   });
 
   const plan = data.items.find((item) => item.id === planId);
 
   if (!multipleSubscriptionsEnabled) {
-    if (subscriptions.isPending) return <CheckoutLoading />;
+    if (!subscriptions.isFetchedAfterMount) return <CheckoutLoading />;
 
     // Same notion of "subscribed" as the pricing page. If the lookup failed,
-    // fall through to a regular checkout as before.
-    const items = subscriptions.data?.items ?? [];
+    // ignore any cached list and fall through to a regular checkout as before.
+    const items = subscriptions.isError
+      ? []
+      : (subscriptions.data?.items ?? []);
     const existing =
       items.find((s) => s.status === "active") ??
       items.find((s) => s.status === "canceled");

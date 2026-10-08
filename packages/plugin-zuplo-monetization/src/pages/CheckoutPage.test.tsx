@@ -38,6 +38,7 @@ vi.mock("../hooks/useUrlUtils", () => ({
 type QueryOptions = {
   queryKey: unknown[];
   enabled?: boolean;
+  refetchOnMount?: unknown;
   meta?: { request?: { body?: string } };
 };
 
@@ -46,10 +47,11 @@ const testState = vi.hoisted(() => ({
   sessionRequests: [] as QueryOptions[],
   plans: { items: [] } as PricingPageResponse,
   subscriptions: {
-    isPending: false,
+    isFetchedAfterMount: true,
+    isError: false,
     data: { items: [] as Array<Partial<Subscription>> },
   },
-  subscriptionsQueryEnabled: undefined as boolean | undefined,
+  subscriptionsQuery: undefined as QueryOptions | undefined,
 }));
 
 vi.mock("../hooks/usePlans", () => ({
@@ -62,7 +64,7 @@ vi.mock("zudoku/react-query", async (importOriginal) => {
     ...actual,
     useQuery: (options: QueryOptions) => {
       if (String(options.queryKey[0]).endsWith("/subscriptions")) {
-        testState.subscriptionsQueryEnabled = options.enabled;
+        testState.subscriptionsQuery = options;
         return testState.subscriptions;
       }
       testState.sessionRequests.push(options);
@@ -127,7 +129,8 @@ const renderPage = (initialPath: string, config: MonetizationConfig = {}) =>
 
 const subscribeTo = (plan: Plan, status = "active") => {
   testState.subscriptions = {
-    isPending: false,
+    isFetchedAfterMount: true,
+    isError: false,
     data: { items: [{ id: "sub-1", status, plan }] },
   };
 };
@@ -164,8 +167,12 @@ describe("CheckoutPage", () => {
   beforeEach(() => {
     testState.sessionRequests = [];
     testState.plans = { items: [makePlan()] };
-    testState.subscriptions = { isPending: false, data: { items: [] } };
-    testState.subscriptionsQueryEnabled = undefined;
+    testState.subscriptions = {
+      isFetchedAfterMount: true,
+      isError: false,
+      data: { items: [] },
+    };
+    testState.subscriptionsQuery = undefined;
   });
 
   it("redirects to pricing without a planId", () => {
@@ -280,12 +287,27 @@ describe("CheckoutPage", () => {
       testState.plans = { items: [starter, pro, team] };
     });
 
-    it("waits for subscriptions before starting checkout", () => {
-      testState.subscriptions = { isPending: true, data: { items: [] } };
+    it("waits for a fresh subscriptions fetch, not the cached list", () => {
+      testState.subscriptions = {
+        isFetchedAfterMount: false,
+        isError: false,
+        data: { items: [] },
+      };
       renderPage("/checkout?planId=plan-1");
 
+      expect(testState.subscriptionsQuery?.refetchOnMount).toBe("always");
       expect(screen.queryByTestId("redirect")).not.toBeInTheDocument();
       expect(testState.sessionRequests).toHaveLength(0);
+    });
+
+    it("ignores cached subscriptions when the fresh fetch failed", () => {
+      subscribeTo(pro);
+      testState.subscriptions.isError = true;
+      renderPage("/checkout?planId=plan-2");
+
+      expect(requestBody(testState.sessionRequests[0])).toMatchObject({
+        successURL: "https://portal/checkout-confirm?planId=plan-2",
+      });
     });
 
     it("sends a subscriber to their subscription when it's the same plan", () => {
@@ -366,7 +388,7 @@ describe("CheckoutPage", () => {
       subscribeTo(pro);
       renderPage("/checkout?planId=plan-2");
 
-      expect(testState.subscriptionsQueryEnabled).toBe(false);
+      expect(testState.subscriptionsQuery?.enabled).toBe(false);
       expect(requestBody(testState.sessionRequests[0])).toMatchObject({
         successURL: "https://portal/checkout-confirm?planId=plan-2",
       });
