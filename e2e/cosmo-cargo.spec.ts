@@ -142,6 +142,65 @@ test("operation detail shows method, path, and parameters", async ({
   await expect(page.locator("text=/\\/shipments/").first()).toBeVisible();
 });
 
+test("copying the operation endpoint yields a URL without a line break", async ({
+  page,
+  context,
+  browserName,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/api-shipments/shipment-management", {
+    waitUntil: "networkidle",
+  });
+
+  const endpoint = page.locator("main .font-mono .cursor-pointer").first();
+  await endpoint.waitFor({ state: "visible" });
+
+  // The server origin and the path are separate block-level elements, so the
+  // browser serializes a newline between them even though they render on one
+  // line. Clicking selects the whole endpoint; copying must not carry that
+  // newline into the clipboard.
+  await endpoint.click();
+  await page.keyboard.press(
+    browserName === "webkit" ? "Meta+KeyC" : "Control+KeyC",
+  );
+
+  const clipboard = await page.evaluate(() => navigator.clipboard.readText());
+
+  expect(clipboard).not.toContain("\n");
+  expect(clipboard).toBe(await endpoint.evaluate((el) => el.textContent));
+});
+
+test("operation endpoint keeps the origin ellipsized on a narrow viewport", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 420, height: 900 });
+  await page.goto("/api-shipments/shipment-management", {
+    waitUntil: "networkidle",
+  });
+
+  const endpoint = page.locator("main .font-mono .cursor-pointer").first();
+  await endpoint.waitFor({ state: "visible" });
+
+  // The endpoint stays on one line: the server origin is ellipsized to make
+  // room while the path remains fully visible.
+  const layout = await endpoint.evaluate((el) => {
+    const [origin, path] = [...el.children] as HTMLElement[];
+    return {
+      lines: Math.round(el.getBoundingClientRect().height / 20),
+      originOverflows: origin.scrollWidth > Math.ceil(origin.clientWidth),
+      pathFullyVisible:
+        Math.round(path.getBoundingClientRect().right) <=
+        Math.round(el.getBoundingClientRect().right),
+    };
+  });
+
+  expect(layout).toEqual({
+    lines: 1,
+    originOverflows: true,
+    pathFullyVisible: true,
+  });
+});
+
 test("playground dialog opens from operation", async ({ page }) => {
   await page.goto("/api-shipments/shipment-management", {
     waitUntil: "networkidle",

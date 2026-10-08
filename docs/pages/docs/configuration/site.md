@@ -58,7 +58,8 @@ Configure the site's logo with different versions for light and dark themes:
         dark: "/dark-logo.png"
       },
       alt: "Company Logo",
-      width: "120px", // optional width
+      width: 120, // optional intrinsic width
+      height: 32, // optional intrinsic height; set both to prevent layout shift
       href: "/", // optional link target (defaults to "/")
       reloadDocument: true, // optional, defaults to true
     }

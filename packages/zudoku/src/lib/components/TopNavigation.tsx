@@ -88,10 +88,17 @@ export const TopNavItem = (
 
   const path = getFirstMatchingPath(item);
 
+  const target = "target" in item ? item.target : undefined;
+
   return (
     // We don't use isActive here because it has to be inside the navigation,
     // the top nav id doesn't necessarily start with the navigation id
-    <TopNavLink to={path} isActive={isActiveTopNavItem}>
+    <TopNavLink
+      to={path}
+      isActive={isActiveTopNavItem}
+      target={target}
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
+    >
       {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
       {item.label}
     </TopNavLink>

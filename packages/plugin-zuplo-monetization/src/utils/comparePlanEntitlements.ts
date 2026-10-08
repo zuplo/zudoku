@@ -17,7 +17,7 @@ export type EntitlementChange = {
   targetValue?: string;
   /**
    * The TARGET quota's tier-price breakdown (the same lines `QuotaItem` shows
-   * on the pricing card, e.g. "Up to 1,000: Included"), so an opaque "Tiered
+   * on the pricing card, e.g. "First 1,000: Included"), so an opaque "Tiered
    * pricing" value can be expanded into the actual schedule the user is
    * deciding on.
    */

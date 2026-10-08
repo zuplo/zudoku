@@ -1,6 +1,11 @@
+import type { IntrospectionInputObjectType } from "graphql";
 import { buildSchema, introspectionFromSchema } from "graphql";
 import { describe, expect, it } from "vitest";
-import { findMutationFields, findQueryFields } from "./findType.js";
+import {
+  findMutationFields,
+  findQueryFields,
+  type GraphQLSchema,
+} from "./findType.js";
 import {
   generateGraphQLOperation,
   generateGraphQLTypeFragment,
@@ -164,5 +169,92 @@ describe("buildSelectionSet edge cases", () => {
     expect(
       generateGraphQLTypeFragment({ type, index: recursiveIndex }),
     ).toBeUndefined();
+  });
+});
+
+const argumentSchema = introspectionFromSchema(
+  buildSchema(/* GraphQL */ `
+    type Query {
+      search(
+        term: String!
+        states: [String]
+        resultSize: Int
+        limit: Int! = 10
+      ): [Hit!]!
+      bulk(ids: [ID!]!): [Hit!]!
+      sorted(order: SortOrder!): [Hit!]!
+      tree(node: NodeInput!): Hit
+    }
+
+    enum SortOrder {
+      LEGACY @deprecated(reason: "gone")
+      RELEVANCE
+      PRICE
+    }
+
+    input NodeInput {
+      name: String!
+      child: NodeInput
+    }
+
+    type Hit {
+      id: ID!
+    }
+  `),
+).__schema;
+
+const argumentIndex = buildSchemaIndex(argumentSchema);
+
+const generateQuery = (name: string, index = argumentIndex) => {
+  const field = findQueryFields(index.schema).find((f) => f.name === name);
+  if (!field) throw new Error(`Expected ${name} query to exist`);
+
+  return generateGraphQLOperation({ field, operationType: "query", index });
+};
+
+describe("example variables", () => {
+  it("only fills in required arguments and keeps defaults in the document", () => {
+    const { document, variables } = generateQuery("search");
+
+    // Optional arguments stay in the document so they are discoverable, but
+    // sending a placeholder for them would change what the operation does.
+    expect(variables).toEqual({ term: "" });
+    expect(document.startsWith("query Search(")).toBe(true);
+    expect(document).toContain("$states: [String]");
+    expect(document).toContain("$resultSize: Int");
+    expect(document).toContain("$limit: Int! = 10");
+  });
+
+  it("uses an empty list for required list arguments", () => {
+    expect(generateQuery("bulk").variables).toEqual({ ids: [] });
+  });
+
+  it("skips deprecated enum values", () => {
+    expect(generateQuery("sorted").variables).toEqual({ order: "RELEVANCE" });
+  });
+
+  it("only fills in required input object fields", () => {
+    expect(generateQuery("tree").variables).toEqual({ node: { name: "" } });
+  });
+
+  it("stops at input objects that require themselves", () => {
+    // A valid schema cannot require an input object within itself, but the
+    // introspection result comes from a remote endpoint and is not validated,
+    // so the generator must not recurse forever on one.
+    const cyclicSchema: GraphQLSchema = JSON.parse(
+      JSON.stringify(argumentSchema),
+    );
+    const nodeInput = cyclicSchema.types.find(
+      (type): type is IntrospectionInputObjectType => type.name === "NodeInput",
+    );
+    const child = nodeInput?.inputFields.find((f) => f.name === "child");
+    if (!child) throw new Error("Expected NodeInput.child to exist");
+    Object.assign(child, {
+      type: { kind: "NON_NULL", name: null, ofType: child.type },
+    });
+
+    expect(
+      generateQuery("tree", buildSchemaIndex(cyclicSchema)).variables,
+    ).toEqual({ node: { name: "", child: null } });
   });
 });

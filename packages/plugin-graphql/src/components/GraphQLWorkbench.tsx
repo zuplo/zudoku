@@ -5,29 +5,32 @@ import {
   type RefObject,
   use,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { flushSync } from "react-dom";
 import { cn, joinUrl } from "zudoku";
 import { ApiIdentityPicker } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
 import {
   ChevronsDownIcon,
   ChevronsUpIcon,
-  Maximize2Icon,
-  Minimize2Icon,
+  PictureInPicture2Icon,
   PlayIcon,
+  XIcon,
 } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button.js";
 import { useGraphQLSchema } from "../context.js";
-import { resolveEndpointUrl } from "../interfaces.js";
+import { resolveEndpointUrl } from "../resolveEndpointUrl.js";
 import {
   GraphQLPlayground,
   type GraphQLPlaygroundOperation,
 } from "./GraphQLPlayground.js";
+import "./GraphQLWorkbench.css";
 
-type WorkbenchState = "collapsed" | "open" | "maximized";
+type WorkbenchState = "closed" | "collapsed" | "open" | "detached";
 
 type OpenWorkbenchInput = {
   query?: string;
@@ -52,15 +55,18 @@ export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
   const [operation, setOperation] = useState<GraphQLPlaygroundOperation>();
   const [drawerState, setDrawerState] = useState<WorkbenchState>("collapsed");
 
+  // The operation id is GraphiQL's reset key: a new id remounts the editor and
+  // resets the docs explorer. Only openWorkbench, which loads a new query, may
+  // bump it. The first edit in a playground opened without an operation gets
+  // id 0, the key GraphQLPlayground already uses when there is no operation.
   const updateWorkbenchOperation = useCallback(
     (input: Partial<Omit<GraphQLPlaygroundOperation, "id">>) => {
       setOperation((current) => {
         if (current) {
           return { ...current, ...input };
         }
-        nextId.current += 1;
         return {
-          id: nextId.current,
+          id: 0,
           query: input.query ?? "",
           variables: input.variables,
           headers: input.headers,
@@ -91,12 +97,14 @@ export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
     [operation, openWorkbench, updateWorkbenchOperation],
   );
 
-  const drawerEnabled = options.playground?.enabled !== false;
+  // Reopen after closing via the page's playground buttons (openWorkbench).
+  const showDrawer =
+    options.playground?.enabled !== false && drawerState !== "closed";
 
   return (
     <GraphQLWorkbenchContext.Provider value={value}>
-      <div className={cn(drawerEnabled && "pb-14")}>{children}</div>
-      {drawerEnabled && (
+      <div className={cn(showDrawer && "pb-14")}>{children}</div>
+      {showDrawer && (
         <GraphQLWorkbenchDrawer
           operation={operation}
           state={drawerState}
@@ -123,6 +131,21 @@ const MIN_HEIGHT = 100;
 const DEFAULT_HEIGHT = 420;
 const COLLAPSED_HEIGHT = 44;
 const DRAG_THRESHOLD = 4;
+
+type ViewTransition = { finished: Promise<unknown> };
+
+// flushSync makes React commit inside the callback so the browser snapshots the
+// new layout; unsupported browsers just apply the update instantly.
+const withViewTransition = (update: () => void): ViewTransition | undefined => {
+  const doc = document as Document & {
+    startViewTransition?: (callback: () => void) => ViewTransition;
+  };
+  if (typeof doc.startViewTransition === "function") {
+    return doc.startViewTransition(() => flushSync(update));
+  }
+  update();
+  return undefined;
+};
 
 const getMaxHeight = () =>
   typeof window === "undefined" ? MAX_HEIGHT_LIMIT : window.innerHeight - 48;
@@ -245,10 +268,14 @@ const GraphQLWorkbenchDrawer = ({
 }) => {
   const { options, schema, endpoint: configuredEndpoint } = useGraphQLSchema();
   const { env } = useZudoku();
-  const gatewayUrl = env.ZUPLO_GATEWAY_SERVICE_URL;
+  const gatewayUrl = env.ZUPLO_SERVER_URL;
   const endpoint =
     resolveEndpointUrl(configuredEndpoint, gatewayUrl) ??
     (gatewayUrl ? joinUrl(gatewayUrl, "graphql") : undefined);
+  // GraphiQL rebuilds its schema whenever this object's identity changes, which
+  // resets the docs explorer to the root page. Typing in the query or variables
+  // editor re-renders this component, so the wrapper has to stay stable.
+  const introspection = useMemo(() => ({ __schema: schema }), [schema]);
   const drawerRef = useRef<HTMLDivElement>(null);
   const hasOpened = useRef(false);
   if (state !== "collapsed") hasOpened.current = true;
@@ -262,128 +289,216 @@ const GraphQLWorkbenchDrawer = ({
       },
     });
 
+  const isDetached = state === "detached";
+
+  // Blur is applied only after the morph finishes: backdrop-filter baked into a
+  // view-transition snapshot flashes for one frame when the snapshot is swapped
+  // for the live element. It eases in via a CSS transition instead.
+  const [backdropBlurred, setBackdropBlurred] = useState(false);
+
+  const dockedStateRef = useRef<WorkbenchState>("open");
+
+  const detach = useCallback(() => {
+    dockedStateRef.current = state;
+    const applyBlur = () => setBackdropBlurred(true);
+    const transition = withViewTransition(() => onStateChange("detached"));
+    if (transition) {
+      void transition.finished.then(applyBlur, applyBlur);
+    } else {
+      applyBlur();
+    }
+  }, [state, onStateChange]);
+  const dock = useCallback(() => {
+    // Remove the blur synchronously so the dock snapshot is captured unblurred
+    // (the CSS removes it instantly; only the fade-in is animated).
+    flushSync(() => setBackdropBlurred(false));
+    withViewTransition(() => onStateChange(dockedStateRef.current));
+  }, [onStateChange]);
+
+  useEffect(() => {
+    if (!isDetached) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") dock();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    // Compensate for the removed scrollbar so page content doesn't shift.
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+    const prevOverflow = document.body.style.overflow;
+    const prevPaddingRight = document.body.style.paddingRight;
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPaddingRight;
+    };
+  }, [isDetached, dock]);
+
   const drawerHeight =
-    state === "collapsed"
-      ? `${COLLAPSED_HEIGHT}px`
-      : state === "maximized"
-        ? "calc(100vh - 3rem)"
-        : `${height}px`;
+    state === "collapsed" ? `${COLLAPSED_HEIGHT}px` : `${height}px`;
+
+  // Spread as one object so biome can tie aria-modal to role="dialog".
+  const dialogProps = isDetached
+    ? ({
+        role: "dialog",
+        "aria-modal": true,
+        "aria-label": "GraphQL Playground",
+      } as const)
+    : undefined;
+
+  const toggleCollapsed = () =>
+    onStateChange(state === "collapsed" ? "open" : "collapsed");
 
   return (
-    <div
-      ref={drawerRef}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-40 px-3",
-        !isResizing && "transition-[height] duration-200",
+    <>
+      {isDetached && (
+        <button
+          type="button"
+          aria-label="Dock playground"
+          tabIndex={-1}
+          className={cn(
+            "gql-workbench-backdrop fixed inset-0 z-40 cursor-default bg-black/50",
+            backdropBlurred && "backdrop-blur-sm",
+          )}
+          style={{ viewTransitionName: "graphql-workbench-backdrop" }}
+          onClick={dock}
+        />
       )}
-      style={{ height: drawerHeight }}
-      data-pagefind-ignore="all"
-    >
       <div
-        className="group absolute inset-x-3 top-0 z-20 mx-auto h-4 max-w-6xl cursor-row-resize after:absolute after:inset-x-0 after:-top-1 after:bottom-0 after:content-['']"
-        role="separator"
-        aria-label="Resize playground"
-        aria-orientation="horizontal"
-        aria-valuemin={MIN_HEIGHT}
-        // window-dependent, so the SSR fallback value never matches the client
-        suppressHydrationWarning
-        aria-valuemax={getMaxHeight()}
-        aria-valuenow={height}
-        tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key === "ArrowUp") {
-            event.preventDefault();
-            if (state === "collapsed") {
-              onStateChange("open");
-            } else {
-              commitHeight(clampHeight(height + 40));
-            }
-          }
-          if (event.key === "ArrowDown") {
-            event.preventDefault();
-            if (state === "collapsed") return;
-            if (height - 40 < MIN_HEIGHT) {
-              onStateChange("collapsed");
-            } else {
-              commitHeight(height - 40);
-            }
-          }
-        }}
-        onPointerDown={startResize}
-        onPointerMove={resize}
-        onPointerUp={stopResize}
-        onPointerCancel={stopResize}
-        onLostPointerCapture={stopResize}
+        ref={drawerRef}
+        className={cn(
+          // The full-width container must let clicks through its empty side
+          // gutters; interactive children re-enable pointer events.
+          "pointer-events-none fixed",
+          isDetached ? "inset-4 z-50" : "inset-x-0 bottom-0 z-40 px-3",
+          !isResizing && !isDetached && "transition-[height] duration-200",
+        )}
+        style={isDetached ? undefined : { height: drawerHeight }}
+        {...dialogProps}
+        data-pagefind-ignore="all"
       >
+        {!isDetached && (
+          <div
+            className="group pointer-events-auto absolute inset-x-3 top-0 z-20 mx-auto h-4 max-w-6xl cursor-row-resize after:absolute after:inset-x-0 after:-top-1 after:bottom-0 after:content-['']"
+            role="separator"
+            aria-label="Resize playground"
+            aria-orientation="horizontal"
+            aria-valuemin={MIN_HEIGHT}
+            // window-dependent, so the SSR fallback value never matches the client
+            suppressHydrationWarning
+            aria-valuemax={getMaxHeight()}
+            aria-valuenow={height}
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowUp") {
+                event.preventDefault();
+                if (state === "collapsed") {
+                  onStateChange("open");
+                } else {
+                  commitHeight(clampHeight(height + 40));
+                }
+              }
+              if (event.key === "ArrowDown") {
+                event.preventDefault();
+                if (state === "collapsed") return;
+                if (height - 40 < MIN_HEIGHT) {
+                  onStateChange("collapsed");
+                } else {
+                  commitHeight(height - 40);
+                }
+              }
+            }}
+            onPointerDown={startResize}
+            onPointerMove={resize}
+            onPointerUp={stopResize}
+            onPointerCancel={stopResize}
+            onLostPointerCapture={stopResize}
+          >
+            <div
+              className={cn(
+                "mx-auto mt-1.5 h-1 w-10 rounded-full bg-border transition-colors group-hover:bg-foreground/30",
+                isResizing && "bg-foreground/30",
+              )}
+            />
+          </div>
+        )}
         <div
           className={cn(
-            "mx-auto mt-1.5 h-1 w-10 rounded-full bg-border transition-colors group-hover:bg-foreground/30",
-            isResizing && "bg-foreground/30",
+            "pointer-events-auto mx-auto flex h-full flex-col overflow-hidden border bg-background shadow-2xl",
+            isDetached ? "rounded-lg" : "max-w-6xl rounded-t-lg",
           )}
-        />
-      </div>
-      <div className="mx-auto flex h-full max-w-6xl flex-col overflow-hidden rounded-t-lg border bg-background shadow-2xl">
-        <div className="flex h-11 shrink-0 items-center gap-2 border-b px-3">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <button
-              type="button"
-              className="flex items-center gap-2"
-              aria-expanded={state !== "collapsed"}
-              onClick={() =>
-                onStateChange(state === "collapsed" ? "open" : "collapsed")
-              }
-            >
-              <PlayIcon
-                className="size-3.5 fill-current text-primary"
-                aria-hidden="true"
+          style={{ viewTransitionName: "graphql-workbench" }}
+        >
+          <div className="flex h-11 shrink-0 items-center gap-2 border-b px-3">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <button
+                type="button"
+                className="flex items-center gap-2"
+                aria-expanded={state !== "collapsed"}
+                onClick={isDetached ? undefined : toggleCollapsed}
+              >
+                <PlayIcon
+                  className="size-3.5 fill-current text-primary"
+                  aria-hidden="true"
+                />
+                <span className="truncate text-sm font-medium">
+                  GraphQL Playground
+                </span>
+              </button>
+            </div>
+            <div className="flex items-center gap-1">
+              <ApiIdentityPicker showLabel />
+              {isDetached ? (
+                <DrawerToolbarButton
+                  label="Dock playground"
+                  icon={PictureInPicture2Icon}
+                  onClick={dock}
+                />
+              ) : (
+                <>
+                  <DrawerToolbarButton
+                    label="Open as dialog"
+                    icon={PictureInPicture2Icon}
+                    onClick={detach}
+                  />
+                  {state === "collapsed" ? (
+                    <DrawerToolbarButton
+                      label="Open playground"
+                      icon={ChevronsUpIcon}
+                      onClick={() => onStateChange("open")}
+                    />
+                  ) : (
+                    <DrawerToolbarButton
+                      label="Collapse playground"
+                      icon={ChevronsDownIcon}
+                      onClick={() => onStateChange("collapsed")}
+                    />
+                  )}
+                </>
+              )}
+              <DrawerToolbarButton
+                label="Close playground"
+                icon={XIcon}
+                onClick={() => onStateChange("closed")}
               />
-              <span className="truncate text-sm font-medium">
-                GraphQL Playground
-              </span>
-            </button>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <ApiIdentityPicker showLabel />
-            {state === "collapsed" ? (
-              <DrawerToolbarButton
-                label="Open playground"
-                icon={ChevronsUpIcon}
-                onClick={() => onStateChange("open")}
-              />
-            ) : (
-              <DrawerToolbarButton
-                label="Collapse playground"
-                icon={ChevronsDownIcon}
-                onClick={() => onStateChange("collapsed")}
-              />
-            )}
-            {state === "maximized" ? (
-              <DrawerToolbarButton
-                label="Restore playground"
-                icon={Minimize2Icon}
-                onClick={() => onStateChange("open")}
-              />
-            ) : (
-              <DrawerToolbarButton
-                label="Maximize playground"
-                icon={Maximize2Icon}
-                onClick={() => onStateChange("maximized")}
-              />
-            )}
-          </div>
+          {hasOpened.current && (
+            <GraphQLPlayground
+              endpoint={endpoint}
+              headers={options.playground?.headers}
+              schema={introspection}
+              operation={operation}
+              onOperationChange={updateWorkbenchOperation}
+              className="h-full min-h-0 rounded-none border-0"
+            />
+          )}
         </div>
-        {hasOpened.current && (
-          <GraphQLPlayground
-            endpoint={endpoint}
-            headers={options.playground?.headers}
-            schema={{ __schema: schema }}
-            operation={operation}
-            onOperationChange={updateWorkbenchOperation}
-            className="h-full min-h-0 rounded-none border-0"
-          />
-        )}
       </div>
-    </div>
+    </>
   );
 };
 

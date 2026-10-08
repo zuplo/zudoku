@@ -105,6 +105,9 @@ export interface Quota {
   // body displays `unitPrice` (or `tierPrices`) without a "X / period" line.
   isPayg?: boolean;
   unitPrice?: string;
+  // Hard limit (priced or not): the "X / period" line is a real cap and
+  // stays visible even when a tier breakdown is present.
+  isHardCap?: boolean;
 }
 
 export interface Feature {

@@ -59,8 +59,14 @@ export const queryClient = new QueryClient({
           },
         });
 
+        // Sign based on live auth state, not the state when the query was
+        // built: a query created while authenticated must not sign (and fail)
+        // after logout, e.g. the prefetch racing the logout callback.
+        const queryContext = q.meta?.context;
         const response = await fetch(
-          q.meta?.context ? await q.meta.context.signRequest(request) : request,
+          queryContext?.getAuthState().isAuthenticated
+            ? await queryContext.signRequest(request)
+            : request,
         );
 
         await throwIfProblemJson(response);
@@ -122,8 +128,11 @@ export const queryClient = new QueryClient({
           },
         });
 
+        const mutationContext = m.meta?.context;
         const response = await fetch(
-          m.meta?.context ? await m.meta.context.signRequest(request) : request,
+          mutationContext?.getAuthState().isAuthenticated
+            ? await mutationContext.signRequest(request)
+            : request,
         );
 
         await throwIfProblemJson(response);

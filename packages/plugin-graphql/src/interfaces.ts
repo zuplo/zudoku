@@ -1,5 +1,3 @@
-import { joinUrl } from "zudoku";
-
 export type GraphQLPluginOptions = {
   title?: string;
   description?: string;
@@ -40,13 +38,3 @@ export const resolveSchemaSource = (
   (config.endpoint && isSchemaUrl(config.endpoint)
     ? config.endpoint
     : undefined);
-
-export const resolveEndpointUrl = (
-  endpoint: string | undefined,
-  baseUrl: string | undefined,
-): string | undefined => {
-  if (!endpoint) return undefined;
-  if (isSchemaUrl(endpoint)) return endpoint;
-
-  return baseUrl ? joinUrl(baseUrl, endpoint) : joinUrl(endpoint);
-};

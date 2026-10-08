@@ -12,6 +12,13 @@ export const redirectToSignUpUrl = (
   }
 };
 
+export const getEntraIssuer = (config: {
+  issuer?: string;
+  tenantId?: string;
+}) =>
+  config.issuer ??
+  `https://login.microsoftonline.com/${config.tenantId ?? "common"}/v2.0`;
+
 export const getClerkFrontendApi = (publishableKey: string) => {
   // Split by underscore and get the base64 encoded part (3rd segment)
   const parts = publishableKey.split("_");

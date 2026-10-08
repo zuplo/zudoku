@@ -64,6 +64,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
       outputPath,
       redirect: { from: pathname, to: redirectTo },
       statusCode: response.status,
+      indexStatusCode: response.status,
       html: "",
     };
   }
@@ -77,8 +78,12 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   // Get HTML content for file write
   const fileContent = response.body ? await response.text() : "";
 
-  // For protected routes, do a second render with protection bypassed for search index
+  // For protected routes, do a second render with protection bypassed so the
+  // search index gets the full content instead of the gated sign-in page. The
+  // file on disk stays the gated (401) render; only `html`/`indexStatusCode`
+  // reflect the bypass render.
   let html = fileContent;
+  let indexStatusCode = response.status;
   if (isProtectedRoute) {
     const bypassRequest = new Request(url);
     const bypassResponse = await server.handleRequest({
@@ -96,6 +101,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
     }
 
     html = bypassResponse.body ? await bypassResponse.text() : "";
+    indexStatusCode = bypassResponse.status;
   }
 
   // Write the file
@@ -105,6 +111,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   return {
     outputPath,
     statusCode: response.status,
+    indexStatusCode,
     redirect: undefined,
     html,
   };

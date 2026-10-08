@@ -8,4 +8,5 @@ export default defineConfig({
   dts: true,
   format: ["esm"],
   external: [/^virtual:/],
+  css: { inject: true },
 });

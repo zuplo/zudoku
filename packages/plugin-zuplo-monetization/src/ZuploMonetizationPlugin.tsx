@@ -36,6 +36,17 @@ export const zuploMonetizationPlugin = createPlugin(
       }
     },
 
+    events: {
+      auth: ({ prev, next }) => {
+        // Drop cached user-scoped data (and any entry poisoned by a signed
+        // request that raced the logout) so nothing survives into the
+        // anonymous session.
+        if (prev.isAuthenticated && !next.isAuthenticated) {
+          queryClient.removeQueries();
+        }
+      },
+    },
+
     getIdentities: async (context) => {
       // Subscriptions require auth; unexpected failures are handled by
       // `getApiIdentities`, which settles plugins individually.

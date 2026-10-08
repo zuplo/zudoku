@@ -47,6 +47,31 @@ export const wrapProtectedRoutes = (
   });
 };
 
+// Route-wrapping decision for an SSR/SSG render. The prerender does a second
+// "bypass" pass over protected routes to build the search index; that pass must
+// render the real (unstubbed) protected content, so it is treated as
+// authenticated here. Without this, the bypass pass renders an empty shell and
+// the Pagefind index for protected routes ends up empty (issue #2672).
+export const wrapProtectedRoutesForRender = (
+  routes: RouteObject[],
+  protectedRoutes: ProtectedRoutesInput,
+  {
+    isAuthenticated,
+    bypassProtection,
+    basePath,
+  }: {
+    isAuthenticated: boolean;
+    bypassProtection?: boolean;
+    basePath?: string;
+  },
+): RouteObject[] =>
+  wrapProtectedRoutes(
+    routes,
+    protectedRoutes,
+    isAuthenticated || bypassProtection === true,
+    basePath,
+  );
+
 // Inline elements can't be chunk-isolated; RouteGuard still blocks render,
 // but the JS ships in the main bundle. Only meaningful in dev.
 export const warnInlineProtectedRoutes = (

@@ -12,6 +12,7 @@ import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { runPluginTransformConfig } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
 import { fileExists } from "./file-exists.js";
+import { getPluginVersions } from "./plugin-versions.js";
 import type {
   ResolvedZudokuConfig,
   ZudokuConfig,
@@ -239,6 +240,20 @@ export async function loadZudokuConfig(
       colors.cyan(`loaded config file `) + colors.dim(config.__meta.configPath),
       { timestamp: true },
     );
+
+    // Surface which versions of external plugins (created via `createPlugin`)
+    // the build is running, so build logs can pin down e.g. the monetization
+    // plugin version without each plugin having to log it itself.
+    const pluginVersions = await getPluginVersions(config.__pluginDirs ?? []);
+    if (pluginVersions.length > 0) {
+      logger.info(
+        colors.cyan(`loaded plugins `) +
+          colors.dim(
+            pluginVersions.map((p) => `${p.name}@${p.version}`).join(", "),
+          ),
+        { timestamp: true },
+      );
+    }
 
     return { config, envPrefix, publicEnv };
   } catch (error) {

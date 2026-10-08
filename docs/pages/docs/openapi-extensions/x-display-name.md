@@ -29,3 +29,8 @@ tags:
 
 Without `x-displayName`, the sidebar would show `ai-ops` and `user-mgmt`. With it, the sidebar
 displays `AI Operations` and `User Management` instead.
+
+## Related
+
+- [`x-zudoku-seo`](./x-zudoku-seo) — set a different browser title and meta description for the
+  tag's page

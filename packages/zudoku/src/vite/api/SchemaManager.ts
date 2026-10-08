@@ -1,10 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import {
-  $RefParser,
-  type JSONSchema,
-} from "@apidevtools/json-schema-ref-parser";
-import { upgrade, validate } from "@scalar/openapi-parser";
+import { $RefParser } from "@apidevtools/json-schema-ref-parser";
+import { upgrade } from "@scalar/openapi-parser";
 import { deepEqual } from "fast-equals";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
@@ -17,6 +14,14 @@ import { ensureArray } from "../../lib/util/ensureArray.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { slugify } from "../../lib/util/slugify.js";
+import {
+  auditOpenApiAgentQuality,
+  formatAgentQualityReport,
+} from "./agent-quality.js";
+import {
+  createOpenApiPublication,
+  type OpenApiPublication,
+} from "./openapi-publication.js";
 import { generateCode } from "./schema-codegen.js";
 
 type ProcessedSchema = {
@@ -84,6 +89,7 @@ export class SchemaManager {
   private processors: Processor[];
   private processedSchemas: Record<string, ProcessedSchema[]> = {};
   private referencedBy = new Map<string, Set<string>>();
+  private publishedSchemas: OpenApiPublication[] | undefined;
   public config: LoadedConfig;
 
   constructor({
@@ -98,7 +104,14 @@ export class SchemaManager {
     this.storeDir = storeDir;
     this.config = config;
     this.processors = [
-      ({ schema }) => upgrade(schema).specification as OpenAPIDocument,
+      ({ schema }) => {
+        const upgraded = upgrade(schema as unknown as Record<string, unknown>)
+          .specification as OpenAPIDocument;
+        if (upgraded?.info && typeof upgraded.info.version !== "string") {
+          upgraded.info.version = "0.0.1";
+        }
+        return upgraded;
+      },
       flattenAllOfProcessor,
       ...processors,
     ];
@@ -109,7 +122,7 @@ export class SchemaManager {
 
     const apis = ensureArray(this.config.apis ?? []);
     for (const apiConfig of apis) {
-      if (!apiConfig || apiConfig.type !== "file" || !apiConfig.path) continue;
+      if (apiConfig?.type !== "file" || !apiConfig.path) continue;
 
       const match = normalizeInputs(apiConfig.input).some(
         (i) =>
@@ -147,7 +160,6 @@ export class SchemaManager {
         this.referencedBy.get(file)?.add(filePath);
       });
 
-    const validatedSchema = await this.validateSchema(schema, filePath);
     const processedSchema = await this.processors.reduce(
       async (schema, processor) =>
         processor({
@@ -162,7 +174,7 @@ export class SchemaManager {
               },
             }),
         }),
-      Promise.resolve(validatedSchema),
+      Promise.resolve(schema as OpenAPIDocument),
     );
 
     const processedTime = Date.now();
@@ -205,7 +217,7 @@ export class SchemaManager {
         : paramsPath(params) || schemaVersion;
 
     const config = ensureArray(this.config.apis ?? []).find(
-      (c) => c.path === configuredPath,
+      (c) => c.type === "file" && c.path === configuredPath,
     );
 
     const processed = {
@@ -233,11 +245,27 @@ export class SchemaManager {
 
     if (index > -1) {
       schemas[index] = processed;
+      this.publishedSchemas = undefined;
     } else {
       throw new Error(
         `Schema with input path ${filePath} was not pre-initialized for ${configuredPath}.`,
       );
     }
+
+    if (
+      index === 0 &&
+      config?.type === "file" &&
+      config.publish?.agentQuality
+    ) {
+      const issues = auditOpenApiAgentQuality(processedSchema);
+      if (issues.length > 0) {
+        // biome-ignore lint/suspicious/noConsole: Opt-in build report
+        console.warn(
+          `[zudoku] ${formatAgentQualityReport(configuredPath, issues)}`,
+        );
+      }
+    }
+
     return processed;
   };
 
@@ -268,6 +296,7 @@ export class SchemaManager {
   public processAllSchemas = async () => {
     this.referencedBy.clear();
     this.processedSchemas = {};
+    this.publishedSchemas = undefined;
 
     const apis = ensureArray(this.config.apis ?? []);
     for (const apiConfig of apis) {
@@ -303,6 +332,10 @@ export class SchemaManager {
         );
       }
     }
+
+    // Resolve publications now so duplicate public paths fail the build instead
+    // of silently allowing one API to overwrite another.
+    this.getPublishedSchemas();
   };
 
   public getLatestSchema = (path: string) => this.processedSchemas[path]?.at(0);
@@ -313,6 +346,41 @@ export class SchemaManager {
     Object.values(this.processedSchemas)
       .flat()
       .filter((s) => s.importKey);
+
+  public getPublishedSchemas = (): OpenApiPublication[] => {
+    if (this.publishedSchemas) return this.publishedSchemas;
+
+    const publications = new Map<string, OpenApiPublication>();
+
+    for (const apiConfig of ensureArray(this.config.apis ?? [])) {
+      if (apiConfig.type !== "file" || !apiConfig.path || !apiConfig.publish) {
+        continue;
+      }
+
+      const primarySchema = this.getLatestSchema(apiConfig.path);
+      if (!primarySchema) continue;
+
+      const urlPath = joinUrl(this.config.basePath, apiConfig.publish.path);
+      const existing = publications.get(urlPath);
+      if (existing) {
+        throw new Error(
+          `OpenAPI publication path "${urlPath}" is configured by both "${existing.apiPath}" and "${apiConfig.path}". Configure a unique path for each published API.`,
+        );
+      }
+
+      publications.set(
+        urlPath,
+        createOpenApiPublication({
+          apiPath: apiConfig.path,
+          urlPath,
+          schema: primarySchema.schema,
+        }),
+      );
+    }
+
+    this.publishedSchemas = Array.from(publications.values());
+    return this.publishedSchemas;
+  };
 
   public getUrlToFilePathMap = () => {
     const map = new Map<string, string>();
@@ -364,22 +432,5 @@ export class SchemaManager {
       versionPath,
       `${fileName}${suffix}${extension}`,
     );
-  };
-
-  private validateSchema = async (
-    schema: JSONSchema,
-    filePath: string,
-  ): Promise<OpenAPIDocument> => {
-    const validated = await validate(schema);
-    if (validated.errors?.length) {
-      // biome-ignore lint/suspicious/noConsole: Logging allowed here
-      console.warn(`Schema warnings in ${filePath}:`);
-      for (const error of validated.errors) {
-        // biome-ignore lint/suspicious/noConsole: Logging allowed here
-        console.warn(error);
-      }
-    }
-
-    return schema as OpenAPIDocument;
   };
 }

@@ -62,11 +62,15 @@ class FirebaseAuthenticationProvider
   private readonly enableUsernamePassword: boolean;
   private readonly enableEmailLink: boolean;
   public readonly disableSignUp: boolean;
+  private readonly redirectToAfterSignUp?: string;
+  private readonly redirectToAfterSignIn?: string;
   private readonly redirectToAfterSignOut: string;
   private readonly signUpConfig?: FirebaseAuthenticationConfig["signUp"];
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
+    this.redirectToAfterSignUp = config.redirectToAfterSignUp;
+    this.redirectToAfterSignIn = config.redirectToAfterSignIn;
     this.redirectToAfterSignOut = config.redirectToAfterSignOut ?? "/";
     this.disableSignUp = config.disableSignUp ?? false;
     this.signUpConfig = config.signUp;
@@ -110,10 +114,9 @@ class FirebaseAuthenticationProvider
       redirectToSignUpUrl(this.signUpConfig.url, navigate, replace);
       return;
     }
+    const target = this.redirectToAfterSignUp ?? redirectTo;
     void navigate(
-      redirectTo
-        ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`
-        : `/signup`,
+      target ? `/signup?redirectTo=${encodeURIComponent(target)}` : `/signup`,
     );
   };
 
@@ -121,10 +124,9 @@ class FirebaseAuthenticationProvider
     { navigate }: AuthActionContext,
     { redirectTo }: AuthActionOptions,
   ) => {
+    const target = this.redirectToAfterSignIn ?? redirectTo;
     void navigate(
-      redirectTo
-        ? `/signin?redirectTo=${encodeURIComponent(redirectTo)}`
-        : `/signin`,
+      target ? `/signin?redirectTo=${encodeURIComponent(target)}` : `/signin`,
     );
   };
 
@@ -326,7 +328,10 @@ class FirebaseAuthenticationProvider
                     { title: "Email not found" },
                   );
                 }
-                await this.sendEmailLink(email);
+                const redirectTo = new URLSearchParams(
+                  window.location.search,
+                ).get("redirectTo");
+                await this.sendEmailLink(email, redirectTo ?? undefined);
               }}
             />
           </ClientOnly>

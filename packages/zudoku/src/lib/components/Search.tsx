@@ -1,46 +1,100 @@
 import { SearchIcon } from "lucide-react";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import {
+  createContext,
+  type PropsWithChildren,
+  Suspense,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { isSearchPlugin } from "../core/plugins.js";
 import { focusRing } from "../ui/util.js";
 import { cn } from "../util/cn.js";
 import { getOS } from "../util/os.js";
+import { requestIdle } from "../util/requestIdle.js";
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
-export const Search = ({ className }: { className?: string }) => {
+/** `null` when no search plugin is configured, `undefined` outside a provider */
+const SearchContext = createContext<
+  { onOpen: () => void; onPreload: () => void } | null | undefined
+>(undefined);
+
+/**
+ * Owns the search modal and the ⌘K / Ctrl+K shortcut for all `Search` buttons
+ * below it. The header renders a button per breakpoint and placement, so
+ * keeping this per button would open one modal for each of them.
+ */
+export const SearchProvider = ({ children }: PropsWithChildren) => {
   const ctx = useZudoku();
   const [isOpen, setIsOpen] = useState(false);
   const onOpen = useCallback(() => setIsOpen(true), []);
   const onClose = useCallback(() => setIsOpen(false), []);
 
-  useEffect(() => {
-    if (isOpen) {
-      return;
-    }
+  const searchPlugin = ctx.options.plugins?.find(isSearchPlugin);
+  const onPreload = useCallback(
+    () => searchPlugin?.preloadSearch?.(),
+    [searchPlugin],
+  );
 
-    function onKeyDown(event: KeyboardEvent) {
+  // The search UI is lazily loaded, so opening it cold shows nothing until its
+  // chunk arrives. Warm it once the page is idle; hover/focus covers the rest.
+  useEffect(() => {
+    if (!searchPlugin?.preloadSearch) return;
+
+    return requestIdle(() => searchPlugin.preloadSearch?.());
+  }, [searchPlugin]);
+
+  useEffect(() => {
+    if (isOpen || !searchPlugin) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setIsOpen(true);
       }
-    }
+    };
 
     window.addEventListener("keydown", onKeyDown);
 
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [isOpen]);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, searchPlugin]);
 
-  const searchPlugin = ctx.options.plugins?.find(isSearchPlugin);
+  const value = useMemo(
+    () => (searchPlugin ? { onOpen, onPreload } : null),
+    [searchPlugin, onOpen, onPreload],
+  );
 
-  if (!searchPlugin) return null;
+  return (
+    <SearchContext value={value}>
+      {children}
+      {searchPlugin && (
+        <Suspense>
+          {searchPlugin.renderSearch({ isOpen, onOpen, onClose })}
+        </Suspense>
+      )}
+    </SearchContext>
+  );
+};
+
+export const Search = ({ className }: { className?: string }) => {
+  const search = use(SearchContext);
+
+  if (search === undefined) {
+    throw new Error("Search must be used within a SearchProvider.");
+  }
+
+  if (!search) return null;
 
   return (
     <div className={className}>
       <button
         type="button"
-        onClick={onOpen}
+        onClick={search.onOpen}
+        onPointerEnter={search.onPreload}
+        onFocus={search.onPreload}
         className={cn(
           "relative w-full md:w-56 flex items-center border bg-clip-padding h-8 rounded-lg px-3 pr-14 text-sm transition-all",
           "border-input text-muted-foreground bg-background hover:bg-muted/50 hover:text-foreground shadow-xs",
@@ -55,7 +109,6 @@ export const Search = ({ className }: { className?: string }) => {
           <KbdShortcut />
         </ClientOnly>
       </button>
-      <Suspense>{searchPlugin.renderSearch({ isOpen, onClose })}</Suspense>
     </div>
   );
 };

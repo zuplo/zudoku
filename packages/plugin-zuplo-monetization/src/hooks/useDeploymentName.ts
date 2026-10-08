@@ -1,12 +1,8 @@
 import { useZudoku } from "zudoku/hooks";
+import { resolveDeploymentName } from "../deploymentName.js";
 
 export const useDeploymentName = () => {
   const zudoku = useZudoku();
-  const deploymentName = zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME;
 
-  if (!deploymentName) {
-    throw new Error("ZUPLO_PUBLIC_DEPLOYMENT_NAME is not set");
-  }
-
-  return deploymentName;
+  return resolveDeploymentName(zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME);
 };

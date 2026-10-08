@@ -1,4 +1,9 @@
-export function sanitizeMarkdownForMetatag(
+/**
+ * Flattens Markdown to a single line of plain text, truncated to `maxLength`.
+ * Use this for text React renders — React escapes on output, so pre-escaped
+ * entities would show up literally as `&#039;`.
+ */
+export function stripMarkdown(
   description: string,
   maxLength: number = 160,
 ): string {
@@ -23,10 +28,17 @@ export function sanitizeMarkdownForMetatag(
       .trim()
       // Limit to the specified maximum length
       .substring(0, maxLength)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;")
   );
+}
+
+export function sanitizeMarkdownForMetatag(
+  description: string,
+  maxLength: number = 160,
+): string {
+  return stripMarkdown(description, maxLength)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }

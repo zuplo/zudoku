@@ -182,6 +182,11 @@ You can also pass
 Zudoku's defaults and passed through to Inkeep as-is, so any option Inkeep supports can be used —
 including ones added after this Zudoku version was released.
 
+Zudoku owns the search modal's open state, so `modalSettings.isOpen` is managed for you. The
+<kbd>⌘</kbd>+<kbd>K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> shortcut is handled by Zudoku's search
+button as well, which is why Inkeep's own `shortcutKey` is disabled by default. Setting it adds an
+additional shortcut rather than replacing it.
+
 For example, to categorize results into tabs based on their URL:
 
 ```typescript

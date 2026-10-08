@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { joinUrl } from "zudoku";
-import {
-  isSchemaUrl,
-  resolveEndpointUrl,
-  resolveSchemaSource,
-} from "./interfaces.js";
+import { isSchemaUrl, resolveSchemaSource } from "./interfaces.js";
+import { resolveEndpointUrl } from "./resolveEndpointUrl.js";
 
 const GATEWAY = "https://gw.example.com";
 

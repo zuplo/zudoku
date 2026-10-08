@@ -848,6 +848,27 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       );
       expect(await provider.verifyAccessToken("t")).toBeUndefined();
     });
+
+    test("passes allowInsecureRequests to userInfoRequest", async () => {
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        allowInsecureRequests: true,
+      });
+      vi.mocked(oauth.userInfoRequest).mockResolvedValueOnce(
+        Response.json({ sub: "u1", email: "u@example.com", name: "U" }),
+      );
+
+      await provider.verifyAccessToken("t");
+
+      expect(oauth.userInfoRequest).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.objectContaining({ [oauth.allowInsecureRequests]: true }),
+      );
+    });
   });
 
   test("self heals providerData when providerData.type is undefined", async () => {

@@ -1,0 +1,103 @@
+---
+title: Cargo Manifest Guide
+sidebar_label: Manifest Guide
+sidebar_icon: scroll-text
+---
+
+A manifest is the legal record of what a freighter is carrying. This page mixes ordinary headings
+with steppers, so you can see where steps land in "On this page" depending on what they follow.
+
+## Filing a Manifest
+
+Filing is a fixed sequence, so it's written as a stepper. Because these steps sit under an `h2`,
+they appear in the table of contents as sub-items of **Filing a Manifest**.
+
+<Stepper>
+
+1. **Collect the Cargo Records**
+
+   Pull every registered cargo item for the bay. Anything not registered at this point can't be
+   added once the manifest is sealed.
+
+   ```sh
+   cosmocargo cargo list --bay first-freighter --json > cargo.json
+   ```
+
+1. **Declare Hazard Classes**
+
+   Each item needs a hazard class. Mixed-class holds need a separation plan attached, which the
+   spaceport checks before the freighter is allowed to dock.
+
+   :::warning
+
+   Anti-matter containment units are class VII and can never share a hold with cryogenic freight.
+
+   :::
+
+1. **Attach the Route**
+
+   A manifest is only valid for the lane it was filed against. Re-plot the lane if more than 6
+   standard hours pass between filing and launch.
+
+1. **Submit for Review**
+
+   Customs returns a decision within one standard hour. Until then the manifest sits in `pending`
+   and the freighter stays docked.
+
+</Stepper>
+
+## Amending a Filed Manifest
+
+Amendments are rarer and the rules differ by treaty region.
+
+### Inside Sol Jurisdiction
+
+Sol lets you amend a pending manifest in place. These steps sit under an `h3`, which would put them
+four levels deep — too deep for the table of contents, so they're deliberately left out of it, the
+same way an `h4` would be.
+
+<Stepper>
+
+1. **Open the Amendment Window**
+
+   Amendments are only accepted while the manifest is still `pending`.
+
+1. **Submit the Delta**
+
+   Send only the changed items. A full replacement resets the customs clock.
+
+1. **Re-sign the Manifest**
+
+   The original signature is voided the moment an amendment is accepted.
+
+</Stepper>
+
+### Outside Sol Jurisdiction
+
+Everywhere else, a filed manifest is immutable. Void it and file a fresh one.
+
+## Reading a Rejection Notice
+
+When customs rejects a manifest, the notice carries a machine-readable reason code. The checklist
+below opts out of the table of contents with `toc={false}` — it's a quick reference, not a section
+of the page worth linking to.
+
+<Stepper toc={false}>
+
+1. **Find the reason code**
+
+   It's the first field of the notice, formatted like `CC-4021`.
+
+1. **Look up the code**
+
+   Codes in the `CC-40xx` range are manifest problems; `CC-50xx` are lane problems.
+
+1. **Re-file**
+
+   Fix the cause, then file again. Rejections don't count against your bay quota.
+
+</Stepper>
+
+## Retention
+
+Sealed manifests are retained for 50 standard years and are available through the archive API.

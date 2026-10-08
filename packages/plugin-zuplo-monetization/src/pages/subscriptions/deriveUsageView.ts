@@ -1,4 +1,5 @@
 import type { Item } from "../../types/SubscriptionType.js";
+import { pluralizeUnit } from "../../utils/pluralizeUnit.js";
 import { priceIncludedUnits } from "../../utils/priceIncludedUnits.js";
 
 /** The metered access values the usage endpoint reports for one feature. */
@@ -54,12 +55,6 @@ const formatAmount = (amount: string | undefined): string | undefined => {
   const value = parseFloat(amount ?? "");
   return Number.isFinite(value) ? `$${value.toFixed(2)}` : undefined;
 };
-
-// The unit name comes from the pricing config (`pricing.units` keyed by rate
-// card or feature key); "unit" is the configured fallback everywhere else in
-// the plugin (see categorizeRateCards), so it is here too.
-const pluralizeUnit = (unitName: string) =>
-  unitName.endsWith("s") ? unitName : `${unitName}s`;
 
 /** The label for what additional usage costs, when the shape has one number. */
 const rateLabelFor = (

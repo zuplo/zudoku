@@ -5,7 +5,7 @@
     "description": "Advanced cargo container booking and management for interplanetary shipping. This API demonstrates complex schema composition using allOf, anyOf, and oneOf patterns for maximum flexibility in container configuration.",
     "contact": {
       "name": "Cosmo Cargo Container Division",
-      "email": "containers@cosmocargo.space",
+      "email": "containers@cosmocargo.dev",
       "url": "https://cosmocargo.space/containers"
     }
   },

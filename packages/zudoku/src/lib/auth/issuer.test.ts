@@ -69,6 +69,45 @@ describe("getIssuer", () => {
     expect(result).toBe("https://example.com/auth");
   });
 
+  it("should return common authority for entra authentication by default", async () => {
+    const config: ZudokuConfig = {
+      authentication: {
+        type: "entra",
+        clientId: "test-client-id",
+      },
+    };
+
+    const result = await getIssuer(config);
+    expect(result).toBe("https://login.microsoftonline.com/common/v2.0");
+  });
+
+  it("should return tenant-specific issuer for entra authentication with tenantId", async () => {
+    const config: ZudokuConfig = {
+      authentication: {
+        type: "entra",
+        clientId: "test-client-id",
+        tenantId: "tenant-123",
+      },
+    };
+
+    const result = await getIssuer(config);
+    expect(result).toBe("https://login.microsoftonline.com/tenant-123/v2.0");
+  });
+
+  it("should prefer the issuer override for entra authentication", async () => {
+    const config: ZudokuConfig = {
+      authentication: {
+        type: "entra",
+        clientId: "test-client-id",
+        tenantId: "tenant-123",
+        issuer: "https://example.ciamlogin.com/tenant-123/v2.0",
+      },
+    };
+
+    const result = await getIssuer(config);
+    expect(result).toBe("https://example.ciamlogin.com/tenant-123/v2.0");
+  });
+
   it("should return azureb2c issuer for azureb2c authentication", async () => {
     const config: ZudokuConfig = {
       authentication: {

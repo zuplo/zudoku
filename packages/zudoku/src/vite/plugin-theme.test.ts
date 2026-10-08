@@ -10,7 +10,6 @@ const callPluginLoad = async (plugin: Plugin, id: string) => {
   // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
   const hook = plugin.load!;
   const loadFn = typeof hook === "function" ? hook : hook.handler;
-  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   return loadFn.call({} as any, id);
 };
 
@@ -18,7 +17,6 @@ const callPluginTransform = async (plugin: Plugin, src: string, id: string) => {
   // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
   const hook = plugin.transform!;
   const transformFn = typeof hook === "function" ? hook : hook.handler;
-  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   return transformFn.call({} as any, src, id);
 };
 
@@ -92,14 +90,9 @@ describe("plugin-theme", () => {
       const plugin = viteThemePlugin();
       const result = await callPluginLoad(plugin, resolvedVirtualModuleId);
 
-      expect(result).toContain(
-        "@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap')",
-      );
-      expect(result).toContain(
-        "@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap')",
-      );
-      expect(result).toContain("--font-sans: Geist, sans-serif");
-      expect(result).toContain('--font-mono: "Geist Mono", monospace');
+      expect(result).not.toContain("fonts.googleapis.com");
+      expect(result).toContain('--font-sans: "Geist Variable", sans-serif');
+      expect(result).toContain('--font-mono: "Geist Mono Variable", monospace');
     });
 
     it("should handle mixed font configurations with defaults for missing fonts", async () => {
@@ -123,12 +116,9 @@ describe("plugin-theme", () => {
       expect(result).toContain(
         "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap')",
       );
-      expect(result).toContain(
-        "@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap')",
-      );
       expect(result).toContain("--font-sans: Inter");
       expect(result).toContain("--font-serif: CustomSerif");
-      expect(result).toContain('--font-mono: "Geist Mono", monospace');
+      expect(result).toContain('--font-mono: "Geist Mono Variable", monospace');
     });
 
     it("should provide mono default when only sans is configured", async () => {
@@ -149,11 +139,8 @@ describe("plugin-theme", () => {
       const result = await callPluginLoad(plugin, resolvedVirtualModuleId);
 
       expect(result).toContain("@import url('/fonts/fonts.css')");
-      expect(result).toContain(
-        "@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap')",
-      );
       expect(result).toContain("--font-sans: Solis, sans-serif");
-      expect(result).toContain('--font-mono: "Geist Mono", monospace');
+      expect(result).toContain('--font-mono: "Geist Mono Variable", monospace');
     });
   });
 

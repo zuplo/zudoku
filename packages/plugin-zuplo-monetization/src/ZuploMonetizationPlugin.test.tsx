@@ -1,6 +1,8 @@
 import { act, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ZudokuContext } from "zudoku";
 import { StaticZudoku } from "zudoku/testing";
+import { pricingPageQuery } from "./queries.js";
 import type { Plan } from "./types/PlanType.js";
 import { zuploMonetizationPlugin } from "./ZuploMonetizationPlugin";
 import { queryClient } from "./ZuploMonetizationWrapper";
@@ -64,5 +66,160 @@ describe("PricingPage", () => {
     expect(screen.getByTestId("subtitle")).toHaveTextContent(
       "See our pricing options and choose the one that best suits your needs.",
     );
+  });
+
+  const planWithMetadata = (
+    id: string,
+    name: string,
+    metadata?: Plan["metadata"],
+  ): Plan => ({
+    id,
+    key: id,
+    name,
+    billingCadence: "P1M",
+    currency: "USD",
+    metadata,
+    phases: [{ key: "default", name: "Default", rateCards: [] }],
+  });
+
+  const renderPricingPage = async (plans: Plan[]) => {
+    queryClient.setQueryData(["/v3/zudoku-metering/test/subscriptions"], {
+      items: [],
+    });
+    queryClient.setQueryData(["/v3/zudoku-metering/test/pricing-page"], {
+      items: plans,
+    });
+
+    await act(async () => {
+      render(
+        <StaticZudoku
+          env={{ ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test" }}
+          plugins={[zuploMonetizationPlugin()]}
+          path="/pricing"
+        />,
+      );
+    });
+  };
+
+  it("renders a contact link instead of Subscribe for a custom plan", async () => {
+    await renderPricingPage([
+      planWithMetadata("basic", "Basic"),
+      planWithMetadata("enterprise", "Enterprise", {
+        isCustom: "true",
+        contactUrl: "sales@acme.com",
+        contactLabel: "Contact us",
+      }),
+      planWithMetadata("custom", "Custom", {
+        isCustom: "true",
+        contactUrl: "/contact",
+        contactLabel: "Talk to us",
+      }),
+    ]);
+
+    expect(screen.getByRole("link", { name: "Subscribe" })).toHaveAttribute(
+      "href",
+      "/checkout?planId=basic",
+    );
+
+    const contact = screen.getByRole("link", { name: "Contact us" });
+    expect(contact).toHaveAttribute("href", "mailto:sales@acme.com");
+    expect(contact).not.toHaveAttribute("target");
+
+    // An in-app path routes through the client-side router.
+    expect(screen.getByRole("link", { name: "Talk to us" })).toHaveAttribute(
+      "href",
+      "/contact",
+    );
+  });
+
+  it("omits the CTA for a custom plan without a contact target", async () => {
+    await renderPricingPage([
+      planWithMetadata("enterprise", "Enterprise", { isCustom: "true" }),
+    ]);
+
+    expect(screen.getByText("Contact Sales")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Subscribe" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("pricing query signing after logout", () => {
+  // Simulates the OpenID end_session logout race: the pricing prefetch is
+  // built while localStorage still says authenticated, but by the time the
+  // request fires the logout callback has cleared auth state.
+  const createFakeContext = (authState: { isAuthenticated: boolean }) => {
+    const signRequest = vi.fn(async (_request: Request): Promise<Request> => {
+      throw new Error("Invalid or incompatible provider data");
+    });
+    const context = {
+      env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test" },
+      getAuthState: () => authState,
+      signRequest,
+    } as unknown as ZudokuContext;
+    return { context, signRequest };
+  };
+
+  beforeEach(() => {
+    queryClient.clear();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ items: [] }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    queryClient.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it("fetches unsigned when logged out after the query was built", async () => {
+    const authState = { isAuthenticated: true };
+    const { context, signRequest } = createFakeContext(authState);
+
+    const opts = pricingPageQuery(context);
+    authState.isAuthenticated = false;
+
+    await queryClient.prefetchQuery(opts);
+
+    expect(signRequest).not.toHaveBeenCalled();
+    expect(queryClient.getQueryState(opts.queryKey)?.status).toBe("success");
+  });
+
+  it("renders /pricing after a logout-poisoned prefetch", async () => {
+    const authState = { isAuthenticated: true };
+    const { context } = createFakeContext(authState);
+
+    const opts = pricingPageQuery(context);
+    authState.isAuthenticated = false;
+    await queryClient.prefetchQuery(opts);
+
+    await act(async () => {
+      render(
+        <StaticZudoku
+          env={{ ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test" }}
+          plugins={[zuploMonetizationPlugin({ pricing: { title: "Pricing" } })]}
+          path="/pricing"
+        />,
+      );
+    });
+
+    expect(screen.getByTestId("title")).toHaveTextContent("Pricing");
+  });
+
+  it("signs the request when authenticated at fetch time", async () => {
+    const authState = { isAuthenticated: true };
+    const { context, signRequest } = createFakeContext(authState);
+    signRequest.mockImplementation(async (request: Request) => request);
+
+    await queryClient.prefetchQuery(pricingPageQuery(context));
+
+    expect(signRequest).toHaveBeenCalledOnce();
   });
 });

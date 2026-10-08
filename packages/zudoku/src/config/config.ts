@@ -33,3 +33,7 @@ export type AzureB2CAuthenticationConfig = Extract<
   AuthenticationConfig,
   { type: "azureb2c" }
 >;
+export type EntraAuthenticationConfig = Extract<
+  AuthenticationConfig,
+  { type: "entra" }
+>;

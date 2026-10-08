@@ -78,6 +78,8 @@ There are two distinct pipelines depending on how schemas are loaded:
 3. `flattenAllOfProcessor` resolves `$ref`s inside `allOf` arrays then merges via
    `@x0k/json-schema-merge`.
 4. Custom user-defined processors run.
+5. Built-in `removeInternal` strips `x-internal` paths, operations and parameters (every build).
+6. Zuplo processors run (only when `ZuploEnv.isZuplo`).
 
 ### URL schemas (runtime via `validate()` in `oas/parser/index.ts`)
 

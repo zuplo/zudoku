@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     name: Build & Test
@@ -21,10 +25,10 @@ jobs:
       ZUDOKU_INTERNAL_DEV: true
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           run_install: false
 
@@ -46,7 +50,7 @@ jobs:
         if: github.event_name == 'pull_request'
         id: monetization-changes
         # Pinned to commit SHA for security. Tag: v3
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         with:
           filters: |
             monetization:
@@ -71,7 +75,7 @@ jobs:
       - name: Restore base coverage
         if: github.event_name == 'pull_request'
         id: base-coverage
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: coverage-base/coverage-summary.json
           key: coverage-base-
@@ -83,21 +87,21 @@ jobs:
 
       - name: Save base coverage cache
         if: github.ref == 'refs/heads/main'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: coverage-base/coverage-summary.json
           key: coverage-base-${{ github.sha }}
 
       - name: Coverage report comment (with comparison)
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key != ''
-        uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
+        uses: davelosert/vitest-coverage-report-action@c4bbc33a89b7ace0e63d35f1f7d4bcee31155a73 # v2
         with:
           json-summary-path: coverage/coverage-summary.json
           json-summary-compare-path: coverage-base/coverage-summary.json
 
       - name: Coverage report comment
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key == ''
-        uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
+        uses: davelosert/vitest-coverage-report-action@c4bbc33a89b7ace0e63d35f1f7d4bcee31155a73 # v2
         with:
           json-summary-path: coverage/coverage-summary.json
 
@@ -113,8 +117,10 @@ jobs:
         if: github.event_name == 'push' && github.ref != 'refs/heads/main'
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku --filter config --tag canary --no-git-checks
 
-      - name: Build Examples
-        run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
+      # Only the examples consumed by later steps (e2e, size-limit, smoke test);
+      # all other examples build in the parallel build-examples job
+      - name: Build Test Examples
+        run: nx run-many -t build --projects=cosmo-cargo,with-base-path
 
       - name: Smoke Test with-base-path
         run: |
@@ -136,7 +142,22 @@ jobs:
 
           echo "✅ with-base-path smoke test passed"
 
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node --print "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      # On a cache miss, --with-deps installs the browser and its system
+      # libraries. On a cache hit those libraries are already present in the
+      # runner image, so no install-deps step is needed.
       - name: Install Playwright
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
 
       - name: E2E Tests
@@ -145,6 +166,39 @@ jobs:
       - name: Check Bundle Size
         run: pnpm size
 
+  build-examples:
+    name: Build Examples
+    runs-on:
+      group: ubuntu-large-runners
+    permissions:
+      contents: read
+
+    env:
+      COREPACK_ENABLE_STRICT: 0
+      ZUDOKU_INTERNAL_DEV: true
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm install nx --global
+
+      # cosmo-cargo and with-base-path are built and verified in Build & Test
+      - name: Build Examples
+        run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis,cosmo-cargo,with-base-path
+
   check-links:
     name: Check Links
     runs-on: ubuntu-latest
@@ -152,8 +206,8 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           run_install: false
 
@@ -173,14 +227,14 @@ jobs:
 
       - name: Restore lychee cache
         id: restore-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: .lycheecache
           key: cache-lychee-v4-${{ github.sha }}
           restore-keys: cache-lychee-v4-
 
       - name: Link Checker
-        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
         with:
           args: >-
             --config ./docs/lychee.toml
@@ -193,7 +247,7 @@ jobs:
             ./docs/dist
       - name: Save lychee cache
         if: always()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: .lycheecache
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}

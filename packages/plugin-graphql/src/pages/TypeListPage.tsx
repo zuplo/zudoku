@@ -7,6 +7,7 @@ import {
   ItemDescription,
   ItemTitle,
 } from "zudoku/ui/Item.js";
+import { LinkSafeMarkdown } from "../components/LinkSafeMarkdown.js";
 import { useGraphQLSchema } from "../context.js";
 import type { SchemaIndex } from "../util/schemaIndex.js";
 import { ROOT_TYPES, type RootType, typeMetadata } from "../util/types.js";
@@ -77,7 +78,7 @@ export const TypeListPage = ({ kind }: TypeListPageProps) => {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-primary hover:underline whitespace-nowrap"
             >
-              Learn more
+              Learn more<span className="sr-only"> about {meta.label}</span>
               <ExternalLinkIcon size={13} aria-hidden="true" />
             </a>
           </p>
@@ -99,8 +100,11 @@ export const TypeListPage = ({ kind }: TypeListPageProps) => {
                       </code>
                     </ItemTitle>
                     {item.description && (
-                      <ItemDescription className="line-clamp-2">
-                        {item.description}
+                      <ItemDescription asChild>
+                        <LinkSafeMarkdown
+                          content={item.description}
+                          className="prose-sm text-pretty"
+                        />
                       </ItemDescription>
                     )}
                   </ItemContent>

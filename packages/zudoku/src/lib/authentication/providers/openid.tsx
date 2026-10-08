@@ -143,12 +143,30 @@ export class OpenIDAuthenticationProvider
         issuerUrl,
         this.oauthOptions,
       );
+
       this.authorizationServer = await oauth.processDiscoveryResponse(
-        issuerUrl,
+        await this.getExpectedDiscoveryIssuer(issuerUrl, response),
         response,
       );
     }
     return this.authorizationServer;
+  }
+
+  // Override points for providers whose issuers deviate from the spec (see
+  // EntraAuthenticationProvider). Overrides must peek via `response.clone()`;
+  // the body is consumed downstream.
+  protected async getExpectedDiscoveryIssuer(
+    issuerUrl: URL,
+    _response: Response,
+  ): Promise<URL> {
+    return issuerUrl;
+  }
+
+  protected async resolveTokenIssuer(
+    as: oauth.AuthorizationServer,
+    _response: Response,
+  ): Promise<oauth.AuthorizationServer> {
+    return as;
   }
 
   /**
@@ -239,12 +257,12 @@ export class OpenIDAuthenticationProvider
     });
   }
 
-  private buildUserProfile(
+  protected buildUserProfile(
     userInfo: oauth.UserInfoResponse,
-    fallbackEmailVerified: oauth.JsonValue | undefined,
+    claims: oauth.IDToken | undefined,
   ): UserProfile {
     const emailVerified =
-      userInfo.email_verified ?? fallbackEmailVerified ?? false;
+      userInfo.email_verified ?? claims?.email_verified ?? false;
     return {
       ...userInfo,
       sub: userInfo.sub,
@@ -263,6 +281,7 @@ export class OpenIDAuthenticationProvider
       authServer,
       this.client,
       token,
+      this.oauthOptions,
     );
     if (!response.ok) return undefined;
     const userInfo = (await response.json()) as Record<string, unknown>;
@@ -303,12 +322,10 @@ export class OpenIDAuthenticationProvider
     const userInfo = await userInfoResponse.json();
 
     const { providerData } = useAuthState.getState();
-    const emailVerified =
-      providerData?.type === "openid"
-        ? providerData.claims?.email_verified
-        : undefined;
+    const claims =
+      providerData?.type === "openid" ? providerData.claims : undefined;
 
-    const profile = this.buildUserProfile(userInfo, emailVerified);
+    const profile = this.buildUserProfile(userInfo, claims);
 
     useAuthState.setState({
       isAuthenticated: true,
@@ -496,7 +513,7 @@ export class OpenIDAuthenticationProvider
       );
 
       const result = await oauth.processRefreshTokenResponse(
-        as,
+        await this.resolveTokenIssuer(as, response),
         this.client,
         response,
       );
@@ -590,7 +607,7 @@ export class OpenIDAuthenticationProvider
           this.oauthOptions,
         );
         const result = await oauth.processRefreshTokenResponse(
-          as,
+          await this.resolveTokenIssuer(as, response),
           this.client,
           response,
         );
@@ -657,7 +674,7 @@ export class OpenIDAuthenticationProvider
     );
 
     const oauthResult = await oauth.processAuthorizationCodeResponse(
-      authServer,
+      await this.resolveTokenIssuer(authServer, response),
       this.client,
       response,
     );
@@ -678,7 +695,7 @@ export class OpenIDAuthenticationProvider
     );
     const userInfo = await userInfoResponse.json();
 
-    const profile = this.buildUserProfile(userInfo, claims?.email_verified);
+    const profile = this.buildUserProfile(userInfo, claims);
 
     useAuthState.setState({
       isAuthenticated: true,

@@ -8,6 +8,7 @@ import {
 } from "zudoku/icons";
 import { Badge } from "zudoku/ui/Badge";
 import { Button } from "zudoku/ui/Button";
+import { ContactLinkButton } from "../../components/ContactLinkButton.js";
 import { PlanPhaseHeader } from "../../pricing-ui/PlanEntitlements.js";
 import { PlanPriceSchedule } from "../../pricing-ui/PlanPriceSchedule.js";
 import { PlanPriceTag } from "../../pricing-ui/PlanPriceTag.js";
@@ -22,6 +23,10 @@ import {
 import { formatPlanPrice } from "../../utils/formatPlanPrice.js";
 import { getPlanPriceSchedule } from "../../utils/getPlanPriceSchedule.js";
 import { isCustomPlan } from "../../utils/isCustomPlan.js";
+import {
+  DEFAULT_CONTACT_LABEL,
+  getPlanContact,
+} from "../../utils/planContact.js";
 
 export type PlanChangeMode = "upgrade" | "downgrade" | "private";
 
@@ -156,6 +161,7 @@ export const PlanChangeCard = ({
   onSwitch: () => void;
 }) => {
   const isCustom = isCustomPlan(plan);
+  const contact = getPlanContact(plan);
   const priceLabel = formatPlanPrice(plan);
   // Multi-phase ramp plans show a stacked per-phase price schedule below the
   // title instead of the inline steady-state price tag.
@@ -230,9 +236,16 @@ export const PlanChangeCard = ({
           )}
         </div>
         {isCustom ? (
-          <Button variant="default" size="sm">
-            Contact Sales
-          </Button>
+          // A contact-sales plan can't be switched to from the portal. With a
+          // `contactUrl` in the plan metadata the CTA links out; without one it
+          // stays a plain label instead of a button that does nothing.
+          contact ? (
+            <ContactLinkButton contact={contact} size="sm" />
+          ) : (
+            <span className="text-sm font-medium text-muted-foreground">
+              {DEFAULT_CONTACT_LABEL}
+            </span>
+          )
         ) : (
           <Button
             variant={mode === "upgrade" ? "default" : "outline"}

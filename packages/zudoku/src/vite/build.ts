@@ -12,7 +12,7 @@ import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { writeManifest } from "./manifest.js";
-import { writeOutput } from "./output.js";
+import { cleanVercelOutput, writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
 import {
   assertCloudflareWranglerGatesProtected,
@@ -22,6 +22,60 @@ import {
 } from "./protected/build.js";
 
 const DIST_DIR = "dist";
+
+type CssBuildOutput = {
+  fileName: string;
+  imports?: string[];
+  isEntry?: boolean;
+  type: string;
+  viteMetadata?: { importedCss: Set<string> };
+};
+
+export const getEagerCssEntries = (output: readonly CssBuildOutput[]) => {
+  const cssAssets = output
+    .filter((item) => item.fileName.endsWith(".css"))
+    .map((item) => item.fileName);
+  const chunksByFileName = new Map(
+    output
+      .filter((item) => item.type === "chunk")
+      .map((item) => [item.fileName, item]),
+  );
+  const entryChunk = output.find(
+    (item) => item.type === "chunk" && item.isEntry,
+  );
+
+  if (!entryChunk) return cssAssets;
+
+  const referencedCss = new Set(
+    output.flatMap((item) => [...(item.viteMetadata?.importedCss ?? [])]),
+  );
+
+  // Build adapters that do not expose Vite's chunk metadata retain the
+  // previous behavior of linking every emitted stylesheet.
+  if (referencedCss.size === 0) return cssAssets;
+
+  const eagerCss = new Set<string>();
+  const visitedChunks = new Set<string>();
+  const visitChunk = (fileName: string) => {
+    if (visitedChunks.has(fileName)) return;
+    visitedChunks.add(fileName);
+
+    const chunk = chunksByFileName.get(fileName);
+    if (!chunk) return;
+
+    chunk.viteMetadata?.importedCss.forEach((css) => eagerCss.add(css));
+    chunk.imports?.forEach(visitChunk);
+  };
+
+  visitChunk(entryChunk.fileName);
+
+  // Keep CSS imported by the eager entry graph and standalone/global assets
+  // emitted by custom plugins. Only CSS owned exclusively by lazy chunks is
+  // omitted from the initial document.
+  return cssAssets.filter(
+    (css) => eagerCss.has(css) || !referencedCss.has(css),
+  );
+};
 
 export type SSRAdapter = "node" | "cloudflare" | "vercel" | "lambda";
 
@@ -46,7 +100,10 @@ export async function runBuild(options: BuildOptions) {
   invariant(builder.environments.ssr, "SSR environment is missing");
 
   const distDir = path.resolve(path.join(dir, "dist"));
-  await rm(distDir, { recursive: true, force: true });
+  await Promise.all([
+    rm(distDir, { recursive: true, force: true }),
+    cleanVercelOutput(dir),
+  ]);
 
   const [clientResult, serverResult] = await Promise.all([
     builder.build(builder.environments.client),
@@ -75,16 +132,21 @@ export async function runBuild(options: BuildOptions) {
   invariant(clientOutDir, "Client build outDir is missing");
   invariant(serverOutDir, "Server build outDir is missing");
 
-  const jsEntry = clientResult.output.find(
+  const jsEntryChunk = clientResult.output.find(
     (o) => "isEntry" in o && o.isEntry,
-  )?.fileName;
+  );
+  const jsEntry = jsEntryChunk?.fileName;
 
-  const cssEntries = clientResult.output
-    .filter((o) => o.fileName.endsWith(".css"))
-    .map((o) => o.fileName);
+  const cssEntries = getEagerCssEntries(clientResult.output);
 
-  if (!jsEntry || cssEntries.length === 0) {
-    throw new Error("Build failed. No js or css assets found");
+  if (!jsEntry) {
+    throw new Error("Build failed. No js entry chunk found");
+  }
+
+  if (cssEntries.length === 0) {
+    throw new Error(
+      "Build failed. No stylesheet reachable from the eager entry chunk was found",
+    );
   }
 
   const html = getBuildHtml({
@@ -158,7 +220,13 @@ const runPrerender = async (options: PrerenderOptions) => {
   const serverConfigFilename = findServerConfigFilename(serverResult);
 
   try {
-    const { workerResults, rewrites } = await prerender({
+    const {
+      workerResults,
+      rewrites,
+      knownRoutes,
+      markdownRoutes,
+      markdownNotFound,
+    } = await prerender({
       html,
       dir,
       basePath: config.basePath,
@@ -199,6 +267,13 @@ const runPrerender = async (options: PrerenderOptions) => {
       config,
       redirects: workerResults.flatMap((r) => r.redirect ?? []),
       rewrites,
+      markdownNegotiation: markdownNotFound
+        ? {
+            knownCanonicalRoutePaths: knownRoutes,
+            markdownCanonicalRoutePaths: markdownRoutes,
+            markdownNotFoundBody: markdownNotFound,
+          }
+        : undefined,
     });
 
     if (ZuploEnv.isZuplo && issuer) {

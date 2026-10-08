@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "contact": {
       "name": "Cosmo Cargo API Support",
-      "email": "api@sh.example.com",
+      "email": "api@cosmocargo.dev",
       "url": "https://developers.sh.example.com"
     },
     "license": {
@@ -48,7 +48,11 @@
     {
       "name": "Tracking & Notifications",
       "description": "Endpoints for tracking shipments and configuring notifications for shipment status updates.",
-      "x-displayName": "Notifications"
+      "x-displayName": "Notifications",
+      "x-zudoku-seo": {
+        "title": "Interstellar Shipment Tracking & Notifications",
+        "description": "Follow cargo across warp lanes in real time and get notified the moment a shipment changes status."
+      }
     },
     {
       "name": "System",
@@ -151,7 +155,7 @@
           "recipientEmail": {
             "type": "string",
             "format": "email",
-            "example": "recipient@example.com"
+            "example": "recipient@cosmocargo.dev"
           },
           "notes": {
             "type": "array",
@@ -776,7 +780,7 @@
                 "simple": {
                   "summary": "Simple domestic shipment",
                   "value": {
-                    "recipientEmail": "test@example.com",
+                    "recipientEmail": "test@cosmocargo.dev",
                     "recipientAddress": {
                       "street": "123 Delivery St",
                       "city": "Shiptown",
@@ -856,7 +860,7 @@
                     "summary": "Domestic shipment response",
                     "value": {
                       "id": "123e4567-e89b-12d3-a456-426614174000",
-                      "recipientEmail": "test@example.com",
+                      "recipientEmail": "test@cosmocargo.dev",
                       "recipientAddress": {
                         "street": "123 Delivery St",
                         "city": "Shiptown",
@@ -1195,7 +1199,7 @@
                 },
                 "example": {
                   "id": "123e4567-e89b-12d3-a456-426614174000",
-                  "recipientEmail": "test@example.com",
+                  "recipientEmail": "test@cosmocargo.dev",
                   "recipientAddress": {
                     "street": "123 Delivery St",
                     "city": "Shiptown",
@@ -2787,7 +2791,7 @@
                               "Commercial Invoice",
                               "Certificate of Origin"
                             ],
-                            "contactEmail": "customs@sh.example.com"
+                            "contactEmail": "customs@cosmocargo.dev"
                           }
                         },
                         {
@@ -2897,6 +2901,11 @@
               }
             }
           }
+        },
+        "responses": {
+          "204": {
+            "description": "Notification preferences updated"
+          }
         }
       }
     },
@@ -2933,6 +2942,11 @@
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Shipment priority updated"
           }
         }
       }
@@ -3832,6 +3846,23 @@
         "requestBody": {
           "content": {
             "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "GraphQL operation document"
+                  },
+                  "variables": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "operationName": {
+                    "type": ["string", "null"]
+                  }
+                }
+              },
               "examples": {
                 "list-characters": {
                   "summary": "List characters",
@@ -3853,7 +3884,28 @@
         },
         "responses": {
           "200": {
-            "description": "GraphQL response"
+            "description": "GraphQL response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": ["object", "null"],
+                      "additionalProperties": true
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
           }
         }
       }

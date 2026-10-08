@@ -63,11 +63,12 @@ const NavigationCategoryInner = ({
         setOpen((prev) => !prev);
         setHasInteracted(true);
       }}
-      variant="ghost"
+      variant="none"
       size="icon"
       aria-label={open ? "Collapse section" : "Expand section"}
       aria-expanded={open}
-      className="size-6 hover:bg-[hsl(from_var(--accent)_h_s_calc(l+6*var(--dark)))]"
+      // -my-0.5 keeps the chevron from making folder rows taller than plain ones
+      className="size-6 -my-0.5"
     >
       <ChevronRightIcon
         size={16}

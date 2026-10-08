@@ -57,6 +57,13 @@ export const useScrollToAnchor = () => {
       return;
     }
 
+    // If the target is already in the DOM, scroll now and skip the observer entirely,
+    // otherwise any later DOM mutation will cause a scroll to hash.
+    if (scrollToHash(location.hash)) {
+      initialScrolled.current = true;
+      return;
+    }
+
     const observer = new MutationObserver((_, obs) => {
       if (!scrollToHash(location.hash)) return;
       initialScrolled.current = true;

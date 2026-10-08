@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "contact": {
       "name": "Cosmo Cargo API Support",
-      "email": "api@sh.example.com",
+      "email": "api@cosmocargo.dev",
       "url": "https://developers.sh.example.com"
     }
   },
@@ -18,6 +18,25 @@
     {
       "url": "https://api.staging.sh.example.com/v1",
       "description": "Staging environment"
+    },
+    {
+      "url": "https://{sector}.relay.sh.example.com:{port}/{basePath}",
+      "description": "Deep-space relay node. Pick the star sector closest to your fleet to minimize light-lag.",
+      "variables": {
+        "sector": {
+          "default": "sol",
+          "enum": ["sol", "alpha-centauri", "proxima", "kepler-452"],
+          "description": "Star sector of the relay node"
+        },
+        "port": {
+          "default": "8443",
+          "description": "Quantum-encrypted relay port"
+        },
+        "basePath": {
+          "default": "v1",
+          "description": "API version path"
+        }
+      }
     }
   ],
   "security": [

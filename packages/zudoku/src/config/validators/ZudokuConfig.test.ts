@@ -308,6 +308,49 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it.each(["/openapi.json", "/api/openapi.yaml", "/nested/schema.yml"])(
+    "should accept OpenAPI publication path %s",
+    (publicationPath) => {
+      const config = {
+        apis: {
+          type: "file" as const,
+          input: "./openapi.json",
+          path: "/api",
+          publish: { path: publicationPath, agentQuality: true },
+        },
+      };
+
+      const result = validateConfig(config);
+
+      expect(result.apis).toMatchObject(config.apis);
+      expect(mockConsoleLog).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    "openapi.json",
+    "/../openapi.json",
+    "/api/../openapi.json",
+    "//example.com/openapi.json",
+    "/openapi.txt",
+    "/openapi.json?download=true",
+    "/openapi.json#schema",
+    "/%2e%2e/openapi.json",
+    "/api\\openapi.json",
+  ])("should reject unsafe OpenAPI publication path %s", (publicationPath) => {
+    process.env.NODE_ENV = "production";
+
+    expect(() =>
+      validateConfig({
+        apis: {
+          type: "file",
+          input: "./openapi.json",
+          publish: { path: publicationPath },
+        },
+      }),
+    ).toThrow("OpenAPI publication path");
+  });
+
   it.each([true, false])(
     "should accept header.themeSwitcher.enabled with %s",
     (enabled) => {
@@ -492,12 +535,69 @@ describe("validateConfig parsed result", () => {
     const result = validateConfig({});
 
     expect(result.docs.publishMarkdown).toBe(true);
+    expect(result.docs.contentNegotiation).toBe(true);
     expect(result.docs.files).toEqual(["/pages/**/*.{md,mdx}"]);
     expect(result.docs.llms).toEqual({
       llmsTxt: false,
       llmsTxtFull: false,
       includeProtected: false,
     });
+  });
+
+  it("allows Markdown content negotiation to be disabled", () => {
+    const result = validateConfig({ docs: { contentNegotiation: false } });
+
+    expect(result.docs.contentNegotiation).toBe(false);
+  });
+
+  it("derives the content negotiation default from publishMarkdown", () => {
+    expect(
+      validateConfig({ docs: { publishMarkdown: true } }).docs
+        .contentNegotiation,
+    ).toBe(true);
+    expect(
+      validateConfig({ docs: { publishMarkdown: false } }).docs
+        .contentNegotiation,
+    ).toBe(false);
+  });
+
+  it("does not enable content negotiation without Markdown output", () => {
+    const result = validateConfig({
+      docs: { publishMarkdown: false, contentNegotiation: true },
+    });
+
+    expect(result.docs.contentNegotiation).toBe(false);
+  });
+
+  it("preserves custom llms.txt introductory guidance", () => {
+    const result = validateConfig({
+      docs: {
+        llms: {
+          title: "  Acme API  ",
+          description: "  APIs for managing Acme resources.  ",
+          instructions:
+            "  Use these docs when creating or debugging an Acme integration.  ",
+        },
+      },
+    });
+
+    expect(result.docs.llms).toEqual({
+      llmsTxt: false,
+      llmsTxtFull: false,
+      includeProtected: false,
+      title: "Acme API",
+      description: "APIs for managing Acme resources.",
+      instructions:
+        "Use these docs when creating or debugging an Acme integration.",
+    });
+  });
+
+  it("rejects empty llms.txt introductory guidance", () => {
+    process.env.NODE_ENV = "production";
+
+    expect(() =>
+      validateConfig({ docs: { llms: { instructions: "  \n  " } } }),
+    ).toThrow("Invalid Zudoku configuration");
   });
 
   it("transforms docs.files string into an array", () => {

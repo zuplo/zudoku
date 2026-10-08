@@ -13,6 +13,7 @@ import {
 import "vite/modulepreload-polyfill";
 import { configuredAuthProvider } from "virtual:zudoku-auth";
 import config from "virtual:zudoku-config";
+import markdownFiles from "virtual:zudoku-markdown-files";
 import { parseCookies } from "../lib/authentication/cookies.js";
 import { createSessionHandler } from "../lib/authentication/session-handler.js";
 import { cachedVerifyAccessToken } from "../lib/authentication/verify-cache.js";
@@ -22,11 +23,20 @@ import type { SSRAuthState } from "../lib/components/context/RenderContext.js";
 import { ServerError } from "../lib/errors/ServerError.js";
 import { buildManifest } from "../lib/manifest.js";
 import { highlighterPromise } from "../lib/shiki.js";
+import {
+  addAcceptToVary,
+  negotiateContentType,
+} from "../lib/util/contentNegotiation.js";
+import {
+  getMarkdownAlternateLink,
+  getMarkdownNotFound,
+  resolveDocumentationRoutePath,
+} from "../lib/util/markdown-representation.js";
 import type { Adapter } from "./adapter.js";
 import { getRoutesByConfig } from "./main.js";
 import { protectChunks as rawProtectChunks } from "./protectChunks.js";
 import { getSsrCacheControl } from "./ssrCacheControl.js";
-import { wrapProtectedRoutes } from "./wrapProtectedRoutes.js";
+import { wrapProtectedRoutesForRender } from "./wrapProtectedRoutes.js";
 
 export { getRoutesByConfig };
 export type { Adapter, AdapterContext } from "./adapter.js";
@@ -104,12 +114,16 @@ export const handleRequest = async ({
   const ssrAuth = await resolveSsrAuth(request);
 
   // No-op lazy() on protected subtrees for unauthed requests so loaders
-  // don't run for a 401 render.
-  const effectiveRoutes = wrapProtectedRoutes(
+  // don't run for a 401 render. A bypass render (search-index pass) keeps the
+  // real content so Pagefind can index protected routes.
+  const effectiveRoutes = wrapProtectedRoutesForRender(
     routes,
     config.protectedRoutes,
-    !!ssrAuth?.profile,
-    basePath,
+    {
+      isAuthenticated: !!ssrAuth?.profile,
+      bypassProtection,
+      basePath,
+    },
   );
 
   const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {
@@ -137,6 +151,20 @@ export const handleRequest = async ({
     }
   }
 
+  const routePath = resolveDocumentationRoutePath(request.url, basePath);
+  const markdownContent = routePath ? markdownFiles[routePath] : undefined;
+  const matchesNotFoundRoute = context.matches.at(-1)?.route.path === "*";
+  const isRepresentationRequest =
+    request.method === "GET" || request.method === "HEAD";
+  const mayNegotiateMarkdown =
+    isRepresentationRequest &&
+    config.docs?.publishMarkdown !== false &&
+    config.docs?.contentNegotiation !== false &&
+    (markdownContent !== undefined || matchesNotFoundRoute);
+  const negotiatedType = mayNegotiateMarkdown
+    ? negotiateContentType(request.headers.get("Accept"))
+    : "text/html";
+
   const router = createStaticRouter(dataRoutes, context);
   const head = createHead();
   const renderContext = {
@@ -158,6 +186,12 @@ export const handleRequest = async ({
 
   try {
     const reactStream = await renderToReadableStream(App, {
+      // The stream is only read after `allReady`, so nothing is streamed
+      // progressively anyway. Without this, React outlines completed Suspense
+      // boundaries larger than the default chunk size (12.8 kB) into a hidden
+      // segment swapped in by an inline script, leaving only the fallback
+      // visible to clients that don't run JS (AI crawlers, curl, reader mode).
+      progressiveChunkSize: Number.MAX_SAFE_INTEGER,
       onError(error) {
         status = 500;
         logger.error(`SSR Error (${request.method} ${request.url}):`, error);
@@ -165,6 +199,76 @@ export const handleRequest = async ({
     });
 
     await reactStream.allReady;
+
+    const finalStatus =
+      renderContext.status !== 200 ? renderContext.status : status;
+    const hasMarkdownRepresentation =
+      mayNegotiateMarkdown &&
+      (markdownContent !== undefined || finalStatus === 404);
+
+    if (hasMarkdownRepresentation && negotiatedType === null) {
+      await reactStream.cancel();
+      return new Response(request.method === "HEAD" ? null : "Not Acceptable", {
+        status: 406,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          Vary: "Accept",
+        },
+      });
+    }
+
+    if (hasMarkdownRepresentation && negotiatedType === "text/markdown") {
+      await reactStream.cancel();
+      const body =
+        finalStatus === 404
+          ? getMarkdownNotFound({
+              basePath,
+              includeLlmsTxt:
+                !import.meta.env.ZUDOKU_HAS_SERVER &&
+                (config.docs?.llms?.llmsTxt ?? false),
+              markdownRoutePaths: Object.keys(markdownFiles),
+              sitemapOutDir:
+                !import.meta.env.ZUDOKU_HAS_SERVER && config.sitemap
+                  ? (config.sitemap.outDir ?? "")
+                  : undefined,
+            })
+          : markdownContent;
+      const headers = new Headers({
+        "Content-Type": "text/markdown; charset=utf-8",
+        Vary: "Accept",
+      });
+      const cacheControl = getSsrCacheControl(finalStatus, !!ssrAuth?.profile);
+      if (cacheControl) {
+        headers.set("Cache-Control", cacheControl);
+      }
+      if (routePath && markdownContent !== undefined) {
+        headers.set("Link", getMarkdownAlternateLink(routePath, basePath));
+      }
+
+      return new Response(request.method === "HEAD" ? null : body, {
+        status: finalStatus,
+        headers,
+      });
+    }
+
+    const headers: Record<string, string> = {
+      "Content-Type": "text/html; charset=utf-8",
+    };
+    const cacheControl = getSsrCacheControl(finalStatus, !!ssrAuth?.profile);
+    if (cacheControl) {
+      headers["Cache-Control"] = cacheControl;
+    }
+    if (hasMarkdownRepresentation) {
+      headers.Vary = addAcceptToVary(headers.Vary);
+      if (routePath && markdownContent !== undefined) {
+        headers.Link = getMarkdownAlternateLink(routePath, basePath);
+      }
+    }
+
+    if (request.method === "HEAD") {
+      await reactStream.cancel();
+      return new Response(null, { status: finalStatus, headers });
+    }
 
     const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
     if (!htmlStart) {
@@ -214,16 +318,6 @@ export const handleRequest = async ({
         controller.close();
       },
     });
-
-    const headers: HeadersInit = {
-      "Content-Type": "text/html; charset=utf-8",
-    };
-    const finalStatus =
-      renderContext.status !== 200 ? renderContext.status : status;
-    const cacheControl = getSsrCacheControl(finalStatus, !!ssrAuth?.profile);
-    if (cacheControl) {
-      headers["Cache-Control"] = cacheControl;
-    }
 
     return new Response(stream, {
       status: finalStatus,

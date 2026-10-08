@@ -13,14 +13,18 @@ import { getBuildConfig } from "../../config/validators/BuildSchema.js";
 import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
-import { joinUrl } from "../../lib/util/joinUrl.js";
+import { getMarkdownNotFound } from "../../lib/util/markdown-representation.js";
 import {
   getMarkdownOutputPath,
   type MarkdownFileInfo,
 } from "../plugin-markdown-export.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
-import { routesToPaths, routesToRewrites } from "./utils.js";
+import {
+  routesToPrerenderPaths,
+  routesToRewrites,
+  selectPagesToIndex,
+} from "./utils.js";
 import type { StaticWorkerData, WorkerData } from "./worker.js";
 
 const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
@@ -28,7 +32,13 @@ const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
 export type WorkerResult = {
   outputPath: string;
   html: string;
+  // Status of the page as served statically (the file written to disk). For a
+  // protected route during SSG this is 401 (the sign-in page).
   statusCode: number;
+  // Status of the render whose HTML is fed to the search index. Equals
+  // `statusCode` for normal routes; for protected routes it's the bypass
+  // render (200) so the full content gets indexed (issue #2672).
+  indexStatusCode: number;
   redirect?: { from: string; to: string };
 };
 
@@ -78,15 +88,8 @@ export const prerender = async ({
   const getRoutes = module.getRoutesByConfig as typeof getRoutesByConfig;
 
   const routes = getRoutes(config);
-  const paths = routesToPaths(routes);
+  const paths = routesToPrerenderPaths(routes, config.redirects);
   const rewrites = routesToRewrites(routes);
-
-  // Add redirect source paths so they get prerendered as redirects
-  if (config.redirects) {
-    for (const r of config.redirects) {
-      paths.push(joinUrl(r.from));
-    }
-  }
   const { maxThreads, maxOldGenerationSizeMb } = getWorkerScaling(
     buildConfig?.prerender?.workers,
   );
@@ -173,9 +176,24 @@ export const prerender = async ({
   }
 
   if (pagefindIndex) {
-    const pagesToIndex = workerResults.flatMap(({ statusCode, html }, i) =>
-      statusCode < 400 ? { url: paths[i], html } : [],
+    const { include: pagesToIndex, exclude } = selectPagesToIndex(
+      workerResults,
+      paths,
     );
+
+    // Surface anything dropped from the index (e.g. a protected route whose
+    // bypass render returned >= 400). A page silently missing from the index
+    // is the exact symptom of #2672, so make it visible rather than quiet.
+    if (exclude.length > 0) {
+      const details = exclude
+        .map(({ url, status }) => `${url} (${status})`)
+        .join(", ");
+      logger.warn(
+        colors.yellow(
+          `⚠ ${exclude.length} route(s) excluded from the search index (render status >= 400): ${details}`,
+        ),
+      );
+    }
     // Batch size caps concurrent IPC writes to the pagefind child process;
     // higher values can overflow its pipe buffer and trigger ENOBUFS.
     const BATCH_SIZE = 40;
@@ -246,9 +264,25 @@ export const prerender = async ({
       siteName: config.site?.title,
       llmsTxt: llmsConfig.llmsTxt,
       llmsTxtFull: llmsConfig.llmsTxtFull,
+      title: llmsConfig.title,
+      description: llmsConfig.description,
+      instructions: llmsConfig.instructions,
       redirectUrls,
     });
   }
+
+  const contentNegotiationEnabled =
+    config.docs.publishMarkdown && config.docs.contentNegotiation;
+  const markdownNotFound = contentNegotiationEnabled
+    ? getMarkdownNotFound({
+        basePath: config.basePath,
+        includeLlmsTxt: llmsConfig.llmsTxt ?? false,
+        markdownRoutePaths: markdownFileInfos.map((info) => info.routePath),
+        sitemapOutDir: config.sitemap
+          ? (config.sitemap.outDir ?? "")
+          : undefined,
+      })
+    : undefined;
 
   if (!config.docs.publishMarkdown) {
     await Promise.all(
@@ -262,7 +296,13 @@ export const prerender = async ({
     );
   }
 
-  return { workerResults, rewrites };
+  return {
+    workerResults,
+    rewrites,
+    knownRoutes: paths,
+    markdownRoutes: markdownFileInfos.map((info) => info.routePath),
+    markdownNotFound,
+  };
 };
 
 /**
