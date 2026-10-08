@@ -284,11 +284,15 @@ URL.
   // ...
   "redirects": [
     { "from": "/", "to": "/documentation/introduction" },
-    { "from": "/documentation", "to": "/documentation/introduction" }
+    { "from": "/documentation", "to": "/documentation/introduction" },
+    { "from": "/blog/:slug", "to": "/posts/:slug" }
   ]
   // ...
 }
 ```
+
+`from` paths can contain `:param` segments and a trailing `*` wildcard. See
+[Redirects](/docs/guides/redirects#path-parameters-and-wildcards) for details.
 
 ### `port`
 

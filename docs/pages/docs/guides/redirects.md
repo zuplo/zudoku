@@ -52,6 +52,42 @@ redirects: [{ from: "/old-page", to: "/new-page" }];
 Trailing slashes in the `from` path are normalized automatically. Both `/old-page` and `/old-page/`
 will match the same redirect rule.
 
+## Path parameters and wildcards
+
+A `from` path can match more than one URL. Use `:name` for a single path segment and a trailing `*`
+for everything after a prefix. Reference the same tokens in `to` to carry the matched values over:
+
+```ts
+redirects: [
+  // /blog/hello-world → /posts/hello-world
+  { from: "/blog/:slug", to: "/posts/:slug" },
+  // /v1/guides/auth/tokens → /guides/auth/tokens
+  { from: "/v1/*", to: "/*" },
+  // /dashboard/apps/42 → https://dashboard.example.com/apps/42
+  { from: "/dashboard/*", to: "https://dashboard.example.com/*" },
+];
+```
+
+- **`:name`** matches exactly one segment. Add `?` (`:name?`) to make it optional.
+- **`*`** must be the last segment of `from`. It also matches the prefix itself, so `/dashboard/*`
+  redirects `/dashboard` too. In that case the `/*` in `to` is dropped.
+- In `to`, `/:name` and `/*` must each fill a whole path segment, so `/posts/:slug` works and
+  `/posts-:slug` doesn't. Tokens that don't appear in `from` are left as they are.
+- Zudoku doesn't copy the incoming query string to the target.
+
+Pages in your portal take precedence over a wildcard redirect, so `{ from: "/docs/*", to: "/" }`
+still lets visitors reach `/docs/introduction` if that page exists.
+
+Static hosts can't prerender a file for every URL a pattern matches, so pattern redirects behave
+differently from exact ones:
+
+- **Zuplo** and **Vercel**: Zudoku turns the pattern into a regular-expression route in the build
+  output, and the platform returns an HTTP **301**.
+- **SSR deployments**: the server returns an HTTP 301, the same as exact redirects.
+- **Other static hosts**: no redirect file is written. If your host serves `404.html` (or your app's
+  `index.html`) for unknown paths, the page loads, Zudoku matches the pattern, and the browser is
+  redirected. Otherwise, set up the redirect in your host's own configuration.
+
 ## How redirects work
 
 Zudoku redirects operate at two levels depending on how the visitor reaches the page:

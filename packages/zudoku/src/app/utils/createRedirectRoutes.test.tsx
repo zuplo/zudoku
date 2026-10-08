@@ -35,6 +35,26 @@ describe("createRedirectRoutes", () => {
     expect(result.status).toBe(301);
     expect(result.headers.get("location")).toBe("/new");
   });
+
+  it("route loaders substitute matched params into the target", () => {
+    const routes = createRedirectRoutes([
+      {
+        from: "/dashboard/*",
+        to: "https://oauth.example.com/dashboard/*",
+      },
+    ]);
+    expect(routes[0]).toHaveProperty("path", "/dashboard/*");
+    const loader = routes[0]?.loader as any;
+    invariant(typeof loader === "function", "loader should be a function");
+    const result = loader({
+      request: new Request("http://localhost/dashboard/apps/42"),
+      params: { "*": "apps/42" },
+    });
+    expect(result.status).toBe(301);
+    expect(result.headers.get("location")).toBe(
+      "https://oauth.example.com/dashboard/apps/42",
+    );
+  });
 });
 
 const testPage = (text: string): ZudokuPlugin & NavigationPlugin => ({
@@ -144,6 +164,40 @@ describe("redirect routes integration", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("overview")).toHaveTextContent("Overview Page");
+    });
+  });
+
+  it("redirects with path params", async () => {
+    await act(async () => {
+      render(
+        <StaticZudoku
+          path="/legacy/docs/overview"
+          redirects={[{ from: "/legacy/*", to: "/*" }]}
+          plugins={[testPage("Overview via splat")]}
+        />,
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("overview")).toHaveTextContent(
+        "Overview via splat",
+      );
+    });
+  });
+
+  it("prefers a page route over a matching splat redirect", async () => {
+    await act(async () => {
+      render(
+        <StaticZudoku
+          path="/docs/guide"
+          redirects={[{ from: "/docs/*", to: "/docs/overview" }]}
+          plugins={[testPage("Overview Page")]}
+        />,
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("guide")).toBeInTheDocument();
     });
   });
 

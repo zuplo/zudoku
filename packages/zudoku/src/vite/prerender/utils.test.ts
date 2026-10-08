@@ -103,6 +103,15 @@ describe("routesToPrerenderPaths", () => {
       ]),
     ).toEqual(["/about", "/old-home", "/legacy/contact"]);
   });
+
+  it("skips dynamic redirect sources", () => {
+    expect(
+      routesToPrerenderPaths(
+        [],
+        [{ from: "/old" }, { from: "/blog/:slug" }, { from: "/dashboard/*" }],
+      ),
+    ).toEqual(["/old"]);
+  });
 });
 
 describe("routesToRewrites", () => {

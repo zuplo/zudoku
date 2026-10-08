@@ -6,6 +6,10 @@ import { getZudokuPackageJson } from "../cli/common/package-json.js";
 import type { LoadedConfig } from "../config/config.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import {
+  isDynamicRedirect,
+  toBuildOutputRedirect,
+} from "../lib/util/redirectPattern.js";
 import type { RouteRewrite } from "./prerender/utils.js";
 import {
   generateVercelMarkdownMiddleware,
@@ -200,8 +204,22 @@ export function generateOutput({
     });
   }
 
-  if (rewrites.length > 0) {
+  // Dynamic redirects can't be prerendered, so match them with a regex. They
+  // run after the filesystem so real pages win, like React Router's ranking.
+  const dynamicRedirects = (config.redirects ?? [])
+    .filter(isDynamicRedirect)
+    .map((redirect) => toBuildOutputRedirect(redirect, config.basePath));
+
+  if (rewrites.length > 0 || dynamicRedirects.length > 0) {
     routes.push({ handle: "filesystem" });
+    for (const { src, location } of dynamicRedirects) {
+      routes.push({
+        src,
+        dest: location,
+        status: 301,
+        headers: { Location: location },
+      });
+    }
     for (const rewrite of rewrites) {
       routes.push({
         src: joinUrl(config.basePath, rewrite.source),
