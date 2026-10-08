@@ -52,6 +52,14 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
+
+  /*
+   * Badge color. Elements pick a palette token by setting `--badge-color`
+   * (see `badgeColorClass`); `inline` makes the `var()` resolve per element
+   * rather than at `:root`. Falls back to gray so a `text-badge` / `bg-badge`
+   * without a color is visible rather than silently inheriting.
+   */
+  --color-badge: var(--badge-color, var(--badge-gray));
 }
 
 @utility typography {

@@ -32,7 +32,7 @@ import {
 } from "./util/formatRequestBody.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { getGraphQLEndpoint } from "./util/graphqlEndpoint.js";
-import { methodForColor } from "./util/methodToColor.js";
+import { methodColorClass } from "./util/methodToColor.js";
 import { useResolvedAuth } from "./util/useResolvedAuth.js";
 
 export const GetServerQuery = graphql(/* GraphQL */ `
@@ -115,8 +115,6 @@ export const Sidecar = ({
   const { options } = useOasConfig();
   const auth = useAuthState();
   const context = useZudoku();
-
-  const methodTextColor = methodForColor(operation.method);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
@@ -338,7 +336,7 @@ export const Sidecar = ({
               <Badge
                 variant="outline"
                 className={cn(
-                  methodTextColor,
+                  methodColorClass(operation.method),
                   "px-1.5 rounded-md border-none bg-current/7 dark:bg-current/15",
                 )}
               >

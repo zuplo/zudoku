@@ -7,6 +7,7 @@ import type {
   ZudokuConfig,
 } from "../config/validators/ZudokuConfig.js";
 import { defaultHighlightOptions } from "../lib/shiki.js";
+import { BadgeColors } from "../lib/util/badgeColor.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
 import {
   fetchShadcnRegistryItem,
@@ -193,6 +194,19 @@ const processFonts = async (themeConfig: ZudokuConfig["theme"]) => {
 
 export const virtualModuleId = "virtual:zudoku-theme.css";
 export const resolvedVirtualModuleId = `\0${virtualModuleId}`;
+
+const BADGE_DOCS_URL =
+  "https://zudoku.dev/docs/customization/colors-theme#badge-colors-with-nodefaulttheme";
+
+/**
+ * Badge tokens that no stylesheet in `css` declares. The tokens live in the
+ * default theme, so a site that sets `noDefaultTheme` has to define them
+ * itself, wherever it keeps its CSS.
+ */
+export const findMissingBadgeTokens = (css: string) =>
+  BadgeColors.map((color) => `--badge-${color}`).filter(
+    (token) => !new RegExp(`${token}\\s*:`).test(css),
+  );
 
 export const viteThemePlugin = (): Plugin => {
   return {
@@ -389,6 +403,34 @@ export const viteThemePlugin = (): Plugin => {
       return src
         .replace(DEFAULT_THEME_REPLACE, defaultThemeImport)
         .replace(MAIN_REPLACE, code.join("\n"));
+    },
+    // Check the final client CSS rather than the config, so tokens defined in a
+    // site's own stylesheet count too, not just those in `customCss`.
+    generateBundle(_options, bundle) {
+      if (!getCurrentConfig().theme?.noDefaultTheme) return;
+      if (this.environment.name !== "client") return;
+
+      const css = Object.values(bundle)
+        .flatMap((output) =>
+          output.type === "asset" && output.fileName.endsWith(".css")
+            ? [output.source]
+            : [],
+        )
+        .map((source) =>
+          typeof source === "string"
+            ? source
+            : new TextDecoder().decode(source),
+        )
+        .join("\n");
+
+      const missing = findMissingBadgeTokens(css);
+      if (missing.length === 0) return;
+
+      this.warn(
+        `theme.noDefaultTheme is set, but no stylesheet defines ${missing.join(", ")}. ` +
+          "Badges using these colors render without color, and filled badges are invisible. " +
+          `Define them for light and dark mode: ${BADGE_DOCS_URL}`,
+      );
     },
   };
 };

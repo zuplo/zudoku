@@ -1,7 +1,11 @@
-import type { Plugin } from "vite";
+import type { Plugin, Rollup } from "vite";
 import { describe, expect, it, vi } from "vitest";
 import type { ConfigWithMeta } from "../config/loader.js";
-import { resolvedVirtualModuleId, viteThemePlugin } from "./plugin-theme.js";
+import {
+  findMissingBadgeTokens,
+  resolvedVirtualModuleId,
+  viteThemePlugin,
+} from "./plugin-theme.js";
 
 vi.mock("../config/loader.js", () => ({ getCurrentConfig: vi.fn() }));
 vi.mock("./shadcn-registry.js", () => ({ fetchShadcnRegistryItem: vi.fn() }));
@@ -19,6 +23,43 @@ const callPluginTransform = async (plugin: Plugin, src: string, id: string) => {
   const transformFn = typeof hook === "function" ? hook : hook.handler;
   return transformFn.call({} as any, src, id);
 };
+
+const callGenerateBundle = (
+  plugin: Plugin,
+  bundle: Record<string, unknown>,
+  environment = "client",
+) => {
+  // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
+  const hook = plugin.generateBundle!;
+  const generateBundleFn = typeof hook === "function" ? hook : hook.handler;
+  const warn = vi.fn();
+  const context = { warn, environment: { name: environment } };
+  generateBundleFn.call(
+    context as unknown as ThisParameterType<typeof generateBundleFn>,
+    {} as Rollup.NormalizedOutputOptions,
+    bundle as Rollup.OutputBundle,
+    false,
+  );
+  return warn;
+};
+
+const cssAsset = (fileName: string, source: string) => ({
+  type: "asset",
+  fileName,
+  source,
+});
+
+const ALL_BADGE_TOKENS = [
+  "green",
+  "blue",
+  "yellow",
+  "red",
+  "purple",
+  "indigo",
+  "gray",
+]
+  .map((color) => `--badge-${color}: oklch(50% 0.1 150);`)
+  .join("\n");
 
 describe("plugin-theme", () => {
   it("should enforce: pre to run before tailwind", () => {
@@ -410,6 +451,85 @@ describe("plugin-theme", () => {
 
       expect(transformResult).toContain(".base {");
       expect(transformResult).toContain("--root: 1;");
+    });
+  });
+
+  describe("badge tokens without the default theme", () => {
+    it("lists tokens that no declaration defines", () => {
+      expect(findMissingBadgeTokens("")).toHaveLength(7);
+      expect(findMissingBadgeTokens(ALL_BADGE_TOKENS)).toEqual([]);
+      expect(
+        findMissingBadgeTokens(":root{--badge-green:oklch(50% 0.1 150)}"),
+      ).not.toContain("--badge-green");
+    });
+
+    it("does not count a var() reference as a definition", () => {
+      expect(
+        findMissingBadgeTokens(".x{--badge-color:var(--badge-green)}"),
+      ).toContain("--badge-green");
+    });
+
+    it("warns when noDefaultTheme is set and tokens are missing", async () => {
+      const { getCurrentConfig } = await import("../config/loader.js");
+      vi.mocked(getCurrentConfig).mockReturnValue({
+        theme: { noDefaultTheme: true },
+      } as ConfigWithMeta);
+
+      const warn = callGenerateBundle(viteThemePlugin(), {
+        "assets/entry.css": cssAsset(
+          "assets/entry.css",
+          ":root{--badge-green:red}",
+        ),
+      });
+
+      expect(warn).toHaveBeenCalledOnce();
+      const message = warn.mock.calls[0]?.[0];
+      expect(message).toContain("--badge-blue");
+      expect(message).not.toContain("--badge-green,");
+      expect(message).toContain("#badge-colors-with-nodefaulttheme");
+    });
+
+    it("finds tokens across every emitted stylesheet", async () => {
+      const { getCurrentConfig } = await import("../config/loader.js");
+      vi.mocked(getCurrentConfig).mockReturnValue({
+        theme: { noDefaultTheme: true },
+      } as ConfigWithMeta);
+
+      const [first, ...rest] = ALL_BADGE_TOKENS.split("\n");
+      const warn = callGenerateBundle(viteThemePlugin(), {
+        "assets/entry.css": cssAsset("assets/entry.css", `:root{${first}}`),
+        "assets/site.css": cssAsset(
+          "assets/site.css",
+          `:root{${rest.join("")}}`,
+        ),
+        "assets/entry.js": {
+          type: "chunk",
+          fileName: "assets/entry.js",
+          code: "",
+        },
+      });
+
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it("does not check when the default theme is on", async () => {
+      const { getCurrentConfig } = await import("../config/loader.js");
+      vi.mocked(getCurrentConfig).mockReturnValue({
+        theme: {},
+      } as ConfigWithMeta);
+
+      expect(callGenerateBundle(viteThemePlugin(), {})).not.toHaveBeenCalled();
+    });
+
+    it("only checks the client build", async () => {
+      const { getCurrentConfig } = await import("../config/loader.js");
+      vi.mocked(getCurrentConfig).mockReturnValue({
+        theme: { noDefaultTheme: true },
+      } as ConfigWithMeta);
+
+      expect(
+        callGenerateBundle(viteThemePlugin(), {}, "ssr"),
+      ).not.toHaveBeenCalled();
     });
   });
 });

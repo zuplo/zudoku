@@ -18,7 +18,7 @@ import { SecurityRequirements } from "./SecurityRequirements.js";
 import { Sidecar } from "./Sidecar.js";
 import { useResolvedServerUrl } from "./state.js";
 import { getGraphQLEndpoint } from "./util/graphqlEndpoint.js";
-import { methodForColor } from "./util/methodToColor.js";
+import { methodColorClass } from "./util/methodToColor.js";
 
 const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
 export type ParameterGroup = (typeof PARAM_GROUPS)[number];
@@ -69,7 +69,7 @@ export const OperationListItem = ({
       )}
     >
       <div className="text-sm flex gap-2 font-mono">
-        <span className={methodForColor(operation.method)}>
+        <span className={methodColorClass(operation.method)}>
           {operation.method.toUpperCase()}
         </span>
         <SelectOnClick

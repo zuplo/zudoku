@@ -1,26 +1,7 @@
+import { type BadgeColor, badgeColorClass } from "../../util/badgeColor.js";
 import { cn } from "../../util/cn.js";
 
-export const ColorMap = {
-  green: "bg-green-400 dark:bg-green-800",
-  blue: "bg-sky-400 dark:bg-sky-800",
-  yellow: "bg-yellow-400 dark:bg-yellow-800",
-  red: "bg-red-400 dark:bg-red-800",
-  purple: "bg-purple-400 dark:bg-purple-600",
-  indigo: "bg-indigo-400 dark:bg-indigo-600",
-  gray: "bg-gray-400 dark:bg-gray-600",
-  outline: "border border-border rounded-md text-foreground",
-};
-
-export const ColorMapInvert = {
-  green: "text-green-500 dark:text-green-600",
-  blue: "text-sky-400 dark:text-sky-600",
-  yellow: "text-yellow-400 dark:text-yellow-600",
-  red: "text-red-400 dark:text-red-600",
-  purple: "text-purple-400 dark:text-purple-600",
-  indigo: "text-indigo-400 dark:text-indigo-600",
-  gray: "text-gray-400 dark:text-gray-600",
-  outline: "",
-};
+export type NavigationBadgeColor = BadgeColor | "outline";
 
 export const NavigationBadge = ({
   color,
@@ -28,21 +9,26 @@ export const NavigationBadge = ({
   className,
   invert,
 }: {
-  color: keyof typeof ColorMap;
+  color: NavigationBadgeColor;
   label: string;
   className?: string;
   invert?: boolean;
-}) => {
-  return (
-    <span
-      className={cn(
-        "flex items-center duration-200 transition-opacity text-center uppercase text-[0.65rem] leading-5 font-bold rounded-sm text-background dark:text-zinc-50 h-full",
-        color === "outline" ? "px-3" : "mt-0.5 px-1",
-        invert ? ColorMapInvert[color] : ColorMap[color],
-        className,
-      )}
-    >
-      {label}
-    </span>
-  );
-};
+}) => (
+  <span
+    className={cn(
+      "flex items-center duration-200 transition-opacity text-center uppercase text-[0.65rem] leading-5 font-bold rounded-sm h-full",
+      // `outline` isn't a palette color, so it renders from theme tokens
+      // directly and ignores `invert`: there's no fill to invert.
+      color === "outline"
+        ? "px-3 rounded-md border border-border text-foreground"
+        : cn(
+            "mt-0.5 px-1",
+            badgeColorClass(color),
+            invert ? "text-badge" : "bg-badge text-background",
+          ),
+      className,
+    )}
+  >
+    {label}
+  </span>
+);
