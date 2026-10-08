@@ -285,7 +285,9 @@ describe("getRoutes", () => {
       const indexRoute = routes[0]?.children?.[0];
       expect(indexRoute?.index).toBe(true);
 
-      const response = (indexRoute?.loader as () => Response)();
+      const loader = indexRoute?.loader;
+      expect(loader).toBeTypeOf("function");
+      const response = (loader as () => Response)();
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(302);
       expect(response.headers.get("Location")).toBe("/api/users");
@@ -307,7 +309,9 @@ describe("getRoutes", () => {
       const indexRoute = routes[0]?.children?.[0];
       expect(indexRoute?.index).toBe(true);
 
-      const response = (indexRoute?.loader as () => Response)();
+      const loader = indexRoute?.loader;
+      expect(loader).toBeTypeOf("function");
+      const response = (loader as () => Response)();
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(302);
       expect(response.headers.get("Location")).toBe("/api/~endpoints");

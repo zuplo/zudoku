@@ -27,7 +27,7 @@
     "pnpm": ">=11"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16",
+    "@biomejs/biome": "2.5.15",
     "@nx/vite": "22.7.12",
     "@nx/web": "22.7.12",
     "@playwright/test": "^1.63.0",
