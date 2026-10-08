@@ -66,6 +66,25 @@ export const resolveRedirectTarget = (
     return value ? `/${encodeParam(name, value)}` : "";
   });
 
+// Mirrors React Router's `computeScore`. Build Output routes match top to
+// bottom, so they must be ordered the way the router ranks the same paths.
+const rankPath = (path: string) => {
+  const segments = joinUrl(path).split("/");
+  return segments.reduce(
+    (score, segment) => {
+      if (segment === SPLAT) return score;
+      if (/^:[\w-]+\??$/.test(segment)) return score + 3;
+      return score + (segment === "" ? 1 : 10);
+    },
+    segments.length - (segments.includes(SPLAT) ? 2 : 0),
+  );
+};
+
+// Most specific first; ties keep configuration order, like the router.
+export const sortByRouteRank = <T extends Pick<Redirect, "from">>(
+  redirects: readonly T[],
+) => redirects.toSorted((a, b) => rankPath(b.from) - rankPath(a.from));
+
 const escapeRegex = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 

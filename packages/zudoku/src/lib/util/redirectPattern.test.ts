@@ -1,7 +1,10 @@
+import { matchRoutes } from "react-router";
 import { describe, expect, it } from "vitest";
+import { joinUrl } from "./joinUrl.js";
 import {
   isDynamicRedirect,
   resolveRedirectTarget,
+  sortByRouteRank,
   toBuildOutputRedirect,
 } from "./redirectPattern.js";
 
@@ -115,4 +118,49 @@ describe("toBuildOutputRedirect", () => {
       location: "https://example.com/new$1",
     });
   });
+});
+
+describe("sortByRouteRank", () => {
+  const redirects = [
+    { from: "/*", to: "/" },
+    { from: "/docs/*", to: "/" },
+    { from: "/docs/:slug", to: "/" },
+    { from: "/docs/:section/:slug", to: "/" },
+    { from: "/:lang?/docs/intro", to: "/" },
+    { from: "/docs/:id", to: "/" },
+  ];
+
+  it("orders the most specific patterns first and keeps ties in order", () => {
+    expect(sortByRouteRank(redirects).map(({ from }) => from)).toEqual([
+      "/:lang?/docs/intro",
+      "/docs/:section/:slug",
+      "/docs/:slug",
+      "/docs/:id",
+      "/docs/*",
+      "/*",
+    ]);
+  });
+
+  it.each([
+    "/docs",
+    "/docs/intro",
+    "/docs/a",
+    "/docs/a/b",
+    "/docs/a/b/c",
+    "/en/docs/intro",
+    "/other",
+  ])(
+    "first matching Build Output route for %s agrees with React Router",
+    (path) => {
+      const routerMatch = matchRoutes(
+        redirects.map(({ from }) => ({ path: joinUrl(from) })),
+        path,
+      )?.at(-1)?.route.path;
+      const outputMatch = sortByRouteRank(redirects).find(({ from }) =>
+        new RegExp(toBuildOutputRedirect({ from, to: "/" }).src).test(path),
+      )?.from;
+
+      expect(outputMatch).toBe(routerMatch);
+    },
+  );
 });

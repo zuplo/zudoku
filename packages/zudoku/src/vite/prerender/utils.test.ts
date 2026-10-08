@@ -5,6 +5,7 @@ import {
   routesToPrerenderPaths,
   routesToRewrites,
   selectPagesToIndex,
+  withoutDynamicRedirectRoutes,
 } from "./utils.js";
 
 describe("routesToPaths", () => {
@@ -111,6 +112,24 @@ describe("routesToPrerenderPaths", () => {
         [{ from: "/old" }, { from: "/blog/:slug" }, { from: "/dashboard/*" }],
       ),
     ).toEqual(["/old"]);
+  });
+});
+
+describe("withoutDynamicRedirectRoutes", () => {
+  it("drops top-level routes of dynamic redirects only", () => {
+    const routes: RouteObject[] = [
+      { path: "/old" },
+      { path: "/:lang?/legacy" },
+      { path: "/dashboard/*" },
+      { children: [{ path: "/:lang?/legacy" }] },
+    ];
+    const result = withoutDynamicRedirectRoutes(routes, [
+      { from: "/old" },
+      { from: ":lang?/legacy" },
+      { from: "/dashboard/*" },
+    ]);
+
+    expect(result).toEqual([routes[0], routes[3]]);
   });
 });
 

@@ -78,7 +78,7 @@ describe("Vercel Build Output", () => {
     ]);
   });
 
-  it("matches dynamic redirects after the filesystem, before rewrites", () => {
+  it("matches ranked dynamic redirects after the filesystem, before rewrites", () => {
     const output = generateOutput({
       config: {
         ...createConfig(),
@@ -86,6 +86,7 @@ describe("Vercel Build Output", () => {
           { from: "/old", to: "/new" },
           { from: "/dashboard/*", to: "https://oauth.example.com/dashboard/*" },
           { from: "/blog/:slug", to: "/posts/:slug" },
+          { from: "/dashboard/:id", to: "/apps/:id" },
         ],
       },
       redirects: [{ from: "/docs/old", to: "/docs/new" }],
@@ -95,17 +96,13 @@ describe("Vercel Build Output", () => {
     expect(output.routes).toEqual([
       expect.objectContaining({ src: "/docs/old", status: 301 }),
       { handle: "filesystem" },
+      expect.objectContaining({ src: "^/docs/blog(/[^/]+)/?$" }),
+      expect.objectContaining({ src: "^/docs/dashboard(/[^/]+)/?$" }),
       {
         src: "^/docs/dashboard(/.*)?$",
         dest: "https://oauth.example.com/dashboard$1",
         status: 301,
         headers: { Location: "https://oauth.example.com/dashboard$1" },
-      },
-      {
-        src: "^/docs/blog(/[^/]+)/?$",
-        dest: "/docs/posts$1",
-        status: 301,
-        headers: { Location: "/docs/posts$1" },
       },
       expect.objectContaining({
         src: "/docs/guide/(.+)",
