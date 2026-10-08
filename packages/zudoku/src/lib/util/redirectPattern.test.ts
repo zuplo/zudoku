@@ -26,6 +26,18 @@ describe("resolveRedirectTarget", () => {
     expect(resolveRedirectTarget({ from: "/old", to: "/new/*" }, {})).toBe(
       "/new/*",
     );
+    expect(resolveRedirectTarget({ from: "/old", to: "?tab=2" }, {})).toBe(
+      "?tab=2",
+    );
+    expect(resolveRedirectTarget({ from: "/old", to: "#section" }, {})).toBe(
+      "#section",
+    );
+  });
+
+  it("keeps a relative target without tokens as written", () => {
+    expect(
+      resolveRedirectTarget({ from: "/old/:id", to: "?tab=2" }, { id: "1" }),
+    ).toBe("?tab=2");
   });
 
   it("substitutes the splat into an external URL", () => {

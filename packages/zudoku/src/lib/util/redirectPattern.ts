@@ -36,21 +36,22 @@ export const isDynamicRedirect = (redirect: Pick<Redirect, "from">) =>
   getParamNames(redirect.from).length > 0;
 
 // Replaces the `/:param` and `/*` tokens in `to` that `from` defines. Tokens
-// unknown to `from` are left untouched.
+// unknown to `from` are left untouched. Removing empty params can leave no path
+// at all (`/*` for `/v1/*` at `/v1`), which would redirect back to the same
+// URL, so that falls back to the root. A `to` without replaced tokens is kept
+// as written, so relative targets like `?tab=2` still work.
 const replaceTokens = (
   to: string,
   names: string[],
   replace: (name: string) => string,
-) =>
-  to.replace(TOKEN_REGEX, (token, name: string | undefined) => {
+) => {
+  const target = to.replace(TOKEN_REGEX, (token, name: string | undefined) => {
     const key = name ?? SPLAT;
     return names.includes(key) ? replace(key) : token;
   });
-
-// Removing empty params can leave no path at all (`/*` for `/v1/*` at `/v1`),
-// which would redirect back to the same URL, so fall back to the root.
-const withPath = (target: string) =>
-  target === "" || /^[?#]/.test(target) ? `/${target}` : target;
+  const lostPath = target === "" || /^[?#]/.test(target);
+  return target !== to && lostPath ? `/${target}` : target;
+};
 
 const encodeParam = (name: string, value: string) =>
   name === SPLAT
@@ -66,12 +67,10 @@ export const resolveRedirectTarget = (
   { from, to }: Redirect,
   params: Record<string, string | undefined>,
 ) =>
-  withPath(
-    replaceTokens(to, getParamNames(from), (name) => {
-      const value = params[name];
-      return value ? `/${encodeParam(name, value)}` : "";
-    }),
-  );
+  replaceTokens(to, getParamNames(from), (name) => {
+    const value = params[name];
+    return value ? `/${encodeParam(name, value)}` : "";
+  });
 
 // Mirrors React Router's `computeScore` for a concrete (non-optional) path.
 const rankPath = (path: string) => {
@@ -149,12 +148,8 @@ export const toBuildOutputRedirects = (
           // React Router accepts any number of trailing slashes
           src: `^${prefix}${pattern}${endsWithSplat ? "" : "/*"}$`,
           // Like React Router, a repeated param name takes the last value
-          location: withPath(
-            replaceTokens(to, names, (name) =>
-              captured.includes(name)
-                ? `$${captured.lastIndexOf(name) + 1}`
-                : "",
-            ),
+          location: replaceTokens(to, names, (name) =>
+            captured.includes(name) ? `$${captured.lastIndexOf(name) + 1}` : "",
           ),
         };
       };
