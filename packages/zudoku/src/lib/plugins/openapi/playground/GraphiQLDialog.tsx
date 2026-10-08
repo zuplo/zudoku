@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
-import type { SecuritySchemeItem } from "../util/extractOperationSecuritySchemes.js";
+import type { SecurityOption } from "../util/extractOperationSecurityOptions.js";
 import { AuthSelectorPopover } from "./AuthSelectorPopover.js";
 
 const GraphiQLPanel = lazy(() => import("./GraphiQL.js"));
@@ -31,14 +31,14 @@ export type GraphiQLTab = {
 export type GraphiQLDialogProps = {
   endpoint: string;
   operation: OperationsFragmentFragment;
-  securitySchemes: SecuritySchemeItem[];
+  securityOptions: SecurityOption[];
   defaultTabs?: GraphiQLTab[];
 };
 
 export const GraphiQLDialog = ({
   endpoint,
   operation,
-  securitySchemes,
+  securityOptions,
   defaultTabs,
 }: GraphiQLDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -72,7 +72,7 @@ export const GraphiQLDialog = ({
           <AuthSelectorPopover
             operation={operation}
             url={endpoint}
-            securitySchemes={securitySchemes}
+            securityOptions={securityOptions}
             showLabel
           />
         </div>
