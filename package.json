@@ -34,7 +34,7 @@
     "@size-limit/file": "^12.1.0",
     "@vitest/coverage-v8": "4.1.10",
     "lefthook": "2.1.10",
-    "nx": "22.7.7",
+    "nx": "22.7.10",
     "oxfmt": "0.36.0",
     "publint": "^0.3.22",
     "size-limit": "^12.1.0",
