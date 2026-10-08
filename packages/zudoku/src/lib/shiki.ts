@@ -131,9 +131,12 @@ const rehypeWarnUnloadedLanguages =
   };
 
 const isMathCodeBlock = (node: Element) => {
+  // Check the tag first: elements built by MDX plugins (e.g. normalized JSX
+  // `<img>`) can come without a `children` array
+  if (node.tagName !== "pre") return false;
+
   const code = node.children[0];
   return (
-    node.tagName === "pre" &&
     code?.type === "element" &&
     code.tagName === "code" &&
     Array.isArray(code.properties.className) &&

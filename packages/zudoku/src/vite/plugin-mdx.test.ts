@@ -112,6 +112,15 @@ describe("default rehype plugins", () => {
     },
   );
 
+  it("compiles JSX images, which have no children after normalization (.mdx)", async () => {
+    const out = await compileWithDefaults(
+      '<img src="/interstellar.png" alt="Interstellar Freight Ship" />\n',
+      "mdx",
+    );
+
+    expect(out).toContain('alt: "Interstellar Freight Ship"');
+  });
+
   it("keeps the language class of math blocks without a math plugin", async () => {
     const out = await compileWithDefaults("```math\nx^2\n```\n", "mdx");
 
