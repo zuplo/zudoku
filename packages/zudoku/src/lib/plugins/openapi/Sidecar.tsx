@@ -33,6 +33,7 @@ import {
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { getGraphQLEndpoint } from "./util/graphqlEndpoint.js";
 import { methodForColor } from "./util/methodToColor.js";
+import { shouldShowRequestBox } from "./util/shouldShowRequestBox.js";
 import { useResolvedAuth } from "./util/useResolvedAuth.js";
 
 export const GetServerQuery = graphql(/* GraphQL */ `
@@ -221,10 +222,10 @@ export const Sidecar = ({
   const graphQLEndpoint = getGraphQLEndpoint(operation);
   const isGraphQLEndpoint = graphQLEndpoint !== undefined;
 
-  const showRequestBox =
-    operation.extensions["x-zudoku-request-box-enabled"] === true ||
-    (operation.extensions["x-zudoku-request-box-enabled"] === undefined &&
-      !options?.disableRequestBox);
+  const showRequestBox = shouldShowRequestBox(
+    operation.extensions,
+    options?.disableRequestBox,
+  );
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
     if (!showRequestBox) return;

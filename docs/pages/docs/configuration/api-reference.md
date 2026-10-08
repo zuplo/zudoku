@@ -251,7 +251,7 @@ const config = {
       ],
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
-      disableRequestBox: false, // Disable the request/code snippet box in the sidecar
+      disableRequestBox: false, // Hide the request box at the top of the sidecar
       disableSecurity: true, // Disable security scheme display and playground auth (default)
       disableMcpAuthInstructions: false, // Hide auth steps in the MCP server card
       showVersionSelect: "if-available", // Control version selector visibility
@@ -273,7 +273,11 @@ Available options:
   identifier) and `label` (display name)
 - `disablePlayground`: Disable the interactive API playground globally
 - `disableSidecar`: Disable the sidecar panel completely
-- `disableRequestBox`: Disable the request/code snippet box in the sidecar globally
+- `disableRequestBox`: Hide the request box at the top of the sidecar. The box holds the method and
+  path, the generated code snippet with its language selector, the auth selector and the button that
+  opens the playground, so hiding it also removes the way to open the playground. The request body
+  and response examples below it are still shown. Operations can override this with
+  [`x-zudoku-request-box-enabled`](../openapi-extensions/x-zudoku-request-box-enabled)
 - `disableSecurity`: Disable OpenAPI security scheme display (auth badges on operations, security
   schemes section on the info page, and the Authorize dialog in the playground). Disabled by default
   (`true`). Set to `false` to enable security scheme support
@@ -312,7 +316,7 @@ const config = {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
-      disableRequestBox: false, // Disable the request/code snippet box in the sidecar
+      disableRequestBox: false, // Hide the request box at the top of the sidecar
       disableSecurity: true, // Disable security scheme display and playground auth (default)
       disableMcpAuthInstructions: false, // Hide auth steps in the MCP server card
       showVersionSelect: "if-available", // Control version selector visibility
@@ -402,8 +406,9 @@ different levels of your API documentation.
 ### Operations
 
 - `x-zudoku-playground-enabled`: Control playground visibility for an operation (default: `true`)
-- `x-zudoku-request-box-enabled`: Control request/code snippet box visibility for an operation
-  (default: `true`)
+- `x-zudoku-request-box-enabled`: Control request box visibility in the sidecar for an operation
+  (default: `true`). See
+  [`x-zudoku-request-box-enabled`](../openapi-extensions/x-zudoku-request-box-enabled)
 - `x-internal`: Hide an operation from the documentation. Also works on path items and parameters.
   See [`x-internal`](../openapi-extensions/x-internal)
 - `x-explorer-enabled`: Alias for `x-zudoku-playground-enabled` for compatibility
@@ -417,7 +422,7 @@ Example:
       "get": {
         "summary": "Get users",
         "x-zudoku-playground-enabled": false, // Disable playground for this operation
-        "x-zudoku-request-box-enabled": false // Disable request/code snippet box for this operation
+        "x-zudoku-request-box-enabled": false // Hide the sidecar request box for this operation
       }
     }
   }
