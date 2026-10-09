@@ -1,5 +1,6 @@
 import type { RouteObject } from "react-router";
 import { joinUrl } from "../../lib/util/joinUrl.js";
+import { isDynamicRedirect } from "../../lib/util/redirectPattern.js";
 
 const resolveRoutePath = (path: string): string | undefined => {
   const segments = path.split("/");
@@ -72,6 +73,20 @@ const collectRewrites = (resolved: ResolvedRoute[]): RouteRewrite[] =>
 export const routesToPaths = (routes: RouteObject[]): string[] =>
   collectPaths(resolveRoutes(routes), "");
 
+// Dynamic redirects (`/:param`, `/*`) can't be prerendered to a file; they are
+// emitted as Build Output API routes instead (see `generateOutput`). Their
+// top-level route objects are dropped so optional params don't get stripped
+// into a prerendered path and rewrite.
+export const withoutDynamicRedirectRoutes = (
+  routes: RouteObject[],
+  redirects: readonly { from: string }[] = [],
+): RouteObject[] => {
+  const paths = new Set(
+    redirects.filter(isDynamicRedirect).map(({ from }) => joinUrl(from)),
+  );
+  return routes.filter((route) => !route.path || !paths.has(route.path));
+};
+
 export const routesToPrerenderPaths = (
   routes: RouteObject[],
   redirects: readonly { from: string }[] = [],
@@ -79,7 +94,9 @@ export const routesToPrerenderPaths = (
   Array.from(
     new Set([
       ...routesToPaths(routes),
-      ...redirects.map(({ from }) => joinUrl(from)),
+      ...redirects
+        .filter((redirect) => !isDynamicRedirect(redirect))
+        .map(({ from }) => joinUrl(from)),
     ]),
   );
 
