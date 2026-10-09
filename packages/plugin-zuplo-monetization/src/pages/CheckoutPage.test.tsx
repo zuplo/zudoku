@@ -1,12 +1,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MemoryRouter } from "zudoku/router";
+import { MemoryRouter, Route, Routes, useLocation } from "zudoku/router";
 import {
   type BeforeCheckoutProps,
   MonetizationContext,
   type MonetizationConfig,
 } from "../MonetizationContext.js";
+import type { PricingPageResponse } from "../queries.js";
 import type { Plan } from "../types/PlanType.js";
+import type { Subscription } from "../types/SubscriptionType.js";
 import CheckoutPage from "./CheckoutPage.js";
 
 vi.mock("zudoku/hooks", () => ({
@@ -23,14 +25,33 @@ vi.mock("../hooks/useDeploymentName", () => ({
 
 vi.mock("../hooks/useUrlUtils", () => ({
   useUrlUtils: () => ({
-    generateUrl: (path: string) => `https://portal${path}`,
+    generateUrl: (
+      path: string,
+      opts?: { searchParams?: Record<string, string> },
+    ) =>
+      opts?.searchParams
+        ? `https://portal${path}?${new URLSearchParams(opts.searchParams)}`
+        : `https://portal${path}`,
   }),
 }));
 
+type QueryOptions = {
+  queryKey: unknown[];
+  enabled?: boolean;
+  refetchOnMount?: unknown;
+  meta?: { request?: { body?: string } };
+};
+
 const testState = vi.hoisted(() => ({
-  /** Every `useQuery` the tree mounted — a Stripe Checkout Session per entry. */
-  sessionRequests: [] as unknown[],
-  plans: { items: [] as Plan[] },
+  /** Every Stripe Checkout Session query the tree mounted. */
+  sessionRequests: [] as QueryOptions[],
+  plans: { items: [] } as PricingPageResponse,
+  subscriptions: {
+    isFetchedAfterMount: true,
+    isError: false,
+    data: { items: [] as Array<Partial<Subscription>> },
+  },
+  subscriptionsQuery: undefined as QueryOptions | undefined,
 }));
 
 vi.mock("../hooks/usePlans", () => ({
@@ -41,7 +62,11 @@ vi.mock("zudoku/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("zudoku/react-query")>();
   return {
     ...actual,
-    useQuery: (options: unknown) => {
+    useQuery: (options: QueryOptions) => {
+      if (String(options.queryKey[0]).endsWith("/subscriptions")) {
+        testState.subscriptionsQuery = options;
+        return testState.subscriptions;
+      }
       testState.sessionRequests.push(options);
       return { data: { url: "https://stripe.test/session" }, isError: false };
     },
@@ -80,14 +105,38 @@ const makePlan = (overrides: Partial<Plan> = {}): Plan => ({
   ...overrides,
 });
 
+const LocationProbe = () => {
+  const location = useLocation();
+  return (
+    <div
+      data-testid="location"
+      data-path={`${location.pathname}${location.search}`}
+    />
+  );
+};
+
 const renderPage = (initialPath: string, config: MonetizationConfig = {}) =>
   render(
     <MemoryRouter initialEntries={[initialPath]}>
       <MonetizationContext value={config}>
-        <CheckoutPage />
+        <Routes>
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="*" element={<LocationProbe />} />
+        </Routes>
       </MonetizationContext>
     </MemoryRouter>,
   );
+
+const subscribeTo = (plan: Plan, status = "active") => {
+  testState.subscriptions = {
+    isFetchedAfterMount: true,
+    isError: false,
+    data: { items: [{ id: "sub-1", status, plan }] },
+  };
+};
+
+const requestBody = (request: QueryOptions | undefined) =>
+  JSON.parse(request?.meta?.request?.body ?? "{}");
 
 /**
  * Stands in for a developer-supplied questionnaire: submits to their own
@@ -118,6 +167,12 @@ describe("CheckoutPage", () => {
   beforeEach(() => {
     testState.sessionRequests = [];
     testState.plans = { items: [makePlan()] };
+    testState.subscriptions = {
+      isFetchedAfterMount: true,
+      isError: false,
+      data: { items: [] },
+    };
+    testState.subscriptionsQuery = undefined;
   });
 
   it("redirects to pricing without a planId", () => {
@@ -135,6 +190,11 @@ describe("CheckoutPage", () => {
       "https://stripe.test/session",
     );
     expect(testState.sessionRequests).toHaveLength(1);
+    expect(requestBody(testState.sessionRequests[0])).toEqual({
+      planId: "plan-1",
+      successURL: "https://portal/checkout-confirm?planId=plan-1",
+      cancelURL: "https://portal/pricing",
+    });
   });
 
   it("shows the questionnaire and creates no Stripe session until it completes", async () => {
@@ -216,5 +276,122 @@ describe("CheckoutPage", () => {
 
     expect(screen.queryByTestId("gate-plan")).not.toBeInTheDocument();
     expect(testState.sessionRequests).toHaveLength(0);
+  });
+
+  describe("with an existing subscription", () => {
+    const pro = makePlan();
+    const team = makePlan({ id: "plan-2", key: "team", name: "Team" });
+    const starter = makePlan({ id: "plan-0", key: "starter", name: "Starter" });
+
+    beforeEach(() => {
+      testState.plans = { items: [starter, pro, team] };
+    });
+
+    it("waits for a fresh subscriptions fetch, not the cached list", () => {
+      testState.subscriptions = {
+        isFetchedAfterMount: false,
+        isError: false,
+        data: { items: [] },
+      };
+      renderPage("/checkout?planId=plan-1");
+
+      expect(testState.subscriptionsQuery?.refetchOnMount).toBe("always");
+      expect(screen.queryByTestId("redirect")).not.toBeInTheDocument();
+      expect(testState.sessionRequests).toHaveLength(0);
+    });
+
+    it("ignores cached subscriptions when the fresh fetch failed", () => {
+      subscribeTo(pro);
+      testState.subscriptions.isError = true;
+      renderPage("/checkout?planId=plan-2");
+
+      expect(requestBody(testState.sessionRequests[0])).toMatchObject({
+        successURL: "https://portal/checkout-confirm?planId=plan-2",
+      });
+    });
+
+    it("sends a subscriber to their subscription when it's the same plan", () => {
+      subscribeTo(pro);
+      renderPage("/checkout?planId=plan-1");
+
+      expect(screen.getByTestId("location")).toHaveAttribute(
+        "data-path",
+        "/subscriptions?subscriptionId=sub-1",
+      );
+      expect(testState.sessionRequests).toHaveLength(0);
+    });
+
+    it("starts the plan-change flow as an upgrade for a later plan", () => {
+      subscribeTo(pro);
+      renderPage("/checkout?planId=plan-2");
+
+      expect(screen.getByTestId("redirect")).toHaveAttribute(
+        "data-url",
+        "https://stripe.test/session",
+      );
+      expect(testState.sessionRequests).toHaveLength(1);
+      expect(requestBody(testState.sessionRequests[0])).toEqual({
+        planId: "plan-2",
+        successURL:
+          "https://portal/subscription-change-confirm?planId=plan-2&subscriptionId=sub-1&mode=upgrade",
+        cancelURL: "https://portal/subscriptions?subscriptionId=sub-1",
+      });
+    });
+
+    it("starts the plan-change flow as a downgrade for an earlier plan", () => {
+      subscribeTo(pro);
+      renderPage("/checkout?planId=plan-0");
+
+      expect(requestBody(testState.sessionRequests[0])).toMatchObject({
+        planId: "plan-0",
+        successURL:
+          "https://portal/subscription-change-confirm?planId=plan-0&subscriptionId=sub-1&mode=downgrade",
+      });
+    });
+
+    it("skips the questionnaire when changing plans", () => {
+      subscribeTo(pro);
+      const renderBeforeCheckout = vi.fn(() => <div>should not render</div>);
+      renderPage("/checkout?planId=plan-2", {
+        checkout: { renderBeforeCheckout },
+      });
+
+      expect(renderBeforeCheckout).not.toHaveBeenCalled();
+      expect(testState.sessionRequests).toHaveLength(1);
+    });
+
+    it("sends a canceled subscription to its page instead of switching", () => {
+      subscribeTo(pro, "canceled");
+      renderPage("/checkout?planId=plan-2");
+
+      expect(screen.getByTestId("location")).toHaveAttribute(
+        "data-path",
+        "/subscriptions?subscriptionId=sub-1",
+      );
+      expect(testState.sessionRequests).toHaveLength(0);
+    });
+
+    it("checks out as usual when the subscription is no longer current", () => {
+      subscribeTo(pro, "inactive");
+      renderPage("/checkout?planId=plan-2");
+
+      expect(requestBody(testState.sessionRequests[0])).toMatchObject({
+        successURL: "https://portal/checkout-confirm?planId=plan-2",
+      });
+    });
+
+    it("checks out as usual when multiple subscriptions are allowed", () => {
+      testState.plans = {
+        items: [starter, pro, team],
+        multipleSubscriptionsEnabled: true,
+      };
+      subscribeTo(pro);
+      renderPage("/checkout?planId=plan-2");
+
+      expect(testState.subscriptionsQuery?.enabled).toBe(false);
+      expect(requestBody(testState.sessionRequests[0])).toMatchObject({
+        successURL: "https://portal/checkout-confirm?planId=plan-2",
+      });
+    });
   });
 });
