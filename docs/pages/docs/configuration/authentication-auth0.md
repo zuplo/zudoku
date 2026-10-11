@@ -191,6 +191,10 @@ authentication: {
 4. **Token Validation Errors**: Ensure the audience in your Zudoku configuration matches the
    identifier of the Auth0 API you created.
 
+5. **Missing Audience**: If sign-in succeeds in Auth0 but Zudoku shows a "Missing Audience" error,
+   no `audience` is set. Without it, Auth0 issues opaque access tokens instead of JWTs. Set
+   `audience` to the identifier of the [Auth0 API you created](#setup-steps).
+
 ## Next Steps
 
 - Learn about [protecting routes](./authentication.md#protected-routes) in your documentation

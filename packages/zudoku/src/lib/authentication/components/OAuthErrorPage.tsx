@@ -1,4 +1,5 @@
 import { HomeIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
@@ -7,7 +8,7 @@ import { Button } from "../../ui/Button.js";
 import { OAuthAuthorizationError } from "../errors.js";
 import { useAuth } from "../hook.js";
 
-const errorDetailsMap: Record<string, { message: string }> = {
+const errorDetailsMap: Record<string, { message: ReactNode }> = {
   invalid_request: {
     message:
       "The authentication request was invalid. Please try signing in again.",
@@ -62,6 +63,10 @@ const errorDetailsMap: Record<string, { message: string }> = {
   },
   configuration_error: {
     message: "There is an issue with the authentication configuration.",
+  },
+  missing_audience: {
+    message:
+      "Sign-in succeeded, but the authentication provider issued an opaque access token instead of a JWT because no audience is configured.",
   },
   unknown_error: {
     message:
@@ -174,10 +179,11 @@ const titles: Record<string, string> = {
   network_error: "Network Error",
   token_expired: "Session Expired",
   configuration_error: "Configuration Error",
+  missing_audience: "Missing Audience",
   unknown_error: "Authentication Failed",
 };
 
-const helpMessages: Record<string, string> = {
+const helpMessages: Record<string, ReactNode> = {
   access_denied:
     "If you changed your mind, you can try signing in again to grant access.",
   invalid_state:
@@ -190,4 +196,12 @@ const helpMessages: Record<string, string> = {
     "The issue is on our end. Our team has been notified and is working to fix it.",
   temporarily_unavailable:
     "This is usually temporary. Try again in a few minutes.",
+  missing_audience: (
+    <>
+      If you manage this site, set <code>audience</code> in the{" "}
+      <code>authentication</code> section of your Zudoku config to the
+      identifier of your API (for Auth0, the identifier of the API you created
+      in the Auth0 dashboard).
+    </>
+  ),
 };

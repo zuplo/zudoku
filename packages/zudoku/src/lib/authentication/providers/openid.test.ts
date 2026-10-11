@@ -154,34 +154,75 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       expect(useAuthState.getState().profile?.emailVerified).toBe(true);
     });
 
-    test("throws OAuthAuthorizationError for opaque access tokens", async () => {
-      const provider = createProvider();
+    describe("opaque access tokens", () => {
+      const callbackError = async (provider: OpenIDAuthenticationProvider) => {
+        Object.defineProperty(window, "location", {
+          configurable: true,
+          value: new URL(
+            "http://localhost/oauth/callback?state=test-state&code=test-code",
+          ),
+        });
 
-      Object.defineProperty(window, "location", {
-        configurable: true,
-        value: new URL(
-          "http://localhost/oauth/callback?state=test-state&code=test-code",
-        ),
+        sessionStorage.setItem("oauth-state", "test-state");
+        sessionStorage.setItem("code-verifier", "test-verifier");
+
+        vi.mocked(oauth.validateAuthResponse).mockReturnValue(
+          new URLSearchParams({ code: "test-code" }),
+        );
+        vi.mocked(oauth.authorizationCodeGrantRequest).mockResolvedValue(
+          new Response(),
+        );
+        vi.mocked(oauth.processAuthorizationCodeResponse).mockResolvedValue({
+          access_token: "opaque-token-without-dots",
+          token_type: "bearer",
+          expires_in: 3600,
+        } as oauth.TokenEndpointResponse);
+
+        const error = await provider.handleCallback().catch((e) => e);
+        expect(error).toBeInstanceOf(OAuthAuthorizationError);
+        return (error as OAuthAuthorizationError).error;
+      };
+
+      test("reports missing_audience when no audience is configured", async () => {
+        const error = await callbackError(
+          auth0Auth({
+            type: "auth0",
+            domain: "tenant.auth0.com",
+            clientId: "test-client",
+          }) as OpenIDAuthenticationProvider,
+        );
+
+        expect(error).toMatchObject({ error: "missing_audience" });
       });
 
-      sessionStorage.setItem("oauth-state", "test-state");
-      sessionStorage.setItem("code-verifier", "test-verifier");
+      test("reports configuration_error when an audience is configured", async () => {
+        const error = await callbackError(
+          new OpenIDAuthenticationProvider({
+            type: "openid",
+            issuer: "https://issuer.example.com",
+            clientId: "test-client",
+            audience: "https://api.example.com",
+          }),
+        );
 
-      vi.mocked(oauth.validateAuthResponse).mockReturnValue(
-        new URLSearchParams({ code: "test-code" }),
-      );
-      vi.mocked(oauth.authorizationCodeGrantRequest).mockResolvedValue(
-        new Response(),
-      );
-      vi.mocked(oauth.processAuthorizationCodeResponse).mockResolvedValue({
-        access_token: "opaque-token-without-dots",
-        token_type: "bearer",
-        expires_in: 3600,
-      } as oauth.TokenEndpointResponse);
+        expect(error).toMatchObject({
+          error: "configuration_error",
+          error_description: expect.stringContaining("https://api.example.com"),
+        });
+      });
 
-      await expect(provider.handleCallback()).rejects.toThrow(
-        OAuthAuthorizationError,
-      );
+      test("treats audience in authorizationParams as configured", async () => {
+        const error = await callbackError(
+          new OpenIDAuthenticationProvider({
+            type: "openid",
+            issuer: "https://issuer.example.com",
+            clientId: "test-client",
+            authorizationParams: { audience: "https://api.example.com" },
+          }),
+        );
+
+        expect(error).toMatchObject({ error: "configuration_error" });
+      });
     });
 
     test("emailVerified defaults to false when absent everywhere", async () => {

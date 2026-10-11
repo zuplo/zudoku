@@ -180,13 +180,29 @@ export class OpenIDAuthenticationProvider
 
     const accessToken = response.access_token;
     if (accessToken.split(".").length !== 3) {
+      const audience = this.audience ?? this.authorizationParams?.audience;
+
+      // Providers like Auth0 issue opaque access tokens when no audience is
+      // requested, which is by far the most common cause of this error.
+      if (!audience) {
+        throw new OAuthAuthorizationError(
+          "The access token received is not a valid JWT because no `audience` is configured.",
+          {
+            error: "missing_audience",
+            error_description:
+              "The authentication provider issued an opaque access token instead of a JWT because no `audience` is configured. " +
+              "Set `audience` in the `authentication` section of your Zudoku config to the identifier of your API.",
+          },
+        );
+      }
+
       throw new OAuthAuthorizationError(
         "The access token received is not a valid JWT.",
         {
           error: "configuration_error",
           error_description:
-            "The authentication provider is issuing opaque tokens instead of JWTs. " +
-            "Ensure you have configured the correct `audience` in your authentication settings.",
+            `The authentication provider issued an opaque access token instead of a JWT for the audience "${audience}". ` +
+            "Ensure an API with this identifier exists in your authentication provider.",
         },
       );
     }

@@ -30,4 +30,5 @@ export type OAuthErrorType =
   | "network_error"
   | "token_expired"
   | "configuration_error"
+  | "missing_audience"
   | "unknown_error";
