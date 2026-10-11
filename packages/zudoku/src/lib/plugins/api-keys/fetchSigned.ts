@@ -3,10 +3,13 @@ import { ZudokuError } from "../../util/invariant.js";
 
 const isJwt = (token: string) => token.split(".").length === 3;
 
+const isAuthFailure = (response: Response) =>
+  response.status === 401 || response.status === 403;
+
 /**
  * Signs and sends a request to Zuplo's API key service. The service identifies
- * the user from a JWT access token, so a failed request made with an opaque
- * token (e.g. Auth0 without an `audience`) is reported as a configuration error
+ * the user from a JWT access token, so an opaque token (e.g. Auth0 without an
+ * `audience`) rejected with 401/403 is reported as a configuration error
  * instead of a generic request failure.
  */
 export const fetchSigned = async (context: ZudokuContext, request: Request) => {
@@ -17,7 +20,7 @@ export const fetchSigned = async (context: ZudokuContext, request: Request) => {
     .get("Authorization")
     ?.replace(/^Bearer /i, "");
 
-  if (!response.ok && accessToken && !isJwt(accessToken)) {
+  if (isAuthFailure(response) && accessToken && !isJwt(accessToken)) {
     throw new ZudokuError(
       "The access token issued by the authentication provider can't be used to manage API keys.",
       {

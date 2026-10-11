@@ -51,6 +51,17 @@ describe("fetchSigned", () => {
     });
   });
 
+  it("returns non-auth failures unchanged for opaque access tokens", async () => {
+    mockFetch(500);
+
+    const response = await fetchSigned(
+      createContext(OPAQUE_ACCESS_TOKEN),
+      new Request("https://api.example.com/consumers"),
+    );
+
+    expect(response.status).toBe(500);
+  });
+
   it("returns failed responses unchanged for JWT access tokens", async () => {
     mockFetch(401);
 
