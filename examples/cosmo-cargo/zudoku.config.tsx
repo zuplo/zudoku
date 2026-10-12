@@ -469,6 +469,13 @@ const config: ZudokuConfig = {
       from: "/api-shipments/track-shipment",
       to: "/api-shipments/tracking-and-notifications#get-shipments-shipmentid-events",
     },
+    // The old starship manual now lives under /fleet, e.g.
+    // /starship-manual/warp-drives → /fleet/warp-drives
+    { from: "/starship-manual/*", to: "/fleet/*" },
+    // Exact paths win over the wildcard; /fleet has no overview page
+    { from: "/starship-manual", to: "/fleet/warp-drives" },
+    // /handbook/cryo → /cargo-handbook/cryo
+    { from: "/handbook/:category", to: "/cargo-handbook/:category" },
   ],
   catalogs: {
     path: "catalog",
