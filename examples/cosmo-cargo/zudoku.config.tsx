@@ -469,6 +469,12 @@ const config: ZudokuConfig = {
       from: "/api-shipments/track-shipment",
       to: "/api-shipments/tracking-and-notifications#get-shipments-shipmentid-events",
     },
+    // Everything under the legacy /docs prefix, e.g. /docs/test →
+    // /documentation/test (and /docs itself → /documentation)
+    { from: "/docs/*", to: "/documentation/*" },
+    // The old starship manual chapters now live under /fleet, e.g.
+    // /starship-manual/warp-drives → /fleet/warp-drives
+    { from: "/starship-manual/:chapter", to: "/fleet/:chapter" },
   ],
   catalogs: {
     path: "catalog",
