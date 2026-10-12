@@ -84,6 +84,28 @@ describe("upgradeOpenApi", () => {
     );
   });
 
+  it("upgrades default responses of reusable callbacks", () => {
+    const upgraded = upgradeOpenApi({
+      openapi: "3.0.3",
+      info: { title: "Test", version: "1.0.0" },
+      paths: {},
+      components: {
+        callbacks: {
+          onEvent: {
+            "{$request.body#/callbackUrl}": {
+              post: { responses: { default: errorResponse() } },
+            },
+          },
+        },
+      },
+    });
+
+    expect(
+      upgraded.components?.callbacks?.onEvent?.["{$request.body#/callbackUrl}"]
+        ?.post?.responses?.default,
+    ).toEqual(upgradedErrorResponse);
+  });
+
   it("upgrades default responses of Swagger 2.0 documents", () => {
     const upgraded = upgradeOpenApi({
       swagger: "2.0",

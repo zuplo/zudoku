@@ -49,17 +49,16 @@ const upgradePathItem = (pathItem: unknown): unknown => {
             responses: upgradeDefaultResponse(operation.responses),
           }),
           ...(isRecord(operation.callbacks) && {
-            callbacks: mapValues(operation.callbacks, (callback) =>
-              isRecord(callback)
-                ? mapValues(callback, upgradePathItem)
-                : callback,
-            ),
+            callbacks: mapValues(operation.callbacks, upgradeCallback),
           }),
         },
       ];
     }),
   );
 };
+
+const upgradeCallback = (callback: unknown) =>
+  isRecord(callback) ? mapValues(callback, upgradePathItem) : callback;
 
 const upgradeDefaultResponses = (document: RecordAny): RecordAny => ({
   ...document,
@@ -69,10 +68,15 @@ const upgradeDefaultResponses = (document: RecordAny): RecordAny => ({
   ...(isRecord(document.webhooks) && {
     webhooks: mapValues(document.webhooks, upgradePathItem),
   }),
-  ...(isRecord(document.components?.responses) && {
+  ...(isRecord(document.components) && {
     components: {
       ...document.components,
-      responses: upgradeDefaultResponse(document.components.responses),
+      ...(isRecord(document.components.responses) && {
+        responses: upgradeDefaultResponse(document.components.responses),
+      }),
+      ...(isRecord(document.components.callbacks) && {
+        callbacks: mapValues(document.components.callbacks, upgradeCallback),
+      }),
     },
   }),
 });

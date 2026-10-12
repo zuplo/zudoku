@@ -25,9 +25,18 @@ import {
   unwrapNullableUnion,
 } from "./utils.js";
 
-const RootRefLabel = ({ name }: { name: string }) => (
+const RootRefLabel = ({
+  name,
+  nullable,
+}: {
+  name: string;
+  nullable?: boolean;
+}) => (
   <div className="text-xs font-semibold flex items-center gap-1.5 px-4 py-2 border-b bg-muted/40">
     <SchemaRefLink name={name} />
+    {nullable && (
+      <span className="font-normal text-muted-foreground">| null</span>
+    )}
   </div>
 );
 
@@ -123,12 +132,14 @@ const ObjectSchemaView = ({
   cardHeader,
   embedded,
   rootRefName,
+  nullable,
 }: {
   schema: SchemaObject;
   defaultOpen: boolean;
   cardHeader?: React.ReactNode;
   embedded?: boolean;
   rootRefName?: string;
+  nullable?: boolean;
 }) => {
   const [showDeprecated, setShowDeprecated] = useState(false);
   const deprecatedRef = useRef<HTMLDivElement>(null);
@@ -229,7 +240,9 @@ const ObjectSchemaView = ({
       )}
       {(hasPanelContent || rootRefName) && (
         <FramePanel className="p-0!">
-          {rootRefName && <RootRefLabel name={rootRefName} />}
+          {rootRefName && (
+            <RootRefLabel name={rootRefName} nullable={nullable} />
+          )}
           {itemsList}
           {deprecatedProperties && (
             <div ref={deprecatedRef} id={deprecatedId} hidden={!showDeprecated}>
@@ -319,9 +332,10 @@ export const SchemaView = ({
   }
 
   if (isArrayType(schema) && typeof schema.items === "object") {
+    // Wrap the original schema, so the property row can label it `| null`
     const wrappedSchema: SchemaObject = {
       type: "object",
-      properties: { "": schema },
+      properties: { "": rootSchema ?? schema },
     };
 
     return (
@@ -339,6 +353,7 @@ export const SchemaView = ({
         cardHeader={cardHeader}
         embedded={embedded}
         rootRefName={rootRefName}
+        nullable={nullable}
       />
     );
   }

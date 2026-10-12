@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 import { SchemaView } from "./SchemaView.js";
 
@@ -36,5 +37,43 @@ describe("SchemaView", () => {
 
     expect(screen.getByText("string | null")).toBeInTheDocument();
     expect(screen.queryByText("anyOf")).not.toBeInTheDocument();
+  });
+
+  it("labels a nullable ref at the root", () => {
+    render(
+      <MemoryRouter>
+        <SchemaView
+          schema={{
+            anyOf: [
+              {
+                type: "object",
+                properties: { name: { type: "string" } },
+                __$ref: "#/components/schemas/Pilot",
+              },
+              { type: "null" },
+            ],
+          }}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole("link", { name: "Pilot" })).toBeInTheDocument();
+    expect(screen.getByText("| null")).toBeInTheDocument();
+    expect(screen.queryByText("anyOf")).not.toBeInTheDocument();
+  });
+
+  it("labels a nullable array at the root", () => {
+    render(
+      <SchemaView
+        schema={{
+          anyOf: [
+            { type: "array", items: { type: "string" } },
+            { type: "null" },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText("string[] | null")).toBeInTheDocument();
   });
 });

@@ -13,7 +13,7 @@ import type { ParameterItem } from "./ParameterList.js";
 import { ParamInfos } from "./ParamInfos.js";
 import { SchemaExampleAndDefault } from "./schema/SchemaExampleAndDefault.js";
 import { SchemaView } from "./schema/SchemaView.js";
-import { isArrayType } from "./schema/utils.js";
+import { isArrayType, unwrapNullableUnion } from "./schema/utils.js";
 
 const getParameterSchema = (parameter: ParameterItem): SchemaObject => {
   if (parameter.schema != null && typeof parameter.schema === "object") {
@@ -33,7 +33,9 @@ export const ParameterListItem = ({
   group: ParameterGroup;
   id: string;
 }) => {
-  const paramSchema = getParameterSchema(parameter);
+  const { schema: paramSchema, nullable } = unwrapNullableUnion(
+    getParameterSchema(parameter),
+  );
   const [isOpen, setIsOpen] = useState(false);
 
   const isCollapsible =
@@ -94,6 +96,7 @@ export const ParameterListItem = ({
           <ParamInfos
             className="inline"
             schema={paramSchema}
+            nullable={nullable}
             extraItems={[
               parameter.required && (
                 <span className="text-primary">required</span>
