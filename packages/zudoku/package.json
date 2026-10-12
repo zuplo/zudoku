@@ -125,7 +125,7 @@
     "@radix-ui/react-toggle-group": "1.1.19",
     "@radix-ui/react-tooltip": "1.2.16",
     "@radix-ui/react-visually-hidden": "1.2.11",
-    "@scalar/openapi-parser": "0.28.10",
+    "@scalar/openapi-parser": "0.29.12",
     "@scalar/snippetz": "0.9.23",
     "@shikijs/langs": "4.5.0",
     "@shikijs/rehype": "4.5.0",
