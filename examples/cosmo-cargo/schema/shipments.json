@@ -182,6 +182,12 @@
           "status": {
             "type": "string",
             "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"],
+            "x-enumDescriptions": {
+              "CREATED": "Manifest logged and cargo sealed in the stasis bay, awaiting launch clearance.",
+              "IN_TRANSIT": "Cargo is aboard a freighter, currently in warp between waypoints.",
+              "DELIVERED": "Docked at the destination port and signed for by the recipient.",
+              "EXCEPTION": "Delayed by an anomaly such as an ion storm, customs hold or quantum drift."
+            },
             "nullable": true
           },
           "trackingNumber": {
