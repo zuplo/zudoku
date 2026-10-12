@@ -17,7 +17,12 @@ import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { SchemaRefLink } from "./SchemaRefLink.js";
 import { UnionView } from "./UnionView.js";
-import { getSchemaRefName, isArrayType, isBasicType } from "./utils.js";
+import {
+  getEnumDescriptions,
+  getSchemaRefName,
+  isArrayType,
+  isBasicType,
+} from "./utils.js";
 
 const RootRefLabel = ({ name }: { name: string }) => (
   <div className="text-xs font-semibold flex items-center gap-1.5 px-4 py-2 border-b bg-muted/40">
@@ -43,7 +48,12 @@ const renderBasicSchema = (
       <span className="text-sm text-muted-foreground">
         <ParamInfos schema={schema} />
       </span>
-      {schema.enum && <EnumValues values={schema.enum} />}
+      {schema.enum && (
+        <EnumValues
+          values={schema.enum}
+          descriptions={getEnumDescriptions(schema)}
+        />
+      )}
       {renderMarkdown(schema.description)}
       <SchemaExampleAndDefault schema={schema} />
     </>

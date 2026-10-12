@@ -14,6 +14,7 @@ import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   extractCircularRefInfo,
+  getEnumDescriptions,
   isArrayCircularRef,
   isArrayType,
   isCircularRef,
@@ -138,10 +139,18 @@ export const SchemaPropertyItem = ({
               <Markdown className="prose-sm" content={schema.description} />
             )}
             {"items" in schema && schema.items?.enum && (
-              <EnumValues values={schema.items.enum} />
+              <EnumValues
+                values={schema.items.enum}
+                descriptions={getEnumDescriptions(schema.items)}
+              />
             )}
             {schema.const && <ConstValue schema={schema} hideDescription />}
-            {schema.enum && <EnumValues values={schema.enum} />}
+            {schema.enum && (
+              <EnumValues
+                values={schema.enum}
+                descriptions={getEnumDescriptions(schema)}
+              />
+            )}
             <SchemaExampleAndDefault schema={schema} />
           </div>
         )}

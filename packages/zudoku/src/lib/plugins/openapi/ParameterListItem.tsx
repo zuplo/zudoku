@@ -13,7 +13,7 @@ import type { ParameterItem } from "./ParameterList.js";
 import { ParamInfos } from "./ParamInfos.js";
 import { SchemaExampleAndDefault } from "./schema/SchemaExampleAndDefault.js";
 import { SchemaView } from "./schema/SchemaView.js";
-import { isArrayType } from "./schema/utils.js";
+import { getEnumDescriptions, isArrayType } from "./schema/utils.js";
 
 const getParameterSchema = (parameter: ParameterItem): SchemaObject => {
   if (parameter.schema != null && typeof parameter.schema === "object") {
@@ -115,9 +115,17 @@ export const ParameterListItem = ({
               />
             )}
             {paramSchema.type === "array" && paramSchema.items?.enum ? (
-              <EnumValues values={paramSchema.items.enum} />
+              <EnumValues
+                values={paramSchema.items.enum}
+                descriptions={getEnumDescriptions(paramSchema.items)}
+              />
             ) : (
-              paramSchema.enum && <EnumValues values={paramSchema.enum} />
+              paramSchema.enum && (
+                <EnumValues
+                  values={paramSchema.enum}
+                  descriptions={getEnumDescriptions(paramSchema)}
+                />
+              )
             )}
             <SchemaExampleAndDefault schema={paramSchema} />
           </div>
