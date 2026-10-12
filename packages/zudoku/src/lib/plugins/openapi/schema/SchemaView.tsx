@@ -17,7 +17,13 @@ import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { SchemaRefLink } from "./SchemaRefLink.js";
 import { UnionView } from "./UnionView.js";
-import { getSchemaRefName, isArrayType, isBasicType } from "./utils.js";
+import {
+  getSchemaRefName,
+  isArrayType,
+  isBasicType,
+  isCircularRef,
+  unwrapNullableUnion,
+} from "./utils.js";
 
 const RootRefLabel = ({ name }: { name: string }) => (
   <div className="text-xs font-semibold flex items-center gap-1.5 px-4 py-2 border-b bg-muted/40">
@@ -37,11 +43,12 @@ const renderBasicSchema = (
   schema: SchemaObject,
   cardHeader?: React.ReactNode,
   embedded?: boolean,
+  nullable?: boolean,
 ) => {
   const content = (
     <>
       <span className="text-sm text-muted-foreground">
-        <ParamInfos schema={schema} />
+        <ParamInfos schema={schema} nullable={nullable} />
       </span>
       {schema.enum && <EnumValues values={schema.enum} />}
       {renderMarkdown(schema.description)}
@@ -266,7 +273,7 @@ const ObjectSchemaView = ({
 };
 
 export const SchemaView = ({
-  schema,
+  schema: rootSchema,
   defaultOpen = false,
   cardHeader,
   embedded,
@@ -278,6 +285,10 @@ export const SchemaView = ({
   embedded?: boolean;
   hideRootRef?: boolean;
 }) => {
+  const { schema, nullable } = rootSchema
+    ? unwrapNullableUnion(rootSchema)
+    : { schema: rootSchema, nullable: false };
+
   if (!schema || Object.keys(schema).length === 0) {
     return (
       <Frame>
@@ -304,7 +315,7 @@ export const SchemaView = ({
   }
 
   if (isBasicType(schema.type)) {
-    return renderBasicSchema(schema, cardHeader, embedded);
+    return renderBasicSchema(schema, cardHeader, embedded, nullable);
   }
 
   if (isArrayType(schema) && typeof schema.items === "object") {
@@ -331,4 +342,9 @@ export const SchemaView = ({
       />
     );
   }
+
+  if (isCircularRef(schema)) return null;
+
+  // Schemas without a type, e.g. raw binary (`{ contentMediaType: "image/png" }`)
+  return renderBasicSchema(schema, cardHeader, embedded, nullable);
 };

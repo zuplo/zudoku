@@ -18,6 +18,7 @@ import {
   isArrayType,
   isCircularRef,
   isComplexType,
+  unwrapNullableUnion,
 } from "./utils.js";
 
 const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => (
@@ -29,7 +30,7 @@ const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => (
 
 export const SchemaPropertyItem = ({
   name,
-  schema,
+  schema: propertySchema,
   group,
   defaultOpen = false,
   showCollapseButton = true,
@@ -41,6 +42,7 @@ export const SchemaPropertyItem = ({
   showCollapseButton?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const { schema, nullable } = unwrapNullableUnion(propertySchema);
 
   const isDeprecated = group === "deprecated";
 
@@ -120,6 +122,7 @@ export const SchemaPropertyItem = ({
           <ParamInfos
             className="inline"
             schema={schema}
+            nullable={nullable}
             extraItems={[
               group === "required" && (
                 <span className="text-primary">required</span>
