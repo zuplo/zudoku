@@ -97,6 +97,10 @@ const BaseInputNavigationCategorySchema = z.object({
   collapsible: z.boolean().optional(),
   collapsed: z.boolean().optional(),
   link: InputNavigationCategoryLinkDocSchema.optional(),
+  // Overrides where navigating to the category lands (top-nav tabs, stacked
+  // section back links) without changing the `link` path that identifies which
+  // URLs the category owns.
+  landing: InputNavigationCategoryLinkDocSchema.optional(),
   display: DisplaySchema,
   stack: z.boolean().optional(),
 });
