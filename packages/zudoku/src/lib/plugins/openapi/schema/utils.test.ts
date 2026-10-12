@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SchemaObject } from "../../../oas/parser/index.js";
-import { getSchemaRefName } from "./utils.js";
+import { getEnumDescriptions, getSchemaRefName } from "./utils.js";
 
 describe("getSchemaRefName", () => {
   it("returns the component name from a components/schemas ref", () => {
@@ -60,5 +60,19 @@ describe("getSchemaRefName", () => {
         "$ref:#/components/schemas/Organization" as unknown as SchemaObject,
       ),
     ).toBeUndefined();
+  });
+});
+
+describe("getEnumDescriptions", () => {
+  it("zips a string array with enum by position", () => {
+    const schema = {
+      type: "string",
+      enum: ["pending", "in_transit", "delivered"],
+      "x-enum-descriptions": ["Awaiting pickup", "", "Arrived", "extra"],
+    } as SchemaObject;
+    expect(getEnumDescriptions(schema)).toEqual({
+      pending: "Awaiting pickup",
+      delivered: "Arrived",
+    });
   });
 });
