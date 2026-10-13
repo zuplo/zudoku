@@ -98,6 +98,33 @@ export const isArrayCircularRef = (
 ): schema is SchemaObject & { items: SchemaObject } =>
   isArrayType(schema) && "items" in schema && isCircularRef(schema.items);
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+// Reads `x-enumDescriptions` / `x-enum-descriptions` (enum value → description).
+// Also accepts the map nested under `values`, or a string array aligned
+// positionally with `enum` (as emitted by e.g. openapi-generator).
+export const getEnumDescriptions = (
+  schema?: SchemaObject,
+): Record<string, string> | undefined => {
+  if (!isRecord(schema)) return;
+  const raw = schema["x-enumDescriptions"] ?? schema["x-enum-descriptions"];
+
+  const entries: [string, unknown][] = Array.isArray(raw)
+    ? (Array.isArray(schema.enum) ? schema.enum : []).map((value, i) => [
+        String(value),
+        raw[i] || undefined,
+      ])
+    : isRecord(raw)
+      ? Object.entries(isRecord(raw.values) ? raw.values : raw)
+      : [];
+  const filtered = entries.filter(
+    (entry): entry is [string, string] => typeof entry[1] === "string",
+  );
+
+  return filtered.length > 0 ? Object.fromEntries(filtered) : undefined;
+};
+
 const COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/";
 
 // Unescape a JSON Pointer token per RFC 6901: ~1 → /, ~0 → ~, then URI decode.

@@ -18,6 +18,7 @@ import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { SchemaRefLink } from "./SchemaRefLink.js";
 import { UnionView } from "./UnionView.js";
 import {
+  getEnumDescriptions,
   getSchemaRefName,
   isArrayType,
   isBasicType,
@@ -59,7 +60,12 @@ const renderBasicSchema = (
       <span className="text-sm text-muted-foreground">
         <ParamInfos schema={schema} nullable={nullable} />
       </span>
-      {schema.enum && <EnumValues values={schema.enum} />}
+      {schema.enum && (
+        <EnumValues
+          values={schema.enum}
+          descriptions={getEnumDescriptions(schema)}
+        />
+      )}
       {renderMarkdown(schema.description)}
       <SchemaExampleAndDefault schema={schema} />
     </>
