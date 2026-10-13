@@ -128,4 +128,29 @@ describe("SchemaPropertyItem", () => {
 
     expect(screen.queryByText("required")).not.toBeInTheDocument();
   });
+
+  it("renders enum value descriptions from x-enum-descriptions", () => {
+    // Extensions aren't part of the SchemaObject type, so spread them in
+    const extensions = {
+      "x-enum-descriptions": {
+        values: {
+          checked: "The domain is checked",
+          pending: "The domain is pending",
+        },
+      },
+    };
+    const enumSchema: SchemaObject = {
+      type: "string",
+      enum: ["checked", "pending"],
+      ...extensions,
+    };
+
+    render(
+      <SchemaPropertyItem name="status" schema={enumSchema} group="optional" />,
+    );
+
+    expect(screen.getByText("checked")).toBeInTheDocument();
+    expect(screen.getByText("The domain is checked")).toBeInTheDocument();
+    expect(screen.getByText("The domain is pending").tagName).toBe("DD");
+  });
 });
