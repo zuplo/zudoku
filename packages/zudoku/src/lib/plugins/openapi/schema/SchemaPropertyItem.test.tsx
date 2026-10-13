@@ -129,6 +129,70 @@ describe("SchemaPropertyItem", () => {
     expect(screen.queryByText("required")).not.toBeInTheDocument();
   });
 
+  it("renders a nullable union as its non-null variant", () => {
+    render(
+      <SchemaPropertyItem
+        name="copilot"
+        schema={{
+          anyOf: [
+            { type: "object", properties: { name: { type: "string" } } },
+            { type: "null" },
+          ],
+        }}
+        group="optional"
+      />,
+    );
+
+    expect(screen.getByText("object | null")).toBeInTheDocument();
+    expect(screen.queryByText("anyOf")).not.toBeInTheDocument();
+  });
+
+  it("labels a nullable basic type like a type array", () => {
+    render(
+      <SchemaPropertyItem
+        name="callsign"
+        schema={{ oneOf: [{ type: "string" }, { type: "null" }] }}
+        group="optional"
+      />,
+    );
+
+    expect(screen.getByText("string | null")).toBeInTheDocument();
+  });
+
+  it("labels raw binary properties", () => {
+    render(
+      <SchemaPropertyItem
+        name="file"
+        schema={{ contentMediaType: "application/octet-stream" }}
+        group="optional"
+      />,
+    );
+
+    expect(screen.getByText("binary")).toBeInTheDocument();
+    expect(screen.getByText("application/octet-stream")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Toggle properties" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("labels arrays of raw binary items without making them collapsible", () => {
+    render(
+      <SchemaPropertyItem
+        name="photos"
+        schema={{
+          type: "array",
+          items: { contentMediaType: "application/octet-stream" },
+        }}
+        group="optional"
+      />,
+    );
+
+    expect(screen.getByText("binary[]")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Toggle properties" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("renders enum value descriptions from x-enum-descriptions", () => {
     // Extensions aren't part of the SchemaObject type, so spread them in
     const extensions = {

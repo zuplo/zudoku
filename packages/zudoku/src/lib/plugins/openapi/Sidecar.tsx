@@ -23,6 +23,7 @@ import { GraphiQLDialog } from "./playground/GraphiQLDialog.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
+import { withBinaryMediaType } from "./schema/utils.js";
 import { useResolvedServerUrl } from "./state.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
@@ -169,7 +170,12 @@ export const Sidecar = ({
   const currentExampleCode = currentExample
     ? (currentExample?.value ?? currentExample)
     : selectedContent?.schema
-      ? generateSchemaExample(selectedContent?.schema)
+      ? generateSchemaExample(
+          withBinaryMediaType(
+            selectedContent.schema,
+            selectedContent.mediaType,
+          ),
+        )
       : undefined;
 
   const path = (
@@ -473,7 +479,12 @@ export const Sidecar = ({
                 return {
                   ...c,
                   examples: [
-                    { name: "", value: generateSchemaExample(c.schema) },
+                    {
+                      name: "",
+                      value: generateSchemaExample(
+                        withBinaryMediaType(c.schema, c.mediaType),
+                      ),
+                    },
                   ],
                   isGenerated: true,
                 };

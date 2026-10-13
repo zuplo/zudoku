@@ -6,6 +6,7 @@ import type {
   ArraySchemaObject,
   SchemaObject,
 } from "../../../oas/parser/index.js";
+import { isBinaryContentType } from "../playground/fileUtils.js";
 
 export const isBasicType = (
   type: unknown,
@@ -19,13 +20,74 @@ export const isArrayType = (value: SchemaObject): value is ArraySchemaObject =>
   // schema.type might be an array of types, so we need to check if "array" is one of them
   (Array.isArray(value.type) && value.type.includes("array"));
 
+// OpenAPI 3.1 describes raw binary data (file uploads and downloads) with a
+// `contentMediaType` and no `type`, e.g. `{ contentMediaType: "image/png" }`.
+export const isBinarySchema = (schema?: SchemaObject) =>
+  typeof schema === "object" &&
+  schema.type === undefined &&
+  schema.contentMediaType !== undefined;
+
+// A body schema that doesn't describe its data (e.g. `{}`) under a binary
+// media type is raw binary of that media type.
+export const withBinaryMediaType = (
+  schema: SchemaObject | null | undefined,
+  mediaType: string | undefined,
+): SchemaObject | undefined => {
+  if (!schema) return undefined;
+
+  const isUndescribedBinary =
+    mediaType !== undefined &&
+    schema.type === undefined &&
+    schema.contentMediaType === undefined &&
+    !schema.properties &&
+    !schema.anyOf &&
+    !schema.oneOf &&
+    !schema.allOf &&
+    isBinaryContentType(mediaType);
+
+  return isUndescribedBinary
+    ? { ...schema, contentMediaType: mediaType }
+    : schema;
+};
+
+const isNullSchema = (schema: unknown) =>
+  typeof schema === "object" &&
+  schema !== null &&
+  "type" in schema &&
+  schema.type === "null";
+
+// `anyOf: [X, { type: "null" }]` is how OpenAPI 3.1 writes a nullable X (the
+// 3.0 upgrade turns `nullable: true` next to a `$ref` or `allOf` into it).
+// Unwrap it, so it renders as X with a `null` type instead of as a union.
+export const unwrapNullableUnion = (
+  schema: SchemaObject,
+): { schema: SchemaObject; nullable: boolean } => {
+  if (typeof schema !== "object" || schema.type || schema.properties) {
+    return { schema, nullable: false };
+  }
+
+  const variants = schema.anyOf ?? schema.oneOf;
+  const nonNullVariants = variants?.filter((v) => !isNullSchema(v)) ?? [];
+  const [variant] = nonNullVariants;
+  if (variants?.length !== 2 || nonNullVariants.length !== 1 || !variant) {
+    return { schema, nullable: false };
+  }
+
+  // Circular refs arrive as strings, there is nothing to merge them with
+  if (typeof variant !== "object") return { schema: variant, nullable: true };
+
+  const { anyOf: _anyOf, oneOf: _oneOf, ...rest } = schema;
+  return { schema: { ...variant, ...rest }, nullable: true };
+};
+
 export const isComplexType = (value?: SchemaObject) =>
   value &&
   ((value.type === "object" &&
     Object.keys(value.properties ?? {}).length > 0) ||
     (value.type === "array" &&
       typeof value.items === "object" &&
-      (!value.items.type || value.items.type === "object")));
+      ((!value.items.type && !isBinarySchema(value.items)) ||
+        value.items.type === "object")));
 
 export const isCircularRef = (schema: unknown): schema is string =>
   typeof schema === "string" &&

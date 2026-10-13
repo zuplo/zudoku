@@ -72,9 +72,12 @@ There are two distinct pipelines depending on how schemas are loaded:
 
 1. `$RefParser.bundle()` bundles external refs, keeps internal `$ref`s. Uses
    `preservedProperties: ["description", "summary"]` so other `$ref` sibling properties are lost.
-2. `@scalar/openapi-parser` `upgrade()` converts OAS 3.0 → 3.1. Converts `example` → `examples`
-   (array for schema paths, `{ default: { value } }` for non-schema paths) and deletes `example`.
-   Skips if already OAS 3.1+.
+2. `upgradeOpenApi()` runs `@scalar/openapi-parser` `upgrade()` to convert OAS 3.0 → 3.1. Converts
+   `example` → `examples` (array for schema paths, `{ default: { value } }` for non-schema paths)
+   and deletes `example`. `nullable: true` next to a `$ref`/`allOf` becomes
+   `anyOf: [X, { type: "null" }]`, and `format: binary` becomes a typeless `{ contentMediaType }`
+   (the UI handles both shapes). Scalar skips everything under `responses.default`, so
+   `upgradeOpenApi()` upgrades those responses separately. Skips if already OAS 3.1+.
 3. `flattenAllOfProcessor` resolves `$ref`s inside `allOf` arrays then merges via
    `@x0k/json-schema-merge`.
 4. Custom user-defined processors run.
