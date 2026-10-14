@@ -7,6 +7,7 @@ import { getMarkdownPathname } from "../lib/util/markdown.js";
 import {
   createMarkdownDevMiddleware,
   getMarkdownOutputPath,
+  processMarkdownFile,
   resolveMarkdownRoutePath,
   writeMarkdownInfo,
 } from "./plugin-markdown-export.js";
@@ -272,6 +273,46 @@ describe("getMarkdownOutputPath", () => {
     expect(getMarkdownOutputPath("/dist", "/docs/getting-started")).toBe(
       `${path.join("/dist", "docs", "getting-started")}.md`,
     );
+  });
+});
+
+describe("processMarkdownFile", () => {
+  const writeMarkdown = async (frontmatter: string) => {
+    const temporaryDirectory = await mkdtemp(
+      path.join(os.tmpdir(), "zudoku-markdown-description-"),
+    );
+    temporaryDirectories.push(temporaryDirectory);
+    const filePath = path.join(temporaryDirectory, "page.md");
+    await writeFile(filePath, `---\n${frontmatter}\n---\n\nBody.\n`, "utf-8");
+    return filePath;
+  };
+
+  it("uses seo.description when description is not set", async () => {
+    const filePath = await writeMarkdown(
+      "seo:\n  title: Example\n  description: SEO description.",
+    );
+
+    await expect(processMarkdownFile(filePath)).resolves.toMatchObject({
+      description: "SEO description.",
+    });
+  });
+
+  it("prefers seo.description over description, like the page head", async () => {
+    const filePath = await writeMarkdown(
+      "description: Plain description.\nseo:\n  description: SEO description.",
+    );
+
+    await expect(processMarkdownFile(filePath)).resolves.toMatchObject({
+      description: "SEO description.",
+    });
+  });
+
+  it("falls back to description when seo.description is not set", async () => {
+    const filePath = await writeMarkdown("description: Plain description.");
+
+    await expect(processMarkdownFile(filePath)).resolves.toMatchObject({
+      description: "Plain description.",
+    });
   });
 });
 
