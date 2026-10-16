@@ -1,4 +1,4 @@
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useZudoku } from "zudoku/hooks";
 import { Badge } from "zudoku/ui/Badge.js";
@@ -108,11 +108,18 @@ export const Sidecar = ({
   selectedResponse,
   globalSelectedServer,
   shouldLazyHighlight,
+  selectedRequestExample,
+  onRequestExampleChange,
 }: {
   operation: OperationsFragmentFragment;
   selectedResponse?: string;
   globalSelectedServer?: string;
   shouldLazyHighlight?: boolean;
+  selectedRequestExample: { contentTypeIndex: number; exampleIndex: number };
+  onRequestExampleChange: (selected: {
+    contentTypeIndex: number;
+    exampleIndex: number;
+  }) => void;
 }) => {
   const { options } = useOasConfig();
   const auth = useAuthState();
@@ -151,14 +158,6 @@ export const Sidecar = ({
           context,
         })
       : requestBodyContent;
-
-  const [selectedRequestExample, setSelectedRequestExample] = useState<{
-    contentTypeIndex: number;
-    exampleIndex: number;
-  }>({
-    contentTypeIndex: 0,
-    exampleIndex: 0,
-  });
 
   const selectedContent = transformedRequestBodyContent?.at(
     selectedRequestExample.contentTypeIndex,
@@ -428,9 +427,7 @@ export const Sidecar = ({
       {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox
           content={displayRequestBodyContent ?? transformedRequestBodyContent}
-          onExampleChange={(selected) => {
-            setSelectedRequestExample(selected);
-          }}
+          onExampleChange={onRequestExampleChange}
           selectedContentIndex={selectedRequestExample.contentTypeIndex}
           selectedExampleIndex={selectedRequestExample.exampleIndex}
           isOnScreen={isOnScreen}

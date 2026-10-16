@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
+import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
@@ -47,6 +48,14 @@ export const OperationListItem = ({
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
+  const [selectedRequestExample, setSelectedRequestExample] = useState({
+    contentTypeIndex: 0,
+    exampleIndex: 0,
+  });
+  const requestContent = operation.requestBody?.content ?? [];
+  const selectedRequestContent = requestContent.at(
+    selectedRequestExample.contentTypeIndex,
+  );
   const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
   const graphqlEndpoint = getGraphQLEndpoint(operation);
   const isGraphQLEndpoint = graphqlEndpoint !== undefined;
@@ -157,39 +166,59 @@ export const OperationListItem = ({
                       []
                     ),
                   )}
-                {renderIf(operation.requestBody?.content?.at(0)?.schema, () => (
+                {renderIf(selectedRequestContent?.schema, () => (
                   <Separator className="my-4" />
                 ))}
-                {renderIf(
-                  operation.requestBody?.content?.at(0)?.schema,
-                  (schema) => (
-                    <div className="flex flex-col gap-4">
-                      <Heading
-                        level={3}
-                        className="capitalize flex items-center gap-2"
-                        id={`${operation.slug}/request-body`}
+                {renderIf(selectedRequestContent?.schema, (schema) => (
+                  <div className="flex flex-col gap-4">
+                    <Heading
+                      level={3}
+                      className="capitalize flex items-center gap-2"
+                      id={`${operation.slug}/request-body`}
+                    >
+                      {operation.summary && (
+                        <PagefindSearchMeta>
+                          {operation.summary} &rsaquo;{" "}
+                        </PagefindSearchMeta>
+                      )}
+                      Request Body{" "}
+                      {operation.requestBody?.required === false ? (
+                        <Badge variant="muted">optional</Badge>
+                      ) : (
+                        ""
+                      )}
+                    </Heading>
+                    {requestContent.length > 1 && (
+                      <NativeSelect
+                        aria-label="Request body content type"
+                        className="max-w-full"
+                        value={selectedRequestExample.contentTypeIndex}
+                        onChange={(event) =>
+                          setSelectedRequestExample({
+                            contentTypeIndex: Number(event.target.value),
+                            exampleIndex: 0,
+                          })
+                        }
                       >
-                        {operation.summary && (
-                          <PagefindSearchMeta>
-                            {operation.summary} &rsaquo;{" "}
-                          </PagefindSearchMeta>
-                        )}
-                        Request Body{" "}
-                        {operation.requestBody?.required === false ? (
-                          <Badge variant="muted">optional</Badge>
-                        ) : (
-                          ""
-                        )}
-                      </Heading>
-                      <SchemaView
-                        schema={withBinaryMediaType(
-                          schema,
-                          operation.requestBody?.content?.at(0)?.mediaType,
-                        )}
-                      />
-                    </div>
-                  ),
-                )}
+                        {requestContent.map((content, index) => (
+                          <NativeSelectOption
+                            key={content.mediaType}
+                            value={index}
+                          >
+                            {content.mediaType}
+                          </NativeSelectOption>
+                        ))}
+                      </NativeSelect>
+                    )}
+                    <SchemaView
+                      key={selectedRequestContent?.mediaType}
+                      schema={withBinaryMediaType(
+                        schema,
+                        selectedRequestContent?.mediaType,
+                      )}
+                    />
+                  </div>
+                ))}
                 <Separator className="my-4" />
                 {operation.responses.length > 0 && (
                   <>
@@ -220,6 +249,8 @@ export const OperationListItem = ({
               operation={operation}
               globalSelectedServer={globalSelectedServer}
               shouldLazyHighlight={shouldLazyHighlight}
+              selectedRequestExample={selectedRequestExample}
+              onRequestExampleChange={setSelectedRequestExample}
             />
           );
           return isGraphQLEndpoint ? (
