@@ -11,6 +11,7 @@ import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
 import { useOasConfig } from "./context.js";
 import { type FragmentType, useFragment } from "./graphql/index.js";
+import type { RequestExampleSelection } from "./interfaces.js";
 import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
@@ -48,14 +49,17 @@ export const OperationListItem = ({
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
-  const [selectedRequestExample, setSelectedRequestExample] = useState({
-    contentTypeIndex: 0,
-    exampleIndex: 0,
-  });
   const requestContent = operation.requestBody?.content ?? [];
-  const selectedRequestContent = requestContent.at(
-    selectedRequestExample.contentTypeIndex,
+  const [selectedRequestExample, setSelectedRequestExample] =
+    useState<RequestExampleSelection>({
+      mediaType: requestContent.at(0)?.mediaType,
+      exampleIndex: 0,
+    });
+  const selectedRequestContent = requestContent.find(
+    (content) => content.mediaType === selectedRequestExample.mediaType,
   );
+  const showRequestBody =
+    requestContent.length > 1 || Boolean(selectedRequestContent?.schema);
   const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
   const graphqlEndpoint = getGraphQLEndpoint(operation);
   const isGraphQLEndpoint = graphqlEndpoint !== undefined;
@@ -166,10 +170,10 @@ export const OperationListItem = ({
                       []
                     ),
                   )}
-                {renderIf(selectedRequestContent?.schema, () => (
+                {renderIf(showRequestBody, () => (
                   <Separator className="my-4" />
                 ))}
-                {renderIf(selectedRequestContent?.schema, (schema) => (
+                {renderIf(showRequestBody, () => (
                   <div className="flex flex-col gap-4">
                     <Heading
                       level={3}
@@ -192,31 +196,33 @@ export const OperationListItem = ({
                       <NativeSelect
                         aria-label="Request body content type"
                         className="max-w-full"
-                        value={selectedRequestExample.contentTypeIndex}
+                        value={selectedRequestExample.mediaType}
                         onChange={(event) =>
                           setSelectedRequestExample({
-                            contentTypeIndex: Number(event.target.value),
+                            mediaType: event.target.value,
                             exampleIndex: 0,
                           })
                         }
                       >
-                        {requestContent.map((content, index) => (
+                        {requestContent.map((content) => (
                           <NativeSelectOption
                             key={content.mediaType}
-                            value={index}
+                            value={content.mediaType}
                           >
                             {content.mediaType}
                           </NativeSelectOption>
                         ))}
                       </NativeSelect>
                     )}
-                    <SchemaView
-                      key={selectedRequestContent?.mediaType}
-                      schema={withBinaryMediaType(
-                        schema,
-                        selectedRequestContent?.mediaType,
-                      )}
-                    />
+                    {renderIf(selectedRequestContent?.schema, (schema) => (
+                      <SchemaView
+                        key={selectedRequestContent?.mediaType}
+                        schema={withBinaryMediaType(
+                          schema,
+                          selectedRequestContent?.mediaType,
+                        )}
+                      />
+                    ))}
                   </div>
                 ))}
                 <Separator className="my-4" />

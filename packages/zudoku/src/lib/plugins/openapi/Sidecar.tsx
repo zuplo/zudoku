@@ -18,6 +18,7 @@ import { useOasConfig } from "./context.js";
 import { GeneratedExampleSidecarBox } from "./GeneratedExampleSidecarBox.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
+import type { RequestExampleSelection } from "./interfaces.js";
 import { AuthSelectorPopover } from "./playground/AuthSelectorPopover.js";
 import { GraphiQLDialog } from "./playground/GraphiQLDialog.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
@@ -115,11 +116,8 @@ export const Sidecar = ({
   selectedResponse?: string;
   globalSelectedServer?: string;
   shouldLazyHighlight?: boolean;
-  selectedRequestExample: { contentTypeIndex: number; exampleIndex: number };
-  onRequestExampleChange: (selected: {
-    contentTypeIndex: number;
-    exampleIndex: number;
-  }) => void;
+  selectedRequestExample: RequestExampleSelection;
+  onRequestExampleChange: (selected: RequestExampleSelection) => void;
 }) => {
   const { options } = useOasConfig();
   const auth = useAuthState();
@@ -159,9 +157,13 @@ export const Sidecar = ({
         })
       : requestBodyContent;
 
-  const selectedContent = transformedRequestBodyContent?.at(
-    selectedRequestExample.contentTypeIndex,
-  );
+  const selectedContentIndex =
+    transformedRequestBodyContent?.findIndex(
+      (content) => content.mediaType === selectedRequestExample.mediaType,
+    ) ?? -1;
+  const selectedContent = transformedRequestBodyContent?.[selectedContentIndex];
+  const requestMediaType =
+    selectedRequestExample.mediaType ?? "application/json";
   const currentExample = selectedContent?.examples?.at(
     selectedRequestExample.exampleIndex,
   );
@@ -257,9 +259,9 @@ export const Sidecar = ({
       selectedServer,
       exampleBody:
         isGraphQLEndpoint || !currentExampleCode
-          ? { mimeType: selectedContent?.mediaType ?? "application/json" }
+          ? { mimeType: requestMediaType }
           : {
-              mimeType: selectedContent?.mediaType ?? "application/json",
+              mimeType: requestMediaType,
               text:
                 formatRequestBodyForDisplay(
                   selectedContent?.mediaType,
@@ -278,6 +280,7 @@ export const Sidecar = ({
     selectedServer,
     selectedLang,
     selectedContent,
+    requestMediaType,
     options,
     auth,
     context,
@@ -427,8 +430,15 @@ export const Sidecar = ({
       {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox
           content={displayRequestBodyContent ?? transformedRequestBodyContent}
-          onExampleChange={onRequestExampleChange}
-          selectedContentIndex={selectedRequestExample.contentTypeIndex}
+          onExampleChange={({ contentTypeIndex, exampleIndex }) => {
+            const content = transformedRequestBodyContent[contentTypeIndex];
+            if (!content) return;
+            onRequestExampleChange({
+              mediaType: content.mediaType,
+              exampleIndex,
+            });
+          }}
+          selectedContentIndex={selectedContentIndex}
           selectedExampleIndex={selectedRequestExample.exampleIndex}
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
