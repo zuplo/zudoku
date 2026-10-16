@@ -14,7 +14,9 @@ import {
   useExposedProps,
 } from "../../util/useExposedProps.js";
 
-export type SlotType = ReactNode | ComponentType<ExposedComponentProps>;
+export type SlotType<DataType = unknown> =
+  | ReactNode
+  | ComponentType<ExposedComponentProps & { data: DataType }>;
 
 type SlotItem = {
   id: string;
@@ -125,7 +127,7 @@ export function useSlotContext<T>(selector: (state: SlotStoreState) => T): T {
 
 const ORDER = ["prepend", "replace", "append"] as const;
 
-export const useRenderSlot = (name: string) => {
+export const useRenderSlot = (name: string, data: unknown = {}) => {
   const exposedProps = useExposedProps();
   const items = useSlotContext((s) => s.getItems(name));
 
@@ -140,10 +142,10 @@ export const useRenderSlot = (name: string) => {
       })
       .map((item) =>
         typeof item.content === "function" ? (
-          <item.content key={item.id} {...exposedProps} />
+          <item.content key={item.id} {...exposedProps} data={data} />
         ) : (
           <Fragment key={item.id}>{item.content}</Fragment>
         ),
       );
-  }, [items, exposedProps]);
+  }, [items, exposedProps, data]);
 };
