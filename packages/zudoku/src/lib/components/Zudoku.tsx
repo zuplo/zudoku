@@ -12,6 +12,7 @@ import {
 import { ErrorBoundary } from "react-error-boundary";
 import { Outlet, useLocation, useNavigation } from "react-router";
 import { isMdxProviderPlugin } from "../core/plugins.js";
+import { hasProvider } from "../core/plugins.js";
 import {
   ZudokuContext,
   type ZudokuContextOptions,
@@ -56,6 +57,15 @@ const ZudokuInner = memo(
     const navigation = useNavigation();
     const queryClient = useQueryClient();
 
+    const providerPlugins = (props.plugins ?? [])
+      .filter(hasProvider)
+      .sort((a, b) => (a.providerPriority ?? 0) - (b.providerPriority ?? 0));
+
+    const app = providerPlugins.reduceRight<React.ReactNode>(
+      (children, plugin) => plugin.getProvider({ children }),
+      children ?? <Outlet />,
+    );
+
     useEffect(() => {
       if (didNavigate || !navigation.location) {
         return;
@@ -84,9 +94,7 @@ const ZudokuInner = memo(
           <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
             <MDXProvider components={mdxComponents}>
               <ThemeProvider attribute="class" disableTransitionOnChange>
-                <ViewportAnchorProvider>
-                  {children ?? <Outlet />}
-                </ViewportAnchorProvider>
+                <ViewportAnchorProvider>{app}</ViewportAnchorProvider>
               </ThemeProvider>
             </MDXProvider>
           </SlotProvider>
