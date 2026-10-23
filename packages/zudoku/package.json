@@ -212,7 +212,7 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "7.4.3",
+    "@graphql-codegen/cli": "7.4.6",
     "@inkeep/cxkit-types": "0.5.119",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
