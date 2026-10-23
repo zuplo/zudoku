@@ -5,6 +5,7 @@ import { joinUrl } from "../lib/util/joinUrl.js";
 import {
   matchesAnyProtectedPattern,
   matchesProtectedPattern,
+  stripBasePath,
 } from "../lib/util/url.js";
 
 type Visitor = (route: RouteObject, fullPath: string) => RouteObject;
@@ -37,11 +38,14 @@ export const wrapProtectedRoutes = (
   const patterns = Object.keys(normalizeProtectedRoutes(protectedRoutes) ?? {});
   if (patterns.length === 0 || isAuthenticated) return routes;
 
-  const fullPatterns = patterns.map((p) => joinUrl(basePath, p));
-
+  // Route paths are relative to the router basename, so compare them to the
+  // patterns without basePath (stripBasePath is a no-op if it's absent).
   return visitRoutes(routes, (r, fullPath) => {
     if (typeof r.lazy !== "function") return r;
-    return matchesAnyProtectedPattern(fullPatterns, fullPath)
+    return matchesAnyProtectedPattern(
+      patterns,
+      stripBasePath(fullPath, basePath),
+    )
       ? { ...r, lazy: noop }
       : r;
   });
@@ -82,8 +86,6 @@ export const warnInlineProtectedRoutes = (
   const patterns = Object.keys(normalizeProtectedRoutes(protectedRoutes) ?? {});
   if (patterns.length === 0) return;
 
-  const fullPatterns = patterns.map((p) => joinUrl(basePath, p));
-
   visitRoutes(routes, (r, fullPath) => {
     const isInline =
       (r.element != null || r.Component != null) &&
@@ -91,8 +93,8 @@ export const warnInlineProtectedRoutes = (
 
     if (!r.path || !isInline) return r;
 
-    const matched = fullPatterns.find((p) =>
-      matchesProtectedPattern(p, fullPath),
+    const matched = patterns.find((p) =>
+      matchesProtectedPattern(p, stripBasePath(fullPath, basePath)),
     );
 
     if (!matched) return r;
