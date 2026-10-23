@@ -9,10 +9,11 @@ export const createUrl = (host: string, path: string, data: PlaygroundForm) => {
     return value ?? match;
   });
 
-  // Ensure host ends with a slash and path doesn't start with one,
-  // so they form a correct URL, without overriding the host's path.
+  // Ensure host ends with a slash and path is relative ("./"), so they form
+  // a correct URL without overriding the host's path, and a path like
+  // "users:check_login" isn't parsed as a URL scheme.
   const url = new URL(
-    filledPath.replace(/^\//, ""),
+    `./${filledPath.replace(/^\//, "")}`,
     host.endsWith("/") ? host : `${host}/`,
   );
 
