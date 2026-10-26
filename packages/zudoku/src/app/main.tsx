@@ -161,7 +161,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   );
 
   if (import.meta.env.DEV && typeof window !== "undefined") {
-    warnInlineProtectedRoutes(routes, config.protectedRoutes, config.basePath);
+    warnInlineProtectedRoutes(routes, config.protectedRoutes);
   }
 
   return [
@@ -192,7 +192,6 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
                   processRoutes(routes),
                   config.protectedRoutes,
                   authState.getState().isAuthenticated,
-                  config.basePath,
                 ),
         },
       ],

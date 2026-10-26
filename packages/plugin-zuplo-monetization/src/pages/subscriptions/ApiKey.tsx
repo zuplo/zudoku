@@ -1,16 +1,10 @@
 import { cn } from "zudoku";
-import { ClockIcon, MoreVerticalIcon, Trash2Icon } from "zudoku/icons";
+import { ClockIcon, Trash2Icon } from "zudoku/icons";
 import { Badge } from "zudoku/ui/Badge";
 import { Button } from "zudoku/ui/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "zudoku/ui/DropdownMenu";
 import { Frame, FrameFooter, FramePanel } from "zudoku/ui/Frame";
 import { Secret } from "zudoku/ui/Secret";
-import ConfirmDeleteKeyAlert from "./ConfirmDeleteKeyAlert";
+import ConfirmDeleteKeyAlert from "./ConfirmDeleteKeyAlert.js";
 
 export const formatDate = (dateString?: string) => {
   if (!dateString) return "";
@@ -50,6 +44,7 @@ export const ApiKey = ({
   isActive = true,
   label,
   onDelete,
+  isDeleting = false,
 }: {
   apiKey: string;
   createdAt?: string;
@@ -61,6 +56,7 @@ export const ApiKey = ({
   consumerId: string;
   apiKeyId: string;
   onDelete: () => void;
+  isDeleting?: boolean;
 }) => {
   const isExpiring =
     expiresOn &&
@@ -91,29 +87,17 @@ export const ApiKey = ({
               )}
             </div>
 
-            {!isActive && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="More options"
-                  >
-                    <MoreVerticalIcon className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <ConfirmDeleteKeyAlert onDelete={onDelete}>
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      <Trash2Icon className="size-4" />
-                      Delete key
-                    </DropdownMenuItem>
-                  </ConfirmDeleteKeyAlert>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            {expiresOn && (
+              <ConfirmDeleteKeyAlert onDelete={onDelete}>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Delete API key"
+                  disabled={isDeleting}
+                >
+                  <Trash2Icon className="size-4" />
+                </Button>
+              </ConfirmDeleteKeyAlert>
             )}
           </div>
 

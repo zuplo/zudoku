@@ -119,11 +119,7 @@ export const handleRequest = async ({
   const effectiveRoutes = wrapProtectedRoutesForRender(
     routes,
     config.protectedRoutes,
-    {
-      isAuthenticated: !!ssrAuth?.profile,
-      bypassProtection,
-      basePath,
-    },
+    { isAuthenticated: !!ssrAuth?.profile, bypassProtection },
   );
 
   const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {
