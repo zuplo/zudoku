@@ -53,8 +53,12 @@ export async function getRepoInfo(
   }
 
   // If examplePath is available, the branch name takes the entire path
+  const escapedFilePath = filePath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const branch = examplePath
-    ? `${_branch}/${file.join("/")}`.replace(new RegExp(`/${filePath}|/$`), "")
+    ? `${_branch}/${file.join("/")}`.replace(
+        new RegExp(`/${escapedFilePath}|/$`),
+        "",
+      )
     : _branch;
 
   if (username && name && branch && t === "tree") {

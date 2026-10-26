@@ -28,13 +28,28 @@ export type EncodingObject = DeepOmitReference<OpenAPIV3_1.EncodingObject>;
 export type SchemaObject = DeepOmitReference<OpenAPIV3_1.SchemaObject>;
 export type ArraySchemaObject =
   DeepOmitReference<OpenAPIV3_1.ArraySchemaObject>;
-export type ServerObject = DeepOmitReference<OpenAPIV3_1.ServerObject>;
+// OAS 3.2 adds a `name` field to the Server Object (for referencing servers, e.g. in
+// overrides); the installed `openapi-types` version predates this, so it's added here.
+export type ServerObject = DeepOmitReference<OpenAPIV3_1.ServerObject> & {
+  name?: string;
+};
 export type ContactObject = DeepOmitReference<OpenAPIV3_1.ContactObject>;
 export type LicenseObject = DeepOmitReference<OpenAPIV3_1.LicenseObject>;
 export type ExternalDocumentationObject =
   DeepOmitReference<OpenAPIV3_1.ExternalDocumentationObject>;
 
-export const HttpMethods = Object.values(OpenAPIV3.HttpMethods);
+const { GET, PUT, POST, PATCH, DELETE, OPTIONS, HEAD, TRACE } =
+  OpenAPIV3.HttpMethods;
+export const HttpMethods = [
+  GET,
+  PUT,
+  POST,
+  PATCH,
+  DELETE,
+  OPTIONS,
+  HEAD,
+  TRACE,
+];
 
 const parseSchemaInput = async (
   schemaInput: unknown,
@@ -53,7 +68,7 @@ const parseSchemaInput = async (
       let response: Response;
       try {
         response = await fetch(schemaInput, {
-          cache: "force-cache",
+          cache: typeof window !== "undefined" ? "force-cache" : undefined,
         });
       } catch (err) {
         throw new GraphQLError("Failed to fetch schema", {

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as esbuild } from "esbuild";
@@ -10,24 +11,88 @@ import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
-import { writeOutput } from "./output.js";
+import { writeManifest } from "./manifest.js";
+import { cleanVercelOutput, writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
+import {
+  assertCloudflareWranglerGatesProtected,
+  assertNoProtectedLeaks,
+  moveProtectedChunks,
+  assertProtectedPatternsCovered,
+} from "./protected/build.js";
 
 const DIST_DIR = "dist";
+
+type CssBuildOutput = {
+  fileName: string;
+  imports?: string[];
+  isEntry?: boolean;
+  type: string;
+  viteMetadata?: { importedCss: Set<string> };
+};
+
+export const getEagerCssEntries = (output: readonly CssBuildOutput[]) => {
+  const cssAssets = output
+    .filter((item) => item.fileName.endsWith(".css"))
+    .map((item) => item.fileName);
+  const chunksByFileName = new Map(
+    output
+      .filter((item) => item.type === "chunk")
+      .map((item) => [item.fileName, item]),
+  );
+  const entryChunk = output.find(
+    (item) => item.type === "chunk" && item.isEntry,
+  );
+
+  if (!entryChunk) return cssAssets;
+
+  const referencedCss = new Set(
+    output.flatMap((item) => [...(item.viteMetadata?.importedCss ?? [])]),
+  );
+
+  // Build adapters that do not expose Vite's chunk metadata retain the
+  // previous behavior of linking every emitted stylesheet.
+  if (referencedCss.size === 0) return cssAssets;
+
+  const eagerCss = new Set<string>();
+  const visitedChunks = new Set<string>();
+  const visitChunk = (fileName: string) => {
+    if (visitedChunks.has(fileName)) return;
+    visitedChunks.add(fileName);
+
+    const chunk = chunksByFileName.get(fileName);
+    if (!chunk) return;
+
+    chunk.viteMetadata?.importedCss.forEach((css) => eagerCss.add(css));
+    chunk.imports?.forEach(visitChunk);
+  };
+
+  visitChunk(entryChunk.fileName);
+
+  // Keep CSS imported by the eager entry graph and standalone/global assets
+  // emitted by custom plugins. Only CSS owned exclusively by lazy chunks is
+  // omitted from the initial document.
+  return cssAssets.filter(
+    (css) => eagerCss.has(css) || !referencedCss.has(css),
+  );
+};
+
+export type SSRAdapter = "node" | "cloudflare" | "vercel" | "lambda";
 
 export type BuildOptions = {
   dir: string;
   ssr?: boolean;
-  adapter?: "node" | "cloudflare" | "vercel";
+  adapter?: SSRAdapter;
 };
 
 export async function runBuild(options: BuildOptions) {
   const { dir, ssr, adapter = "node" } = options;
 
-  const viteConfig = await getViteConfig(dir, {
-    mode: "production",
-    command: "build",
-  });
+  const viteConfig = await getViteConfig(
+    dir,
+    { mode: "production", command: "build" },
+    { adapter, ssr },
+  );
 
   const builder = await createBuilder(viteConfig);
 
@@ -35,7 +100,10 @@ export async function runBuild(options: BuildOptions) {
   invariant(builder.environments.ssr, "SSR environment is missing");
 
   const distDir = path.resolve(path.join(dir, "dist"));
-  await rm(distDir, { recursive: true, force: true });
+  await Promise.all([
+    rm(distDir, { recursive: true, force: true }),
+    cleanVercelOutput(dir),
+  ]);
 
   const [clientResult, serverResult] = await Promise.all([
     builder.build(builder.environments.client),
@@ -64,15 +132,21 @@ export async function runBuild(options: BuildOptions) {
   invariant(clientOutDir, "Client build outDir is missing");
   invariant(serverOutDir, "Server build outDir is missing");
 
-  const jsEntry = clientResult.output.find(
+  const jsEntryChunk = clientResult.output.find(
     (o) => "isEntry" in o && o.isEntry,
-  )?.fileName;
-  const cssEntries = clientResult.output
-    .filter((o) => o.fileName.endsWith(".css"))
-    .map((o) => o.fileName);
+  );
+  const jsEntry = jsEntryChunk?.fileName;
 
-  if (!jsEntry || cssEntries.length === 0) {
-    throw new Error("Build failed. No js or css assets found");
+  const cssEntries = getEagerCssEntries(clientResult.output);
+
+  if (!jsEntry) {
+    throw new Error("Build failed. No js entry chunk found");
+  }
+
+  if (cssEntries.length === 0) {
+    throw new Error(
+      "Build failed. No stylesheet reachable from the eager entry chunk was found",
+    );
   }
 
   const html = getBuildHtml({
@@ -88,8 +162,25 @@ export async function runBuild(options: BuildOptions) {
       adapter,
       serverOutDir,
       html,
-      basePath: config.basePath,
     });
+    assertProtectedPatternsCovered(config);
+    assertNoProtectedLeaks(clientResult.output);
+    // On Cloudflare, protected chunks stay public (gate uses env.ASSETS.fetch).
+    // wrangler.toml must set run_worker_first for /_protected/*.
+    if (adapter !== "cloudflare") {
+      await moveProtectedChunks(clientOutDir, serverOutDir);
+    } else {
+      await assertCloudflareWranglerGatesProtected(dir, config);
+    }
+
+    // Mark the output as ESM so runtimes without a surrounding package.json
+    // (e.g. unzipped Lambda at /var/task) don't fall back to CommonJS.
+    await writeFile(
+      path.join(distDir, "package.json"),
+      `${JSON.stringify({ type: "module" }, null, 2)}\n`,
+      "utf-8",
+    );
+    await writeManifest(distDir, config);
     await rm(path.join(clientOutDir, "index.html"), { force: true });
   } else {
     // SSG: prerender and clean up server
@@ -129,7 +220,13 @@ const runPrerender = async (options: PrerenderOptions) => {
   const serverConfigFilename = findServerConfigFilename(serverResult);
 
   try {
-    const { workerResults, rewrites } = await prerender({
+    const {
+      workerResults,
+      rewrites,
+      knownRoutes,
+      markdownRoutes,
+      markdownNotFound,
+    } = await prerender({
       html,
       dir,
       basePath: config.basePath,
@@ -170,6 +267,13 @@ const runPrerender = async (options: PrerenderOptions) => {
       config,
       redirects: workerResults.flatMap((r) => r.redirect ?? []),
       rewrites,
+      markdownNegotiation: markdownNotFound
+        ? {
+            knownCanonicalRoutePaths: knownRoutes,
+            markdownCanonicalRoutePaths: markdownRoutes,
+            markdownNotFoundBody: markdownNotFound,
+          }
+        : undefined,
     });
 
     if (ZuploEnv.isZuplo && issuer) {
@@ -190,45 +294,76 @@ const runPrerender = async (options: PrerenderOptions) => {
 
 type SSREntryOptions = {
   dir: string;
-  adapter: "node" | "cloudflare" | "vercel";
+  adapter: SSRAdapter;
   serverOutDir: string;
   html: string;
-  basePath?: string;
+};
+
+const findUserEntry = (dir: string) => {
+  for (const ext of ["ts", "tsx", "js", "mjs"]) {
+    const candidate = path.join(dir, `zudoku.server.${ext}`);
+    if (existsSync(candidate)) return candidate;
+  }
 };
 
 const bundleSSREntry = async (options: SSREntryOptions) => {
-  const { dir, adapter, serverOutDir, html, basePath } = options;
-  const tempEntryPath = path.join(dir, "__ssr-entry.ts");
+  const { dir, adapter, serverOutDir, html } = options;
 
   const packageRoot = getZudokuRootDir();
+  const userEntry = findUserEntry(dir);
 
-  const templateContent = await readFile(
-    path.join(packageRoot, "src/vite/ssr-templates", `${adapter}.ts`),
-    "utf-8",
-  );
+  let entryPoint = userEntry;
+  let tempEntryPath: string | undefined;
 
-  const entryContent = templateContent
-    .replace('"__TEMPLATE__"', JSON.stringify(html))
-    .replace(
-      '"__BASE_PATH__"',
-      basePath ? JSON.stringify(basePath) : "undefined",
+  if (!entryPoint) {
+    tempEntryPath = path.join(dir, "__ssr-entry.ts");
+    const templateContent = await readFile(
+      path.join(packageRoot, "src/vite/ssr-templates", `${adapter}.ts`),
+      "utf-8",
     );
+    await writeFile(tempEntryPath, templateContent, "utf-8");
+    entryPoint = tempEntryPath;
+  }
 
-  await writeFile(tempEntryPath, entryContent, "utf-8");
+  const frameworkPath = path.join(serverOutDir, "entry.server.js");
 
   try {
     await esbuild({
-      entryPoints: [tempEntryPath],
+      entryPoints: [entryPoint],
       bundle: true,
-      platform: adapter === "node" ? "node" : "neutral",
+      platform: ["node", "lambda"].includes(adapter) ? "node" : "neutral",
       target: "es2022",
       format: "esm",
       outfile: path.join(serverOutDir, "entry.js"),
-      external: ["./entry.server.js", "./zudoku.config.js"],
+      external: ["./zudoku.config.js"],
       nodePaths: [path.join(packageRoot, "node_modules")],
       banner: { js: "// Bundled SSR entry" },
+      define: {
+        __ZUDOKU_TEMPLATE__: JSON.stringify(html),
+      },
+      plugins: [
+        {
+          name: "zudoku-ssr-entry",
+          setup(build) {
+            // Point at the Vite-pre-built framework (virtual modules
+            // already resolved) so esbuild's `define` can reach into it.
+            build.onResolve({ filter: /^zudoku\/server$/ }, () => ({
+              path: frameworkPath,
+            }));
+          },
+        },
+      ],
     });
+    // Framework is inlined into entry.js; drop the standalone Vite SSR output.
+    await Promise.all([
+      rm(frameworkPath, { force: true }),
+      rm(`${frameworkPath}.map`, { force: true }),
+      rm(path.join(serverOutDir, "assets"), {
+        recursive: true,
+        force: true,
+      }),
+    ]);
   } finally {
-    await rm(tempEntryPath, { force: true });
+    if (tempEntryPath) await rm(tempEntryPath, { force: true });
   }
 };

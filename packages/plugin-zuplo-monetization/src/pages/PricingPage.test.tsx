@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   MonetizationContext,
   type MonetizationConfig,
@@ -58,17 +58,24 @@ vi.mock("zudoku/router", () => ({
 
 vi.mock("zudoku/hooks", () => ({
   useAuth: () => ({ isAuthenticated: false }),
-  useZudoku: () => ({ env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test-env" } }),
+  useZudoku: () => ({
+    env: { ZUPLO_PUBLIC_DEPLOYMENT_NAME: "test-env" },
+    getAuthState: () => ({ isAuthenticated: false }),
+  }),
 }));
 
-const mockPricingData: { items: Plan[] } = { items: [] };
+const mockPricingData: {
+  items: Plan[];
+  multipleSubscriptionsEnabled?: boolean;
+} = { items: [] };
 const mockSubscriptionData: {
-  items: Array<{ status: string; plan: { id: string } }>;
+  items: Array<{ status: string; plan: { id: string; key?: string } }>;
 } = { items: [] };
 
 vi.mock("zudoku/react-query", () => ({
   useSuspenseQuery: () => ({ data: mockPricingData }),
   useQuery: () => ({ data: mockSubscriptionData }),
+  queryOptions: <T,>(opts: T) => opts,
 }));
 
 vi.mock("../hooks/useDeploymentName", () => ({
@@ -95,8 +102,6 @@ const makePlan = (id: string, key: string, name: string): Plan => ({
       ],
     },
   ],
-  monthlyPrice: "49",
-  yearlyPrice: "49",
   currency: "USD",
 });
 
@@ -108,6 +113,12 @@ const renderWithConfig = (config: MonetizationConfig = {}) =>
   );
 
 describe("PricingPage", () => {
+  beforeEach(() => {
+    mockPricingData.items = [];
+    mockPricingData.multipleSubscriptionsEnabled = undefined;
+    mockSubscriptionData.items = [];
+  });
+
   it("Shows a helpful message when no plans are available", () => {
     mockPricingData.items = [];
     mockSubscriptionData.items = [];
@@ -158,13 +169,90 @@ describe("PricingPage", () => {
     expect(buttons).toHaveLength(3);
   });
 
+  it("With multiple subscriptions enabled, only held plans switch to 'Manage Subscriptions'", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      makePlan("2", "pro", "Pro"),
+      makePlan("3", "business", "Business"),
+    ];
+    mockPricingData.multipleSubscriptionsEnabled = true;
+    mockSubscriptionData.items = [
+      { status: "active", plan: { id: "2", key: "pro" } },
+    ];
+
+    renderWithConfig();
+
+    expect(screen.getAllByText("Manage Subscriptions")).toHaveLength(1);
+    expect(screen.getAllByText("Subscribe")).toHaveLength(2);
+  });
+
+  it("With multiple subscriptions enabled, falls back to matching held plans by id when key is missing", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      makePlan("2", "pro", "Pro"),
+    ];
+    mockPricingData.multipleSubscriptionsEnabled = true;
+    // The subscription's plan carries no key: matching must fall back to id.
+    mockSubscriptionData.items = [{ status: "active", plan: { id: "2" } }];
+
+    renderWithConfig();
+
+    expect(screen.getAllByText("Manage Subscriptions")).toHaveLength(1);
+    expect(screen.getAllByText("Subscribe")).toHaveLength(1);
+  });
+
+  it("With multiple subscriptions enabled, matches held plans by key across plan versions", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      makePlan("2", "pro", "Pro"),
+    ];
+    mockPricingData.multipleSubscriptionsEnabled = true;
+    // The subscription references an older version of the pro plan (different id, same key).
+    mockSubscriptionData.items = [
+      { status: "active", plan: { id: "2-v1", key: "pro" } },
+    ];
+
+    renderWithConfig();
+
+    expect(screen.getAllByText("Manage Subscriptions")).toHaveLength(1);
+    expect(screen.getAllByText("Subscribe")).toHaveLength(1);
+  });
+
+  it("With multiple subscriptions enabled and no subscriptions, shows 'Subscribe' for every plan", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      makePlan("2", "pro", "Pro"),
+    ];
+    mockPricingData.multipleSubscriptionsEnabled = true;
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(screen.getAllByText("Subscribe")).toHaveLength(2);
+    expect(screen.queryByText("Manage Subscriptions")).not.toBeInTheDocument();
+  });
+
+  it("With multiple subscriptions enabled, canceled subscriptions still count as held plans", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      makePlan("2", "pro", "Pro"),
+    ];
+    mockPricingData.multipleSubscriptionsEnabled = true;
+    mockSubscriptionData.items = [
+      { status: "canceled", plan: { id: "2", key: "pro" } },
+    ];
+
+    renderWithConfig();
+
+    expect(screen.getAllByText("Manage Subscriptions")).toHaveLength(1);
+    expect(screen.getAllByText("Subscribe")).toHaveLength(1);
+  });
+
   it("Shows 'no cc required' if no rate card has 'in_advance' fee with 'amount=0'", () => {
     mockPricingData.items = [
       {
         ...makePlan("1", "free", "Free"),
-        monthlyPrice: "0",
         paymentRequired: false,
-        yearlyPrice: "0",
         phases: [
           {
             key: "default",
@@ -238,7 +326,7 @@ describe("PricingPage", () => {
     expect(screen.getByText("Most Popular")).toBeInTheDocument();
   });
 
-  it("Shows custom unit label in overage price when units config is provided", () => {
+  it("Shows custom unit label in tier breakdown when units config is provided", () => {
     mockPricingData.items = [
       {
         ...makePlan("1", "pro", "Pro"),
@@ -280,23 +368,16 @@ describe("PricingPage", () => {
       pricing: { units: { "api-requests": "request" } },
     });
 
-    expect(screen.getByText(/\/request after quota/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Over 1,000: \$0\.001\/request/),
+    ).toBeInTheDocument();
   });
 
-  it("Shows yearly price by default", () => {
+  it("Does not render an annual price line", () => {
     mockPricingData.items = [makePlan("1", "starter", "Starter")];
     mockSubscriptionData.items = [];
 
     renderWithConfig();
-
-    expect(screen.getByText(/\/year/)).toBeInTheDocument();
-  });
-
-  it("Hides yearly price when showYearlyPrice is false", () => {
-    mockPricingData.items = [makePlan("1", "starter", "Starter")];
-    mockSubscriptionData.items = [];
-
-    renderWithConfig({ pricing: { showYearlyPrice: false } });
 
     expect(screen.queryByText(/\/year/)).not.toBeInTheDocument();
   });

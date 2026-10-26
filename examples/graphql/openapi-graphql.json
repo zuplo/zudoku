@@ -1,0 +1,46 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "GraphQL OAS",
+    "version": "1.0.0",
+    "description": "Standalone OpenAPI document exposing only the GraphQL endpoint."
+  },
+  "servers": [{ "url": "https://api.example.com" }],
+  "paths": {
+    "/graphql": {
+      "post": {
+        "operationId": "graphqlQuery",
+        "summary": "GraphQL endpoint",
+        "tags": ["GraphQL"],
+        "description": "Query the e-commerce API via GraphQL. See [the full documentation →](/graphql/default)",
+        "x-graphql": { "schema": "./schema.graphql" },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": { "type": "string" },
+                  "variables": { "type": "object" }
+                },
+                "required": ["query"]
+              },
+              "examples": {
+                "list-products": {
+                  "summary": "List products",
+                  "value": {
+                    "query": "query ListProducts($category: String) {\n  products(category: $category) {\n    id\n    name\n    price\n  }\n}",
+                    "variables": { "category": "electronics" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "GraphQL response" }
+        }
+      }
+    }
+  }
+}

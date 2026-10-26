@@ -32,7 +32,7 @@
       "react": "recommended"
     },
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "suspicious": {
         "noConsole": "error",
         "noConfusingVoidType": "off",

@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import {
+  createJSONStorage,
+  persist,
+  type StateStorage,
+} from "zustand/middleware";
 import { syncZustandState } from "../util/syncZustandState.js";
 
 /**
@@ -34,12 +38,29 @@ export interface AuthState {
   }) => void;
 }
 
+const noopStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+};
+
+// Seed from the SSR-injected signal. Object present = server checked;
+// `profile: null` = authoritative anon. Absent = fall back to pending.
+const ssrAuthInitial =
+  typeof window !== "undefined" ? window.ZUDOKU_SSR_AUTH : undefined;
+
+// SSR builds use cookies as the source of truth; SSG uses localStorage.
+// `import.meta.env` is missing when this module is loaded outside a Vite
+// build (e.g. esbuild bundling a vite.*.config.ts), so guard the access.
+const ssrMode =
+  typeof import.meta.env !== "undefined" && import.meta.env.ZUDOKU_HAS_SERVER;
+
 export const authState = create<AuthState>()(
   persist(
     (set) => ({
-      isAuthenticated: false,
-      isPending: true,
-      profile: null,
+      isAuthenticated: !!ssrAuthInitial?.profile,
+      isPending: ssrAuthInitial === undefined,
+      profile: ssrAuthInitial?.profile ?? null,
       providerData: null,
       setAuthenticationPending: () =>
         set(() => ({
@@ -72,7 +93,9 @@ export const authState = create<AuthState>()(
         };
       },
       name: "auth-state",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() =>
+        typeof window === "undefined" || ssrMode ? noopStorage : localStorage,
+      ),
     },
   ),
 );
@@ -101,4 +124,12 @@ export interface UserProfile {
   name: string | undefined;
   pictureUrl: string | undefined;
   [key: string]: CustomClaim;
+}
+
+// Injected by entry.server.tsx before </body>. Augment Window here so
+// packages that typecheck through this module (e.g. plugins) see the property.
+declare global {
+  interface Window {
+    ZUDOKU_SSR_AUTH?: { profile: UserProfile | null };
+  }
 }

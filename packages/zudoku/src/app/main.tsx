@@ -18,26 +18,41 @@ import "virtual:zudoku-theme.css";
 import { Zudoku } from "zudoku/components";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
+import { authState } from "../lib/authentication/state.js";
 import { BuildCheck } from "../lib/components/BuildCheck.js";
-import "./main.css";
 import { Meta } from "../lib/components/Meta.js";
-import "./polyfills.js";
+import "./main.css";
 import { StatusPage } from "../lib/components/StatusPage.js";
+import "./polyfills.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 import { RouteGuard } from "../lib/core/RouteGuard.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { RouterError } from "../lib/errors/RouterError.js";
+import { ZudokuError } from "../lib/util/invariant.js";
+import { detectRouteConflicts } from "./detectRouteConflicts.js";
 import { ZuploEnv } from "./env.js";
+import { notFoundRoute } from "./notFoundRoute.js";
 import { processRoutes } from "./processRoutes.js";
 import { createRedirectRoutes } from "./utils/createRedirectRoutes.js";
+import {
+  warnInlineProtectedRoutes,
+  wrapProtectedRoutes,
+} from "./wrapProtectedRoutes.js";
 
-export const shikiReady: Promise<HighlighterCore> =
-  import("../lib/shiki.js").then(async ({ highlighterPromise }) => {
-    const highlighter = await highlighterPromise;
-    const { registerShiki } = await import("virtual:zudoku-shiki-register");
-    await registerShiki(highlighter);
-    return highlighter;
-  });
+let shikiReady: Promise<HighlighterCore> | undefined;
+
+export const getShikiReady = (): Promise<HighlighterCore> => {
+  shikiReady ??= import("../lib/shiki.js").then(
+    async ({ highlighterPromise }) => {
+      const highlighter = await highlighterPromise;
+      const { registerShiki } = await import("virtual:zudoku-shiki-register");
+      await registerShiki(highlighter);
+      return highlighter;
+    },
+  );
+
+  return shikiReady;
+};
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -79,7 +94,12 @@ export const convertZudokuConfigToOptions = (
       ...(config.plugins ?? []),
     ],
     syntaxHighlighting: {
-      highlighterPromise: shikiReady,
+      // Keep Shiki and configured language grammars out of pages that do not
+      // render runtime-highlighted content. This getter is only read by
+      // useHighlighter when Markdown or SyntaxHighlight actually mounts.
+      get highlighterPromise() {
+        return getShikiReady();
+      },
       themes: config.syntaxHighlighting?.themes,
     },
   };
@@ -94,8 +114,28 @@ export const getRoutesByOptions = (
     ...(options.authentication ? [options.authentication] : []),
   ];
 
-  const routes = allPlugins
-    .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
+  const pluginRoutes = allPlugins.map((plugin) =>
+    isNavigationPlugin(plugin) ? plugin.getRoutes() : [],
+  );
+
+  const conflicts = import.meta.env.DEV
+    ? detectRouteConflicts(pluginRoutes)
+    : [];
+  if (conflicts.length > 0) {
+    throw new ZudokuError(
+      `Multiple plugins registered the same route${
+        conflicts.length > 1 ? "s" : ""
+      }: ${conflicts.map((path) => `"${path}"`).join(", ")}.`,
+      {
+        title: "Conflicting routes",
+        developerHint:
+          "Two or more plugins resolve to the same path, so one silently shadows the others. Check your OpenAPI/markdown/custom-page plugins for overlapping `path`s or `basePath`s and give each a unique route.",
+      },
+    );
+  }
+
+  const routes = pluginRoutes
+    .flat()
     .concat(
       enableStatusPages
         ? [400, 404, 500].map((statusCode) => ({
@@ -104,13 +144,11 @@ export const getRoutesByOptions = (
           }))
         : [],
     )
-    .concat([{ path: "*", element: <StatusPage statusCode={404} /> }])
+    .concat([notFoundRoute])
     .map((route) => ({
       ...route,
       errorElement: <RouterError className="w-full m-0" />,
     }));
-
-  // @TODO Detect conflicts in routes and log warning
 
   return routes;
 };
@@ -121,6 +159,10 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
     options,
     import.meta.env.IS_ZUPLO || config.enableStatusPages,
   );
+
+  if (import.meta.env.DEV && typeof window !== "undefined") {
+    warnInlineProtectedRoutes(routes, config.protectedRoutes);
+  }
 
   return [
     ...createRedirectRoutes(config.redirects),
@@ -142,7 +184,15 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
             </Meta>
           ),
           errorElement: <RouterError />,
-          children: processRoutes(routes),
+          // Chunk-gate protected routes only in SSR; SSG has no 401 to avoid.
+          children:
+            typeof window === "undefined" || !import.meta.env.ZUDOKU_HAS_SERVER
+              ? processRoutes(routes)
+              : wrapProtectedRoutes(
+                  processRoutes(routes),
+                  config.protectedRoutes,
+                  authState.getState().isAuthenticated,
+                ),
         },
       ],
     },

@@ -5,11 +5,42 @@ import type {
   ZudokuConfig,
   ZudokuContext,
 } from "zudoku";
+import { Callout } from "zudoku/components";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
 import { MembersOnly } from "./src/MembersOnly";
 import { NotFound } from "./src/NotFound";
 import { VipLounge } from "./src/VipLounge";
+import "./custom.css";
+
+// The Employee MCP Servers API documents internal tooling, so it is hidden from
+// the catalog and its routes are blocked unless the crew member is signed in.
+// It also lives outside the `/catalog` path so the catalog nav item isn't
+// highlighted at the same time as the Employee MCP one.
+const EMPLOYEE_MCP_PATH = "/employee-mcp";
+
+// The REST side of the same registry. It lives in its own schema because
+// `x-zudoku-type: mcp-catalog` renders only the MCP servers in a document, so
+// plain endpoints kept alongside them would never be shown.
+const GATEWAY_DIRECTORY_PATH = "/catalog/api-gateway-directory";
+
+// Clerk publishable keys are shipped to the browser by design, so both are safe
+// to commit. The production instance is served from clerk.cosmocargo.dev and is
+// scoped to that domain, so it only authenticates on the production deployment;
+// preview deployments and local development have to use the development
+// instance instead.
+const CLERK_PUB_KEY_PRODUCTION = "pk_live_Y2xlcmsuY29zbW9jYXJnby5kZXYk";
+const CLERK_PUB_KEY_DEVELOPMENT =
+  "pk_test_dG9sZXJhbnQtaG9ybmV0LTQ2LmNsZXJrLmFjY291bnRzLmRldiQ";
+
+// `ZUDOKU_PUBLIC_VERCEL_ENV` mirrors Vercel's `VERCEL_ENV` and is set by the
+// build command in vercel.json. Only ZUDOKU_PUBLIC_/ZUPLO_PUBLIC_ variables are
+// inlined into the client bundle, so reading `VERCEL_ENV` here would resolve to
+// `undefined` in the browser and always pick the production key.
+const CLERK_PUB_KEY = (process.env.ZUDOKU_PUBLIC_CLERK_PUB_KEY ??
+  (process.env.ZUDOKU_PUBLIC_VERCEL_ENV === "production"
+    ? CLERK_PUB_KEY_PRODUCTION
+    : CLERK_PUB_KEY_DEVELOPMENT)) as `pk_test_${string}` | `pk_live_${string}`;
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -36,7 +67,9 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 
 const config: ZudokuConfig = {
   metadata: {
-    title: "Cosmo Cargo Inc.",
+    title: "%s | Cosmo Cargo Inc.",
+    defaultTitle: "Cosmo Cargo Inc.",
+    description: "Interstellar shipping API documentation",
   },
   header: {
     navigation: [
@@ -111,13 +144,30 @@ const config: ZudokuConfig = {
   },
   docs: {
     publishMarkdown: true,
-    llms: { llmsTxt: true, llmsTxtFull: true },
+    contentNegotiation: true,
+    llms: {
+      llmsTxt: true,
+      llmsTxtFull: true,
+      title: "Cosmo Cargo Developer Platform",
+      description:
+        "Build interstellar shipping, tracking, fleet, and cargo automation with Cosmo Cargo APIs.",
+      instructions:
+        "Use these docs when planning, booking, tracking, or automating interstellar cargo shipments. Start with the documentation guide for platform concepts, then use the published Shipment API specification at /openapi.json for callable operations and typed request and response schemas.",
+    },
+  },
+  sitemap: {
+    siteUrl: "https://cosmocargo.dev",
   },
   site: {
+    sidebar: {
+      togglePosition: "center",
+      toggleVisibility: "hover",
+    },
     notFoundPage: <NotFound />,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
-      width: 130,
+      width: 165,
+      height: 24,
       alt: "Cosmo Cargo Inc.",
     },
     banner: {
@@ -187,6 +237,7 @@ const config: ZudokuConfig = {
         },
         alt: "Zudoku by Zuplo",
         width: 120,
+        height: 24,
       },
     },
   },
@@ -202,6 +253,10 @@ const config: ZudokuConfig = {
     },
   ],
   protectedRoutes: {
+    [`${EMPLOYEE_MCP_PATH}/*`]: ({ auth, reasonCode }) =>
+      auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
+    [`${GATEWAY_DIRECTORY_PATH}/*`]: ({ auth, reasonCode }) =>
+      auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
     "/only-members": ({ auth, reasonCode }) =>
       auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
     "/vip-lounge": ({ auth, reasonCode }) =>
@@ -221,12 +276,12 @@ const config: ZudokuConfig = {
         children: ReactNode;
         sector?: string;
       }) => (
-        <div className="my-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
-          <div className="flex items-center gap-2 font-semibold text-yellow-600 dark:text-yellow-400">
-            ⚠️ {sector ? `Sector ${sector} Advisory` : "Space Advisory"}
-          </div>
-          <div className="mt-1 text-sm">{children}</div>
-        </div>
+        <Callout
+          type="danger"
+          title={sector ? `Sector ${sector} Advisory` : "Space Advisory"}
+        >
+          {children}
+        </Callout>
       ),
     },
   },
@@ -268,7 +323,6 @@ const config: ZudokuConfig = {
       items: [
         { type: "filter", placeholder: "Filter documentation" },
         "documentation",
-        { type: "section", label: "Operations" },
         {
           type: "category",
           icon: "telescope",
@@ -276,20 +330,69 @@ const config: ZudokuConfig = {
           label: "Space Operations",
           items: [
             "shipping-process",
+            "warp-lane-tutorial",
+            "cargo-manifest-guide",
             "tracking",
             "quantum-express",
             "ship-states",
           ],
         },
-        "global",
-        { type: "separator" },
-        { type: "section", label: "Guides" },
         {
           type: "category",
           icon: "library-big",
           label: "Shipping Guides",
-          items: ["interstellar", "intergalactic"],
+          items: ["global", "interstellar", "intergalactic"],
         },
+        {
+          type: "category",
+          icon: "book-marked",
+          label: "Cargo Handbook",
+          stack: true,
+          items: [
+            "cargo-handbook/hazardous",
+            "cargo-handbook/cryo",
+            "cargo-handbook/living",
+            "cargo-handbook/anomalous",
+          ],
+        },
+        {
+          type: "category",
+          icon: "rocket",
+          label: "Fleet Management",
+          items: [
+            "fleet/warp-drives",
+            "fleet/maintenance",
+            "fleet/crew",
+            "fleet/refueling",
+          ],
+        },
+        {
+          type: "category",
+          icon: "credit-card",
+          label: "Billing & Credits",
+          items: [
+            "billing/invoices",
+            "billing/galactic-credits",
+            "billing/refunds",
+          ],
+        },
+        {
+          type: "category",
+          icon: "shield-check",
+          label: "Compliance",
+          items: [
+            "compliance/customs",
+            "compliance/quarantine",
+            "compliance/treaties",
+          ],
+        },
+        {
+          type: "category",
+          icon: "life-buoy",
+          label: "Support",
+          items: ["support/contact", "support/faq", "support/escalations"],
+        },
+        { type: "separator" },
         {
           type: "link",
           label: "See Shipment API",
@@ -332,6 +435,13 @@ const config: ZudokuConfig = {
       label: "API Catalog",
     },
     {
+      type: "link",
+      icon: "bot",
+      to: EMPLOYEE_MCP_PATH,
+      label: "Employee MCP",
+      display: "auth",
+    },
+    {
       type: "custom-page",
       path: "/only-members",
       label: "Only members",
@@ -359,14 +469,28 @@ const config: ZudokuConfig = {
       from: "/api-shipments/track-shipment",
       to: "/api-shipments/tracking-and-notifications#get-shipments-shipmentid-events",
     },
+    // Everything under the legacy /docs prefix, e.g. /docs/test →
+    // /documentation/test (and /docs itself → /documentation)
+    { from: "/docs/*", to: "/documentation/*" },
+    // The old starship manual chapters now live under /fleet, e.g.
+    // /starship-manual/warp-drives → /fleet/warp-drives
+    { from: "/starship-manual/:chapter", to: "/fleet/:chapter" },
   ],
   catalogs: {
     path: "catalog",
     label: "API Catalog",
+    filterItems: (items, { auth }) =>
+      auth.isAuthenticated
+        ? items
+        : items.filter(
+            (item) =>
+              item.path !== EMPLOYEE_MCP_PATH &&
+              item.path !== GATEWAY_DIRECTORY_PATH,
+          ),
   },
   authentication: {
     type: "clerk",
-    clerkPubKey: "pk_test_dG9sZXJhbnQtaG9ybmV0LTQ2LmNsZXJrLmFjY291bnRzLmRldiQ",
+    clerkPubKey: CLERK_PUB_KEY,
     redirectToAfterSignIn: "/documentation",
     redirectToAfterSignUp: "/documentation",
   },
@@ -375,6 +499,7 @@ const config: ZudokuConfig = {
       examplesLanguage: "js",
       schemaDownload: {
         enabled: true,
+        fileName: "openapi",
       },
     },
   },
@@ -386,6 +511,10 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/shipments.json",
       path: "api-shipments",
+      publish: {
+        path: "/openapi.json",
+        agentQuality: true,
+      },
       categories: [
         { label: "Core", tags: ["Shipments", "Logistics"] },
         { label: "Logistics", tags: ["Shipments"] },
@@ -496,6 +625,24 @@ const config: ZudokuConfig = {
           tags: ["Documentation"],
         },
       ],
+    },
+    {
+      type: "file",
+      input: "./schema/employee-mcp.json",
+      path: EMPLOYEE_MCP_PATH,
+      categories: [
+        {
+          label: "AI & Automation",
+          tags: ["MCP Integration", "Employee Tools"],
+        },
+        { label: "Internal", tags: ["Employee Tools"] },
+      ],
+    },
+    {
+      type: "file",
+      input: "./schema/gateway-directory.json",
+      path: GATEWAY_DIRECTORY_PATH,
+      categories: [{ label: "Internal", tags: ["Employee Tools"] }],
     },
     {
       type: "file",

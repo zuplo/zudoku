@@ -1,9 +1,9 @@
 import type { ApiIdentity } from "../../../core/ZudokuContext.js";
-import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 import {
   NO_IDENTITY,
   SECURITY_SCHEME_PREFIX,
-} from "../playground/constants.js";
+} from "../../../hooks/useIdentityStore.js";
+import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 import {
   applySecurityCredentials,
   getSecurityQueryParams,

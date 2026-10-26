@@ -1,21 +1,34 @@
+import type { DehydratedState } from "@tanstack/react-query";
+import { createHead } from "@unhead/react/client";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import {
   createBrowserRouter,
   matchRoutes,
   type RouteObject,
 } from "react-router";
-import config from "virtual:zudoku-config";
 import "vite/modulepreload-polyfill";
-import { Bootstrap } from "../lib/components/Bootstrap.js";
-import { getRoutesByConfig, shikiReady } from "./main.js";
+import config from "virtual:zudoku-config";
+import { setupCookieSync } from "../lib/authentication/cookie-sync.js";
+import { SESSION_ENDPOINT_PATH } from "../lib/authentication/cookies.js";
+import { authState } from "../lib/authentication/state.js";
+import { BootstrapClient } from "../lib/components/Bootstrap.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
+import { requestIdle } from "../lib/util/requestIdle.js";
+import { getRoutesByConfig, getShikiReady } from "./main.js";
+
+if (import.meta.env.ZUDOKU_HAS_SERVER) {
+  setupCookieSync(authState, joinUrl(config.basePath, SESSION_ENDPOINT_PATH));
+}
 
 const routes = getRoutesByConfig(config);
 // biome-ignore lint/style/noNonNullAssertion: We know the root element exists
 const root = document.getElementById("root")!;
+const head = createHead();
 
 declare global {
   interface Window {
     ZUDOKU_VERSION: string;
+    ZUDOKU_DATA?: DehydratedState;
   }
 }
 
@@ -92,27 +105,46 @@ async function hydrateLazyRoutes(routes: RouteObject[]) {
   }
 }
 
+// Keeping Shiki off the hydration path is only a win if it is warm before the
+// user needs it. Without this, the first navigation to a page that renders
+// runtime-highlighted content suspends inside a router transition and the
+// previous page stays frozen until the chunk and its grammars arrive.
+function warmShiki() {
+  requestIdle(() => void getShikiReady());
+}
+
 function render(routes: RouteObject[]) {
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });
-  createRoot(root).render(<Bootstrap router={router} />);
+  createRoot(root).render(<BootstrapClient router={router} head={head} />);
+  warmShiki();
 }
 
 async function hydrate(routes: RouteObject[]) {
-  await Promise.all([hydrateLazyRoutes(routes), shikiReady]);
+  const runtimeShiki = root.querySelector("[data-zudoku-runtime-shiki]")
+    ? getShikiReady()
+    : undefined;
+
+  await Promise.all([hydrateLazyRoutes(routes), runtimeShiki]);
 
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });
 
-  hydrateRoot(root, <Bootstrap hydrate router={router} />);
+  hydrateRoot(root, <BootstrapClient hydrate router={router} head={head} />);
+
+  // Pages whose HTML already contained highlighted output resolved Shiki above.
+  if (!runtimeShiki) warmShiki();
 }
 
-// This is a workaround to avoid version skewing
-// See https://vite.dev/guide/build.html#load-error-handling
-// TODO: Implement a more advanced solution if there are CDN urls or e.g. Vercel Skew Protection
+// Reload on chunk preload failures to recover from version skew.
+// Throttled so a non-recoverable error (e.g. auth-gated chunk 401) doesn't loop infinitely.
+// https://vite.dev/guide/build.html#load-error-handling
 window.addEventListener("vite:preloadError", (e) => {
   e.preventDefault();
+  const last = Number(sessionStorage.getItem("zudoku:preload-reload-ts") ?? 0);
+  if (Date.now() - last < 30_000) return;
+  sessionStorage.setItem("zudoku:preload-reload-ts", String(Date.now()));
   window.location.reload();
 });

@@ -19,31 +19,37 @@ import {
 } from "zudoku/ui/Select.js";
 import { TooltipProvider } from "zudoku/ui/Tooltip.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
+import IdentitySelector from "../../../components/IdentitySelector.js";
 import { useHotkey } from "../../../hooks/useHotkey.js";
+import {
+  identitySelectionToValue,
+  NO_IDENTITY,
+  useIdentityStore,
+  valueToIdentitySelection,
+} from "../../../hooks/useIdentityStore.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
 import type {
-  MediaTypeObject,
   SecuritySchemeIn,
   SecuritySchemeType,
 } from "../graphql/graphql.js";
-import { useSelectedServer } from "../state.js";
+import type { Content } from "../interfaces.js";
+import { type ServerWithVariables, useSelectedServer } from "../state.js";
+import { getServerLabel } from "../util/resolveServerUrl.js";
 import { AuthorizeDialog } from "./AuthorizeDialog.js";
 import BodyPanel from "./BodyPanel.js";
+import { buildRequestBody } from "./buildRequestBody.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
-import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./constants.js";
 import { createUrl } from "./createUrl.js";
 import { extractFileName, isBinaryContentType } from "./fileUtils.js";
 import { Headers } from "./Headers.js";
 import { IdentityDialog } from "./IdentityDialog.js";
-import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
-import { useIdentityStore } from "./rememberedIdentity.js";
 import { UrlPath } from "./request-panel/UrlPath.js";
 import { UrlQueryParams } from "./request-panel/UrlQueryParams.js";
 import RequestLoginDialog from "./RequestLoginDialog.js";
@@ -56,7 +62,10 @@ import {
 } from "./securityCredentialsStore.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
-export { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./constants.js";
+export {
+  NO_IDENTITY,
+  SECURITY_SCHEME_PREFIX,
+} from "../../../hooks/useIdentityStore.js";
 
 export type Header = {
   name: string;
@@ -87,11 +96,16 @@ export type PathParam = {
 
 export type PlaygroundForm = {
   body: string;
-  bodyMode?: "text" | "file" | "multipart";
+  bodyMode?: "text" | "file" | "multipart" | "urlencoded";
   file?: File | null;
   multipartFormFields: Array<{
     name: string;
     value: File | string;
+    active: boolean;
+  }>;
+  urlencodedFormFields: Array<{
+    name: string;
+    value: string;
     active: boolean;
   }>;
   queryParams: Array<{
@@ -168,14 +182,14 @@ export type SecurityRequirementProp = {
 
 export type PlaygroundContentProps = {
   server?: string;
-  servers?: string[];
+  servers?: ServerWithVariables[];
   url: string;
   method: string;
   headers?: Header[];
   queryParams?: QueryParam[];
   pathParams?: PathParam[];
   defaultBody?: string;
-  examples?: MediaTypeObject[];
+  examples?: Content[];
   security?: SecurityRequirementProp[];
   securitySchemes?: Array<{
     name: string;
@@ -191,6 +205,7 @@ export type PlaygroundContentProps = {
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
+  responseSchemas?: Record<string, string | undefined>;
 };
 
 export const Playground = ({
@@ -208,10 +223,14 @@ export const Playground = ({
   requiresLogin = false,
   onLogin,
   onSignUp,
+  responseSchemas,
 }: PlaygroundContentProps) => {
-  const { selectedServer, setSelectedServer } = useSelectedServer(
-    servers.map((url) => ({ url })),
-  );
+  const {
+    selectedServer,
+    setSelectedServer,
+    resolvedServer,
+    serverVariableOverrides,
+  } = useSelectedServer(servers);
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
   const [showAuthorizeDialog, setShowAuthorizeDialog] = useState(false);
   const identities = useApiIdentities();
@@ -241,6 +260,7 @@ export const Playground = ({
         bodyMode: "text",
         file: null,
         multipartFormFields: [],
+        urlencodedFormFields: [],
         queryParams:
           queryParams.length > 0
             ? queryParams.map((param) => ({
@@ -268,7 +288,9 @@ export const Playground = ({
             : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
-          ...securitySchemes.map((s) => `${SECURITY_SCHEME_PREFIX}${s.name}`),
+          ...securitySchemes.map((s) =>
+            identitySelectionToValue({ type: "scheme", name: s.name }),
+          ),
           ...(identities.data?.map((i) => i.id) ?? []),
         ]),
       },
@@ -282,9 +304,9 @@ export const Playground = ({
 
   const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
 
-  const selectedSchemeName = identity?.startsWith(SECURITY_SCHEME_PREFIX)
-    ? identity.slice(SECURITY_SCHEME_PREFIX.length)
-    : undefined;
+  const identitySelection = valueToIdentitySelection(identity);
+  const selectedSchemeName =
+    identitySelection.type === "scheme" ? identitySelection.name : undefined;
 
   const securityLockedHeaders = useMemo(() => {
     const cred = selectedSchemeName
@@ -313,34 +335,23 @@ export const Playground = ({
           .map<[string, string]>((h) => [h.name, h.value]),
       );
 
-      let body: string | FormData | File | undefined;
-
-      switch (data.bodyMode) {
-        case "file":
-          body = data.file || undefined;
+      const built = buildRequestBody(data);
+      const body = built.body;
+      switch (built.contentType.kind) {
+        case "remove":
           headers.delete("Content-Type");
           break;
-        case "multipart": {
-          const formData = new FormData();
-          data.multipartFormFields
-            ?.filter((field) => field.name && field.active)
-            .forEach((field) => formData.append(field.name, field.value));
-
-          body = formData;
-          headers.delete("Content-Type");
-          break;
-        }
-        default:
-          body = data.body || undefined;
+        case "override":
+          headers.set("Content-Type", built.contentType.value);
           break;
       }
 
       const upperMethod = method.toUpperCase();
-      const requestUrl = createUrl(server ?? selectedServer, url, data);
+      const requestUrl = createUrl(server ?? resolvedServer, url, data);
 
-      const schemeName = data.identity?.startsWith(SECURITY_SCHEME_PREFIX)
-        ? data.identity.slice(SECURITY_SCHEME_PREFIX.length)
-        : undefined;
+      const dataSelection = valueToIdentitySelection(data.identity);
+      const schemeName =
+        dataSelection.type === "scheme" ? dataSelection.name : undefined;
 
       const schemeCredentials = (() => {
         if (!schemeName) return {};
@@ -431,6 +442,9 @@ export const Playground = ({
               )
               .join("\n");
             break;
+          case "urlencoded":
+            requestBody = typeof built.body === "string" ? built.body : "";
+            break;
           default:
             requestBody = data.body;
             break;
@@ -500,12 +514,18 @@ export const Playground = ({
             defaultValue={selectedServer}
           >
             <SelectTrigger className="p-0! h-6! shadow-none border-none flex-row-reverse bg-transparent text-xs gap-0.5">
-              <SelectValue />
+              {/* The trigger always shows the calculated request url (never a server's
+                  `name`/`description`), matching the url shown next to it. */}
+              <SelectValue>
+                {resolvedServer.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {servers.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                <SelectItem key={s.url} value={s.url}>
+                  {getServerLabel(s, serverVariableOverrides[s.url])
+                    .replace(/^https?:\/\//, "")
+                    .replace(/\/$/, "")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -590,7 +610,7 @@ export const Playground = ({
                     onClick={() => {
                       copyToClipboard(
                         createUrl(
-                          server ?? selectedServer,
+                          server ?? resolvedServer,
                           url,
                           form.getValues(),
                         ).toString(),
@@ -643,18 +663,16 @@ export const Playground = ({
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <IdentitySelector
-                      value={identity}
+                      selection={valueToIdentitySelection(identity)}
                       identities={identities.data ?? []}
-                      setValue={(value) => {
-                        if (value.startsWith(SECURITY_SCHEME_PREFIX)) {
-                          const schemeName = value.slice(
-                            SECURITY_SCHEME_PREFIX.length,
-                          );
-                          if (!securityCredentials[schemeName]?.isAuthorized) {
-                            setShowAuthorizeDialog(true);
-                          }
+                      onSelectionChange={(next) => {
+                        if (
+                          next.type === "scheme" &&
+                          !securityCredentials[next.name]?.isAuthorized
+                        ) {
+                          setShowAuthorizeDialog(true);
                         }
-                        setValue("identity", value);
+                        setValue("identity", identitySelectionToValue(next));
                       }}
                       securitySchemes={
                         securitySchemes.length > 0 ? securitySchemes : undefined
@@ -705,6 +723,7 @@ export const Playground = ({
               showLongRunningWarning={showLongRunningWarning}
               isFinished={isFinished}
               progress={progress}
+              responseSchemas={responseSchemas}
               tip={
                 <div className="text-xs w-full">
                   <span className="text-muted-foreground">

@@ -13,22 +13,28 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "zudoku/ui/Tooltip.js";
-import type { ResponseItem } from "./graphql/graphql.js";
-import * as SidecarBox from "./SidecarBox.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
+import type { OperationsFragmentFragment } from "./graphql/graphql.js";
+import type { Content } from "./interfaces.js";
 import { SidecarExamples } from "./SidecarExamples.js";
+
+export type ResponseItem = OperationsFragmentFragment["responses"][number];
+
+type SidecarMediaTypeObject = Content & { isGenerated?: boolean };
+type SidecarResponseItem = Omit<ResponseItem, "content"> & {
+  content?: SidecarMediaTypeObject[] | null;
+};
 
 export const ResponsesSidecarBox = ({
   responses,
   selectedResponse,
   isOnScreen,
   shouldLazyHighlight,
-  isGenerated,
 }: {
-  responses: ResponseItem[];
+  responses: SidecarResponseItem[];
   selectedResponse?: string;
   isOnScreen: boolean;
   shouldLazyHighlight?: boolean;
-  isGenerated?: boolean;
 }) => {
   const [internalSelectedResponse, setInternalSelectedResponse] = useState(
     selectedResponse ?? responses[0]?.statusCode,
@@ -48,6 +54,11 @@ export const ResponsesSidecarBox = ({
     setSelectedContentIndex(0);
     setSelectedExampleIndex(0);
   }, [internalSelectedResponse]);
+
+  const selectedContent =
+    responses.find((r) => r.statusCode === internalSelectedResponse)?.content ??
+    [];
+  const isGenerated = selectedContent[selectedContentIndex]?.isGenerated;
 
   return (
     <Collapsible className="group/collapsible" defaultOpen>
@@ -103,10 +114,7 @@ export const ResponsesSidecarBox = ({
               setSelectedContentIndex(selected.contentTypeIndex);
               setSelectedExampleIndex(selected.exampleIndex);
             }}
-            content={
-              responses.find((r) => r.statusCode === internalSelectedResponse)
-                ?.content ?? []
-            }
+            content={selectedContent}
             isOnScreen={isOnScreen}
             shouldLazyHighlight={shouldLazyHighlight}
           />

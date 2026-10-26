@@ -77,6 +77,20 @@ export const getAuthHeader = (data?: McpServerData): AuthHeader | undefined => {
   return undefined;
 };
 
+// Resolves what the card renders for auth. With `disableAuthInstructions` the
+// server is presented as unauthenticated whatever its security says: no header
+// snippets, no "replace YOUR_API_KEY" steps, no sign-in flow, and the full
+// client list — for docs where credentials reach the MCP server some other way,
+// or are documented elsewhere.
+export const resolveMcpAuth = (
+  data?: McpServerData,
+  options?: { disableAuthInstructions?: boolean },
+): { authType: AuthType; auth?: AuthHeader } => {
+  if (options?.disableAuthInstructions) return { authType: "none" };
+
+  return { authType: getAuthType(data), auth: getAuthHeader(data) };
+};
+
 // -- App compatibility matrix --
 
 export interface McpSubApp {
@@ -187,8 +201,97 @@ export const getMcpServerName = (
   return (data?.name as string) ?? summary ?? "mcp-server";
 };
 
-export const getMcpUrl = (serverUrl?: string, operationPath?: string) =>
-  `${(serverUrl ?? "").replace(/\/+$/, "")}${operationPath ?? "/mcp"}`;
+export type McpTool = { name: string; description?: string };
+
+/**
+ * `extensions` reaches the client as untyped JSON, so `x-mcp-server` can hold
+ * anything a document author wrote — including `null`, which `typeof` reports as
+ * "object". Narrow before reading properties off it.
+ */
+export const isMcpServerObject = (
+  data?: McpServerData,
+): data is Record<string, unknown> => typeof data === "object" && data !== null;
+
+/**
+ * Whether a raw `x-mcp-server` value describes a server at all. Only `true` and
+ * an object do; `null`, `false` and scalars are treated as absent.
+ */
+export const isMcpServerData = (value: unknown): value is McpServerData =>
+  value === true || (typeof value === "object" && value !== null);
+
+/**
+ * Human-readable label for a server. Deliberately the inverse precedence of
+ * `getMcpServerName`, which prefers `x-mcp-server.name` — that is the protocol
+ * identity used in install snippets (`cosmo-salesforce-sales-cloud`) and reads
+ * poorly as a heading.
+ */
+export const getMcpServerTitle = (
+  data?: McpServerData,
+  summary?: string | null,
+  operationId?: string | null,
+): string => {
+  if (summary) return summary;
+  if (isMcpServerObject(data) && typeof data.name === "string") {
+    return data.name;
+  }
+  return operationId ?? "MCP Server";
+};
+
+/**
+ * Tools the server advertises. Populated by the Zuplo enrichment from the
+ * gateway's handler options; a document that only marks operations with
+ * `x-mcp-server: true` has none, which is a normal state rather than an error.
+ */
+export const getMcpTools = (data?: McpServerData): McpTool[] => {
+  if (!isMcpServerObject(data) || !Array.isArray(data.tools)) return [];
+
+  return data.tools.flatMap((tool) =>
+    tool && typeof tool === "object" && typeof tool.name === "string"
+      ? [
+          {
+            name: tool.name,
+            description:
+              typeof tool.description === "string"
+                ? tool.description
+                : undefined,
+          },
+        ]
+      : [],
+  );
+};
+
+// Matches a URL that carries its own scheme, e.g. `https://mcp.example.com`.
+const isAbsoluteUrl = (value: string) => /^[a-z][a-z0-9+.-]*:\/\//i.test(value);
+
+// Reads the `url` override from x-mcp-server, ignoring blank and non-string
+// values so callers fall back to the derived endpoint.
+const getUrlOverride = (data?: McpServerData): string | undefined => {
+  if (typeof data === "boolean") return undefined;
+
+  const url = data?.url;
+  if (typeof url !== "string") return undefined;
+
+  const trimmed = url.trim();
+  return trimmed === "" ? undefined : trimmed;
+};
+
+// The MCP endpoint is derived from the API's server URL plus the operation
+// path. An `x-mcp-server.url` override takes precedence, for servers that are
+// not hosted under the documented API server: an absolute URL replaces the
+// endpoint entirely, anything else is treated as a path on the server URL.
+export const getMcpUrl = (
+  serverUrl?: string,
+  operationPath?: string,
+  data?: McpServerData,
+) => {
+  const override = getUrlOverride(data);
+  if (override && isAbsoluteUrl(override)) return override;
+
+  const path = override ?? operationPath ?? "/mcp";
+  return `${(serverUrl ?? "").replace(/\/+$/, "")}${
+    path.startsWith("/") ? path : `/${path}`
+  }`;
+};
 
 export const getClaudeCodeCommand = (
   name: string,
@@ -263,3 +366,58 @@ export const getGenericConfig = (
     }
   }
 }`;
+
+// -- One-click install deep links --
+
+// btoa only handles latin1, so encode UTF-8 first to survive non-ASCII names.
+const base64Encode = (value: string): string => {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+};
+
+const authHeaders = (auth?: AuthHeader): Record<string, string> | undefined =>
+  auth ? { [auth.headerName]: auth.placeholder } : undefined;
+
+// Cursor "Add to Cursor" deep link. `config` is the base64 of the server's
+// mcp.json entry. It is URL-encoded so base64 `+`/`/`/`=` survive query parsing.
+// https://cursor.com/docs/context/mcp/install-links
+export const getCursorDeepLink = (
+  name: string,
+  mcpUrl: string,
+  auth?: AuthHeader,
+): string => {
+  const headers = authHeaders(auth);
+  const config = headers ? { url: mcpUrl, headers } : { url: mcpUrl };
+  const encoded = encodeURIComponent(base64Encode(JSON.stringify(config)));
+  return `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent(
+    name,
+  )}&config=${encoded}`;
+};
+
+// VS Code "Install in VS Code" deep link. The whole server config (including
+// name and transport) is URL-encoded JSON.
+// https://code.visualstudio.com/api/extension-guides/ai/mcp
+export const getVscodeDeepLink = (
+  name: string,
+  mcpUrl: string,
+  auth?: AuthHeader,
+): string => {
+  const headers = authHeaders(auth);
+  const config = {
+    name,
+    type: "http",
+    url: mcpUrl,
+    ...(headers ? { headers } : {}),
+  };
+  return `vscode:mcp/install?${encodeURIComponent(JSON.stringify(config))}`;
+};
+
+// Opens Claude's custom connector settings with the "Add custom connector"
+// dialog already open. Claude has no deep link that pre-fills the server URL,
+// so users still paste it into the dialog.
+export const CLAUDE_CONNECTORS_URL =
+  "https://claude.ai/customize/connectors?modal=add-custom-connector";

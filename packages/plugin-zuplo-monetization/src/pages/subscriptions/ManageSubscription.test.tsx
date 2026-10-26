@@ -86,8 +86,6 @@ const baseSubscription = (): Subscription => ({
     name: "Pro",
     billingCadence: "P1M",
     phases: [],
-    monthlyPrice: "10",
-    yearlyPrice: "100",
   },
   proRatingConfig: { enabled: false, mode: "prorata" },
   status: "active",

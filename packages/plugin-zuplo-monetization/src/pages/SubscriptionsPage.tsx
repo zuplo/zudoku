@@ -9,7 +9,7 @@ import { SubscriptionsList } from "./subscriptions/SubscriptionsList";
 
 const SubscriptionsPage = () => {
   const deploymentName = useDeploymentName();
-  const { data } = useSubscriptions(deploymentName);
+  const { data } = useSubscriptions();
   const [searchParams] = useSearchParams();
   const subscriptionId = searchParams.get("subscriptionId");
   const subscriptions = data?.items ?? [];

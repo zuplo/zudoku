@@ -30,6 +30,51 @@ const config = {
 };
 ```
 
+### Publish a canonical OpenAPI document
+
+For agents, API clients, and discovery tools, you can opt a file-based API into a stable public
+OpenAPI URL:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "file",
+    input: "./openapi.json",
+    path: "/api",
+    publish: {
+      path: "/openapi.json",
+    },
+  },
+};
+```
+
+The endpoint is available in development and is written into the production build. Its format and
+media type follow the configured extension: use `.json` for `application/json`, or `.yaml`/`.yml`
+for `application/yaml`. The path must be root-relative, cannot contain traversal, query, or fragment
+components, and is relative to the Zudoku site. For example, with `basePath: "/docs"`, the example
+above is served at `/docs/openapi.json`.
+
+Published documents use the processed schema, including bundled external references and configured
+[schema processors](../guides/processors.mdx). If an API has multiple file versions, the first
+`input` entry is the primary version published at the canonical URL. Publishing is intentionally
+configured per API: Zudoku will not choose an API automatically on multi-API sites, and a build
+fails if two APIs configure the same publication path. The build also fails instead of overwriting
+an existing `public/` file or generated artifact at that path.
+
+To report schema authoring gaps that reduce LLM function-calling compatibility, enable the optional
+agent-quality audit:
+
+```ts title=zudoku.config.ts
+publish: {
+  path: "/openapi.json",
+  agentQuality: true,
+},
+```
+
+The audit reports build warnings for missing or duplicate `operationId` values, missing operation
+descriptions, untyped parameters, missing or untyped request bodies on write operations, and
+responses without typed schemas. It does not modify the published document or fail the build.
+
 ## URL Reference
 
 :::danger{title="Recommendation"}
@@ -50,7 +95,7 @@ const config = {
   // ...
   apis: {
     type: "url",
-    input: "https://rickandmorty.zuplo.io/openapi.json",
+    input: "https://api.rickandmorty.zuplo.io/openapi.json",
     path: "/api",
   },
   // ...
@@ -206,12 +251,15 @@ const config = {
       ],
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
+      disableRequestBox: false, // Hide the request box at the top of the sidecar
       disableSecurity: true, // Disable security scheme display and playground auth (default)
+      disableMcpAuthInstructions: false, // Hide auth steps in the MCP server card
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
-      showInfoPage: true, // Show API information page as the index route
+      showInfoPage: true, // Always show the info page (unset = show only if a description is set)
       schemaDownload: {
         enabled: true, // Enable schema download button
+        fileName: "schema", // Set name of the schema file when downloaded
       },
     },
   },
@@ -225,19 +273,32 @@ Available options:
   identifier) and `label` (display name)
 - `disablePlayground`: Disable the interactive API playground globally
 - `disableSidecar`: Disable the sidecar panel completely
+- `disableRequestBox`: Hide the request box at the top of the sidecar. The box holds the method and
+  path, the generated code snippet with its language selector, the auth selector and the button that
+  opens the playground, so hiding it also removes the way to open the playground. The request body
+  and response examples below it are still shown. Operations can override this with
+  [`x-zudoku-request-box-enabled`](../openapi-extensions/x-zudoku-request-box-enabled)
 - `disableSecurity`: Disable OpenAPI security scheme display (auth badges on operations, security
   schemes section on the info page, and the Authorize dialog in the playground). Disabled by default
   (`true`). Set to `false` to enable security scheme support
+- `disableMcpAuthInstructions`: Hide the authentication instructions on
+  [MCP server](/docs/guides/mcp-servers) endpoints. The MCP card normally derives a credential
+  header from the operation's security scheme and shows it in every install snippet. Set to `true`
+  to render the server as unauthenticated instead — no header snippets and no "replace
+  `YOUR_API_KEY`" steps
 - `showVersionSelect`: Control version selector visibility
   - `"if-available"`: Show version selector only when multiple versions exist (default)
   - `"always"`: Always show version selector (disabled if only one version)
   - `"hide"`: Never show version selector
 - `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
-- `showInfoPage`: Show the API information page as the index route (default: `true`). When disabled,
-  navigating to the API root redirects to the first tag instead
+- `showInfoPage`: Control the API information page shown as the index route. Set to `true` to always
+  show it, or `false` to always redirect the API root to the first tag. When unset, the page is
+  shown only if the API has a description, otherwise the API root redirects to the first tag
 - `schemaDownload`: Enable schema download functionality. When enabled, displays a button allowing
   users to download the OpenAPI schema, copy it to clipboard, or open in a new tab.
   - `enabled`: Enable or disable the schema download button
+  - `fileName`: Set name of the schema file when downloaded (default: `schema`). Note: Do not
+    include a file extension, as that is added automatically based on the input file type.
 - `transformExamples`: Function to transform request/response examples before rendering. See
   [Transforming Examples](../guides/transforming-examples.md) for detailed usage
 - `generateCodeSnippet`: Function to generate custom code snippets for the API playground. See
@@ -255,12 +316,15 @@ const config = {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
+      disableRequestBox: false, // Hide the request box at the top of the sidecar
       disableSecurity: true, // Disable security scheme display and playground auth (default)
+      disableMcpAuthInstructions: false, // Hide auth steps in the MCP server card
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
-      showInfoPage: true, // Show API information page as the index route
+      showInfoPage: true, // Always show the info page (unset = show only if a description is set)
       schemaDownload: {
         enabled: true, // Enable schema download button
+        fileName: "schema", // Set name of the schema file when downloaded
       },
     },
   },
@@ -342,7 +406,14 @@ different levels of your API documentation.
 ### Operations
 
 - `x-zudoku-playground-enabled`: Control playground visibility for an operation (default: `true`)
-- `x-explorer-enabled`: Alias for `x-zudoku-playground-enabled` for compatibility Example:
+- `x-zudoku-request-box-enabled`: Control request box visibility in the sidecar for an operation
+  (default: `true`). See
+  [`x-zudoku-request-box-enabled`](../openapi-extensions/x-zudoku-request-box-enabled)
+- `x-internal`: Hide an operation from the documentation. Also works on path items and parameters.
+  See [`x-internal`](../openapi-extensions/x-internal)
+- `x-explorer-enabled`: Alias for `x-zudoku-playground-enabled` for compatibility
+
+Example:
 
 ```json
 {
@@ -350,7 +421,8 @@ different levels of your API documentation.
     "/users": {
       "get": {
         "summary": "Get users",
-        "x-zudoku-playground-enabled": false // Disable playground for this operation
+        "x-zudoku-playground-enabled": false, // Disable playground for this operation
+        "x-zudoku-request-box-enabled": false // Hide the sidecar request box for this operation
       }
     }
   }
@@ -363,6 +435,8 @@ Extensions that can be applied to tag categories:
 
 - `x-zudoku-collapsed`: Control initial collapsed state of a tag category (default: `true`)
 - `x-zudoku-collapsible`: Control if a tag category can be collapsed (default: `true`)
+- `x-zudoku-seo`: Set the page title and meta description of a tag's page without changing its
+  sidebar label or heading. See [`x-zudoku-seo`](../openapi-extensions/x-zudoku-seo)
 
 Example:
 

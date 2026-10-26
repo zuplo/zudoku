@@ -41,6 +41,7 @@ const makeFormData = (
 ): PlaygroundForm => ({
   body: "",
   multipartFormFields: [],
+  urlencodedFormFields: [],
   queryParams: [],
   pathParams: [],
   headers: [],
@@ -324,5 +325,17 @@ describe("createUrl", () => {
       }),
     );
     expect(url.pathname).toBe("/v1/products/123");
+  });
+
+  it("keeps the host for paths with a colon", () => {
+    for (const host of [
+      "https://api.example.com/v1",
+      "https://api.example.com/v1/",
+    ]) {
+      const url = createUrl(host, "/users:check_login", makeFormData());
+      expect(url.toString()).toBe(
+        "https://api.example.com/v1/users:check_login",
+      );
+    }
   });
 });

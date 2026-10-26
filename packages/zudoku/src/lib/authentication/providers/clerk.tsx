@@ -4,6 +4,7 @@ import type {
   AuthActionContext,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  VerifyAccessTokenResult,
 } from "../authentication.js";
 import { SignIn } from "../components/SignIn.js";
 import { SignOut } from "../components/SignOut.js";
@@ -46,6 +47,7 @@ type Clerk = {
 export type ClerkProviderData = {
   type: "clerk";
   user: ClerkUser | undefined;
+  accessToken?: string;
 };
 
 declare module "../state.js" {
@@ -103,6 +105,13 @@ const clerkAuth: AuthenticationProviderInitializer<
     return loadClerk(clerkPubKey);
   };
 
+  let cachedIssuer: string | undefined;
+  const getIssuer = () => {
+    cachedIssuer ??= `https://${getClerkFrontendApi(clerkPubKey)}`;
+    return cachedIssuer;
+  };
+  let jwks: ReturnType<typeof import("jose").createRemoteJWKSet> | undefined;
+
   async function getAccessToken() {
     const clerk = await getClerk();
 
@@ -156,6 +165,8 @@ const clerkAuth: AuthenticationProviderInitializer<
       return false;
     }
 
+    const accessToken = await getAccessToken().catch(() => undefined);
+
     useAuthState.setState({
       isAuthenticated: true,
       isPending: false,
@@ -163,6 +174,7 @@ const clerkAuth: AuthenticationProviderInitializer<
       providerData: {
         type: "clerk",
         user: clerk.session?.user,
+        accessToken,
       },
     });
 
@@ -173,6 +185,39 @@ const clerkAuth: AuthenticationProviderInitializer<
     const response = await getAccessToken();
     request.headers.set("Authorization", `Bearer ${response}`);
     return request;
+  }
+
+  async function verifyAccessToken(
+    token: string,
+  ): Promise<VerifyAccessTokenResult> {
+    const jose = await import("jose");
+    const issuer = getIssuer();
+    if (!jwks) {
+      jwks = jose.createRemoteJWKSet(
+        new URL(`${issuer}/.well-known/jwks.json`),
+      );
+    }
+    try {
+      const { payload } = await jose.jwtVerify(token, jwks, { issuer });
+      if (!payload.sub) return undefined;
+      return {
+        profile: {
+          sub: String(payload.sub),
+          email: (payload.email ?? payload.email_address) as string | undefined,
+          name: payload.name as string | undefined,
+          emailVerified: Boolean(payload.email_verified),
+          pictureUrl: (payload.picture ?? payload.image_url) as
+            | string
+            | undefined,
+        },
+        expiresAt: typeof payload.exp === "number" ? payload.exp : undefined,
+      };
+    } catch (e) {
+      // JOSEError = invalid token (→ 401). Rethrow anything else so the
+      // handler can surface 502 for misconfig / JWKS fetch failures.
+      if (e instanceof jose.errors.JOSEError) return undefined;
+      throw e;
+    }
   }
 
   return {
@@ -204,11 +249,14 @@ const clerkAuth: AuthenticationProviderInitializer<
           return;
         }
 
+        const accessToken = await getAccessToken().catch(() => undefined);
+
         useAuthState.getState().setLoggedIn({
           profile,
           providerData: {
             type: "clerk",
             user: clerk.session.user,
+            accessToken,
           },
         });
       } else {
@@ -217,6 +265,7 @@ const clerkAuth: AuthenticationProviderInitializer<
     },
     getAccessToken,
     signRequest,
+    verifyAccessToken,
     signOut: async () => {
       const clerk = await getClerk();
       useAuthState.getState().setLoggedOut();

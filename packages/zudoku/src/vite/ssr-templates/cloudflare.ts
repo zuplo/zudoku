@@ -1,19 +1,6 @@
-// @ts-nocheck
-import { Hono } from "hono";
-import { getRoutesByConfig, handleRequest } from "./entry.server.js";
-import config from "./zudoku.config.js";
+import { createServer } from "zudoku/server";
+import { cloudflare } from "zudoku/server/adapters/cloudflare";
 
-// Cloudflare Workers with Static Assets feature
-// Static files served automatically via wrangler.toml: assets = { directory = "./dist/client" }
-
-const template = "__TEMPLATE__";
-const basePath = "__BASE_PATH__";
-const routes = getRoutesByConfig(config.default ?? config);
-
-const app = new Hono();
-
-app.all("*", (c) =>
-  handleRequest({ template, request: c.req.raw, routes, basePath }),
-);
-
-export default app;
+// Requires `run_worker_first = ["/_protected/*"]` in wrangler.toml. Without
+// it, the assets binding serves the chunks directly and skips the gate.
+export default createServer({ adapter: cloudflare() });

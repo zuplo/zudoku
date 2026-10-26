@@ -6,8 +6,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "zudoku/ui/Tooltip.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
 import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
-import * as SidecarBox from "./SidecarBox.js";
 
 export const GeneratedExampleSidecarBox = ({
   code,

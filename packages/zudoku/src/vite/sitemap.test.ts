@@ -57,18 +57,21 @@ it("getRedirectUrls strips basePath and normalizes trailing slash", () => {
       outputPath: "/index.html",
       html: "",
       statusCode: 301,
+      indexStatusCode: 301,
       redirect: { from: "/docs/", to: "/docs/intro" },
     },
     {
       outputPath: "/index.html",
       html: "",
       statusCode: 301,
+      indexStatusCode: 301,
       redirect: { from: "/docs", to: "/docs/intro" },
     },
     {
       outputPath: "/intro.html",
       html: "",
       statusCode: 200,
+      indexStatusCode: 200,
     },
   ];
 
@@ -82,6 +85,7 @@ it("getRedirectUrls works without basePath", () => {
       outputPath: "/index.html",
       html: "",
       statusCode: 301,
+      indexStatusCode: 301,
       redirect: { from: "/old", to: "/new" },
     },
   ];

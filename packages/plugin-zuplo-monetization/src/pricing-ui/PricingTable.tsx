@@ -9,7 +9,6 @@ import { PricingCard } from "./PricingCard.js";
 
 export type PricingTableProps = {
   plans: Plan[];
-  showYearlyPrice?: boolean;
   units?: Record<string, string>;
   /**
    * Render the CTA (e.g. Subscribe / Contact Sales button) for each plan.
@@ -59,7 +58,6 @@ const DefaultEmptyState = () => (
 
 export const PricingTable = ({
   plans,
-  showYearlyPrice = true,
   units,
   renderAction,
   renderCard,
@@ -81,7 +79,7 @@ export const PricingTable = ({
     <>
       <div
         className={cn(
-          "w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6",
+          "w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] justify-center gap-2",
           className,
         )}
       >
@@ -91,7 +89,6 @@ export const PricingTable = ({
             <PricingCard
               plan={plan}
               isPopular={popular}
-              showYearlyPrice={showYearlyPrice}
               units={units}
               action={renderAction?.(plan, popular)}
               className={cardClassName}

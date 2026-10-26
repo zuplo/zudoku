@@ -150,6 +150,7 @@ export const ResponseTab = ({
   isBinary = false,
   fileName,
   blob,
+  typeName,
 }: {
   body?: string;
   headers: Array<[string, string]>;
@@ -163,6 +164,7 @@ export const ResponseTab = ({
   isBinary?: boolean;
   fileName?: string;
   blob?: Blob;
+  typeName?: string;
 }) => {
   const detectedLanguage = detectLanguage(headers);
   const jsonContent = tryParseJson(body);
@@ -172,9 +174,9 @@ export const ResponseTab = ({
   );
 
   const types = useQuery({
-    queryKey: ["types", beautifiedBody],
+    queryKey: ["types", beautifiedBody, typeName],
     queryFn: async () => {
-      return convertToTypes(JSON.parse(beautifiedBody));
+      return convertToTypes(JSON.parse(beautifiedBody), typeName);
     },
     enabled: view === "types" && !isBinary,
   });
@@ -293,7 +295,7 @@ export const ResponseTab = ({
         </CollapsibleContent>
       </Collapsible>
 
-      <div className="flex gap-2 justify-between items-center border-b px-2 flex-0">
+      <div className="flex gap-2 justify-between items-center border-b px-4 flex-0">
         <CollapsibleHeader className="flex items-center gap-2">
           <SquareCodeIcon size={14} aria-hidden="true" />
           Response body
@@ -305,7 +307,7 @@ export const ResponseTab = ({
               setView(value as "formatted" | "raw" | "types")
             }
           >
-            <SelectTrigger className="max-w-32 border-0 bg-transparent">
+            <SelectTrigger className="max-w-32 border-0 shadow-none bg-transparent! px-0">
               <SelectValue placeholder="View" />
             </SelectTrigger>
             <SelectContent>
@@ -316,7 +318,7 @@ export const ResponseTab = ({
           </Select>
         )}
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-h-0">
         {isBinary ? (
           blob && isAudioContentType(getContentType(headers)) ? (
             <AudioPlayer

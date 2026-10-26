@@ -51,3 +51,8 @@ declare module "virtual:zudoku-shiki-register" {
   import type { HighlighterCore } from "shiki/core";
   export const registerShiki: (highlighter: HighlighterCore) => Promise<void>;
 }
+
+declare module "virtual:zudoku-markdown-files" {
+  const markdownFiles: Readonly<Record<string, string>>;
+  export default markdownFiles;
+}

@@ -1,0 +1,77 @@
+---
+title: Launch Your First Freighter
+sidebar_label: Warp Lane Tutorial
+sidebar_icon: rocket
+---
+
+This tutorial takes you from an empty console to a freighter in the Sol–Centauri warp lane. It is
+made up entirely of steps, so the steps themselves are what shows up in "On this page".
+
+<Stepper>
+
+1. **Provision a Docking Bay**
+
+   Every shipment leaves from a docking bay. Claim one in the region closest to your cargo so the
+   manifest doesn't have to cross a customs boundary before it's even sealed.
+
+   ```sh
+   cosmocargo bays create --region sol-belt --name first-freighter
+   ```
+
+   :::tip
+
+   Bay names are galaxy-unique. If the name is taken, the CLI suggests the next free one.
+
+   :::
+
+1. **Register Your Cargo**
+
+   Describe what you're shipping. The mass and hazard class decide which hulls the router will
+   consider, so getting them right here saves a rejection at the spaceport later.
+
+   ```js title="register-cargo.js"
+   const cargo = await cosmocargo.cargo.register({
+     bay: "first-freighter",
+     items: ["hydroponics-module", "spare-coolant"],
+     weight: "1200kg",
+     hazardClass: "none",
+   });
+   ```
+
+1. **Plot a Warp Lane**
+
+   Ask the router for a lane between your origin and destination. It returns every lane that can
+   carry your cargo, cheapest first.
+
+   ```sh
+   cosmocargo lanes plot --from earth --to centauri-prime --cargo $CARGO_ID
+   ```
+
+   :::warning
+
+   Lanes through the Kuiper corridor close during solar maximum. The router hides them
+   automatically, but a pinned lane id will start failing — plot fresh lanes each run.
+
+   :::
+
+1. **Seal the Manifest**
+
+   Sealing freezes the cargo list and signs it. Nothing can be added after this point, so run your
+   inventory check first.
+
+   ```sh
+   cosmocargo manifests seal --cargo $CARGO_ID
+   ```
+
+1. **Launch and Track**
+
+   With a sealed manifest the freighter is cleared for departure. Launch it, then follow the
+   quantum-entangled telemetry feed until it drops out of warp.
+
+   ```sh
+   cosmocargo launch --manifest $MANIFEST_ID --watch
+   ```
+
+   Your first freighter is away. 🚀
+
+</Stepper>

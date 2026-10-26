@@ -19,3 +19,15 @@ npm run build
 
 Once complete, you will see a new `dist` folder in the root of your project that includes the files
 you need to upload.
+
+## Markdown content negotiation
+
+When [`publishMarkdown`](/docs/configuration/docs#publishmarkdown) is enabled, the static build also
+contains a `.md` representation for every documentation page. Vercel and SSR deployments handle
+`Accept: text/markdown` at canonical page URLs automatically. Other static hosts must add an
+`Accept`-aware rule at the CDN, reverse proxy, edge worker, or web server if you want the same
+canonical URL behavior. The explicit `.md` URLs work without that rule.
+
+See
+[content negotiation for other hosting providers](/docs/configuration/docs#other-hosting-providers)
+for the general routing and caching contract.
