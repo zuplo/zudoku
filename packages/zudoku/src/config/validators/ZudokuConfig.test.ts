@@ -607,6 +607,32 @@ describe("validateConfig parsed result", () => {
     expect(result.docs.publishMarkdown).toBe(true);
   });
 
+  it("leaves the blog disabled when blog is omitted", () => {
+    expect(validateConfig({}).blog).toBeUndefined();
+  });
+
+  it("applies blog defaults when blog is set", () => {
+    expect(validateConfig({ blog: {} }).blog).toEqual({
+      files: ["/blog/**/*.{md,mdx}"],
+      path: "/blog",
+      title: "Blog",
+      postsPerPage: 10,
+      showReadingTime: true,
+      authors: {},
+      sidebar: { title: "Recent posts", count: 5 },
+    });
+  });
+
+  it("normalizes the blog path and keeps a disabled sidebar", () => {
+    const result = validateConfig({
+      blog: { path: "news/", files: "/posts/*.md", sidebar: false },
+    });
+
+    expect(result.blog?.path).toBe("/news");
+    expect(result.blog?.files).toEqual(["/posts/*.md"]);
+    expect(result.blog?.sidebar).toBe(false);
+  });
+
   it("transforms cdnUrl string into a base/media object", () => {
     const result = validateConfig({ cdnUrl: "https://cdn.example.com" });
 

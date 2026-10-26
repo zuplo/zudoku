@@ -53,6 +53,7 @@
     "./plugins": "./src/lib/core/plugins.ts",
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.tsx",
+    "./plugins/blog": "./src/lib/plugins/blog/index.tsx",
     "./plugins/openapi": "./src/lib/plugins/openapi/index.tsx",
     "./plugins/custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",

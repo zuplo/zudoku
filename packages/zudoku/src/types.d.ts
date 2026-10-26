@@ -8,6 +8,16 @@ declare module "virtual:zudoku-docs-plugin" {
   export const configuredMarkdownFiles: Record<string, () => Promise<unknown>>;
 }
 
+declare module "virtual:zudoku-blog-plugin" {
+  export const configuredBlogPlugin:
+    | import("./lib/core/plugins.ts").ZudokuPlugin
+    | undefined;
+}
+
+declare module "virtual:zudoku-blog-posts" {
+  export const posts: import("./lib/plugins/blog/index.tsx").BlogPost[];
+}
+
 declare module "virtual:zudoku-navigation" {
   export const configuredHeaderNavigation: import("./config/validators/HeaderNavigationSchema.ts").HeaderNavigation;
   export const configuredNavigation: import("./config/validators/NavigationSchema.ts").Navigation;

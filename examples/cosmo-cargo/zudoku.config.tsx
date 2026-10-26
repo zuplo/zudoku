@@ -158,6 +158,23 @@ const config: ZudokuConfig = {
   sitemap: {
     siteUrl: "https://cosmocargo.dev",
   },
+  blog: {
+    title: "Cosmo Cargo Dispatch",
+    description:
+      "Launches, lane reports, and field notes from the Cosmo Cargo crew.",
+    postsPerPage: 3,
+    authors: {
+      nova: {
+        name: "Nova Reyes",
+        title: "Head of Product, Cosmo Cargo",
+        url: "https://cosmocargo.dev",
+      },
+      orion: {
+        name: "Orion Vance",
+        title: "Fleet Operations Lead",
+      },
+    },
+  },
   site: {
     sidebar: {
       togglePosition: "center",
@@ -433,6 +450,12 @@ const config: ZudokuConfig = {
       icon: "square-library",
       to: "/catalog",
       label: "API Catalog",
+    },
+    {
+      type: "link",
+      icon: "newspaper",
+      to: "/blog",
+      label: "Blog",
     },
     {
       type: "link",

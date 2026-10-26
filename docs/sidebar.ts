@@ -29,6 +29,7 @@ export const docs: Navigation = [
     items: [
       "docs/customization/colors-theme",
       "docs/configuration/docs",
+      "docs/configuration/blog",
       "docs/configuration/navigation",
       "docs/configuration/site",
       "docs/configuration/search",
