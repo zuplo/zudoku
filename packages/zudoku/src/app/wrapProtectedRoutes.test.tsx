@@ -89,6 +89,17 @@ describe("wrapProtectedRoutes", () => {
     expect(await invokeLazy(wrapped[0])).toEqual({ element: null });
   });
 
+  it("stubs a route relative to the basePath router basename", async () => {
+    const routes: RouteObject[] = [
+      { path: "/", children: [{ path: "guides/introduction", lazy }] },
+    ];
+    const wrapped = wrapProtectedRoutes(routes, ["/guides/*"], false, "/docs");
+
+    expect(await invokeLazy(wrapped[0]?.children?.[0])).toEqual({
+      element: null,
+    });
+  });
+
   it("accepts the object-form protectedRoutes config", async () => {
     const routes = buildRoutes();
     const wrapped = wrapProtectedRoutes(
@@ -142,6 +153,14 @@ describe("warnInlineProtectedRoutes", () => {
   it("applies basePath to patterns when matching", () => {
     const routes: RouteObject[] = [
       { path: "/docs/secret", element: <div>inline</div> },
+    ];
+    warnInlineProtectedRoutes(routes, ["/secret"], "/docs");
+    expect(warn).toHaveBeenCalledOnce();
+  });
+
+  it("warns for a route relative to the basePath router basename", () => {
+    const routes: RouteObject[] = [
+      { path: "/secret", element: <div>inline</div> },
     ];
     warnInlineProtectedRoutes(routes, ["/secret"], "/docs");
     expect(warn).toHaveBeenCalledOnce();
