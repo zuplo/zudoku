@@ -7,6 +7,13 @@ Zudoku can publish a blog next to your documentation and API reference. Posts ar
 files in a folder of your project: add a file and it shows up in the blog, with a paginated index,
 tag pages, a "Recent posts" sidebar and an RSS feed.
 
+:::caution{title="Beta"}
+
+The blog plugin is in beta. Its options, frontmatter fields and generated URLs may still change in a
+minor release. Feedback is welcome in [GitHub issues](https://github.com/zuplo/zudoku/issues).
+
+:::
+
 ## Enable the blog
 
 Add the blog plugin to the `plugins` of your config. Every option has a default:

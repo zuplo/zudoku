@@ -25,6 +25,9 @@ export type {
  * Publishes the Markdown and MDX files matched by `files` as a blog under
  * `path`. Posts are read at build time by Zudoku's blog Vite plugin, which
  * finds every `blogPlugin()` in `plugins`.
+ *
+ * @beta Options, frontmatter fields and generated URLs may still change in a
+ * minor release.
  */
 export const blogPlugin = (options: BlogPluginOptions = {}): ZudokuPlugin => {
   const config = resolveBlogOptions(options);
