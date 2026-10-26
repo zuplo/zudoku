@@ -5,18 +5,24 @@ import { joinUrl } from "../lib/util/joinUrl.js";
 import {
   matchesAnyProtectedPattern,
   matchesProtectedPattern,
-  stripBasePath,
 } from "../lib/util/url.js";
 
 type Visitor = (route: RouteObject, fullPath: string) => RouteObject;
 
+// Route paths are relative to the router basename, like the pathname
+// RouteGuard checks, so they're compared to the patterns as-is. Absolute child
+// paths (e.g. OpenAPI's "/api/users" under "/api") already include the parent.
 const visitRoutes = (
   rs: RouteObject[],
   visit: Visitor,
   parent = "",
 ): RouteObject[] =>
   rs.map((r) => {
-    const fullPath = r.path ? joinUrl(parent, r.path) : parent;
+    const fullPath = r.path
+      ? r.path.startsWith("/")
+        ? joinUrl(r.path)
+        : joinUrl(parent, r.path)
+      : parent;
     const next = visit(r, fullPath);
 
     return next.children
@@ -33,19 +39,13 @@ export const wrapProtectedRoutes = (
   routes: RouteObject[],
   protectedRoutes: ProtectedRoutesInput,
   isAuthenticated: boolean,
-  basePath?: string,
 ): RouteObject[] => {
   const patterns = Object.keys(normalizeProtectedRoutes(protectedRoutes) ?? {});
   if (patterns.length === 0 || isAuthenticated) return routes;
 
-  // Route paths are relative to the router basename, so compare them to the
-  // patterns without basePath (stripBasePath is a no-op if it's absent).
   return visitRoutes(routes, (r, fullPath) => {
     if (typeof r.lazy !== "function") return r;
-    return matchesAnyProtectedPattern(
-      patterns,
-      stripBasePath(fullPath, basePath),
-    )
+    return matchesAnyProtectedPattern(patterns, fullPath)
       ? { ...r, lazy: noop }
       : r;
   });
@@ -62,18 +62,15 @@ export const wrapProtectedRoutesForRender = (
   {
     isAuthenticated,
     bypassProtection,
-    basePath,
   }: {
     isAuthenticated: boolean;
     bypassProtection?: boolean;
-    basePath?: string;
   },
 ): RouteObject[] =>
   wrapProtectedRoutes(
     routes,
     protectedRoutes,
     isAuthenticated || bypassProtection === true,
-    basePath,
   );
 
 // Inline elements can't be chunk-isolated; RouteGuard still blocks render,
@@ -81,7 +78,6 @@ export const wrapProtectedRoutesForRender = (
 export const warnInlineProtectedRoutes = (
   routes: RouteObject[],
   protectedRoutes: ProtectedRoutesInput,
-  basePath?: string,
 ) => {
   const patterns = Object.keys(normalizeProtectedRoutes(protectedRoutes) ?? {});
   if (patterns.length === 0) return;
@@ -93,9 +89,7 @@ export const warnInlineProtectedRoutes = (
 
     if (!r.path || !isInline) return r;
 
-    const matched = patterns.find((p) =>
-      matchesProtectedPattern(p, stripBasePath(fullPath, basePath)),
-    );
+    const matched = patterns.find((p) => matchesProtectedPattern(p, fullPath));
 
     if (!matched) return r;
 
