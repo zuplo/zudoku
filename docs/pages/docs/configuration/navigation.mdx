@@ -147,6 +147,10 @@ type NavigationCategory = {
     | string
     | { type: "doc"; file: string; label?: string; path?: string }
     | { type: "link"; to: string; label?: string };
+  landing?: // overrides where the category navigates, keeping `link` as its identifying path
+    | string
+    | { type: "doc"; file: string; label?: string; path?: string }
+    | { type: "link"; to: string; label?: string };
   display?:
     | "auth"
     | "anon"
@@ -226,6 +230,51 @@ The `link` object form supports these properties:
 | `type`   | `"link"` | Must be `"link"`                    |
 | `to`     | `string` | Path or external URL to navigate to |
 | `label`  | `string` | Override the category label         |
+
+#### Category landing pages
+
+A category's `link` does double duty: it is where the category navigates to, and it is the path that
+_identifies_ the category. When a category is a top-level tab, that identity is how Zudoku knows
+which pages belong to the tab — including the pages a plugin generates underneath it.
+
+The `landing` property separates the two. It overrides where the category navigates to and leaves
+`link` as the identifying path. It accepts the same three forms as `link`.
+
+This matters most for a tab that fronts an API. The tab's `link` has to stay on the API's base path
+so the tab keeps ownership of the generated reference pages, but you may want clicking the tab to
+open a handwritten introduction instead of the first endpoint:
+
+```tsx title="Send an API tab to a static doc"
+navigation: [
+  {
+    type: "category",
+    label: "Commerce APIs",
+    // Identifies the tab — keeps the generated API pages under this tab
+    link: { type: "link", to: "/commerce-apis" },
+    // Where clicking the tab actually goes
+    landing: "commerce-apis/overview",
+    items: [
+      { type: "section", label: "Getting Started" },
+      "commerce-apis/overview",
+      "commerce-apis/authentication",
+    ],
+  },
+],
+```
+
+Clicking **Commerce APIs** now opens `/commerce-apis/overview`. Browsing to any generated endpoint
+page still keeps the tab active and its sidebar items visible, because `link` is unchanged.
+
+Without `landing`, pointing `link` at `commerce-apis/overview` would move the tab's identity off the
+API base path, and the tab would stop matching its own API pages — losing both the active state and
+the static items in the sidebar.
+
+:::tip
+
+`landing` is only needed when a category must navigate somewhere other than the path that identifies
+it. If a category has no plugin-generated pages beneath it, `link` alone is enough.
+
+:::
 
 ### `type: doc`
 
