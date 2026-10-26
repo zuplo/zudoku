@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { stat } from "node:fs/promises";
 import path from "node:path";
 import { glob } from "glob";
@@ -7,7 +8,7 @@ import { fromMarkdown } from "mdast-util-from-markdown";
 import { mdxFromMarkdown } from "mdast-util-mdx";
 import { mdxjs } from "micromark-extension-mdxjs";
 import colors from "picocolors";
-import type { Plugin, ViteDevServer } from "vite";
+import type { Plugin } from "vite";
 import { logger } from "../cli/common/logger.js";
 import { type ConfigWithMeta, getCurrentConfig } from "../config/loader.js";
 import { selectPluginConfigs } from "../lib/core/plugin-config.js";
@@ -98,8 +99,12 @@ const collapseWhitespace = (text: string) => text.replace(/\s+/g, " ").trim();
 
 const parseMarkdown = (content: string, isMdx: boolean): Root | undefined => {
   // HTML comments are supported in MDX via `remark-comment`, but would be
-  // invalid JSX here
-  const withoutComments = content.replace(/<!--[\s\S]*?-->/g, "");
+  // invalid JSX here. Repeated so that removing one can't form another.
+  let withoutComments = content;
+  for (let previous = ""; previous !== withoutComments; ) {
+    previous = withoutComments;
+    withoutComments = withoutComments.replace(/<!--[\s\S]*?-->/g, "");
+  }
 
   try {
     return isMdx
@@ -166,6 +171,22 @@ const resolveTags = (value: unknown): BlogTag[] => {
   return [...tags.values()];
 };
 
+// The date of the commit that added the file. Unlike its mtime, this stays the
+// same across checkouts. Shallow clones only know their own commits.
+const getGitCreatedDate = (absolutePath: string) => {
+  const result = spawnSync(
+    "git",
+    ["log", "--diff-filter=A", "--follow", "--format=%cI", "--", absolutePath],
+    {
+      cwd: path.dirname(absolutePath),
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    },
+  );
+  if (result.status !== 0) return;
+  return parseDate(result.stdout.trim().split("\n").at(-1));
+};
+
 const readPost = async (
   config: ConfigWithMeta,
   blog: ResolvedBlogOptions,
@@ -198,7 +219,10 @@ const readPost = async (
   if (data.date !== undefined && !date) {
     warn(`Invalid date "${data.date}" in ${file}.`);
   }
-  date ??= parseDate(fromPath.date) ?? (await stat(absolutePath)).mtime;
+  date ??=
+    parseDate(fromPath.date) ??
+    getGitCreatedDate(absolutePath) ??
+    (await stat(absolutePath)).mtime;
 
   return {
     file,
@@ -219,6 +243,44 @@ const readPost = async (
   };
 };
 
+const isIndexFile = (file: string) => /(^|\/)index\.mdx?$/.test(file);
+
+/**
+ * Files matched by a blog's glob that are posts, given relative to the glob
+ * parent. A folder with an `index.md(x)` is one post, so other Markdown files
+ * in it (partials, READMEs) are not posts. Neither are files or folders that
+ * start with `_`.
+ */
+export const filterPostFiles = (files: string[]) => {
+  const postFolders = new Set(
+    files
+      .filter((file) => isIndexFile(file) && file.includes("/"))
+      .map((file) => path.posix.dirname(file)),
+  );
+
+  return files.filter((file) => {
+    const segments = file.split("/");
+    if (segments.some((segment) => segment.startsWith("_"))) return false;
+    if (isIndexFile(file)) return true;
+
+    return !segments
+      .slice(0, -1)
+      .some((_, i) => postFolders.has(segments.slice(0, i + 1).join("/")));
+  });
+};
+
+// Paths the blog's own pages are served at
+const isReservedPath = (blog: ResolvedBlogOptions, postPath: string) => {
+  const subPath = postPath.slice(blog.path.length).replace(/^\//, "");
+  return (
+    subPath === "" ||
+    subPath === "tags" ||
+    subPath === "rss.xml" ||
+    subPath.startsWith("tags/") ||
+    subPath.startsWith("page/")
+  );
+};
+
 /**
  * Globs the blog posts and reads their metadata, newest post first. Drafts are
  * only included in development.
@@ -237,9 +299,14 @@ export const loadBlogPosts = async (
         posix: true,
       });
       const globRoot = globParent(pattern).replace(/^\.?\//, "");
+      const postFiles = filterPostFiles(
+        files.map((file) => path.posix.relative(globRoot, file)),
+      );
 
       return Promise.all(
-        files.map((file) => readPost(config, blog, file, globRoot)),
+        postFiles.map((file) =>
+          readPost(config, blog, path.posix.join(globRoot, file), globRoot),
+        ),
       );
     }),
   );
@@ -255,6 +322,13 @@ export const loadBlogPosts = async (
   // newest one wins.
   const byPath = new Map<string, BlogPostSource>();
   for (const post of sorted) {
+    if (isReservedPath(blog, post.path)) {
+      warn(
+        `${post.file} resolves to ${post.path}, which is used by the blog's own pages. Rename it or set a different \`slug\`.`,
+      );
+      continue;
+    }
+
     const existing = byPath.get(post.path);
     if (!existing) {
       byPath.set(post.path, post);
@@ -369,6 +443,63 @@ export const getBlogs = (config: ConfigWithMeta): ResolvedBlogOptions[] => {
   return blogs;
 };
 
+// The virtual modules of both environments, the feed and link rewriting all
+// read the same posts, so a build parses them once. The dev server clears it
+// when a post changes.
+const postsCache = new Map<string, Promise<BlogPostSource[]>>();
+
+const getBlogPosts = (config: ConfigWithMeta, blog: ResolvedBlogOptions) => {
+  const key = JSON.stringify([
+    config.__meta.rootDir,
+    config.basePath,
+    getBlogSiteUrl(config),
+    blog,
+  ]);
+  const cached = postsCache.get(key);
+  if (cached) return cached;
+
+  const posts = loadBlogPosts(config, blog);
+  postsCache.set(key, posts);
+  // Don't keep a failed load around, e.g. a post that was deleted mid-read
+  posts.catch(() => postsCache.delete(key));
+  return posts;
+};
+
+/**
+ * Post files (absolute, without extension) mapped to the routes they're served
+ * at, so relative links between posts resolve to their slugs
+ */
+export const getBlogRoutesByFile = async (config: ConfigWithMeta) => {
+  const posts = await Promise.all(
+    getBlogs(config).map((blog) => getBlogPosts(config, blog)),
+  );
+
+  return new Map(
+    posts
+      .flat()
+      .map((post) => [
+        path.resolve(config.__meta.rootDir, post.file).replace(/\.mdx?$/, ""),
+        post.path,
+      ]),
+  );
+};
+
+const isInBlogFolder = (config: ConfigWithMeta, filePath: string) =>
+  getBlogs(config)
+    .flatMap((blog) => blog.files)
+    .map((pattern) => globParent(pattern).replace(/^\.?\//, ""))
+    .some((folder) => {
+      const relative = path.relative(
+        path.resolve(config.__meta.rootDir, folder),
+        filePath,
+      );
+      return (
+        relative !== ".." &&
+        !relative.startsWith(`..${path.sep}`) &&
+        !path.isAbsolute(relative)
+      );
+    });
+
 const manifestModuleId = "virtual:zudoku-blog";
 // Followed by the blog's path, e.g. `virtual:zudoku-blog/posts/blog`
 const postsModulePrefix = "virtual:zudoku-blog/posts";
@@ -376,7 +507,7 @@ const postsModulePrefix = "virtual:zudoku-blog/posts";
 const generateManifest = async (config: ConfigWithMeta) => {
   const entries = await Promise.all(
     getBlogs(config).map(async (blog) => {
-      const posts = await loadBlogPosts(config, blog);
+      const posts = await getBlogPosts(config, blog);
 
       // Posts are sorted newest first, so the newest spelling of a tag wins
       const tags = new Map<string, BlogTag>();
@@ -432,7 +563,7 @@ const viteBlogPlugin = (): Plugin => {
         const config = getCurrentConfig();
         const blogPath = id.slice(resolvedPostsPrefix.length);
         const blog = getBlogs(config).find((b) => b.path === blogPath);
-        const posts = blog ? await loadBlogPosts(config, blog) : [];
+        const posts = blog ? await getBlogPosts(config, blog) : [];
 
         return `export const posts = ${JSON.stringify(
           posts.map(({ file: _file, ...post }) => post),
@@ -462,21 +593,18 @@ const viteBlogPlugin = (): Plugin => {
             siteUrl,
             basePath: config.basePath,
             blog,
-            posts: await loadBlogPosts(config, blog),
+            posts: await getBlogPosts(config, blog),
           }),
         });
       }
     },
     async configureServer(server) {
-      const loadAll = async (config: ConfigWithMeta) =>
+      const loadAll = (config: ConfigWithMeta) =>
         Promise.all(
-          getBlogs(config).map(async (blog) => ({
-            blog,
-            posts: await loadBlogPosts(config, blog),
-          })),
-        );
+          getBlogs(config).map((blog) => getBlogPosts(config, blog)),
+        ).then((posts) => JSON.stringify(posts));
 
-      let blogs = await loadAll(getCurrentConfig());
+      let snapshot = await loadAll(getCurrentConfig());
 
       server.middlewares.use(async (req, res, next) => {
         const config = getCurrentConfig();
@@ -493,44 +621,28 @@ const viteBlogPlugin = (): Plugin => {
             siteUrl,
             basePath: config.basePath,
             blog,
-            posts: await loadBlogPosts(config, blog),
+            posts: await getBlogPosts(config, blog),
           }),
         );
       });
 
-      // Posts are added, removed or edited: refresh the generated modules. A
-      // changed set of routes needs a full reload.
+      // A post was added, removed or edited. Routes, list pages and the
+      // sidebar are built from its metadata, so a change to it needs a full
+      // reload; content-only edits are left to MDX hot reloading.
       server.watcher.on("all", async (event, filePath) => {
         if (!["add", "change", "unlink"].includes(event)) return;
         if (!/\.mdx?$/.test(filePath)) return;
 
-        const previous = blogs;
-        blogs = await loadAll(getCurrentConfig());
-        if (JSON.stringify(previous) === JSON.stringify(blogs)) return;
+        const config = getCurrentConfig();
+        if (!isInBlogFolder(config, filePath)) return;
 
-        const routes = (list: typeof blogs) =>
-          JSON.stringify(
-            list.map(({ blog, posts }) => [
-              blog.path,
-              posts.map((p) => [p.path, p.tags.map((t) => t.slug)]),
-            ]),
-          );
-        if (routes(previous) !== routes(blogs)) return reload(server);
-
-        invalidateBlogModules(server);
+        postsCache.clear();
+        const previous = snapshot;
+        snapshot = await loadAll(config);
+        if (previous !== snapshot) reload(server);
       });
     },
   };
-};
-
-const invalidateBlogModules = (server: ViteDevServer) => {
-  for (const environment of Object.values(server.environments)) {
-    for (const module of environment.moduleGraph.idToModuleMap.values()) {
-      if (module.id?.startsWith(`\0${manifestModuleId}`)) {
-        environment.moduleGraph.invalidateModule(module);
-      }
-    }
-  }
 };
 
 export default viteBlogPlugin;

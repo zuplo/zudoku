@@ -65,7 +65,11 @@ export const BlogListPage = ({
   const pageTitle = page > 1 ? `${title} – Page ${page}` : title;
 
   return (
-    <section className="w-full max-w-3xl mx-auto pt-(--padding-content-top) pb-12">
+    // Only the posts themselves belong in search results
+    <section
+      className="w-full max-w-3xl mx-auto pt-(--padding-content-top) pb-12"
+      data-pagefind-ignore="all"
+    >
       <Head>
         <title>{pageTitle}</title>
         {!tag && options.description && (
@@ -112,7 +116,7 @@ export const BlogListPage = ({
       {posts.length === 0 ? (
         <p className="text-muted-foreground">No posts yet.</p>
       ) : (
-        <div className="divide-y" data-pagefind-ignore="all">
+        <div className="divide-y">
           {posts.map((post) => (
             <PostCard key={post.path} post={post} options={options} />
           ))}

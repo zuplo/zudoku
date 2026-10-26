@@ -1,6 +1,6 @@
 import { useMDXComponents } from "@mdx-js/react";
 import { Head } from "@unhead/react";
-import { useEffect } from "react";
+import { type ComponentProps, useEffect, useMemo } from "react";
 import { Link } from "react-router";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
@@ -32,10 +32,6 @@ const MarkdownHeadings = {
   ),
 } satisfies MdxComponentsType;
 
-// Without a frontmatter title, the post's title is its first `# Heading`, which
-// the page header already renders.
-const HiddenHeading = () => null;
-
 export const BlogPostPage = ({
   options,
   post,
@@ -57,6 +53,27 @@ export const BlogPostPage = ({
   const tocEntries =
     tableOfContents.find((item) => item.depth === 1)?.children ??
     tableOfContents.filter((item) => item.depth === 2);
+
+  // Without a frontmatter title, the post's title is its first `# Heading`.
+  // The page header renders it and takes over its anchor.
+  const titleHeadingId = frontmatter.title
+    ? undefined
+    : tableOfContents.find((item) => item.depth === 1)?.id;
+
+  const mdxComponents = useMDXComponents();
+  const components = useMemo(
+    () => ({
+      ...mdxComponents,
+      ...MarkdownHeadings,
+      h1: ({ children, id }: ComponentProps<"h1">) =>
+        titleHeadingId && id === titleHeadingId ? null : (
+          <Heading level={1} id={id}>
+            {children}
+          </Heading>
+        ),
+    }),
+    [mdxComponents, titleHeadingId],
+  );
 
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
@@ -92,7 +109,10 @@ export const BlogPostPage = ({
 
       <Typography className="max-w-full flex-1 shrink pt-(--padding-content-top) xl:w-full xl:max-w-3xl xl:mx-auto">
         <article>
-          <header className="not-prose flex flex-col gap-3 mb-10">
+          <header
+            id={titleHeadingId}
+            className="not-prose flex flex-col gap-3 mb-10"
+          >
             <CategoryHeading>
               <Link to={options.path}>{options.title}</Link>
             </CategoryHeading>
@@ -112,13 +132,7 @@ export const BlogPostPage = ({
             </DeveloperHint>
           )}
 
-          <MdxComponent
-            components={{
-              ...useMDXComponents(),
-              ...MarkdownHeadings,
-              ...(frontmatter.title ? {} : { h1: HiddenHeading }),
-            }}
-          />
+          <MdxComponent components={components} />
 
           {post.tags.length > 0 && (
             <footer className="mt-12">

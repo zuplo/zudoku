@@ -1,6 +1,9 @@
+import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import type { Link, Root } from "mdast";
+import { VFile } from "vfile";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConfigWithMeta } from "../config/loader.js";
 import { validateConfig } from "../config/validators/ZudokuConfig.js";
@@ -11,9 +14,12 @@ import {
   type BlogPost,
   resolveBlogOptions,
 } from "../lib/plugins/blog/options.js";
+import { remarkLinkRewrite } from "./mdx/remark-link-rewrite.js";
 import {
   type BlogPostSource,
+  filterPostFiles,
   generateRssFeed,
+  getBlogRoutesByFile,
   getBlogs,
   loadBlogPosts,
   parsePostPath,
@@ -117,6 +123,29 @@ describe("parsePostPath", () => {
     ["2024-05-01launch.md", "2024-05-01launch", undefined],
   ])("parses %s", (file, slug, date) => {
     expect(parsePostPath(file)).toEqual({ slug, date });
+  });
+});
+
+describe("filterPostFiles", () => {
+  it("keeps only the index of folder posts and skips _-prefixed paths", () => {
+    expect(
+      filterPostFiles([
+        "2025-01-01-a.md",
+        "2025-01-02-b/index.mdx",
+        "2025-01-02-b/_snippet.mdx",
+        "2025-01-02-b/README.md",
+        "2025-01-02-b/notes/extra.md",
+        "news/2025-01-03-c.md",
+        "_drafts/d.md",
+        "e/_partial.mdx",
+        "index.md",
+      ]),
+    ).toEqual([
+      "2025-01-01-a.md",
+      "2025-01-02-b/index.mdx",
+      "news/2025-01-03-c.md",
+      "index.md",
+    ]);
   });
 });
 
@@ -268,6 +297,89 @@ describe("loadBlogPosts", () => {
       "/docs/jane.png",
       "https://cdn.example.com/remote.png",
     ]);
+  });
+
+  it("removes nested HTML comments before parsing MDX", async () => {
+    await writePost(
+      "blog/2024-01-15-comments.mdx",
+      "<!<!-- a -->-- b -->\n\nVisible paragraph.",
+    );
+
+    const [post] = await load();
+
+    expect(post?.description).toBe("Visible paragraph.");
+  });
+
+  it("skips posts on the paths of the blog's own pages", async () => {
+    await writePost("blog/tags.md", "Tags");
+    await writePost("blog/page/2.md", "Page");
+    await writePost("blog/rss.xml.md", "Feed");
+    await writePost("blog/2024-01-01-slug.md", "---\nslug: tags/api\n---\nTag");
+    await writePost("blog/2024-01-02-ok.md", "Ok");
+
+    const posts = await load();
+
+    expect(posts.map((post) => post.path)).toEqual(["/blog/ok"]);
+  });
+
+  it("dates undated posts by the commit that added them", async () => {
+    await writePost("blog/undated.md", "Hello");
+    const git = (...args: string[]) =>
+      spawnSync(
+        "git",
+        [
+          "-c",
+          "user.name=Test",
+          "-c",
+          "user.email=test@example.com",
+          "-c",
+          "commit.gpgsign=false",
+          ...args,
+        ],
+        {
+          cwd: tempDir,
+          env: {
+            ...process.env,
+            GIT_AUTHOR_DATE: "2021-03-04T05:06:07Z",
+            GIT_COMMITTER_DATE: "2021-03-04T05:06:07Z",
+          },
+        },
+      );
+    git("init", "-q");
+    git("add", ".");
+    git("commit", "-q", "-m", "Add post");
+
+    const [post] = await load();
+
+    expect(post?.date).toBe("2021-03-04T05:06:07.000Z");
+  });
+
+  it("maps post files to their routes for links between posts", async () => {
+    await writePost("blog/2025-01-01-a.md", "A");
+    await writePost("blog/2025-01-02-b/index.mdx", "B");
+
+    const routesByFile = await getBlogRoutesByFile(
+      withMeta({ plugins: [blogPlugin()] }, tempDir),
+    );
+    const rewrite = (url: string, file: string) => {
+      const link: Link = { type: "link", url, children: [] };
+      const tree: Root = {
+        type: "root",
+        children: [{ type: "paragraph", children: [link] }],
+      };
+      remarkLinkRewrite("", routesByFile)(
+        tree,
+        new VFile({ path: path.join(tempDir, file) }),
+      );
+      return link.url;
+    };
+
+    expect(rewrite("./2025-01-02-b/index.mdx", "blog/2025-01-01-a.md")).toBe(
+      "/blog/b",
+    );
+    expect(
+      rewrite("../2025-01-01-a.md#intro", "blog/2025-01-02-b/index.mdx"),
+    ).toBe("/blog/a#intro");
   });
 
   it("estimates the reading time", async () => {

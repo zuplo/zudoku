@@ -48,6 +48,17 @@ The file name sets the URL and the date of a post: a `YYYY-MM-DD-` prefix is the
 the rest is the slug. A post can also be a folder with an `index.md` or `index.mdx` file, which
 keeps its images next to it. Folders that aren't dated stay part of the URL.
 
+Some files are not posts:
+
+- Other Markdown files in a post's folder, such as partials imported by its `index.mdx` or a
+  `README.md`
+- Files and folders whose name starts with `_`, e.g. `_drafts/` or `_snippet.mdx`
+- Posts whose URL is taken by the blog's own pages: `<path>/tags`, `<path>/tags/*`, `<path>/page/*`
+  and `<path>/rss.xml`. These are skipped with a warning.
+
+Link to other posts by their file, e.g. `[Launch](./2025-04-02-launch-week/index.mdx)`, and the link
+points to the post's URL.
+
 Posts support everything [Markdown and MDX pages](../markdown/overview.md) do, including
 [admonitions](../markdown/admonitions.md), [code blocks](../markdown/code-blocks.md) and React
 components.
@@ -69,18 +80,18 @@ The post continues here.
 
 ### Frontmatter
 
-| Field         | Description                                                                                                              |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `title`       | Title of the post. Defaults to the first `# Heading`, which is then not repeated in the post body.                       |
-| `description` | Shown on the index page, in the feed and as the meta description. Defaults to the first paragraph.                       |
-| `date`        | Publish date, e.g. `2025-03-14` or `2025-03-14T09:00:00Z`. Defaults to the date in the file name, then the file's mtime. |
-| `slug`        | Overrides the URL: `slug: launch` serves the post at `/blog/launch`.                                                     |
-| `authors`     | Author keys from [`authors`](#authors), or inline objects such as `{ name: "Jane Doe", title: "Engineer" }`.             |
-| `tags`        | List of tags. Each tag gets a page listing its posts.                                                                    |
-| `image`       | Image URL used as `og:image` when the post is shared.                                                                    |
-| `draft`       | When `true`, the post is only shown in development.                                                                      |
-| `toc`         | Set to `false` to hide the table of contents.                                                                            |
-| `seo`         | `title` and `description` that override the browser title and meta description only.                                     |
+| Field         | Description                                                                                                                                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `title`       | Title of the post. Defaults to the first `# Heading`, which is then not repeated in the post body.                                                                                                                 |
+| `description` | Shown on the index page, in the feed and as the meta description. Defaults to the first paragraph.                                                                                                                 |
+| `date`        | Publish date, e.g. `2025-03-14` or `2025-03-14T09:00:00Z`. Defaults to the date in the file name, then the date of the commit that added the file (needs the full git history), then the file's modification time. |
+| `slug`        | Overrides the URL: `slug: launch` serves the post at `/blog/launch`.                                                                                                                                               |
+| `authors`     | Author keys from [`authors`](#authors), or inline objects such as `{ name: "Jane Doe", title: "Engineer" }`.                                                                                                       |
+| `tags`        | List of tags. Each tag gets a page listing its posts.                                                                                                                                                              |
+| `image`       | Image used as `og:image` when the post is shared. An absolute URL or a path in the `public` folder, e.g. `/cover.png`.                                                                                             |
+| `draft`       | When `true`, the post is only shown in development.                                                                                                                                                                |
+| `toc`         | Set to `false` to hide the table of contents.                                                                                                                                                                      |
+| `seo`         | `title` and `description` that override the browser title and meta description only.                                                                                                                               |
 
 Posts are sorted by date, newest first.
 

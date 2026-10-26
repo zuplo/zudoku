@@ -17,7 +17,8 @@ Every cryo shipment needs a thermal class on its manifest so the right hold is a
 
 ## 3. Avoid gravity-well transfers
 
-Each transfer through a gravity well costs about 0.4 K of thermal margin. Book direct lanes.
+Each transfer through a gravity well costs about 0.4 K of thermal margin. Book direct lanes, or ship
+with [Quantum Express](./2026-09-14-quantum-express-launch.mdx), which skips gravity wells entirely.
 
 ## 4. Track the hold temperature
 

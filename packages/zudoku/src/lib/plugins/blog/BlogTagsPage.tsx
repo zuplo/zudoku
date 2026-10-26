@@ -22,7 +22,11 @@ export const BlogTagsPage = ({
   }
 
   return (
-    <section className="w-full max-w-3xl mx-auto pt-(--padding-content-top) pb-12">
+    // Only the posts themselves belong in search results
+    <section
+      className="w-full max-w-3xl mx-auto pt-(--padding-content-top) pb-12"
+      data-pagefind-ignore="all"
+    >
       <Head>
         <title>{`Tags – ${options.title}`}</title>
       </Head>
@@ -45,7 +49,7 @@ export const BlogTagsPage = ({
       {options.tags.length === 0 ? (
         <p className="text-muted-foreground">No tags yet.</p>
       ) : (
-        <ul className="flex flex-wrap gap-3" data-pagefind-ignore="all">
+        <ul className="flex flex-wrap gap-3">
           {options.tags.map((tag) => (
             <li key={tag.slug}>
               <Badge variant="outline" className="text-sm px-3 py-1" asChild>
