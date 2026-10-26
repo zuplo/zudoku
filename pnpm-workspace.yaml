@@ -33,7 +33,7 @@ catalog:
   "@types/react": 19.2.18
   "@types/react-dom": 19.2.7
   "@types/react-is": 19.2.0
-  happy-dom: 20.14.5
+  happy-dom: 21.0.4
   react: 19.2.8
   react-dom: 19.2.8
   react-is: 19.2.8
