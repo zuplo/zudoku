@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createUrl } from "./createUrl.js";
 import type { PlaygroundForm } from "./Playground.js";
 import { parseArrayParamValue } from "./serializeQueryParams.js";
@@ -327,15 +327,131 @@ describe("createUrl", () => {
     expect(url.pathname).toBe("/v1/products/123");
   });
 
-  it("keeps the host for paths with a colon", () => {
-    for (const host of [
-      "https://api.example.com/v1",
-      "https://api.example.com/v1/",
-    ]) {
+  it.each(["https://api.example.com/v1", "https://api.example.com/v1/"])(
+    "keeps the server path of %s",
+    (host) => {
+      const url = createUrl(host, "/users/{id}/", makeFormData());
+      expect(url.toString()).toBe("https://api.example.com/v1/users/%7Bid%7D/");
+    },
+  );
+
+  it.each(["https://api.example.com/v1", "https://api.example.com/v1/"])(
+    "keeps the host of %s for paths with a colon",
+    (host) => {
       const url = createUrl(host, "/users:check_login", makeFormData());
       expect(url.toString()).toBe(
         "https://api.example.com/v1/users:check_login",
       );
-    }
+    },
+  );
+
+  it("keeps a colon after a path param literal", () => {
+    const url = createUrl(
+      "https://api.example.com/v1",
+      "/jobs/{name}:cancel",
+      makeFormData({
+        pathParams: [
+          { name: "name", value: "a" },
+          { name: "cancel", value: "b" },
+        ],
+      }),
+    );
+    expect(url.pathname).toBe("/v1/jobs/a:cancel");
+  });
+
+  it("does not treat a colon inside a segment as a param", () => {
+    const url = createUrl(
+      "https://api.example.com/v1",
+      "/users:check_login",
+      makeFormData({ pathParams: [{ name: "check_login", value: "x" }] }),
+    );
+    expect(url.pathname).toBe("/v1/users:check_login");
+  });
+
+  it("fills Express-style path params", () => {
+    const url = createUrl(
+      "https://api.example.com/v1",
+      "/users/:id/posts",
+      makeFormData({ pathParams: [{ name: "id", value: "42" }] }),
+    );
+    expect(url.pathname).toBe("/v1/users/42/posts");
+  });
+
+  it("fills path params with non-word characters in their name", () => {
+    const url = createUrl(
+      "https://api.example.com/v1",
+      "/users/{user-id}/{user.name}",
+      makeFormData({
+        pathParams: [
+          { name: "user-id", value: "42" },
+          { name: "user.name", value: "ada" },
+        ],
+      }),
+    );
+    expect(url.pathname).toBe("/v1/users/42/ada");
+  });
+
+  it.each([
+    ["a?b", "a%3Fb"],
+    ["a#b", "a%23b"],
+    ["a/b", "a%2Fb"],
+    ["../../admin", "..%2F..%2Fadmin"],
+    ["projects:foo", "projects%3Afoo"],
+  ])("encodes the path param value %s", (value, encoded) => {
+    const url = createUrl(
+      "https://api.example.com/v1",
+      "/{id}/posts",
+      makeFormData({
+        pathParams: [{ name: "id", value }],
+        queryParams: [{ name: "x", value: "1", active: true }],
+      }),
+    );
+    expect(url.toString()).toBe(
+      `https://api.example.com/v1/${encoded}/posts?x=1`,
+    );
+  });
+
+  it("keeps the placeholder for empty path params", () => {
+    const url = createUrl(
+      "https://api.example.com/v1",
+      "/products/{productId}",
+      makeFormData({ pathParams: [{ name: "productId", value: "" }] }),
+    );
+    expect(url.pathname).toBe("/v1/products/%7BproductId%7D");
+  });
+
+  it("keeps query strings from the server and the path", () => {
+    const url = createUrl(
+      "https://api.example.com/v1?key=1",
+      "/photos?albumId=2",
+      makeFormData({
+        queryParams: [{ name: "page", value: "3", active: true }],
+      }),
+    );
+    expect(url.toString()).toBe(
+      "https://api.example.com/v1/photos?key=1&albumId=2&page=3",
+    );
+  });
+
+  describe("relative servers", () => {
+    beforeEach(() => {
+      vi.stubGlobal("window", {
+        location: { href: "https://docs.example.com/docs/api/users" },
+      });
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("resolves a relative server against the page", () => {
+      const url = createUrl("/api", "/users", makeFormData());
+      expect(url.toString()).toBe("https://docs.example.com/api/users");
+    });
+
+    it("uses the page origin when there is no server", () => {
+      const url = createUrl("", "/users", makeFormData());
+      expect(url.toString()).toBe("https://docs.example.com/users");
+    });
   });
 });
