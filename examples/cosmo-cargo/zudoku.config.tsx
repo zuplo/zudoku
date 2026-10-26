@@ -211,7 +211,7 @@ const config: ZudokuConfig = {
           title: "Company",
           links: [
             { label: "About", href: "https://zuplo.com/about" },
-            { label: "Blog", href: "https://zuplo.com/blog" },
+            { label: "Blog", href: "/blog" },
             { label: "Careers", href: "https://zuplo.com/careers" },
           ],
         },
