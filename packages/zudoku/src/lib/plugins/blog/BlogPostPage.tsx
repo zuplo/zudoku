@@ -17,7 +17,7 @@ import {
   PostMeta,
   PostTags,
 } from "./BlogComponents.js";
-import type { BlogPluginOptions, BlogPost } from "./index.js";
+import type { BlogPageOptions, BlogPost } from "./options.js";
 
 const MarkdownHeadings = {
   h2: ({ children, id }) => (
@@ -46,7 +46,7 @@ export const BlogPostPage = ({
   tableOfContents,
   __filepath,
 }: Omit<MDXImport, "default" | "excerpt"> & {
-  options: BlogPluginOptions;
+  options: BlogPageOptions;
   post: BlogPost;
   newer?: BlogPost;
   older?: BlogPost;

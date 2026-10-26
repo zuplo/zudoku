@@ -18,7 +18,6 @@ import type {
 } from "../../lib/plugins/openapi/interfaces.js";
 import type { InkeepSearchPluginOptions } from "../../lib/plugins/search-inkeep/index.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
-import { joinUrl } from "../../lib/util/joinUrl.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
@@ -409,63 +408,6 @@ const DocsConfigSchema = z
   }))
   // `prefault` so parsing an absent value still yields the inner defaults
   .prefault({});
-
-const DEFAULT_BLOG_FILES = "/blog/**/*.{md,mdx}";
-
-const BlogAuthorSchema = z.object({
-  name: z.string(),
-  title: z.string().optional(),
-  url: z.string().optional(),
-  imageUrl: z.string().optional(),
-});
-
-const BlogConfigSchema = z.object({
-  files: z
-    .union([z.string(), z.array(z.string())])
-    .transform((val) => (typeof val === "string" ? [val] : val))
-    .default([DEFAULT_BLOG_FILES])
-    .describe("Glob pattern(s) for the Markdown and MDX files of blog posts."),
-  path: z
-    .string()
-    .default("/blog")
-    .transform((val) => joinUrl(val))
-    .describe("The route the blog is served under."),
-  title: z
-    .string()
-    .default("Blog")
-    .describe("Heading of the blog index page and the title of the feed."),
-  description: z
-    .string()
-    .optional()
-    .describe("Shown below the title on the blog index page and in the feed."),
-  postsPerPage: z.number().int().positive().default(10),
-  showReadingTime: z.boolean().default(true),
-  authors: z
-    .record(z.string(), BlogAuthorSchema)
-    .default({})
-    .describe(
-      "Authors that posts can reference by key in their `authors` frontmatter.",
-    ),
-  sidebar: z
-    .union([
-      z.literal(false),
-      z.object({
-        title: z.string().default("Recent posts"),
-        count: z.number().int().positive().default(5),
-      }),
-    ])
-    // `prefault` so parsing an absent value still yields the inner defaults
-    .prefault({})
-    .describe("Sidebar listing the most recent posts, or `false` to hide it."),
-  feed: z
-    .boolean()
-    .optional()
-    .describe(
-      "Generates an RSS feed at `<path>/rss.xml`. Needs `canonicalUrlOrigin` or `sitemap.siteUrl` to build absolute links. Defaults to on when one of them is set.",
-    ),
-});
-
-export type BlogAuthor = z.infer<typeof BlogAuthorSchema>;
 
 const Redirect = z.object({
   from: z.string(),
@@ -881,7 +823,6 @@ const BaseConfigSchema = z.object({
   aiAssistants: AiAssistantsSchema,
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
-  blog: BlogConfigSchema,
   enableStatusPages: z.boolean().optional(),
   defaults: z.object({
     apis: ApiOptionsSchema,
@@ -904,7 +845,6 @@ export const ZudokuConfig = BaseConfigSchema.partial().extend({
 export type VersionConfig = z.infer<typeof VersionConfigSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
-export type ZudokuBlogConfig = z.infer<typeof BlogConfigSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
 export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
 

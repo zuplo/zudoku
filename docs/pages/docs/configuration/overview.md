@@ -240,24 +240,6 @@ structure in place, or to have it match an existing structure that you already h
 }
 ```
 
-### `blog`
-
-Publishes the Markdown and MDX files in your `blog` folder as a blog with tags and an RSS feed. The
-blog is off until this section is set. See [Blog](./blog.md) for all options.
-
-**Example:**
-
-```ts
-{
-  // ...
-  "blog": {
-    "title": "Blog",
-    "files": "/blog/**/*.{md,mdx}"
-  }
-  // ...
-}
-```
-
 ### `sitemap`
 
 Controls the sitemap for your documentation. All possible options are outlined in the example below.

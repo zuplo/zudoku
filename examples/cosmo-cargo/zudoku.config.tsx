@@ -6,6 +6,7 @@ import type {
   ZudokuContext,
 } from "zudoku";
 import { Callout } from "zudoku/components";
+import { blogPlugin } from "zudoku/plugins/blog";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
 import { MembersOnly } from "./src/MembersOnly";
@@ -158,23 +159,6 @@ const config: ZudokuConfig = {
   sitemap: {
     siteUrl: "https://cosmocargo.dev",
   },
-  blog: {
-    title: "Cosmo Cargo Dispatch",
-    description:
-      "Launches, lane reports, and field notes from the Cosmo Cargo crew.",
-    postsPerPage: 3,
-    authors: {
-      nova: {
-        name: "Nova Reyes",
-        title: "Head of Product, Cosmo Cargo",
-        url: "https://cosmocargo.dev",
-      },
-      orion: {
-        name: "Orion Vance",
-        title: "Fleet Operations Lead",
-      },
-    },
-  },
   site: {
     sidebar: {
       togglePosition: "center",
@@ -260,6 +244,23 @@ const config: ZudokuConfig = {
   },
   plugins: [
     new CosmoCargoApiIdentityPlugin(),
+    blogPlugin({
+      title: "Cosmo Cargo Dispatch",
+      description:
+        "Launches, lane reports, and field notes from the Cosmo Cargo crew.",
+      postsPerPage: 3,
+      authors: {
+        nova: {
+          name: "Nova Reyes",
+          title: "Head of Product, Cosmo Cargo",
+          url: "https://cosmocargo.dev",
+        },
+        orion: {
+          name: "Orion Vance",
+          title: "Fleet Operations Lead",
+        },
+      },
+    }),
     {
       getHead: () => (
         <>

@@ -2,20 +2,108 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ConfigWithMeta } from "../config/loader.js";
 import { validateConfig } from "../config/validators/ZudokuConfig.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
+import { blogPlugin } from "../lib/plugins/blog/index.js";
 import {
-  type BlogPluginOptions,
+  type BlogManifest,
   type BlogPost,
-  blogPlugin,
-} from "../lib/plugins/blog/index.js";
+  resolveBlogOptions,
+} from "../lib/plugins/blog/options.js";
 import {
   type BlogPostSource,
   generateRssFeed,
+  getBlogs,
   loadBlogPosts,
   parsePostPath,
 } from "./plugin-blog.js";
 import { routesToPaths } from "./prerender/utils.js";
+
+const { manifests } = vi.hoisted(() => ({
+  manifests: {} as Record<string, BlogManifest>,
+}));
+
+vi.mock("virtual:zudoku-blog", () => ({ blogs: manifests }));
+
+const withMeta = (
+  config: Record<string, unknown>,
+  rootDir = "/project",
+): ConfigWithMeta => ({
+  ...validateConfig(config),
+  __meta: {
+    rootDir,
+    moduleDir: path.join(rootDir, "node_modules"),
+    mode: "module",
+    dependencies: [],
+    configPath: path.join(rootDir, "zudoku.config.ts"),
+  },
+});
+
+describe("resolveBlogOptions", () => {
+  it("applies defaults", () => {
+    expect(resolveBlogOptions()).toEqual({
+      files: ["/blog/**/*.{md,mdx}"],
+      path: "/blog",
+      title: "Blog",
+      postsPerPage: 10,
+      showReadingTime: true,
+      authors: {},
+      sidebar: { title: "Recent posts", count: 5 },
+    });
+  });
+
+  it("normalizes the path and files and keeps a disabled sidebar", () => {
+    expect(
+      resolveBlogOptions({
+        path: "news/",
+        files: "/posts/*.md",
+        sidebar: false,
+        postsPerPage: 0,
+      }),
+    ).toMatchObject({
+      path: "/news",
+      files: ["/posts/*.md"],
+      sidebar: false,
+      postsPerPage: 1,
+    });
+  });
+});
+
+describe("getBlogs", () => {
+  it("collects every blogPlugin from the config's plugins", () => {
+    const config = withMeta({
+      plugins: [
+        blogPlugin(),
+        { getHead: () => null },
+        blogPlugin({ path: "/changelog", title: "Changelog" }),
+      ],
+    });
+
+    expect(getBlogs(config).map((blog) => [blog.path, blog.title])).toEqual([
+      ["/blog", "Blog"],
+      ["/changelog", "Changelog"],
+    ]);
+  });
+
+  it("has no blogs without a blogPlugin or in standalone mode", () => {
+    expect(getBlogs(withMeta({}))).toEqual([]);
+
+    const standalone = withMeta({ plugins: [blogPlugin()] });
+    standalone.__meta.mode = "standalone";
+    expect(getBlogs(standalone)).toEqual([]);
+  });
+
+  it("rejects two blogs on the same path", () => {
+    const config = withMeta({
+      plugins: [blogPlugin(), blogPlugin({ path: "blog/" })],
+    });
+
+    expect(() => getBlogs(config)).toThrow(
+      'Multiple blogs are configured with the path "/blog".',
+    );
+  });
+});
 
 describe("parsePostPath", () => {
   it.each([
@@ -43,19 +131,9 @@ describe("loadBlogPosts", () => {
   };
 
   const load = (
-    blog: Record<string, unknown> = {},
+    blog: Parameters<typeof resolveBlogOptions>[0] = {},
     config: Record<string, unknown> = {},
-  ) =>
-    loadBlogPosts({
-      ...validateConfig({ ...config, blog }),
-      __meta: {
-        rootDir: tempDir,
-        moduleDir: path.join(tempDir, "node_modules"),
-        mode: "module",
-        dependencies: [],
-        configPath: path.join(tempDir, "zudoku.config.ts"),
-      },
-    });
+  ) => loadBlogPosts(withMeta(config, tempDir), resolveBlogOptions(blog));
 
   beforeEach(async () => {
     tempDir = await fs.realpath(
@@ -66,15 +144,6 @@ describe("loadBlogPosts", () => {
   afterEach(async () => {
     process.env.NODE_ENV = originalNodeEnv;
     await fs.rm(tempDir, { recursive: true, force: true });
-  });
-
-  it("returns no posts when the blog is not configured", async () => {
-    await writePost("blog/2024-01-01-hello.md", "Hello");
-
-    const config = validateConfig({});
-    expect(
-      await loadBlogPosts({ ...config, __meta: { rootDir: tempDir } } as never),
-    ).toEqual([]);
   });
 
   it("reads metadata from frontmatter, file name and content", async () => {
@@ -268,10 +337,10 @@ const post = (overrides: Partial<BlogPost> = {}): BlogPost => ({
 
 describe("generateRssFeed", () => {
   it("links posts absolutely and escapes text", () => {
-    const blog = validateConfig({
-      blog: { title: "News & Updates", description: "All <the> news" },
-    }).blog;
-    if (!blog) throw new Error("blog config missing");
+    const blog = resolveBlogOptions({
+      title: "News & Updates",
+      description: "All <the> news",
+    });
 
     const feed = generateRssFeed({
       siteUrl: "https://example.com",
@@ -303,30 +372,30 @@ describe("generateRssFeed", () => {
 });
 
 describe("blogPlugin", () => {
-  const createPlugin = (overrides: Partial<BlogPluginOptions> = {}) => {
-    const posts = [
-      post({ path: "/blog/c", tags: [{ label: "API", slug: "api" }] }),
-      post({ path: "/blog/b" }),
-      post({ path: "/blog/a" }),
-    ];
+  const posts = [
+    post({ path: "/blog/c", tags: [{ label: "API", slug: "api" }] }),
+    post({ path: "/blog/b" }),
+    post({ path: "/blog/a" }),
+  ];
+  const loadPosts = vi.fn(async () => posts);
 
-    return blogPlugin({
-      path: "/blog",
-      title: "Blog",
-      postsPerPage: 2,
-      showReadingTime: true,
-      sidebar: { title: "Recent posts", count: 2 },
+  beforeEach(() => {
+    loadPosts.mockClear();
+    manifests["/blog"] = {
       tags: [{ label: "API", slug: "api" }],
       postImports: Object.fromEntries(
         posts.map((p) => [p.path, () => Promise.resolve({} as never)]),
       ),
-      loadPosts: vi.fn(async () => posts),
-      ...overrides,
-    });
-  };
+      loadPosts,
+    };
+  });
+
+  afterEach(() => {
+    delete manifests["/blog"];
+  });
 
   it("creates a route for every list page, tag and post", () => {
-    const plugin = createPlugin();
+    const plugin = blogPlugin({ postsPerPage: 2 });
     const routes = isNavigationPlugin(plugin) ? plugin.getRoutes() : [];
 
     expect(routesToPaths(routes).sort()).toEqual(
@@ -342,8 +411,14 @@ describe("blogPlugin", () => {
     );
   });
 
+  it("has no routes before its posts were generated", () => {
+    const plugin = blogPlugin({ path: "/changelog" });
+
+    expect(isNavigationPlugin(plugin) && plugin.getRoutes()).toEqual([]);
+  });
+
   it("lists the most recent posts in the sidebar of blog pages", async () => {
-    const plugin = createPlugin();
+    const plugin = blogPlugin({ sidebar: { count: 2 } });
     if (!isNavigationPlugin(plugin)) throw new Error("not a navigation plugin");
 
     const context = {} as never;
@@ -356,8 +431,7 @@ describe("blogPlugin", () => {
   });
 
   it("has no sidebar when it is disabled", async () => {
-    const loadPosts = vi.fn(async () => []);
-    const plugin = createPlugin({ sidebar: false, loadPosts });
+    const plugin = blogPlugin({ sidebar: false });
     if (!isNavigationPlugin(plugin)) throw new Error("not a navigation plugin");
 
     expect(await plugin.getNavigation?.("/blog", {} as never)).toEqual([]);

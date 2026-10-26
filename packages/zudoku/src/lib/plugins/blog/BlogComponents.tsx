@@ -7,7 +7,7 @@ import {
   type BlogPost,
   type BlogTag,
   getBlogTagPath,
-} from "./index.js";
+} from "./options.js";
 
 export const BlogFeedLink = ({ feedUrl }: { feedUrl?: string }) =>
   feedUrl ? (

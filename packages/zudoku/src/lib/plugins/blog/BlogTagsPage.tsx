@@ -4,16 +4,16 @@ import { Heading } from "../../components/Heading.js";
 import { Badge } from "../../ui/Badge.js";
 import { BlogFeedLink } from "./BlogComponents.js";
 import {
-  type BlogPluginOptions,
+  type BlogPageOptions,
   type BlogPost,
   getBlogTagPath,
-} from "./index.js";
+} from "./options.js";
 
 export const BlogTagsPage = ({
   options,
   posts,
 }: {
-  options: BlogPluginOptions;
+  options: BlogPageOptions;
   posts: BlogPost[];
 }) => {
   const counts = new Map<string, number>();

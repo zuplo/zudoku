@@ -10,15 +10,17 @@ import colors from "picocolors";
 import type { Plugin, ViteDevServer } from "vite";
 import { logger } from "../cli/common/logger.js";
 import { type ConfigWithMeta, getCurrentConfig } from "../config/loader.js";
-import type {
-  BlogAuthor,
-  ZudokuBlogConfig,
-} from "../config/validators/ZudokuConfig.js";
-import type {
-  BlogPluginOptions,
-  BlogPost,
-  BlogTag,
-} from "../lib/plugins/blog/index.js";
+import { selectPluginConfigs } from "../lib/core/plugin-config.js";
+import {
+  BLOG_PLUGIN_NAME,
+  type BlogAuthor,
+  type BlogPluginOptions,
+  type BlogPost,
+  type BlogTag,
+  type ResolvedBlogOptions,
+  resolveBlogOptions,
+} from "../lib/plugins/blog/options.js";
+import { ZudokuError } from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { readFrontmatter } from "../lib/util/readFrontmatter.js";
 import { slugify } from "../lib/util/slugify.js";
@@ -123,15 +125,18 @@ const withBasePath = (config: ConfigWithMeta, url: string | undefined) =>
 
 const resolveAuthor = (
   config: ConfigWithMeta,
+  blog: ResolvedBlogOptions,
   entry: unknown,
   file: string,
 ): BlogAuthor | undefined => {
   if (typeof entry === "string") {
-    const author = config.blog?.authors[entry];
+    const author = blog.authors[entry];
     if (author) {
       return { ...author, imageUrl: withBasePath(config, author.imageUrl) };
     }
-    warn(`Unknown author "${entry}" in ${file}. Add it to \`blog.authors\`.`);
+    warn(
+      `Unknown author "${entry}" in ${file}. Add it to the \`authors\` of \`blogPlugin()\`.`,
+    );
     return { name: entry };
   }
   if (typeof entry !== "object" || entry === null) return;
@@ -163,7 +168,7 @@ const resolveTags = (value: unknown): BlogTag[] => {
 
 const readPost = async (
   config: ConfigWithMeta,
-  blog: ZudokuBlogConfig,
+  blog: ResolvedBlogOptions,
   file: string,
   globRoot: string,
 ): Promise<BlogPostSource | undefined> => {
@@ -205,7 +210,7 @@ const readPost = async (
     description: nonEmptyString(data.description) ?? firstParagraph,
     date: date.toISOString(),
     authors: toArray(data.authors).flatMap(
-      (entry) => resolveAuthor(config, entry, file) ?? [],
+      (entry) => resolveAuthor(config, blog, entry, file) ?? [],
     ),
     tags: resolveTags(data.tags),
     readingTime: Math.max(1, Math.round(words / WORDS_PER_MINUTE)),
@@ -220,10 +225,8 @@ const readPost = async (
  */
 export const loadBlogPosts = async (
   config: ConfigWithMeta,
+  blog: ResolvedBlogOptions,
 ): Promise<BlogPostSource[]> => {
-  const { blog } = config;
-  if (!blog) return [];
-
   const posts = await Promise.all(
     blog.files.map(async (pattern) => {
       const files = await glob(pattern, {
@@ -277,10 +280,11 @@ const resolveImage = (config: ConfigWithMeta, image: string | undefined) => {
   return joinUrl(siteUrl, config.basePath, image);
 };
 
-const isFeedEnabled = (config: ConfigWithMeta) =>
-  Boolean(config.blog && (config.blog.feed ?? true) && getBlogSiteUrl(config));
+const isFeedEnabled = (config: ConfigWithMeta, blog: ResolvedBlogOptions) =>
+  Boolean((blog.feed ?? true) && getBlogSiteUrl(config));
 
-const getFeedPath = (blog: ZudokuBlogConfig) => joinUrl(blog.path, "rss.xml");
+const getFeedPath = (blog: ResolvedBlogOptions) =>
+  joinUrl(blog.path, "rss.xml");
 
 const escapeXml = (value: string) =>
   value
@@ -298,7 +302,7 @@ export const generateRssFeed = ({
 }: {
   siteUrl: string;
   basePath?: string;
-  blog: ZudokuBlogConfig;
+  blog: ResolvedBlogOptions;
   posts: BlogPost[];
 }) => {
   const url = (routePath: string) => joinUrl(siteUrl, basePath, routePath);
@@ -336,136 +340,152 @@ export const generateRssFeed = ({
   ].join("\n");
 };
 
-const pluginModuleId = "virtual:zudoku-blog-plugin";
-const postsModuleId = "virtual:zudoku-blog-posts";
+/**
+ * Options of every `blogPlugin()` in the config's `plugins`. Each blog needs
+ * its own path, since the generated data is keyed by it.
+ */
+export const getBlogs = (config: ConfigWithMeta): ResolvedBlogOptions[] => {
+  if (config.__meta.mode === "standalone") return [];
 
-const getPluginOptions = (
-  config: ConfigWithMeta,
-  blog: ZudokuBlogConfig,
-  posts: BlogPostSource[],
-) => {
-  // Posts are sorted newest first, so the newest spelling of a tag wins
-  const tags = new Map<string, BlogTag>();
-  for (const tag of posts.flatMap((post) => post.tags)) {
-    if (!tags.has(tag.slug)) tags.set(tag.slug, tag);
+  const blogs = selectPluginConfigs<BlogPluginOptions | undefined>(
+    config.plugins ?? [],
+    BLOG_PLUGIN_NAME,
+  ).map((options) => resolveBlogOptions(options));
+
+  const duplicate = blogs.find(
+    (blog, index) => blogs.findIndex((b) => b.path === blog.path) !== index,
+  );
+  if (duplicate) {
+    throw new ZudokuError(
+      `Multiple blogs are configured with the path "${duplicate.path}".`,
+      {
+        title: "Conflicting blog paths",
+        developerHint:
+          "Give each `blogPlugin()` in `plugins` its own `path`, e.g. `/blog` and `/changelog`.",
+      },
+    );
   }
 
-  return {
-    path: blog.path,
-    title: blog.title,
-    description: blog.description,
-    postsPerPage: blog.postsPerPage,
-    showReadingTime: blog.showReadingTime,
-    sidebar: blog.sidebar,
-    feedUrl: isFeedEnabled(config)
-      ? joinUrl(config.basePath, getFeedPath(blog))
-      : undefined,
-    tags: [...tags.values()].sort((a, b) => a.label.localeCompare(b.label)),
-  } satisfies Omit<BlogPluginOptions, "postImports" | "loadPosts">;
+  return blogs;
+};
+
+const manifestModuleId = "virtual:zudoku-blog";
+// Followed by the blog's path, e.g. `virtual:zudoku-blog/posts/blog`
+const postsModulePrefix = "virtual:zudoku-blog/posts";
+
+const generateManifest = async (config: ConfigWithMeta) => {
+  const entries = await Promise.all(
+    getBlogs(config).map(async (blog) => {
+      const posts = await loadBlogPosts(config, blog);
+
+      // Posts are sorted newest first, so the newest spelling of a tag wins
+      const tags = new Map<string, BlogTag>();
+      for (const tag of posts.flatMap((post) => post.tags)) {
+        if (!tags.has(tag.slug)) tags.set(tag.slug, tag);
+      }
+
+      const data = {
+        tags: [...tags.values()].sort((a, b) => a.label.localeCompare(b.label)),
+        feedUrl: isFeedEnabled(config, blog)
+          ? joinUrl(config.basePath, getFeedPath(blog))
+          : undefined,
+      };
+
+      return [
+        `  ${JSON.stringify(blog.path)}: {`,
+        `    ...${JSON.stringify(data)},`,
+        `    postImports: {`,
+        ...posts.map(
+          (post) =>
+            `      ${JSON.stringify(post.path)}: () => import(${JSON.stringify(joinUrl(post.file))}),`,
+        ),
+        `    },`,
+        `    loadPosts: () => import(${JSON.stringify(postsModulePrefix + blog.path)}).then((m) => m.posts),`,
+        `  },`,
+      ];
+    }),
+  );
+
+  return [`export const blogs = {`, ...entries.flat(), `};`];
 };
 
 const viteBlogPlugin = (): Plugin => {
-  const resolvedPluginModuleId = `\0${pluginModuleId}`;
-  const resolvedPostsModuleId = `\0${postsModuleId}`;
+  const resolvedManifestId = `\0${manifestModuleId}`;
+  const resolvedPostsPrefix = `\0${postsModulePrefix}`;
 
   return {
     name: "zudoku-blog-plugin",
     resolveId(id) {
-      if (id === pluginModuleId) return resolvedPluginModuleId;
-      if (id === postsModuleId) return resolvedPostsModuleId;
+      if (id === manifestModuleId || id.startsWith(`${postsModulePrefix}/`)) {
+        return `\0${id}`;
+      }
     },
     async load(id) {
-      if (id !== resolvedPluginModuleId && id !== resolvedPostsModuleId) {
-        return;
+      if (id === resolvedManifestId) {
+        const config = getCurrentConfig();
+        const code = await generateManifest(config);
+        await writePluginDebugCode(config.__meta.rootDir, "blog-plugin", code);
+        return code.join("\n");
       }
 
-      const config = getCurrentConfig();
-      const { blog } = config;
+      if (id.startsWith(`${resolvedPostsPrefix}/`)) {
+        const config = getCurrentConfig();
+        const blogPath = id.slice(resolvedPostsPrefix.length);
+        const blog = getBlogs(config).find((b) => b.path === blogPath);
+        const posts = blog ? await loadBlogPosts(config, blog) : [];
 
-      if (
-        id === resolvedPluginModuleId &&
-        (!blog || config.__meta.mode === "standalone")
-      ) {
-        return `export const configuredBlogPlugin = undefined;`;
-      }
-      if (!blog) return `export const posts = [];`;
-
-      const posts = await loadBlogPosts(config);
-
-      if (id === resolvedPostsModuleId) {
         return `export const posts = ${JSON.stringify(
           posts.map(({ file: _file, ...post }) => post),
         )};`;
       }
-
-      const code = [
-        `import { blogPlugin } from "zudoku/plugins/blog";`,
-        `export const configuredBlogPlugin = blogPlugin({`,
-        `  ...${JSON.stringify(getPluginOptions(config, blog, posts))},`,
-        `  postImports: {`,
-        ...posts.map(
-          (post) =>
-            `    ${JSON.stringify(post.path)}: () => import(${JSON.stringify(joinUrl(post.file))}),`,
-        ),
-        `  },`,
-        `  loadPosts: () => import("${postsModuleId}").then((m) => m.posts),`,
-        `});`,
-      ];
-
-      await writePluginDebugCode(config.__meta.rootDir, "blog-plugin", code);
-
-      return code.join("\n");
     },
     async generateBundle() {
       if (this.environment.name !== "client") return;
 
       const config = getCurrentConfig();
-      const { blog } = config;
       const siteUrl = getBlogSiteUrl(config);
-      if (!blog || config.__meta.mode === "standalone") return;
 
-      if (!isFeedEnabled(config) || !siteUrl) {
-        if (blog.feed) {
-          warn(
-            "Skipping the RSS feed: set `canonicalUrlOrigin` or `sitemap.siteUrl` so the feed can link to posts.",
-          );
+      for (const blog of getBlogs(config)) {
+        if (!siteUrl || !isFeedEnabled(config, blog)) {
+          if (blog.feed) {
+            warn(
+              `Skipping the RSS feed of ${blog.path}: set \`canonicalUrlOrigin\` or \`sitemap.siteUrl\` so the feed can link to posts.`,
+            );
+          }
+          continue;
         }
-        return;
-      }
 
-      this.emitFile({
-        type: "asset",
-        fileName: getFeedPath(blog).slice(1),
-        source: generateRssFeed({
-          siteUrl,
-          basePath: config.basePath,
-          blog,
-          posts: await loadBlogPosts(config),
-        }),
-      });
+        this.emitFile({
+          type: "asset",
+          fileName: getFeedPath(blog).slice(1),
+          source: generateRssFeed({
+            siteUrl,
+            basePath: config.basePath,
+            blog,
+            posts: await loadBlogPosts(config, blog),
+          }),
+        });
+      }
     },
     async configureServer(server) {
-      const isEnabled = (config: ConfigWithMeta) =>
-        config.blog !== undefined && config.__meta.mode !== "standalone";
+      const loadAll = async (config: ConfigWithMeta) =>
+        Promise.all(
+          getBlogs(config).map(async (blog) => ({
+            blog,
+            posts: await loadBlogPosts(config, blog),
+          })),
+        );
 
-      let posts = isEnabled(getCurrentConfig())
-        ? await loadBlogPosts(getCurrentConfig())
-        : [];
+      let blogs = await loadAll(getCurrentConfig());
 
       server.middlewares.use(async (req, res, next) => {
         const config = getCurrentConfig();
-        const { blog } = config;
         const siteUrl = getBlogSiteUrl(config);
         const pathname = req.url?.split(/[?#]/)[0];
-        if (
-          !blog ||
-          !siteUrl ||
-          !isEnabled(config) ||
-          !isFeedEnabled(config) ||
-          pathname !== joinUrl(config.basePath, getFeedPath(blog))
-        ) {
-          return next();
-        }
+        const blog = getBlogs(config).find(
+          (b) => joinUrl(config.basePath, getFeedPath(b)) === pathname,
+        );
+        if (!blog || !siteUrl || !isFeedEnabled(config, blog)) return next();
 
         res.setHeader("Content-Type", "application/rss+xml; charset=utf-8");
         res.end(
@@ -473,7 +493,7 @@ const viteBlogPlugin = (): Plugin => {
             siteUrl,
             basePath: config.basePath,
             blog,
-            posts: await loadBlogPosts(config),
+            posts: await loadBlogPosts(config, blog),
           }),
         );
       });
@@ -484,16 +504,18 @@ const viteBlogPlugin = (): Plugin => {
         if (!["add", "change", "unlink"].includes(event)) return;
         if (!/\.mdx?$/.test(filePath)) return;
 
-        const config = getCurrentConfig();
-        if (!isEnabled(config)) return;
+        const previous = blogs;
+        blogs = await loadAll(getCurrentConfig());
+        if (JSON.stringify(previous) === JSON.stringify(blogs)) return;
 
-        const previous = posts;
-        posts = await loadBlogPosts(config);
-        if (JSON.stringify(previous) === JSON.stringify(posts)) return;
-
-        const routes = (list: BlogPostSource[]) =>
-          JSON.stringify(list.map((p) => [p.path, p.tags.map((t) => t.slug)]));
-        if (routes(previous) !== routes(posts)) return reload(server);
+        const routes = (list: typeof blogs) =>
+          JSON.stringify(
+            list.map(({ blog, posts }) => [
+              blog.path,
+              posts.map((p) => [p.path, p.tags.map((t) => t.slug)]),
+            ]),
+          );
+        if (routes(previous) !== routes(blogs)) return reload(server);
 
         invalidateBlogModules(server);
       });
@@ -503,9 +525,10 @@ const viteBlogPlugin = (): Plugin => {
 
 const invalidateBlogModules = (server: ViteDevServer) => {
   for (const environment of Object.values(server.environments)) {
-    for (const id of [pluginModuleId, postsModuleId]) {
-      const module = environment.moduleGraph.getModuleById(`\0${id}`);
-      if (module) environment.moduleGraph.invalidateModule(module);
+    for (const module of environment.moduleGraph.idToModuleMap.values()) {
+      if (module.id?.startsWith(`\0${manifestModuleId}`)) {
+        environment.moduleGraph.invalidateModule(module);
+      }
     }
   }
 };

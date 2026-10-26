@@ -6,7 +6,6 @@ import {
   configuredApiPlugins,
 } from "virtual:zudoku-api-plugins";
 import { configuredAuthProvider } from "virtual:zudoku-auth";
-import { configuredBlogPlugin } from "virtual:zudoku-blog-plugin";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
 import { configuredDocsPlugin } from "virtual:zudoku-docs-plugin";
 import {
@@ -87,7 +86,6 @@ export const convertZudokuConfigToOptions = (
     plugins: [
       ...(configuredAuthProvider ? [configuredAuthProvider] : []),
       ...(configuredDocsPlugin ? [configuredDocsPlugin] : []),
-      ...(configuredBlogPlugin ? [configuredBlogPlugin] : []),
       ...configuredApiPlugins,
       ...(configuredSearchPlugin ? [configuredSearchPlugin] : []),
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),

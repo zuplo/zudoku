@@ -9,11 +9,13 @@ tag pages, a "Recent posts" sidebar and an RSS feed.
 
 ## Enable the blog
 
-Add a `blog` section to your config. Every option has a default, so an empty object is enough:
+Add the blog plugin to the `plugins` of your config. Every option has a default:
 
 ```tsx title="zudoku.config.tsx"
+import { blogPlugin } from "zudoku/plugins/blog";
+
 export default {
-  blog: {},
+  plugins: [blogPlugin()],
 };
 ```
 
@@ -82,28 +84,32 @@ The post continues here.
 
 Posts are sorted by date, newest first.
 
-## Configuration options
+## Plugin options
 
 ```tsx title="zudoku.config.tsx"
+import { blogPlugin } from "zudoku/plugins/blog";
+
 export default {
-  blog: {
-    files: "/blog/**/*.{md,mdx}",
-    path: "/blog",
-    title: "Blog",
-    description: "News and updates from the team.",
-    postsPerPage: 10,
-    showReadingTime: true,
-    authors: {
-      jane: {
-        name: "Jane Doe",
-        title: "Developer Advocate",
-        url: "https://example.com/jane",
-        imageUrl: "https://example.com/jane.png",
+  plugins: [
+    blogPlugin({
+      files: "/blog/**/*.{md,mdx}",
+      path: "/blog",
+      title: "Blog",
+      description: "News and updates from the team.",
+      postsPerPage: 10,
+      showReadingTime: true,
+      authors: {
+        jane: {
+          name: "Jane Doe",
+          title: "Developer Advocate",
+          url: "https://example.com/jane",
+          imageUrl: "https://example.com/jane.png",
+        },
       },
-    },
-    sidebar: { title: "Recent posts", count: 5 },
-    feed: true,
-  },
+      sidebar: { title: "Recent posts", count: 5 },
+      feed: true,
+    }),
+  ],
 };
 ```
 
@@ -164,6 +170,27 @@ Lists the most recent posts in the sidebar of all blog pages. Set to `false` to 
 **Type:** `boolean`  
 **Default:** on when a site URL is configured
 
-Generates an RSS feed at `/blog/rss.xml` and links it from every blog page. Feeds need absolute
+Generates an RSS feed at `<path>/rss.xml` and links it from every blog page. Feeds need absolute
 links, so the site URL is taken from [`canonicalUrlOrigin`](./overview.md#canonicalurlorigin) or
 [`sitemap.siteUrl`](./overview.md#sitemap). Without either, no feed is generated.
+
+## Multiple blogs
+
+Add the plugin once per blog, each with its own `files` and `path`, for example a blog and a
+changelog:
+
+```tsx title="zudoku.config.tsx"
+import { blogPlugin } from "zudoku/plugins/blog";
+
+export default {
+  plugins: [
+    blogPlugin({ files: "/blog/**/*.{md,mdx}", path: "/blog" }),
+    blogPlugin({
+      files: "/changelog/**/*.{md,mdx}",
+      path: "/changelog",
+      title: "Changelog",
+      sidebar: false,
+    }),
+  ],
+};
+```

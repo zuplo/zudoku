@@ -11,18 +11,18 @@ import {
   PostTags,
 } from "./BlogComponents.js";
 import {
-  type BlogPluginOptions,
+  type BlogPageOptions,
   type BlogPost,
   type BlogTag,
   getBlogPagePath,
-} from "./index.js";
+} from "./options.js";
 
 const PostCard = ({
   post,
   options,
 }: {
   post: BlogPost;
-  options: BlogPluginOptions;
+  options: BlogPageOptions;
 }) => (
   <article className="flex flex-col gap-3 py-8 first:pt-0">
     <PostMeta post={post} showReadingTime={options.showReadingTime} />
@@ -55,7 +55,7 @@ export const BlogListPage = ({
   pageCount = 1,
   tag,
 }: {
-  options: BlogPluginOptions;
+  options: BlogPageOptions;
   posts: BlogPost[];
   page?: number;
   pageCount?: number;
