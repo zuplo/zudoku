@@ -166,7 +166,7 @@ jobs:
 
       - run: pnpm -r --filter "./packages/*" build
       # cosmo-cargo and with-base-path are built and verified in the integration job
-      - run: pnpm -r --filter "./examples/**" --filter "!mermaid" --filter "!many-apis" --filter "!cosmo-cargo" --filter "!with-base-path" build
+      - run: pnpm -r --filter "./examples/**" --filter "!mermaid-example" --filter "!many-apis" --filter "!cosmo-cargo" --filter "!with-base-path" build
 
   # Aggregate status for branch protection: one required check covering the
   # jobs that replaced the former monolithic "Build & Test" job.
