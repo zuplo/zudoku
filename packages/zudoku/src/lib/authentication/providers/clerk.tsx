@@ -1,20 +1,53 @@
-import type { Clerk } from "@clerk/clerk-js";
 import type { ZudokuPlugin } from "zudoku/plugins";
 import type { ClerkAuthenticationConfig } from "../../../config/config.js";
 import type {
   AuthActionContext,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  VerifyAccessTokenResult,
 } from "../authentication.js";
 import { SignIn } from "../components/SignIn.js";
 import { SignOut } from "../components/SignOut.js";
 import { SignUp } from "../components/SignUp.js";
 import { type UserProfile, useAuthState } from "../state.js";
-import { getClerkFrontendApi } from "./util.js";
+import { getClerkFrontendApi, redirectToSignUpUrl } from "./util.js";
+
+type ClerkEmailAddress = {
+  emailAddress: string;
+  verification: { status: string };
+};
+
+export type ClerkUser = {
+  id: string;
+  fullName: string | null;
+  imageUrl: string;
+  emailAddresses: ClerkEmailAddress[];
+  reload: () => Promise<unknown>;
+  [key: string]: unknown;
+};
+
+type ClerkSession = {
+  user: ClerkUser;
+  getToken: (opts: { template?: string }) => Promise<string | null>;
+};
+
+type ClerkRedirectOptions = {
+  signInForceRedirectUrl?: string;
+  signUpForceRedirectUrl?: string;
+};
+
+type Clerk = {
+  session: ClerkSession | null | undefined;
+  load: () => Promise<void>;
+  signOut: (opts: { redirectUrl: string }) => Promise<void>;
+  redirectToSignIn: (opts: ClerkRedirectOptions) => Promise<void>;
+  redirectToSignUp: (opts: ClerkRedirectOptions) => Promise<void>;
+};
 
 export type ClerkProviderData = {
   type: "clerk";
-  user: NonNullable<Clerk["session"]>["user"] | undefined;
+  user: ClerkUser | undefined;
+  accessToken?: string;
 };
 
 declare module "../state.js" {
@@ -62,6 +95,8 @@ const clerkAuth: AuthenticationProviderInitializer<
   redirectToAfterSignOut = "/",
   redirectToAfterSignUp,
   redirectToAfterSignIn,
+  signUp: signUpConfig,
+  disableSignUp,
 }): AuthenticationPlugin & ZudokuPlugin => {
   const getClerk = (): Promise<Clerk> => {
     if (typeof window === "undefined") {
@@ -69,6 +104,13 @@ const clerkAuth: AuthenticationProviderInitializer<
     }
     return loadClerk(clerkPubKey);
   };
+
+  let cachedIssuer: string | undefined;
+  const getIssuer = () => {
+    cachedIssuer ??= `https://${getClerkFrontendApi(clerkPubKey)}`;
+    return cachedIssuer;
+  };
+  let jwks: ReturnType<typeof import("jose").createRemoteJWKSet> | undefined;
 
   async function getAccessToken() {
     const clerk = await getClerk();
@@ -123,6 +165,8 @@ const clerkAuth: AuthenticationProviderInitializer<
       return false;
     }
 
+    const accessToken = await getAccessToken().catch(() => undefined);
+
     useAuthState.setState({
       isAuthenticated: true,
       isPending: false,
@@ -131,6 +175,7 @@ const clerkAuth: AuthenticationProviderInitializer<
       providerData: {
         type: "clerk",
         user: clerk.session?.user,
+        accessToken,
       },
     });
 
@@ -143,7 +188,41 @@ const clerkAuth: AuthenticationProviderInitializer<
     return request;
   }
 
+  async function verifyAccessToken(
+    token: string,
+  ): Promise<VerifyAccessTokenResult> {
+    const jose = await import("jose");
+    const issuer = getIssuer();
+    if (!jwks) {
+      jwks = jose.createRemoteJWKSet(
+        new URL(`${issuer}/.well-known/jwks.json`),
+      );
+    }
+    try {
+      const { payload } = await jose.jwtVerify(token, jwks, { issuer });
+      if (!payload.sub) return undefined;
+      return {
+        profile: {
+          sub: String(payload.sub),
+          email: (payload.email ?? payload.email_address) as string | undefined,
+          name: payload.name as string | undefined,
+          emailVerified: Boolean(payload.email_verified),
+          pictureUrl: (payload.picture ?? payload.image_url) as
+            | string
+            | undefined,
+        },
+        expiresAt: typeof payload.exp === "number" ? payload.exp : undefined,
+      };
+    } catch (e) {
+      // JOSEError = invalid token (→ 401). Rethrow anything else so the
+      // handler can surface 502 for misconfig / JWKS fetch failures.
+      if (e instanceof jose.errors.JOSEError) return undefined;
+      throw e;
+    }
+  }
+
   return {
+    disableSignUp: disableSignUp ?? false,
     getRoutes: () => [
       { path: "/signout", element: <SignOut /> },
       { path: "/signin", element: <SignIn /> },
@@ -171,11 +250,14 @@ const clerkAuth: AuthenticationProviderInitializer<
           return;
         }
 
+        const accessToken = await getAccessToken().catch(() => undefined);
+
         useAuthState.getState().setLoggedIn({
           profile,
           providerData: {
             type: "clerk",
             user: clerk.session.user,
+            accessToken,
           },
         });
       } else {
@@ -184,6 +266,7 @@ const clerkAuth: AuthenticationProviderInitializer<
     },
     getAccessToken,
     signRequest,
+    verifyAccessToken,
     signOut: async () => {
       const clerk = await getClerk();
       useAuthState.getState().setLoggedOut();
@@ -206,9 +289,16 @@ const clerkAuth: AuthenticationProviderInitializer<
       });
     },
     signUp: async (
-      _: AuthActionContext,
-      { redirectTo }: { redirectTo?: string } = {},
+      { navigate }: AuthActionContext,
+      {
+        redirectTo,
+        replace = false,
+      }: { redirectTo?: string; replace?: boolean } = {},
     ) => {
+      if (signUpConfig) {
+        redirectToSignUpUrl(signUpConfig.url, navigate, replace);
+        return;
+      }
       const clerk = await getClerk();
       await clerk.redirectToSignUp({
         signInForceRedirectUrl: redirectToAfterSignIn

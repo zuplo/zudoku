@@ -1,9 +1,11 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Navigate } from "react-router";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 import { useZudoku } from "zudoku/components";
 import { joinUrl } from "../../util/joinUrl.js";
 import { normalizeRedirectUrl } from "../../util/url.js";
 import { OAuthAuthorizationError, type OAuthErrorType } from "../errors.js";
+import { redirectAfterAuth } from "../utils/redirectAfterAuth.js";
 
 export function CallbackHandler({
   handleCallback,
@@ -11,6 +13,7 @@ export function CallbackHandler({
   handleCallback: () => Promise<string>;
 }) {
   const { options } = useZudoku();
+  const navigate = useNavigate();
   const executeCallback = useSuspenseQuery({
     retry: false,
     queryKey: ["oauth-callback", window.location.search],
@@ -41,5 +44,9 @@ export function CallbackHandler({
     },
   });
 
-  return <Navigate to={executeCallback.data} replace />;
+  useEffect(() => {
+    void redirectAfterAuth(navigate, executeCallback.data, { replace: true });
+  }, [navigate, executeCallback.data]);
+
+  return null;
 }

@@ -4,7 +4,10 @@ import type { ZudokuDocsConfig } from "../../../config/validators/ZudokuConfig.j
 import type { Toc } from "../../../vite/mdx/rehype-extract-toc-with-jsx.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 
-export interface MarkdownPluginOptions extends ZudokuDocsConfig {
+export interface MarkdownPluginOptions extends Pick<
+  ZudokuDocsConfig,
+  "defaultOptions" | "publishMarkdown"
+> {
   basePath: string;
   fileImports: Record<string, () => Promise<MDXImport>>;
 }
@@ -16,11 +19,14 @@ export type MarkdownPluginDefaultOptions = Pick<
   | "suggestEdit"
   | "copyPage"
   | "fullWidth"
+  | "centered"
 >;
 
 export type Frontmatter = {
   title?: string;
   description?: string;
+  // Overrides the browser title and meta description only
+  seo?: { title?: string; description?: string };
   category?: string;
   draft?: boolean;
   toc?: boolean;
@@ -31,6 +37,7 @@ export type Frontmatter = {
   suggestEdit?: { url: string; text?: string } | false;
   copyPage?: boolean;
   fullWidth?: boolean;
+  centered?: boolean;
 };
 
 export type MDXImport = {

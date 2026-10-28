@@ -1,0 +1,53 @@
+---
+title: Quantum Express is now generally available
+description:
+  Same-cycle delivery between any two docked stations in the Orion Arm, backed by entangled-pair
+  tracking and a guaranteed arrival window.
+authors: [nova]
+tags: [Launch, Quantum Express]
+image: /space.webp
+---
+
+After eighteen months of closed trials with 140 partner shipyards, Quantum Express is open to every
+Cosmo Cargo account. Parcels now arrive within the same orbital cycle they were booked in, anywhere
+in the Orion Arm.
+
+![The Quantum Express hub at Station Alpha-7](/space.webp)
+
+## What's new
+
+Quantum Express splits each shipment into an entangled pair: one half stays at the origin hub, the
+other materializes at the destination. Tracking reads the origin half, so status updates are instant
+and never lost to relay lag.
+
+- **Guaranteed arrival windows** of ±4 standard minutes
+- **Live tracking** through the existing `GET /shipments/{id}/events` endpoint
+- **No extra integration work** for accounts already on the Shipment API
+
+## Booking a Quantum Express shipment
+
+Set the service level when you create the shipment:
+
+```ts title="create-shipment.ts"
+const response = await fetch("https://api.cosmocargo.dev/shipments", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    origin: "STATION-ALPHA-7",
+    destination: "KEPLER-442B-DOCK-3",
+    serviceLevel: "quantum-express",
+  }),
+});
+```
+
+:::tip
+
+Entangled pairs are capped at 2 metric tonnes. Heavier cargo falls back to Interstellar Express
+automatically and the rate difference is refunded.
+
+:::
+
+## Pricing
+
+Quantum Express costs 3.2 Galactic Credits per kilogram, with volume discounts from 500 kg per
+cycle. See [Billing & Credits](/billing/galactic-credits) for details.

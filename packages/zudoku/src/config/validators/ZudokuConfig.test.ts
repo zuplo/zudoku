@@ -41,7 +41,7 @@ describe("validateConfig", () => {
 
     expect(() => validateConfig(configWithValidAuth0))
       .toThrowErrorMatchingInlineSnapshot(`
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
       ✖ Clerk public key invalid, must start with pk_test or pk_live
         → at authentication.clerkPubKey]
     `);
@@ -75,6 +75,36 @@ describe("validateConfig", () => {
     validateConfig(configWithValidAuth0);
 
     expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should accept allowInsecureRequests as a boolean in openid config", () => {
+    const config = {
+      authentication: {
+        type: "openid" as const,
+        clientId: "client123",
+        issuer: "https://example.auth0.com",
+        allowInsecureRequests: true,
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should reject non-boolean allowInsecureRequests in openid config", () => {
+    process.env.NODE_ENV = "production";
+
+    const config = {
+      authentication: {
+        type: "openid" as const,
+        clientId: "client123",
+        issuer: "https://example.auth0.com",
+        allowInsecureRequests: "yes" as unknown as boolean,
+      },
+    };
+
+    expect(() => validateConfig(config)).toThrow();
   });
 
   it("should validate openid issuer format correctly", () => {
@@ -142,7 +172,7 @@ describe("validateConfig", () => {
       validateConfig(configWithInvalidAuth0Domain),
     ).toThrowErrorMatchingInlineSnapshot(
       `
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
       ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
         → at authentication.domain]
     `,
@@ -164,7 +194,29 @@ describe("validateConfig", () => {
       validateConfig(configWithInvalidAuth0Domain),
     ).toThrowErrorMatchingInlineSnapshot(
       `
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
+      ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
+        → at authentication.domain]
+    `,
+    );
+  });
+
+  it("should include the config path in the error when provided", () => {
+    process.env.NODE_ENV = "production";
+
+    const configWithInvalidAuth0Domain = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "https://example.auth0.com",
+      },
+    };
+
+    expect(() =>
+      validateConfig(configWithInvalidAuth0Domain, "zudoku.config.ts"),
+    ).toThrowErrorMatchingInlineSnapshot(
+      `
+      [Error: Invalid Zudoku configuration at zudoku.config.ts:
       ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
         → at authentication.domain]
     `,
@@ -256,6 +308,78 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it.each(["/openapi.json", "/api/openapi.yaml", "/nested/schema.yml"])(
+    "should accept OpenAPI publication path %s",
+    (publicationPath) => {
+      const config = {
+        apis: {
+          type: "file" as const,
+          input: "./openapi.json",
+          path: "/api",
+          publish: { path: publicationPath, agentQuality: true },
+        },
+      };
+
+      const result = validateConfig(config);
+
+      expect(result.apis).toMatchObject(config.apis);
+      expect(mockConsoleLog).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    "openapi.json",
+    "/../openapi.json",
+    "/api/../openapi.json",
+    "//example.com/openapi.json",
+    "/openapi.txt",
+    "/openapi.json?download=true",
+    "/openapi.json#schema",
+    "/%2e%2e/openapi.json",
+    "/api\\openapi.json",
+  ])("should reject unsafe OpenAPI publication path %s", (publicationPath) => {
+    process.env.NODE_ENV = "production";
+
+    expect(() =>
+      validateConfig({
+        apis: {
+          type: "file",
+          input: "./openapi.json",
+          publish: { path: publicationPath },
+        },
+      }),
+    ).toThrow("OpenAPI publication path");
+  });
+
+  it.each([true, false])(
+    "should accept header.themeSwitcher.enabled with %s",
+    (enabled) => {
+      const config = {
+        header: {
+          themeSwitcher: {
+            enabled,
+          },
+        },
+      };
+
+      validateConfig(config);
+
+      expect(mockConsoleLog).not.toHaveBeenCalled();
+    },
+  );
+
+  it("should accept header.themeSwitcher when undefined", () => {
+    const config = {
+      header: {
+        themeSwitcher: undefined,
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
   it('should accept metadata robots values like "noindex, nofollow"', () => {
     const config = {
       metadata: {
@@ -328,5 +452,229 @@ describe("validateConfig", () => {
     };
 
     expect(() => validateConfig(config)).toThrow();
+  });
+
+  it("should warn when the deprecated UNSAFE_slotlets option is used", () => {
+    process.env.NODE_ENV = "development";
+
+    const config = {
+      UNSAFE_slotlets: {},
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "deprecated and will be removed soon: UNSAFE_slotlets",
+      ),
+    );
+  });
+
+  it("should not warn about UNSAFE_ options that are not whitelisted", () => {
+    process.env.NODE_ENV = "development";
+
+    const config = {
+      UNSAFE_somethingElse: true,
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should not warn when no deprecated option is used", () => {
+    process.env.NODE_ENV = "development";
+
+    const config = {
+      aiAssistants: ["claude"],
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should accept inkeep search with nested settings", () => {
+    const config = {
+      search: {
+        type: "inkeep" as const,
+        apiKey: "key",
+        integrationId: "integration",
+        organizationId: "org",
+        primaryBrandColor: "#26D6FF",
+        organizationDisplayName: "Example",
+        transformSource: (source: unknown) => source,
+        someFutureBaseSetting: true,
+        searchSettings: {
+          tabs: ["Docs", ["All", { isAlwaysVisible: true }]],
+          someFutureSearchSetting: true,
+        },
+        aiChatSettings: {
+          aiAssistantName: "Example Assistant",
+        },
+        modalSettings: {
+          shortcutKey: "k",
+        },
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+});
+
+describe("validateConfig parsed result", () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it("applies docs defaults when docs is omitted", () => {
+    const result = validateConfig({});
+
+    expect(result.docs.publishMarkdown).toBe(true);
+    expect(result.docs.contentNegotiation).toBe(true);
+    expect(result.docs.files).toEqual(["/pages/**/*.{md,mdx}"]);
+    expect(result.docs.llms).toEqual({
+      llmsTxt: false,
+      llmsTxtFull: false,
+      includeProtected: false,
+    });
+  });
+
+  it("allows Markdown content negotiation to be disabled", () => {
+    const result = validateConfig({ docs: { contentNegotiation: false } });
+
+    expect(result.docs.contentNegotiation).toBe(false);
+  });
+
+  it("derives the content negotiation default from publishMarkdown", () => {
+    expect(
+      validateConfig({ docs: { publishMarkdown: true } }).docs
+        .contentNegotiation,
+    ).toBe(true);
+    expect(
+      validateConfig({ docs: { publishMarkdown: false } }).docs
+        .contentNegotiation,
+    ).toBe(false);
+  });
+
+  it("does not enable content negotiation without Markdown output", () => {
+    const result = validateConfig({
+      docs: { publishMarkdown: false, contentNegotiation: true },
+    });
+
+    expect(result.docs.contentNegotiation).toBe(false);
+  });
+
+  it("preserves custom llms.txt introductory guidance", () => {
+    const result = validateConfig({
+      docs: {
+        llms: {
+          title: "  Acme API  ",
+          description: "  APIs for managing Acme resources.  ",
+          instructions:
+            "  Use these docs when creating or debugging an Acme integration.  ",
+        },
+      },
+    });
+
+    expect(result.docs.llms).toEqual({
+      llmsTxt: false,
+      llmsTxtFull: false,
+      includeProtected: false,
+      title: "Acme API",
+      description: "APIs for managing Acme resources.",
+      instructions:
+        "Use these docs when creating or debugging an Acme integration.",
+    });
+  });
+
+  it("rejects empty llms.txt introductory guidance", () => {
+    process.env.NODE_ENV = "production";
+
+    expect(() =>
+      validateConfig({ docs: { llms: { instructions: "  \n  " } } }),
+    ).toThrow("Invalid Zudoku configuration");
+  });
+
+  it("transforms docs.files string into an array", () => {
+    const result = validateConfig({ docs: { files: "/docs/**/*.md" } });
+
+    expect(result.docs.files).toEqual(["/docs/**/*.md"]);
+    expect(result.docs.publishMarkdown).toBe(true);
+  });
+
+  it("transforms cdnUrl string into a base/media object", () => {
+    const result = validateConfig({ cdnUrl: "https://cdn.example.com" });
+
+    expect(result.cdnUrl).toEqual({
+      base: "https://cdn.example.com",
+      media: "https://cdn.example.com",
+    });
+  });
+
+  it("normalizes protectedRoutes array into a record of callbacks", () => {
+    const result = validateConfig({ protectedRoutes: ["/private/*"] });
+
+    expect(Object.keys(result.protectedRoutes ?? {})).toEqual(["/private/*"]);
+    expect(typeof result.protectedRoutes?.["/private/*"]).toBe("function");
+  });
+
+  it("leaves clerk jwtTemplateName absent when omitted", () => {
+    const result = validateConfig({
+      authentication: { type: "clerk", clerkPubKey: "pk_test_abc" },
+    });
+
+    expect(result.authentication).not.toHaveProperty("jwtTemplateName");
+  });
+
+  it("preserves plugin instances by reference", () => {
+    const plugin = { getRoutes: () => [] };
+    const result = validateConfig({ plugins: [plugin] });
+
+    expect(result.plugins?.[0]).toBe(plugin);
+  });
+
+  it("keeps raw values for invalid sections and resolves the remainder in dev", () => {
+    process.env.NODE_ENV = "development";
+    // The file-level spy is restored by the first describe's afterAll.
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const result = validateConfig({
+      authentication: { type: "auth0", clientId: "x", domain: "invalid" },
+      basePath: "/docs",
+    });
+
+    expect(spy).toHaveBeenCalled();
+    expect(result.authentication).toMatchObject({
+      type: "auth0",
+      domain: "invalid",
+    });
+    expect(result.basePath).toBe("/docs");
+    expect(result.docs.publishMarkdown).toBe(true);
+    spy.mockRestore();
+  });
+
+  it("keeps nested defaults when an invalid section is merged back in dev", () => {
+    process.env.NODE_ENV = "development";
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const result = validateConfig({
+      docs: { publishMarkdown: "no" },
+    });
+
+    // Raw invalid value survives, but sibling defaults stay resolved so
+    // consumers like `config.docs.llms.llmsTxt` don't crash.
+    expect(result.docs.publishMarkdown).toBe("no");
+    expect(result.docs.files).toEqual(["/pages/**/*.{md,mdx}"]);
+    expect(result.docs.llms).toEqual({
+      llmsTxt: false,
+      llmsTxtFull: false,
+      includeProtected: false,
+    });
+    spy.mockRestore();
   });
 });

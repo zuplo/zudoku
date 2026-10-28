@@ -73,7 +73,7 @@ see the [API Reference](./api-reference.md).
   // ...
   "apis": {
     "type": "url",
-    "input": "https://rickandmorty.zuplo.io/openapi.json",
+    "input": "https://api.rickandmorty.zuplo.io/openapi.json",
     "path": "/api"
   }
   // ...
@@ -195,9 +195,15 @@ Configures the header navigation and placement of header elements (navigation, s
       search: "end",          // "start" | "center" | "end"
       auth: "end",            // "start" | "center" | "end" | "navigation"
     },
+    themeSwitcher: {
+      enabled: false, // optional, defaults to true
+    },
   }
 }
 ```
+
+Use `header.themeSwitcher.enabled: false` to hide the light/dark theme switch from the desktop
+header and mobile navigation drawer.
 
 ### `defaults`
 
@@ -278,11 +284,15 @@ URL.
   // ...
   "redirects": [
     { "from": "/", "to": "/documentation/introduction" },
-    { "from": "/documentation", "to": "/documentation/introduction" }
+    { "from": "/documentation", "to": "/documentation/introduction" },
+    { "from": "/blog/:slug", "to": "/posts/:slug" }
   ]
   // ...
 }
 ```
+
+`from` paths can contain `:param` segments and a trailing `*` wildcard. See
+[Redirects](/docs/guides/redirects#path-parameters-and-wildcards) for details.
 
 ### `port`
 

@@ -30,3 +30,11 @@ updates:
         patterns:
           - "@shikijs/*"
           - "shiki"
+      react-dependencies:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-is"
+          - "@types/react"
+          - "@types/react-dom"
+          - "@types/react-is"

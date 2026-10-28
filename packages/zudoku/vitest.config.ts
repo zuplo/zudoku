@@ -6,6 +6,7 @@ export default defineProject({
     exclude: ["**/node_modules/**", "dist/**", "lib/**", "standalone/**"],
     setupFiles: ["./vitest.setup.ts"],
     typecheck: {
+      checker: "tsgo",
       tsconfig: "./tsconfig.app.json",
     },
   },

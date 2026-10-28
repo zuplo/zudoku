@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import * as oauth from "oauth4webapi";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { OAuthAuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
 import auth0Auth from "./auth0.js";
 import {
@@ -9,9 +8,8 @@ import {
   type OpenIdProviderData,
 } from "./openid.js";
 
-// Fake JWT-shaped tokens (3 dot-separated segments) to pass the opaque token check
-const FAKE_ACCESS_TOKEN = "header.payload.signature";
-const FAKE_NEW_ACCESS_TOKEN = "header.newpayload.signature";
+const OPAQUE_ACCESS_TOKEN = "opaque-access-token";
+const NEW_OPAQUE_ACCESS_TOKEN = "new-opaque-access-token";
 
 vi.mock("oauth4webapi", async (importOriginal) => {
   const actual = await importOriginal<typeof oauth>();
@@ -88,7 +86,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
 
       const hasIdToken = claimsEmailVerified !== undefined;
       vi.mocked(oauth.processAuthorizationCodeResponse).mockResolvedValue({
-        access_token: FAKE_ACCESS_TOKEN,
+        access_token: OPAQUE_ACCESS_TOKEN,
         token_type: "bearer",
         expires_in: 3600,
         id_token: hasIdToken ? "test-id-token" : undefined,
@@ -154,34 +152,24 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       expect(useAuthState.getState().profile?.emailVerified).toBe(true);
     });
 
-    test("throws OAuthAuthorizationError for opaque access tokens", async () => {
-      const provider = createProvider();
-
-      Object.defineProperty(window, "location", {
-        configurable: true,
-        value: new URL(
-          "http://localhost/oauth/callback?state=test-state&code=test-code",
-        ),
+    test("accepts opaque access tokens regardless of configured audience", async () => {
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        audience: "https://api.example.com",
       });
+      setupCallback({});
 
-      sessionStorage.setItem("oauth-state", "test-state");
-      sessionStorage.setItem("code-verifier", "test-verifier");
+      await expect(provider.handleCallback()).resolves.toBeDefined();
 
-      vi.mocked(oauth.validateAuthResponse).mockReturnValue(
-        new URLSearchParams({ code: "test-code" }),
-      );
-      vi.mocked(oauth.authorizationCodeGrantRequest).mockResolvedValue(
-        new Response(),
-      );
-      vi.mocked(oauth.processAuthorizationCodeResponse).mockResolvedValue({
-        access_token: "opaque-token-without-dots",
-        token_type: "bearer",
-        expires_in: 3600,
-      } as oauth.TokenEndpointResponse);
-
-      await expect(provider.handleCallback()).rejects.toThrow(
-        OAuthAuthorizationError,
-      );
+      expect(useAuthState.getState()).toMatchObject({
+        isAuthenticated: true,
+        providerData: {
+          type: "openid",
+          accessToken: OPAQUE_ACCESS_TOKEN,
+        },
+      });
     });
 
     test("emailVerified defaults to false when absent everywhere", async () => {
@@ -231,7 +219,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         },
         providerData: {
           type: "openid",
-          accessToken: FAKE_ACCESS_TOKEN,
+          accessToken: OPAQUE_ACCESS_TOKEN,
           expiresOn: new Date(Date.now() + 3600_000),
           tokenType: "bearer",
           claims: undefined,
@@ -257,6 +245,32 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       await provider.refreshUserProfile();
 
       expect(useAuthState.getState().profile?.emailVerified).toBe(true);
+    });
+
+    test("returns false without evicting state when providerData is null (SSR reload)", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockClear();
+
+      // SSR-seeded: profile is set, but providerData wasn't persisted.
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: {
+          sub: "user-1",
+          email: "user@example.com",
+          emailVerified: true,
+          name: "Test",
+          pictureUrl: undefined,
+        },
+        providerData: null,
+      });
+
+      const result = await provider.refreshUserProfile();
+
+      expect(result).toBe(false);
+      expect(oauth.userInfoRequest).not.toHaveBeenCalled();
+      expect(useAuthState.getState().isAuthenticated).toBe(true);
+      expect(useAuthState.getState().profile?.sub).toBe("user-1");
     });
 
     test("defaults emailVerified to false when userInfo omits it", async () => {
@@ -289,6 +303,98 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       expect(profile?.sub).toBe("user-1");
       expect(profile?.email).toBe("user@example.com");
       expect(profile?.emailVerified).toBe(true);
+    });
+  });
+
+  describe("signUp config", () => {
+    const mockLocation = () => {
+      const loc = {
+        href: "http://localhost/",
+        origin: "http://localhost",
+        pathname: "/",
+        search: "",
+        hash: "",
+        assign: vi.fn(),
+        replace: vi.fn(),
+      };
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: loc,
+      });
+      return loc;
+    };
+
+    test("signUp({ url }) bypasses OpenID flow via location.assign", async () => {
+      const loc = mockLocation();
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        signUp: { url: "https://app.example.com/register" },
+      });
+
+      await provider.signUp({ navigate: vi.fn() }, {});
+
+      expect(loc.assign).toHaveBeenCalledWith(
+        "https://app.example.com/register",
+      );
+      expect(loc.replace).not.toHaveBeenCalled();
+    });
+
+    test("signUp({ url }) with relative path uses navigate", async () => {
+      mockLocation();
+      const navigate = vi.fn();
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        signUp: { url: "/register" },
+      });
+
+      await provider.signUp({ navigate }, { replace: true });
+
+      expect(navigate).toHaveBeenCalledWith("/register", { replace: true });
+    });
+
+    test("signUp({ url }) with replace uses location.replace", async () => {
+      const loc = mockLocation();
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        signUp: { url: "https://app.example.com/register" },
+      });
+
+      await provider.signUp({ navigate: vi.fn() }, { replace: true });
+
+      expect(loc.replace).toHaveBeenCalledWith(
+        "https://app.example.com/register",
+      );
+      expect(loc.assign).not.toHaveBeenCalled();
+    });
+
+    test("signUp({ authorizationParams }) merges params on signup but not signin", async () => {
+      vi.mocked(oauth.processDiscoveryResponse).mockResolvedValue({
+        ...AUTH_SERVER,
+        authorization_endpoint: "https://issuer.example.com/authorize",
+      });
+
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        signUp: { authorizationParams: { kc_action: "register" } },
+      });
+
+      const signupLoc = mockLocation();
+      await provider.signUp({ navigate: vi.fn() }, {});
+      const signupUrl = new URL(signupLoc.href);
+      expect(signupUrl.searchParams.get("kc_action")).toBe("register");
+
+      const signinLoc = mockLocation();
+      await provider.signIn({ navigate: vi.fn() }, {});
+      const signinUrl = new URL(signinLoc.href);
+      expect(signinUrl.searchParams.get("kc_action")).toBeNull();
     });
   });
 
@@ -471,6 +577,288 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
     });
   });
 
+  describe("allowInsecureRequests", () => {
+    beforeEach(() => {
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: new URL(
+          "http://localhost/oauth/callback?state=test-state&code=test-code",
+        ),
+      });
+      sessionStorage.setItem("oauth-state", "test-state");
+      sessionStorage.setItem("code-verifier", "test-verifier");
+    });
+
+    test("passes allowInsecureRequests to discoveryRequest when enabled", async () => {
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        allowInsecureRequests: true,
+      });
+
+      vi.mocked(oauth.processDiscoveryResponse).mockResolvedValue(AUTH_SERVER);
+      vi.mocked(oauth.discoveryRequest).mockResolvedValue(new Response());
+
+      // Trigger discovery via signIn
+      vi.mocked(oauth.processDiscoveryResponse).mockResolvedValue({
+        ...AUTH_SERVER,
+        authorization_endpoint: "https://issuer.example.com/authorize",
+      });
+
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: {
+          ...window.location,
+          origin: "http://localhost",
+          search: "",
+          set href(_: string) {},
+          replace: vi.fn(),
+        },
+      });
+
+      await provider.signIn({ navigate: vi.fn() as never }, {});
+
+      expect(oauth.discoveryRequest).toHaveBeenCalledWith(
+        expect.any(URL),
+        expect.objectContaining({ [oauth.allowInsecureRequests]: true }),
+      );
+    });
+
+    test("does not pass allowInsecureRequests to discoveryRequest when disabled", async () => {
+      const provider = createProvider();
+
+      vi.mocked(oauth.discoveryRequest).mockResolvedValue(new Response());
+      vi.mocked(oauth.processDiscoveryResponse).mockResolvedValue({
+        ...AUTH_SERVER,
+        authorization_endpoint: "https://issuer.example.com/authorize",
+      });
+
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: {
+          ...window.location,
+          origin: "http://localhost",
+          search: "",
+          set href(_: string) {},
+          replace: vi.fn(),
+        },
+      });
+
+      await provider.signIn({ navigate: vi.fn() as never }, {});
+
+      expect(oauth.discoveryRequest).toHaveBeenCalledWith(
+        expect.any(URL),
+        expect.not.objectContaining({ [oauth.allowInsecureRequests]: true }),
+      );
+    });
+
+    test("passes allowInsecureRequests to authorizationCodeGrantRequest", async () => {
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        allowInsecureRequests: true,
+      });
+
+      vi.mocked(oauth.validateAuthResponse).mockReturnValue(
+        new URLSearchParams({ code: "test-code" }),
+      );
+      vi.mocked(oauth.authorizationCodeGrantRequest).mockResolvedValue(
+        new Response(),
+      );
+      vi.mocked(oauth.processAuthorizationCodeResponse).mockResolvedValue({
+        access_token: "header.payload.signature",
+        token_type: "bearer",
+        expires_in: 3600,
+        refresh_token: "test-refresh-token",
+      } as oauth.TokenEndpointResponse);
+      vi.mocked(oauth.userInfoRequest).mockImplementation(() =>
+        Promise.resolve(
+          Response.json({ sub: "user-1", email: "u@e.com", name: "U" }),
+        ),
+      );
+
+      await provider.handleCallback();
+
+      expect(oauth.authorizationCodeGrantRequest).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.any(String),
+        expect.any(String),
+        expect.objectContaining({ [oauth.allowInsecureRequests]: true }),
+      );
+    });
+
+    test("passes allowInsecureRequests to refreshTokenGrantRequest", async () => {
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        allowInsecureRequests: true,
+      });
+
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: {
+          sub: "user-1",
+          email: "u@e.com",
+          emailVerified: false,
+          name: "Test",
+          pictureUrl: undefined,
+        },
+        providerData: {
+          type: "openid",
+          accessToken: OPAQUE_ACCESS_TOKEN,
+          expiresOn: new Date(Date.now() - 1000),
+          refreshToken: "test-refresh-token",
+          tokenType: "bearer",
+          claims: undefined,
+        } satisfies OpenIdProviderData,
+      });
+
+      vi.mocked(oauth.refreshTokenGrantRequest).mockResolvedValue(
+        new Response(),
+      );
+      vi.mocked(oauth.processRefreshTokenResponse).mockResolvedValue({
+        access_token: NEW_OPAQUE_ACCESS_TOKEN,
+        token_type: "bearer",
+        expires_in: 3600,
+      } as oauth.TokenEndpointResponse);
+      vi.mocked(oauth.userInfoRequest).mockResolvedValue(
+        Response.json({ sub: "user-1", email: "u@e.com", name: "Test" }),
+      );
+
+      await provider.refreshUserProfile();
+
+      expect(oauth.refreshTokenGrantRequest).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.objectContaining({ [oauth.allowInsecureRequests]: true }),
+      );
+    });
+
+    test("passes allowInsecureRequests to userInfoRequest", async () => {
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        allowInsecureRequests: true,
+      });
+
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: {
+          sub: "user-1",
+          email: "u@e.com",
+          emailVerified: false,
+          name: "Test",
+          pictureUrl: undefined,
+        },
+        providerData: {
+          type: "openid",
+          accessToken: OPAQUE_ACCESS_TOKEN,
+          expiresOn: new Date(Date.now() + 3600_000),
+          tokenType: "bearer",
+          claims: undefined,
+        } satisfies OpenIdProviderData,
+      });
+
+      vi.mocked(oauth.userInfoRequest).mockResolvedValue(
+        Response.json({ sub: "user-1", email: "u@e.com", name: "Test" }),
+      );
+
+      await provider.refreshUserProfile();
+
+      expect(oauth.userInfoRequest).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.objectContaining({ [oauth.allowInsecureRequests]: true }),
+      );
+    });
+  });
+
+  describe("verifyAccessToken", () => {
+    // Header {"alg":"none"}, payload {"sub":"u1","exp":1700000000}.
+    // Content doesn't matter for decoding since jose.decodeJwt skips signature.
+    const TOKEN_WITH_EXP =
+      "eyJhbGciOiJub25lIn0.eyJzdWIiOiJ1MSIsImV4cCI6MTcwMDAwMDAwMH0.sig";
+
+    test("returns verified profile and expiresAt from access token JWT", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockResolvedValueOnce(
+        Response.json({
+          sub: "u1",
+          email: "u@example.com",
+          name: "U",
+          email_verified: true,
+          picture: "https://example.com/p.png",
+        }),
+      );
+      const result = await provider.verifyAccessToken(TOKEN_WITH_EXP);
+      expect(result).toEqual({
+        profile: {
+          sub: "u1",
+          email: "u@example.com",
+          name: "U",
+          emailVerified: true,
+          pictureUrl: "https://example.com/p.png",
+        },
+        expiresAt: 1_700_000_000,
+      });
+    });
+
+    test("returns null when userInfo responds not-ok", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockResolvedValueOnce(
+        new Response(null, { status: 401 }),
+      );
+      expect(await provider.verifyAccessToken("t")).toBeUndefined();
+    });
+
+    test("throws when userInfo transport fails (→ 502 at the handler)", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockRejectedValueOnce(new Error("boom"));
+      await expect(provider.verifyAccessToken("t")).rejects.toThrow("boom");
+    });
+
+    test("returns null when userInfo has no sub", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockResolvedValueOnce(
+        Response.json({ email: "u@example.com" }),
+      );
+      expect(await provider.verifyAccessToken("t")).toBeUndefined();
+    });
+
+    test("passes allowInsecureRequests to userInfoRequest", async () => {
+      const provider = new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        allowInsecureRequests: true,
+      });
+      vi.mocked(oauth.userInfoRequest).mockResolvedValueOnce(
+        Response.json({ sub: "u1", email: "u@example.com", name: "U" }),
+      );
+
+      await provider.verifyAccessToken("t");
+
+      expect(oauth.userInfoRequest).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.objectContaining({ [oauth.allowInsecureRequests]: true }),
+      );
+    });
+  });
+
   describe("discovery caching", () => {
     const setupAuthenticated = () => {
       useAuthState.setState({
@@ -485,7 +873,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         },
         providerData: {
           type: "openid",
-          accessToken: FAKE_ACCESS_TOKEN,
+          accessToken: OPAQUE_ACCESS_TOKEN,
           expiresOn: new Date(Date.now() + 3600_000),
           tokenType: "bearer",
           claims: undefined,
@@ -547,7 +935,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       },
       providerData: {
         type: undefined,
-        accessToken: FAKE_ACCESS_TOKEN,
+        accessToken: OPAQUE_ACCESS_TOKEN,
         expiresOn: new Date(Date.now() - 1000),
         refreshToken: "test-refresh-token",
         tokenType: "bearer",
@@ -557,7 +945,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
 
     vi.mocked(oauth.refreshTokenGrantRequest).mockResolvedValue(new Response());
     vi.mocked(oauth.processRefreshTokenResponse).mockResolvedValue({
-      access_token: FAKE_NEW_ACCESS_TOKEN,
+      access_token: NEW_OPAQUE_ACCESS_TOKEN,
       token_type: "bearer",
       expires_in: 3600,
     } as oauth.TokenEndpointResponse);

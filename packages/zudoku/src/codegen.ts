@@ -44,7 +44,8 @@ const config: CodegenConfig = {
   },
   config: {
     useTypeImports: true,
-    enumsAsTypes: true,
+    enumType: "string-literal",
+    defaultScalarType: "any",
   },
   hooks: {
     afterAllFileWrite: [

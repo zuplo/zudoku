@@ -35,6 +35,14 @@ this is already enabled.)
 
 This will make the API Key UI available at `/settings/api-keys` in your Zudoku.
 
+:::note
+
+Zuplo's API key service identifies users by their JWT access token. If you use
+[Auth0](../configuration/authentication-auth0.md), configure an `audience` in your authentication
+settings. Without one, Auth0 issues an opaque access token that can't be used to manage API keys.
+
+:::
+
 ### Creating API Keys
 
 By default, there is no **Create API Key** Button. To get the button working you have to implement

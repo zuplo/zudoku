@@ -26,7 +26,7 @@ export type ContextOasSource = {
   input: string | DynamicInput;
 };
 
-type Example = {
+export type Example = {
   name: string;
   description?: string | null;
   externalValue?: string | null;
@@ -35,7 +35,7 @@ type Example = {
   summary?: string | null;
 };
 
-type Content = {
+export type Content = {
   mediaType: string;
   // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   schema?: any | null;
@@ -64,18 +64,33 @@ export type GenerateCodeSnippetFn = (options: {
   resolvedAuth?: ResolvedAuth;
 }) => string | false;
 
+/**
+ * Document root extension selecting a renderer for the whole document instead
+ * of the default REST view. Read at build time from the processed schema, since
+ * `getRoutes` builds the route tree without access to it.
+ */
+export const DOCUMENT_TYPE_EXTENSION = "x-zudoku-type";
+
+export const MCP_CATALOG = "mcp-catalog";
+
+/** Known `x-zudoku-type` values. Unknown values fall back to the REST view. */
+export type OasDocumentType = typeof MCP_CATALOG;
+
 type BaseOasConfig = {
   server?: string;
   path?: string;
   skipPreload?: boolean;
   tagPages?: Array<string>;
   schemaImports?: SchemaImports;
+  documentType?: OasDocumentType;
   options?: {
     examplesLanguage?: string;
     supportedLanguages?: { value: string; label: string }[];
     disablePlayground?: boolean;
     disableSidecar?: boolean;
+    disableRequestBox?: boolean;
     disableSecurity?: boolean;
+    disableMcpAuthInstructions?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
     showInfoPage?: boolean;

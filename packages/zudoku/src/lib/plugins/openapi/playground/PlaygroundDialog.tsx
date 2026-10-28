@@ -15,8 +15,14 @@ export type PlaygroundDialogProps = PropsWithChildren<PlaygroundContentProps>;
 
 const PlaygroundDialog = (props: PlaygroundDialogProps) => {
   const [open, setOpen] = useState(false);
-  const { isAuthEnabled, login, signup, isPending, isAuthenticated } =
-    useAuth();
+  const {
+    isAuthEnabled,
+    login,
+    signup,
+    isPending,
+    isAuthenticated,
+    disableSignUp,
+  } = useAuth();
 
   return (
     <Dialog onOpenChange={(open) => setOpen(open)}>
@@ -44,7 +50,7 @@ const PlaygroundDialog = (props: PlaygroundDialogProps) => {
           <Playground
             requiresLogin={isAuthEnabled && !isAuthenticated && !isPending}
             onLogin={() => login()}
-            onSignUp={() => signup()}
+            onSignUp={disableSignUp ? undefined : () => signup()}
             {...props}
           />
         )}

@@ -11,6 +11,6 @@ CACHE_CONTROL="public, max-age=31536000"
 echo "Updating Cache-Control for all objects with prefix '${PREFIX}' in bucket '${BUCKET_NAME}'..."
 
 # List all objects with the prefix and apply the new Cache-Control header
-gsutil -m setmeta -h "Cache-Control:${CACHE_CONTROL}" "gs://${BUCKET_NAME}/${PREFIX}**"
+gcloud storage objects update "gs://${BUCKET_NAME}/${PREFIX}**" --cache-control="${CACHE_CONTROL}"
 
 echo "Cache-Control update complete."

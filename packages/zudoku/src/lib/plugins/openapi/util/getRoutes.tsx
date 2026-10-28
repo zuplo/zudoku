@@ -16,7 +16,11 @@ import {
   type OpenApiPluginOptions,
   UNTAGGED_PATH,
 } from "../index.js";
-import type { OasPluginConfig, VersionEntry } from "../interfaces.js";
+import {
+  MCP_CATALOG,
+  type OasPluginConfig,
+  type VersionEntry,
+} from "../interfaces.js";
 
 const createOasProvider = (opts: {
   routePath: string;
@@ -139,7 +143,7 @@ const createVersionRoutes = ({
   versionPath,
   tagPages,
   hasUntaggedOperations = true,
-  showInfoPage = true,
+  showInfoPage,
 }: {
   versionPath: string;
   tagPages: string[];
@@ -148,19 +152,32 @@ const createVersionRoutes = ({
 }): RouteObject[] => {
   const firstTag =
     tagPages.at(0) ?? (hasUntaggedOperations ? UNTAGGED_PATH : undefined);
+  const redirectTo = firstTag ? joinUrl(versionPath, firstTag) : undefined;
 
-  const indexRoute: RouteObject = showInfoPage
-    ? {
-        index: true,
-        path: versionPath,
-        lazy: async () => {
-          const { SchemaInfo } = await import("../SchemaInfo.js");
-          return { element: <SchemaInfo /> };
-        },
-      }
-    : firstTag
-      ? { index: true, loader: () => redirect(joinUrl(versionPath, firstTag)) }
-      : createRoute({ path: versionPath });
+  // When showInfoPage is explicitly false, skip the info page and redirect to
+  // the first tag. Otherwise render the info page, which decides at runtime
+  // whether to show itself — it hides when there is no API description, unless
+  // showInfoPage is explicitly true.
+  const indexRoute: RouteObject =
+    showInfoPage === false
+      ? redirectTo
+        ? { index: true, loader: () => redirect(redirectTo) }
+        : createRoute({ path: versionPath })
+      : {
+          index: true,
+          path: versionPath,
+          lazy: async () => {
+            const { SchemaInfo } = await import("../SchemaInfo.js");
+            return {
+              element: (
+                <SchemaInfo
+                  showInfoPage={showInfoPage}
+                  redirectTo={redirectTo}
+                />
+              ),
+            };
+          },
+        };
 
   return [
     indexRoute,
@@ -223,6 +240,30 @@ export const getRoutes = ({
   config: OpenApiPluginOptions;
   basePath: string;
 }): RouteObject[] => {
+  // A catalog document renders as a single page. Tag pages, the schema list and
+  // the untagged page stay unmounted on purpose: prerendering walks the route
+  // tree, so anything left mounted would be built and indexed even though the
+  // catalog deliberately hides the document's REST surface.
+  if (config.documentType === MCP_CATALOG) {
+    return [
+      createOasProvider({
+        basePath,
+        routePath: basePath,
+        routes: [
+          {
+            index: true,
+            async lazy() {
+              const { McpCatalog } = await import("../McpCatalog.js");
+              return { element: <McpCatalog /> };
+            },
+          },
+        ],
+        client,
+        config,
+      }),
+    ];
+  }
+
   const tagPages = config.tagPages;
   const { versions } = getVersionMetadata(config);
   const inputArray = Array.isArray(config.input) ? config.input : undefined;
@@ -249,7 +290,7 @@ export const getRoutes = ({
             versionPath,
             tagPages: versionTagPages,
             hasUntaggedOperations,
-            showInfoPage: config.options?.showInfoPage !== false,
+            showInfoPage: config.options?.showInfoPage,
           })
         : [
             createNonTagPagesRoute({ path: `${versionPath}/:tag?` }),

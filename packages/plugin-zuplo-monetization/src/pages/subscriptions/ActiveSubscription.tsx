@@ -7,6 +7,7 @@ import {
   DismissibleAlert,
   DismissibleAlertAction,
 } from "zudoku/ui/DismissibleAlert";
+import { usePendingCredits } from "../../hooks/usePendingCredits.js";
 import type { Subscription } from "../../types/SubscriptionType.js";
 import { getActivePhase } from "../../utils/billables.js";
 import { ApiKeysList } from "./ApiKeysList";
@@ -41,6 +42,11 @@ const ActiveSubscription = ({
     meta: { context: zudoku },
   });
 
+  const pendingCreditsQuery = usePendingCredits(
+    deploymentName,
+    subscription.id,
+  );
+
   const isPendingFirstPayment =
     usageQuery.data.paymentStatus.isFirstPayment === true &&
     usageQuery.data.paymentStatus.status !== "paid" &&
@@ -71,6 +77,7 @@ const ActiveSubscription = ({
         isFetching={usageQuery.isFetching}
         subscription={subscription}
         isPendingFirstPayment={isPendingFirstPayment}
+        pendingCredits={pendingCreditsQuery.data?.pendingCredits}
       />
 
       {subscription?.consumer?.apiKeys && (

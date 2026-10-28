@@ -80,6 +80,85 @@ Some **content** with _Markdown_ `syntax`. Check [this `api`](#).
 
 :::
 
+## Additional types
+
+Beyond the standard severity types, the following themed variants are available with their own color
+and icon:
+
+```markdown
+:::sparkles
+
+For new features or AI-powered functionality.
+
+:::
+
+:::rocket
+
+For getting-started or launch-related content.
+
+:::
+
+:::settings
+
+For configuration sections.
+
+:::
+
+:::zap
+
+For performance tips.
+
+:::
+
+:::lock
+
+For authentication and security notes.
+
+:::
+
+:::megaphone
+
+For announcements.
+
+:::
+```
+
+:::sparkles
+
+For new features or AI-powered functionality.
+
+:::
+
+:::rocket
+
+For getting-started or launch-related content.
+
+:::
+
+:::settings
+
+For configuration sections.
+
+:::
+
+:::zap
+
+For performance tips.
+
+:::
+
+:::lock
+
+For authentication and security notes.
+
+:::
+
+:::megaphone
+
+For announcements.
+
+:::
+
 ## With title
 
 You can also add a title to the admonition by adding it after the type:

@@ -57,8 +57,6 @@ const makePlan = (overrides: Partial<Plan> = {}): Plan => ({
       ],
     },
   ],
-  monthlyPrice: "49",
-  yearlyPrice: "49",
   currency: "USD",
   ...overrides,
 });
@@ -192,8 +190,6 @@ describe("CheckoutConfirmPage", () => {
     testState.purchaseData.data = {
       ...makePlan({
         name: "Free",
-        monthlyPrice: "0",
-        yearlyPrice: "0",
         phases: [
           {
             key: "default",
@@ -227,6 +223,51 @@ describe("CheckoutConfirmPage", () => {
     expect(screen.queryByText(/tax|VAT/)).not.toBeInTheDocument();
   });
 
+  it("renders a per-phase price schedule for a multi-phase plan", () => {
+    testState.purchaseData.data = {
+      ...makePlan({
+        phases: [
+          {
+            key: "intro",
+            name: "First 3 months",
+            duration: "P3M",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "monthly_fee",
+                name: "Monthly Fee",
+                billingCadence: null,
+                price: null,
+              },
+            ],
+          },
+          {
+            key: "main",
+            name: "After 3 months",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "monthly_fee",
+                name: "Monthly Fee",
+                billingCadence: "P1M",
+                price: { type: "flat", amount: "750" },
+              },
+            ],
+          },
+        ],
+      }),
+    };
+
+    renderPage("/?planId=plan-1");
+
+    expect(screen.getByText("First 3 months")).toBeInTheDocument();
+    expect(screen.getByText("Free")).toBeInTheDocument();
+    expect(screen.getByText("After that")).toBeInTheDocument();
+    expect(screen.getByText("$750")).toBeInTheDocument();
+    expect(screen.getByText("/month")).toBeInTheDocument();
+    expect(screen.getByText("Billed monthly")).toBeInTheDocument();
+  });
+
   it("throws when planId search param is missing", () => {
     expect(() => renderPage("/")).toThrow("Parameter `planId` missing");
   });
@@ -249,5 +290,9 @@ describe("CheckoutConfirmPage", () => {
     expect(
       screen.getByRole("button", { name: /Processing Payment.../ }),
     ).toBeDisabled();
+    // Cancel must not be a navigable link while the mutation is pending.
+    expect(
+      screen.queryByRole("link", { name: "Cancel" }),
+    ).not.toBeInTheDocument();
   });
 });

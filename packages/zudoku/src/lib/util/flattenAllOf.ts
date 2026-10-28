@@ -13,6 +13,19 @@ const { compareSchemaDefinitions, compareSchemaValues } = createComparator();
 const { mergeArrayOfSchemaDefinitions } = createMerger({
   intersectJson: createIntersector(compareSchemaValues),
   deduplicateJsonSchemaDef: createDeduplicator(compareSchemaDefinitions),
+  // Default mergers throw on incompatible type/enum pairs, which aborts the
+  // whole flatten even when the bad pair is one branch of a pairwise `anyOf`
+  // combination. Union instead.
+  mergers: {
+    type: (a, b) => {
+      if (a === b) return a;
+      const aArr = Array.isArray(a) ? a : [a];
+      const bArr = Array.isArray(b) ? b : [b];
+      const set = new Set([...aArr, ...bArr]);
+      return set.size === 1 ? [...set][0]! : ([...set] as typeof a);
+    },
+    enum: (a, b) => Array.from(new Set([...a, ...b])),
+  },
 });
 
 const shallowAllOfMerge = createShallowAllOfMerge(

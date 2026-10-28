@@ -1,5 +1,6 @@
 import { useZudoku } from "zudoku/hooks";
 import { useSuspenseQuery } from "zudoku/react-query";
+import { subscriptionsQuery } from "../queries.js";
 import type { Subscription } from "../types/SubscriptionType.js";
 
 export type SubscriptionsResponse = {
@@ -10,11 +11,10 @@ export type SubscriptionsResponse = {
   totalCount: number;
 };
 
-export const useSubscriptions = (environmentName: string) => {
+export const useSubscriptions = () => {
   const zudoku = useZudoku();
-  return useSuspenseQuery<SubscriptionsResponse>({
-    queryKey: [`/v3/zudoku-metering/${environmentName}/subscriptions`],
-    meta: { context: zudoku },
+  return useSuspenseQuery({
+    ...subscriptionsQuery(zudoku),
     select: (data) => ({
       ...data,
       items: [...data.items].sort((a, b) => {

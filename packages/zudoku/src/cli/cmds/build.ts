@@ -38,8 +38,8 @@ export default {
       })
       .option("adapter", {
         type: "string",
-        describe: "SSR adapter (node, cloudflare, vercel)",
-        choices: ["node", "cloudflare", "vercel"] as const,
+        describe: "SSR adapter (node, cloudflare, vercel, lambda)",
+        choices: ["node", "cloudflare", "vercel", "lambda"] as const,
         default: "node",
       }),
   handler: async (argv: Arguments) => {

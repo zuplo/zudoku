@@ -97,8 +97,8 @@ To get started with some of the features Zudoku offers you can use one of these
 
 ## 🎓 Examples
 
-- [Rick & Morty API](https://zudoku.dev/demo?api-url=https://rickandmorty.zuplo.io/openapi.json)
-- [Pet Store API](https://zudoku.dev/demo?api-url=https://zudoku.dev/petstore.oas.json)
+- [Rick & Morty API](https://zudoku.dev/demo?api-url=https://api.rickandmorty.zuplo.io/openapi.json)
+- [Pet Store API](https://zudoku.dev/demo?api-url=https://petstore3.swagger.io/api/v3/openapi.json)
 - [Zuplo API Documentation](https://zuplo.com/docs)
 
 ### Zudoku use cases

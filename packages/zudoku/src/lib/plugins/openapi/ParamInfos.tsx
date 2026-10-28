@@ -4,7 +4,7 @@ import { InlineCode } from "../../components/InlineCode.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
 import { SchemaRefLink } from "./schema/SchemaRefLink.js";
-import { getSchemaRefName } from "./schema/utils.js";
+import { getSchemaRefName, isBinarySchema } from "./schema/utils.js";
 
 const Pattern = ({ pattern }: { pattern: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -18,7 +18,7 @@ const Pattern = ({ pattern }: { pattern: string }) => {
     >
       {isExpanded ? pattern : shortPattern}
       {isExpandable && (
-        <button type="button" className="p-1 translate-y-[2px]">
+        <button type="button" className="p-1 translate-y-0.5">
           {!isExpanded && <ChevronsLeftRightIcon size={12} />}
         </button>
       )}
@@ -26,7 +26,7 @@ const Pattern = ({ pattern }: { pattern: string }) => {
   );
 };
 
-const getSchemaInfos = (schema?: SchemaObject) => {
+const getSchemaInfos = (schema?: SchemaObject, nullable?: boolean) => {
   if (!schema) return [];
 
   const items =
@@ -45,18 +45,34 @@ const getSchemaInfos = (schema?: SchemaObject) => {
           ? `(${items.type.join(" | ")})[]`
           : `${items.type}[]`;
       }
+      if (isBinarySchema(items)) return "binary[]";
     }
     const refName = getSchemaRefName(schema);
     if (refName) return <SchemaRefLink name={refName} />;
+    if (isBinarySchema(schema)) return "binary";
     return Array.isArray(schema.type) ? schema.type.join(" | ") : schema.type;
   };
 
+  const getNullableTypeLabel = () => {
+    const typeLabel = getTypeLabel();
+    const hasNullType =
+      Array.isArray(schema.type) && schema.type.includes("null");
+    if (!nullable || !typeLabel || hasNullType) return typeLabel;
+
+    return typeof typeLabel === "string" ? (
+      `${typeLabel} | null`
+    ) : (
+      <>{typeLabel} | null</>
+    );
+  };
+
   return [
-    getTypeLabel(),
+    getNullableTypeLabel(),
 
     schema.enum && "enum",
     schema.const && "const",
     schema.format,
+    isBinarySchema(schema) && schema.contentMediaType,
     items?.contentMediaType,
     schema.minimum !== undefined && `min: ${schema.minimum}`,
     schema.maximum !== undefined && `max: ${schema.maximum}`,
@@ -80,15 +96,20 @@ const getSchemaInfos = (schema?: SchemaObject) => {
 
 export const ParamInfos = ({
   schema,
+  nullable,
   extraItems = [],
   className,
 }: {
   schema?: SchemaObject;
+  nullable?: boolean;
   extraItems?: unknown[];
   className?: string;
 }) => {
-  const filteredItems = [...getSchemaInfos(schema), ...extraItems].flatMap(
-    (item) => (typeof item === "string" || isValidElement(item) ? item : []),
+  const filteredItems = [
+    ...getSchemaInfos(schema, nullable),
+    ...extraItems,
+  ].flatMap((item) =>
+    typeof item === "string" || isValidElement(item) ? item : [],
   );
 
   return (

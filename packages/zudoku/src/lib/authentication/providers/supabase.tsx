@@ -12,6 +12,7 @@ import type {
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  VerifyAccessTokenResult,
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { SignOut } from "../components/SignOut.js";
@@ -25,10 +26,14 @@ import {
   ZudokuSignUpDisabledUi,
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
+import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
+import { redirectToSignUpUrl } from "./util.js";
 
 export type SupabaseProviderData = {
   type: "supabase";
   session: Session;
+  accessToken: string;
+  refreshToken?: string;
 };
 
 declare module "../state.js" {
@@ -45,7 +50,8 @@ class SupabaseAuthenticationProvider
   private readonly config: SupabaseAuthenticationConfig;
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
-  private readonly disableSignUp: boolean;
+  public readonly disableSignUp: boolean;
+  private readonly signUpConfig?: SupabaseAuthenticationConfig["signUp"];
 
   constructor(config: SupabaseAuthenticationConfig) {
     const { supabaseUrl, supabaseKey } = config;
@@ -66,6 +72,7 @@ class SupabaseAuthenticationProvider
     this.providers = configuredProviders;
     this.enableUsernamePassword = !config.onlyThirdPartyProviders;
     this.disableSignUp = config.disableSignUp ?? false;
+    this.signUpConfig = config.signUp;
 
     this.client.auth.onAuthStateChange(async (event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
@@ -89,7 +96,12 @@ class SupabaseAuthenticationProvider
 
     useAuthState.getState().setLoggedIn({
       profile,
-      providerData: { type: "supabase", session },
+      providerData: {
+        type: "supabase",
+        session,
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+      },
     });
   }
 
@@ -103,6 +115,21 @@ class SupabaseAuthenticationProvider
     return data.session.access_token;
   }
 
+  async verifyAccessToken(token: string): Promise<VerifyAccessTokenResult> {
+    const { data, error } = await this.client.auth.getUser(token);
+    if (error || !data.user) return undefined;
+    const user = data.user;
+    return {
+      profile: {
+        sub: user.id,
+        email: user.email,
+        name: user.user_metadata.full_name || user.user_metadata.name,
+        emailVerified: user.email_confirmed_at != null,
+        pictureUrl: user.user_metadata.avatar_url,
+      },
+    };
+  }
+
   async signRequest(request: Request): Promise<Request> {
     const accessToken = await this.getAccessToken();
     request.headers.set("Authorization", `Bearer ${accessToken}`);
@@ -111,12 +138,15 @@ class SupabaseAuthenticationProvider
 
   signUp = async (
     { navigate }: AuthActionContext,
-    { redirectTo }: AuthActionOptions,
+    { redirectTo, replace = false }: AuthActionOptions = {},
   ) => {
+    if (this.signUpConfig) {
+      redirectToSignUpUrl(this.signUpConfig.url, navigate, replace);
+      return;
+    }
+    const target = this.config.redirectToAfterSignUp ?? redirectTo;
     void navigate(
-      redirectTo
-        ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`
-        : `/signup`,
+      target ? `/signup?redirectTo=${encodeURIComponent(target)}` : `/signup`,
     );
   };
 
@@ -124,10 +154,9 @@ class SupabaseAuthenticationProvider
     { navigate }: AuthActionContext,
     { redirectTo }: AuthActionOptions,
   ) => {
+    const target = this.config.redirectToAfterSignIn ?? redirectTo;
     void navigate(
-      redirectTo
-        ? `/signin?redirectTo=${encodeURIComponent(redirectTo)}`
-        : `/signin`,
+      target ? `/signin?redirectTo=${encodeURIComponent(target)}` : `/signin`,
     );
   };
 
@@ -164,13 +193,19 @@ class SupabaseAuthenticationProvider
     password: string,
   ) => {
     useAuthState.setState({ isPending: true });
-    const { error } = await this.client.auth.signInWithPassword({
+    const { data, error } = await this.client.auth.signInWithPassword({
       email,
       password,
     });
     useAuthState.setState({ isPending: false });
     if (error) {
       throw Error(getSupabaseErrorMessage(error), { cause: error });
+    }
+    // Set state synchronously (triggering the cookie sync) instead of waiting on
+    // the async onAuthStateChange listener, so a post-login redirect can await
+    // it. Mirrors sign-up below.
+    if (data.session) {
+      await this.updateUserState(data.session);
     }
   };
 
@@ -207,20 +242,46 @@ class SupabaseAuthenticationProvider
 
       useAuthState.getState().setLoggedIn({
         profile,
-        providerData: { type: "supabase", session: data.session },
+        providerData: {
+          type: "supabase",
+          session: data.session,
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+        },
       });
     }
   };
 
-  private onOAuthSignIn = async (providerId: string) => {
+  // Absolute URL Supabase sends the user back to after OAuth. The configured
+  // value wins, then the page's `redirectTo` (set by signIn/signUp), limited to
+  // this origin so it can't become an open redirect.
+  private getOAuthRedirectUrl(configured?: string) {
+    if (configured && URL.canParse(configured)) return configured;
+
+    const redirectTo =
+      configured ??
+      getRelativeRedirectUrl(
+        new URLSearchParams(window.location.search).get("redirectTo"),
+      );
+    const base = joinUrl(window.location.origin, this.config.basePath);
+    const url = URL.canParse(redirectTo)
+      ? new URL(redirectTo)
+      : new URL(joinUrl(base, redirectTo));
+
+    return url.origin === window.location.origin ? url.toString() : base;
+  }
+
+  private onOAuthSignIn = (providerId: string) =>
+    this.startOAuth(providerId, this.config.redirectToAfterSignIn);
+
+  private onOAuthSignUp = (providerId: string) =>
+    this.startOAuth(providerId, this.config.redirectToAfterSignUp);
+
+  private startOAuth = async (providerId: string, configured?: string) => {
     useAuthState.setState({ isPending: true });
     const { error } = await this.client.auth.signInWithOAuth({
       provider: providerId as Provider,
-      options: {
-        redirectTo:
-          this.config.redirectToAfterSignIn ??
-          joinUrl(window.location.origin, this.config.basePath),
-      },
+      options: { redirectTo: this.getOAuthRedirectUrl(configured) },
     });
     if (error) {
       useAuthState.setState({ isPending: false });
@@ -330,7 +391,7 @@ class SupabaseAuthenticationProvider
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
-            onOAuthSignUp={this.onOAuthSignIn}
+            onOAuthSignUp={this.onOAuthSignUp}
             onUsernamePasswordSignUp={this.onUsernamePasswordSignUp}
           />
         ),
