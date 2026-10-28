@@ -4,7 +4,7 @@ import {
   persist,
   type StateStorage,
 } from "zustand/middleware";
-import { syncZustandState } from "../util/syncZustandState.js";
+import { syncZustandState } from "../util/syncZustandState.ts";
 
 /**
  * Registry interface for provider-specific data types.

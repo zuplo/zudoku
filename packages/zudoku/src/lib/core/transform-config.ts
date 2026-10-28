@@ -1,6 +1,6 @@
 import { isValidElement } from "react";
 import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
-import { isTransformConfigPlugin } from "./plugins.js";
+import { isTransformConfigPlugin } from "./plugins.ts";
 
 export const isPlainObject = (
   value: unknown,

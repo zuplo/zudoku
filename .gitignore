@@ -62,10 +62,6 @@ Thumbs.db
 *.sln
 *.sw?
 
-.nx/cache
-.nx/workspace-data
-.github/instructions/nx.instructions.md
-
 gha-creds-*.json
 
 

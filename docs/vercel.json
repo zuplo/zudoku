@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "devCommand": "npx nx run docs:dev",
-  "buildCommand": "npx nx run docs:build",
+  "devCommand": "pnpm dev",
+  "buildCommand": "pnpm -F 'docs...' build",
   "outputDirectory": null,
   "installCommand": "pnpm install"
 }

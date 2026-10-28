@@ -4,18 +4,19 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "nx run-many -t=build",
+    "build": "pnpm -r --filter \"./packages/*\" build",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "fix": "biome lint --write && pnpm run fmt",
     "check": "biome lint && pnpm run fmt:check && pnpm check:other",
     "check:other": "node ./scripts/check-admonitions.mjs",
     "prepare": "lefthook install",
-    "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
-    "release:minor": "gh workflow run release.yaml -f releaseType=minor",
+    "changeset": "changeset",
+    "version-packages": "changeset version && rm -f packages/create-zudoku/CHANGELOG.md",
+    "release": "pnpm build && cp README.md packages/zudoku/ && changeset publish --no-git-tag",
     "local": "cp .env.example .env",
     "build:clean": "tsc --build --clean",
-    "reset": "nx reset && npm run build:clean",
+    "reset": "pnpm run build:clean",
     "clean": "git clean -Xfde !.env",
     "test": "vitest run --typecheck",
     "test:coverage": "vitest run --typecheck --coverage",
@@ -28,16 +29,19 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
-    "@nx/vite": "23.3.0",
-    "@nx/web": "23.3.0",
+    "@changesets/cli": "2.31.0",
+    "@changesets/release-utils": "^0.2.7",
+    "@manypkg/get-packages": "^3.1.0",
     "@playwright/test": "^1.63.0",
     "@size-limit/file": "^14.3.0",
     "@vitest/coverage-v8": "4.1.11",
+    "changesets-changelog-clean": "1.4.0",
     "lefthook": "2.2.2",
-    "nx": "23.3.0",
     "oxfmt": "0.36.0",
+    "pkg-pr-new": "0.0.75",
     "publint": "^0.3.25",
     "size-limit": "^14.3.0",
+    "tsx": "4.22.4",
     "typescript": "catalog:",
     "vitest": "4.1.11"
   },
@@ -47,12 +51,5 @@
       "limit": "215 KB"
     }
   ],
-  "nx": {
-    "includedScripts": [
-      "fix",
-      "check",
-      "check:other"
-    ]
-  },
   "packageManager": "pnpm@11.6.0"
 }

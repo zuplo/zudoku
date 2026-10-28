@@ -10,6 +10,7 @@
     "skipDefaultLibCheck": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "allowImportingTsExtensions": true,
     "useUnknownInCatchVariables": false,
     "jsx": "react-jsx"
   },

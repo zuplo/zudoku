@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "devCommand": "npx nx run cosmo-cargo:dev",
-  "buildCommand": "ZUDOKU_PUBLIC_VERCEL_ENV=$VERCEL_ENV npx nx run cosmo-cargo:build",
+  "devCommand": "pnpm dev",
+  "buildCommand": "ZUDOKU_PUBLIC_VERCEL_ENV=$VERCEL_ENV pnpm -F 'cosmo-cargo...' build",
   "outputDirectory": null,
   "installCommand": "pnpm install"
 }

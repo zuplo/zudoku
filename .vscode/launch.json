@@ -12,27 +12,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "zudoku:build",
-      "env": {
-        "NODE_ENV": "development"
-      },
-      "smartStep": true,
-      "runtimeExecutable": "nx",
-      "args": ["run", "${input:example}:build", "--debugPort=9229"],
-      "skipFiles": ["<node_internals>/**"],
-      "console": "integratedTerminal",
-      "sourceMaps": true,
-      "resolveSourceMapLocations": [
-        "${workspaceFolder}/apps/**/dist/**",
-        "${workspaceFolder}/packages/**/dist/**",
-        "${workspaceFolder}/sdks/**/dist/**",
-        "${workspaceFolder}/test-fixtures/**/dist/**",
-        "!**/node_modules/**"
-      ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "cosmo-cargo:build --ssr",
       "cwd": "${workspaceFolder}/examples/cosmo-cargo",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
@@ -43,7 +22,7 @@
         "--ssr"
       ],
       "env": {
-        "ZUDOKU_INTERNAL_DEV": "true"
+        "ZUDOKU_ENV": "internal"
       },
       "skipFiles": ["<node_internals>/**"],
       "console": "integratedTerminal",

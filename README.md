@@ -60,6 +60,15 @@ Fire up your new API docs using the command line generator:
 npm create zudoku@latest
 ```
 
+### 🚧 Bleeding edge
+
+Every commit to `main` is published via [pkg.pr.new](https://pkg.pr.new). To try the latest
+unreleased build:
+
+```
+pnpm add https://pkg.pr.new/zuplo/zudoku/zudoku@main
+```
+
 ### 📦 Standalone via CDN
 
 Add the package and styles to your `<head>` and pass the URL for your API schema to the

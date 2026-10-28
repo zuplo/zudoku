@@ -27,7 +27,7 @@ export async function warnIfOutdatedVersion(currentVersion: string) {
   }
   const shouldWarn =
     gt(versionCheckInfo.latestVersion, currentVersion) &&
-    !process.env.ZUDOKU_INTERNAL_DEV;
+    process.env.ZUDOKU_ENV !== "internal";
 
   if (shouldWarn) {
     printWarningToConsole(

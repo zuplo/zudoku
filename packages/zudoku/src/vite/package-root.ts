@@ -1,5 +1,5 @@
 import path from "node:path";
-import { fileExists } from "../config/file-exists.js";
+import { fileExists } from "../config/file-exists.ts";
 
 export const findPackageRoot = async (
   startDir: string,

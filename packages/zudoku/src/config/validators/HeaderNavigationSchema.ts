@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { IconNames } from "./icon-types.js";
+import { IconNames } from "./icon-types.ts";
 
 const IconSchema = z.enum(IconNames);
 

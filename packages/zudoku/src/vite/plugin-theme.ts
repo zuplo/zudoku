@@ -1,17 +1,17 @@
 import path from "node:path";
 import { normalizeTheme, type ThemeRegistration } from "shiki";
 import type { Plugin } from "vite";
-import { getCurrentConfig } from "../config/loader.js";
+import { getCurrentConfig } from "../config/loader.ts";
 import type {
   FontConfig,
   ZudokuConfig,
 } from "../config/validators/ZudokuConfig.js";
-import { defaultHighlightOptions } from "../lib/shiki.js";
-import { objectEntries } from "../lib/util/objectEntries.js";
+import { defaultHighlightOptions } from "../lib/shiki.ts";
+import { objectEntries } from "../lib/util/objectEntries.ts";
 import {
   fetchShadcnRegistryItem,
   type RegistryItemCss,
-} from "./shadcn-registry.js";
+} from "./shadcn-registry.ts";
 
 // prettier-ignore
 const THEME_VARIABLES = [

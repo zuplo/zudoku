@@ -1,12 +1,12 @@
 import { z } from "zod/mini";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
-import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
-import { normalizeProtectedRoutes } from "../../lib/core/ZudokuContext.js";
+import type { ZudokuContext } from "../../lib/core/ZudokuContext.ts";
+import { normalizeProtectedRoutes } from "../../lib/core/ZudokuContext.ts";
 import {
   type ProtectedRouteResult,
   type ReasonCode,
   REASON_CODES,
-} from "./reason-codes.js";
+} from "./reason-codes.ts";
 
 export { REASON_CODES, type ReasonCode, type ProtectedRouteResult };
 

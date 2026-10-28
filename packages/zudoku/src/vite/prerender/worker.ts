@@ -1,10 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import Piscina from "piscina";
-import { validateConfig } from "../../config/validators/ZudokuConfig.js";
-import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
-import { joinUrl } from "../../lib/util/joinUrl.js";
-import { matchesAnyProtectedPattern } from "../../lib/util/url.js";
+import { validateConfig } from "../../config/validators/ZudokuConfig.ts";
+import { runPluginTransformConfig } from "../../lib/core/transform-config.ts";
+import { joinUrl } from "../../lib/util/joinUrl.ts";
+import { matchesAnyProtectedPattern } from "../../lib/util/url.ts";
 import type { WorkerResult } from "./prerender.js";
 
 type EntryServer = typeof import("../../app/entry.server.js");

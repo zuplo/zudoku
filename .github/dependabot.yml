@@ -19,10 +19,6 @@ updates:
       cronjob: "0 0 * * 1,4"
     open-pull-requests-limit: 12
     groups:
-      nx-dependencies:
-        patterns:
-          - "@nx/*"
-          - "nx"
       radix-ui-dependencies:
         patterns:
           - "*@radix-ui/*"
