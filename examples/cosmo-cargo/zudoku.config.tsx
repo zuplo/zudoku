@@ -6,6 +6,7 @@ import type {
   ZudokuContext,
 } from "zudoku";
 import { Callout } from "zudoku/components";
+import { blogPlugin } from "zudoku/plugins/blog";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
 import { MembersOnly } from "./src/MembersOnly";
@@ -194,7 +195,7 @@ const config: ZudokuConfig = {
           title: "Company",
           links: [
             { label: "About", href: "https://zuplo.com/about" },
-            { label: "Blog", href: "https://zuplo.com/blog" },
+            { label: "Blog", href: "/blog" },
             { label: "Careers", href: "https://zuplo.com/careers" },
           ],
         },
@@ -243,6 +244,23 @@ const config: ZudokuConfig = {
   },
   plugins: [
     new CosmoCargoApiIdentityPlugin(),
+    blogPlugin({
+      title: "Cosmo Cargo Dispatch",
+      description:
+        "Launches, lane reports, and field notes from the Cosmo Cargo crew.",
+      postsPerPage: 3,
+      authors: {
+        nova: {
+          name: "Nova Reyes",
+          title: "Head of Product, Cosmo Cargo",
+          url: "https://cosmocargo.dev",
+        },
+        orion: {
+          name: "Orion Vance",
+          title: "Fleet Operations Lead",
+        },
+      },
+    }),
     {
       getHead: () => (
         <>
@@ -433,6 +451,12 @@ const config: ZudokuConfig = {
       icon: "square-library",
       to: "/catalog",
       label: "API Catalog",
+    },
+    {
+      type: "link",
+      icon: "newspaper",
+      to: "/blog",
+      label: "Blog",
     },
     {
       type: "link",
