@@ -37,7 +37,7 @@ catalog:
   react: 19.2.8
   react-dom: 19.2.8
   react-is: 19.2.8
-  tsdown: 0.23.1
+  tsdown: 0.23.2
   "@tsdown/css": 0.23.0
   typescript: 6.0.3
   "@typescript/native-preview": 7.0.0-dev.20260707.2
