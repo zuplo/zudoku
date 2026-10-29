@@ -174,13 +174,16 @@ export const MdxPage = ({
   const sidebarCollapsed = useSidebar((s) => s.isCollapsed);
 
   const title = frontmatter.title;
-  const description = frontmatter.description ?? excerpt;
+  const description =
+    frontmatter.seo?.description ?? frontmatter.description ?? excerpt;
   const category = frontmatter.category ?? categoryTitle;
   const tocEnabled = frontmatter.toc ?? defaultOptions?.toc ?? true;
   const fullWidth = frontmatter.fullWidth ?? defaultOptions?.fullWidth ?? false;
   const centered = frontmatter.centered ?? defaultOptions?.centered ?? true;
   const pageTitle =
-    title ?? tableOfContents.find((item) => item.depth === 1)?.text;
+    frontmatter.seo?.title ??
+    title ??
+    tableOfContents.find((item) => item.depth === 1)?.text;
   const hidePager =
     frontmatter.disable_pager ??
     frontmatter.disablePager ??

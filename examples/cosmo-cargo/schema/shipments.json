@@ -48,7 +48,11 @@
     {
       "name": "Tracking & Notifications",
       "description": "Endpoints for tracking shipments and configuring notifications for shipment status updates.",
-      "x-displayName": "Notifications"
+      "x-displayName": "Notifications",
+      "x-zudoku-seo": {
+        "title": "Interstellar Shipment Tracking & Notifications",
+        "description": "Follow cargo across warp lanes in real time and get notified the moment a shipment changes status."
+      }
     },
     {
       "name": "System",
@@ -62,6 +66,10 @@
       "name": "Schemas",
       "description": "Endpoints for retrieving and validating data schemas used across the Cosmo Cargo platform.",
       "x-zudoku-collapsed": false
+    },
+    {
+      "name": "GraphQL",
+      "description": "GraphQL endpoint for querying the Cosmo Cargo registry. Issue GraphQL queries to fetch shipments, fleets, and route data in a single round trip."
     }
   ],
   "servers": [
@@ -178,6 +186,12 @@
           "status": {
             "type": "string",
             "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"],
+            "x-enumDescriptions": {
+              "CREATED": "Manifest logged and cargo sealed in the stasis bay, awaiting launch clearance.",
+              "IN_TRANSIT": "Cargo is aboard a freighter, currently in warp between waypoints.",
+              "DELIVERED": "Docked at the destination port and signed for by the recipient.",
+              "EXCEPTION": "Delayed by an anomaly such as an ion storm, customs hold or quantum drift."
+            },
             "nullable": true
           },
           "trackingNumber": {
@@ -3831,7 +3845,7 @@
     },
     "/graphql": {
       "post": {
-        "tags": ["Shipment Management"],
+        "tags": ["GraphQL"],
         "operationId": "graphqlShipmentQuery",
         "summary": "GraphQL endpoint",
         "description": "Query the Cosmo Cargo registry via GraphQL. Test live against the public Rick and Morty universe schema.",

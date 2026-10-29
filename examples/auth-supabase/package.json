@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.110.8"
+    "@supabase/supabase-js": "^2.117.2"
   },
   "devDependencies": {
     "react": "catalog:",

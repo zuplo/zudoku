@@ -38,7 +38,18 @@ export type LicenseObject = DeepOmitReference<OpenAPIV3_1.LicenseObject>;
 export type ExternalDocumentationObject =
   DeepOmitReference<OpenAPIV3_1.ExternalDocumentationObject>;
 
-export const HttpMethods = Object.values(OpenAPIV3.HttpMethods);
+const { GET, PUT, POST, PATCH, DELETE, OPTIONS, HEAD, TRACE } =
+  OpenAPIV3.HttpMethods;
+export const HttpMethods = [
+  GET,
+  PUT,
+  POST,
+  PATCH,
+  DELETE,
+  OPTIONS,
+  HEAD,
+  TRACE,
+];
 
 const parseSchemaInput = async (
   schemaInput: unknown,

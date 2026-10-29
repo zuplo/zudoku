@@ -25,6 +25,8 @@ export type MarkdownPluginDefaultOptions = Pick<
 export type Frontmatter = {
   title?: string;
   description?: string;
+  // Overrides the browser title and meta description only
+  seo?: { title?: string; description?: string };
   category?: string;
   draft?: boolean;
   toc?: boolean;

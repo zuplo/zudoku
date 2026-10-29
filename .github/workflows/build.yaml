@@ -33,7 +33,7 @@ jobs:
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".tool-versions"
           registry-url: "https://registry.npmjs.org"
@@ -44,7 +44,7 @@ jobs:
 
       - run: pnpm install nx --global
 
-      - uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5
+      - uses: nrwl/nx-set-shas@e602fada7ad5987b0f7b1905e7a99ea1c661514c # v5
 
       - name: Detect monetization plugin changes
         if: github.event_name == 'pull_request'
@@ -94,14 +94,14 @@ jobs:
 
       - name: Coverage report comment (with comparison)
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key != ''
-        uses: davelosert/vitest-coverage-report-action@c4bbc33a89b7ace0e63d35f1f7d4bcee31155a73 # v2
+        uses: davelosert/vitest-coverage-report-action@8f86cfb56ed6d5613ea8cdc5259f207fbfd51ece # v2
         with:
           json-summary-path: coverage/coverage-summary.json
           json-summary-compare-path: coverage-base/coverage-summary.json
 
       - name: Coverage report comment
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key == ''
-        uses: davelosert/vitest-coverage-report-action@c4bbc33a89b7ace0e63d35f1f7d4bcee31155a73 # v2
+        uses: davelosert/vitest-coverage-report-action@8f86cfb56ed6d5613ea8cdc5259f207fbfd51ece # v2
         with:
           json-summary-path: coverage/coverage-summary.json
 
@@ -184,7 +184,7 @@ jobs:
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".tool-versions"
           registry-url: "https://registry.npmjs.org"
@@ -212,7 +212,7 @@ jobs:
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ".tool-versions"
           registry-url: "https://registry.npmjs.org"

@@ -55,15 +55,18 @@ export const GraphQLWorkbenchProvider = ({ children }: PropsWithChildren) => {
   const [operation, setOperation] = useState<GraphQLPlaygroundOperation>();
   const [drawerState, setDrawerState] = useState<WorkbenchState>("collapsed");
 
+  // The operation id is GraphiQL's reset key: a new id remounts the editor and
+  // resets the docs explorer. Only openWorkbench, which loads a new query, may
+  // bump it. The first edit in a playground opened without an operation gets
+  // id 0, the key GraphQLPlayground already uses when there is no operation.
   const updateWorkbenchOperation = useCallback(
     (input: Partial<Omit<GraphQLPlaygroundOperation, "id">>) => {
       setOperation((current) => {
         if (current) {
           return { ...current, ...input };
         }
-        nextId.current += 1;
         return {
-          id: nextId.current,
+          id: 0,
           query: input.query ?? "",
           variables: input.variables,
           headers: input.headers,

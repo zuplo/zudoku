@@ -243,6 +243,29 @@ describe("generateSchemaExample", () => {
     });
   });
 
+  describe("raw binary", () => {
+    it("returns a placeholder for schemas described by contentMediaType", () => {
+      expect(generateSchemaExample({ contentMediaType: "image/png" })).toBe(
+        "<binary>",
+      );
+    });
+
+    it("uses the placeholder for binary properties and items", () => {
+      expect(
+        generateSchemaExample({
+          type: "object",
+          properties: {
+            file: { contentMediaType: "application/octet-stream" },
+            photos: {
+              type: "array",
+              items: { contentMediaType: "image/png" },
+            },
+          },
+        }),
+      ).toEqual({ file: "<binary>", photos: ["<binary>"] });
+    });
+  });
+
   describe("format handling", () => {
     const cases = [
       ["date-time", "2024-08-25T15:00:00Z"],

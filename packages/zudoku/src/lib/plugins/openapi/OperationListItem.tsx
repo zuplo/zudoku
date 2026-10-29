@@ -14,6 +14,7 @@ import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
 import { SchemaView } from "./schema/SchemaView.js";
+import { withBinaryMediaType } from "./schema/utils.js";
 import { SecurityRequirements } from "./SecurityRequirements.js";
 import { Sidecar } from "./Sidecar.js";
 import { useResolvedServerUrl } from "./state.js";
@@ -180,7 +181,12 @@ export const OperationListItem = ({
                           ""
                         )}
                       </Heading>
-                      <SchemaView schema={schema} />
+                      <SchemaView
+                        schema={withBinaryMediaType(
+                          schema,
+                          operation.requestBody?.content?.at(0)?.mediaType,
+                        )}
+                      />
                     </div>
                   ),
                 )}

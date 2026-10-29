@@ -10,12 +10,14 @@ import {
   screen,
 } from "@testing-library/react";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { NavigationCategory as NavigationCategoryType } from "../../../config/validators/NavigationSchema.js";
 import type { ZudokuContextOptions } from "../../core/ZudokuContext.js";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import { SlotProvider } from "../context/SlotProvider.js";
 import { ZudokuProvider } from "../context/ZudokuProvider.js";
 import { Main } from "../Main.js";
+import { NavigationCategory } from "./NavigationCategory.js";
 
 const render = async (
   options: Partial<ZudokuContextOptions>,
@@ -232,5 +234,61 @@ describe("Navigation", () => {
     });
 
     expect(getLocationsToggle()?.getAttribute("aria-expanded")).toBe("false");
+  });
+});
+
+describe("NavigationCategory", () => {
+  const category: NavigationCategoryType = {
+    type: "category",
+    label: "Configuration",
+    link: { type: "link", to: "/configuration" },
+    items: [],
+  };
+
+  const renderCategory = async (onRequestClose: () => void) => {
+    const router = createMemoryRouter(
+      [
+        {
+          path: "*",
+          element: (
+            <NavigationCategory
+              category={category}
+              onRequestClose={onRequestClose}
+            />
+          ),
+        },
+      ],
+      { initialEntries: ["/quickstart"] },
+    );
+
+    await act(async () => {
+      testRender(<RouterProvider router={router} />);
+    });
+
+    return router;
+  };
+
+  it("requests close when the category link is clicked", async () => {
+    const onRequestClose = vi.fn();
+    const router = await renderCategory(onRequestClose);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("link", { name: /Configuration/ }));
+    });
+
+    expect(router.state.location.pathname).toBe("/configuration");
+    expect(onRequestClose).toHaveBeenCalledOnce();
+  });
+
+  it("does not request close when only the chevron is toggled", async () => {
+    const onRequestClose = vi.fn();
+    const router = await renderCategory(onRequestClose);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Expand section" }));
+    });
+
+    expect(router.state.location.pathname).toBe("/quickstart");
+    expect(onRequestClose).not.toHaveBeenCalled();
   });
 });

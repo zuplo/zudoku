@@ -26,21 +26,6 @@
   --color-primary: 240, 6%, 12%;
 }
 
-.dark .graphiql-container,
-.dark .graphiql-dialog,
-.dark .graphiql-dialog-overlay,
-.dark .graphiql-tooltip,
-.dark [data-radix-popper-content-wrapper],
-body.graphiql-dark .graphiql-container,
-body.graphiql-dark .graphiql-dialog,
-body.graphiql-dark .graphiql-dialog-overlay,
-body.graphiql-dark .graphiql-tooltip,
-body.graphiql-dark [data-radix-popper-content-wrapper] {
-  --color-base: 240, 10%, 4%;
-  --color-neutral: 0, 0%, 98%;
-  --color-primary: 240, 6%, 90%;
-}
-
 /* Honour the user's primary on the surfaces that matter most. */
 .graphiql-container .graphiql-execute-button,
 .graphiql-container .graphiql-execute-button:hover,
@@ -80,4 +65,21 @@ body.graphiql-dark [data-radix-popper-content-wrapper] {
 .graphiql-dialog,
 .graphiql-dialog-overlay {
   z-index: 60;
+}
+
+/* Dark palette. Kept last so its higher-specificity selectors follow every
+ * other rule on the same elements (biome noDescendingSpecificity). */
+.dark .graphiql-container,
+.dark .graphiql-dialog,
+.dark .graphiql-dialog-overlay,
+.dark .graphiql-tooltip,
+.dark [data-radix-popper-content-wrapper],
+body.graphiql-dark .graphiql-container,
+body.graphiql-dark .graphiql-dialog,
+body.graphiql-dark .graphiql-dialog-overlay,
+body.graphiql-dark .graphiql-tooltip,
+body.graphiql-dark [data-radix-popper-content-wrapper] {
+  --color-base: 240, 10%, 4%;
+  --color-neutral: 0, 0%, 98%;
+  --color-primary: 240, 6%, 90%;
 }

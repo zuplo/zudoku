@@ -50,21 +50,7 @@ If you don't have an Auth0 account, you can sign up for a
 
    Keep the default **Refresh Token Expiration** settings unless you have specific requirements.
 
-3. Create an Auth0 API:
-   - Navigate to the [APIs section](https://manage.auth0.com/#/apis) in the Auth0 dashboard
-   - Click **Create API**
-   - Set a name (e.g., "Zudoku API") and an identifier (e.g., `https://your-domain.com/api`)
-   - Choose **RS256** as the signing algorithm
-   - Save the API
-
-   :::warning
-
-   This step is important. If you skip creating an API, Zudoku will not be able to validate the
-   tokens issued by Auth0, leading to authentication failures.
-
-   :::
-
-4. **Configure Zudoku**
+3. **Configure Zudoku**
 
    Add the Auth0 configuration to your [Zudoku configuration file](./overview.md):
 
@@ -76,7 +62,6 @@ If you don't have an Auth0 account, you can sign up for a
        type: "auth0",
        domain: "your-domain.us.auth0.com",
        clientId: "<your-auth0-client-id>",
-       audience: "https://your-domain.com/api", // Your Auth0 API identifier
      },
      // ... other configuration
    };
@@ -85,7 +70,36 @@ If you don't have an Auth0 account, you can sign up for a
    Where:
    - **domain**: Your Auth0 domain (found in your application's Basic Information)
    - **clientId**: The Client ID from your Auth0 application settings
-   - **audience**: The identifier of the Auth0 API you created (e.g., `https://your-domain.com/api`)
+
+4. **(Optional) Configure an audience for API access**
+
+   Only configure an `audience` if you need the access token to call a specific API (for example,
+   when using the API playground to send authenticated requests to your backend). Without an
+   audience, Auth0 issues an opaque token that can be used to identify the user via `/userinfo` —
+   which is all Zudoku needs for sign-in and protected routes.
+
+   :::tip
+
+   Avoid setting an audience when you don't need it. Issuing an access token scoped to an API when
+   it isn't going to call that API gives the token broader privileges than necessary.
+
+   :::
+
+   If you do need API access:
+   - Navigate to the [APIs section](https://manage.auth0.com/#/apis) in the Auth0 dashboard
+   - Click **Create API**, set a name (e.g., "Zudoku API") and an identifier (e.g.,
+     `https://your-domain.com/api`)
+   - Choose **RS256** as the signing algorithm and save the API
+   - Add the identifier to your Zudoku configuration:
+
+   ```typescript
+   authentication: {
+     type: "auth0",
+     domain: "your-domain.us.auth0.com",
+     clientId: "<your-auth0-client-id>",
+     audience: "https://your-domain.com/api", // Your Auth0 API identifier
+   }
+   ```
 
 </Stepper>
 
@@ -188,8 +202,9 @@ authentication: {
 3. **Authentication Loop**: Check that your Auth0 domain is a plain hostname only (e.g.,
    `your-domain.us.auth0.com`) without a protocol prefix (`https://`) or trailing slash.
 
-4. **Token Validation Errors**: Ensure the audience in your Zudoku configuration matches the
-   identifier of the Auth0 API you created.
+4. **Token Validation Errors**: If you've configured an `audience`, make sure it matches the
+   identifier of the Auth0 API you created. If you don't need to call an API, remove `audience` from
+   your configuration — Auth0 will issue an opaque token suitable for `/userinfo`.
 
 ## Next Steps
 

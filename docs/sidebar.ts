@@ -29,6 +29,11 @@ export const docs: Navigation = [
     items: [
       "docs/customization/colors-theme",
       "docs/configuration/docs",
+      {
+        type: "doc",
+        file: "docs/configuration/blog",
+        badge: { label: "Beta", color: "yellow" },
+      },
       "docs/configuration/navigation",
       "docs/configuration/site",
       "docs/configuration/search",
@@ -76,6 +81,8 @@ export const docs: Navigation = [
           "docs/openapi-extensions/x-zudoku-collapsed",
           "docs/openapi-extensions/x-zudoku-collapsible",
           "docs/openapi-extensions/x-zudoku-playground-enabled",
+          "docs/openapi-extensions/x-zudoku-request-box-enabled",
+          "docs/openapi-extensions/x-zudoku-seo",
           "docs/openapi-extensions/x-zudoku-type",
         ],
       },

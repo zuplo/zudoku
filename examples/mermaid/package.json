@@ -20,11 +20,11 @@
     }
   },
   "dependencies": {
-    "mermaid": "^11.16.0",
+    "mermaid": "^11.17.2",
     "rehype-mermaid": "^3.0.0"
   },
   "devDependencies": {
-    "playwright": "1.62.0",
+    "playwright": "1.63.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zudoku": "workspace:*"
