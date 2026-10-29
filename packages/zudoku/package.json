@@ -139,7 +139,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@unhead/react": "3.4.2",
-    "@vitejs/plugin-react": "6.1.1",
+    "@vitejs/plugin-react": "6.1.2",
     "@x0k/json-schema-merge": "1.0.4",
     "bs58": "6.0.0",
     "class-variance-authority": "0.7.1",
