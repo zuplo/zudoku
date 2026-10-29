@@ -15,7 +15,7 @@ export default defineConfig({
   mode: "standalone",
   define: {
     "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
-    "process.env.ZUPLO_BUILD_CONFIG": "undefined",
+    "import.meta.env.ZUPLO_DEV_PORTAL_ZUPLO_BRANDING": "undefined",
   },
   build: {
     emptyOutDir: true,

@@ -23,7 +23,6 @@ import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
 import { protectedAnnotatorPlugin } from "./protected/annotator.js";
 import { getProtectedSourceMatcher } from "./protected/registry.js";
-import { getZuploSystemConfigurations } from "./zuplo.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
@@ -125,10 +124,7 @@ export async function getViteConfig(
     });
   }
 
-  const deploymentName =
-    ZuploEnv.buildConfig?.deploymentName ||
-    getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
-      ?.__ZUPLO_DEPLOYMENT_NAME;
+  const deploymentName = ZuploEnv.deploymentName;
 
   const viteConfig: InlineConfig = {
     root: dir,
@@ -158,10 +154,13 @@ export async function getViteConfig(
       "import.meta.env.ZUDOKU_HAS_SERVER": JSON.stringify(options.ssr === true),
       "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME":
         JSON.stringify(deploymentName),
+      // Derived value only; the raw env var is read at build time.
+      "import.meta.env.ZUPLO_DEV_PORTAL_ZUPLO_BRANDING": JSON.stringify(
+        ZuploEnv.devPortalZuploBranding,
+      ),
       ...defineEnvVars([
         "SENTRY_DSN",
         "ZUPLO_BUILD_ID",
-        "ZUPLO_BUILD_CONFIG",
         "ZUPLO_ENVIRONMENT_TYPE",
         "ZUPLO_SERVER_URL",
         "ZUPLO_GATEWAY_SERVICE_URL",
