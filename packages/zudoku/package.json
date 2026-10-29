@@ -210,7 +210,7 @@
     "yaml": "2.9.1",
     "yargs": "18.2.0",
     "zod": "catalog:",
-    "zustand": "5.0.15"
+    "zustand": "5.0.16"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "7.4.6",
