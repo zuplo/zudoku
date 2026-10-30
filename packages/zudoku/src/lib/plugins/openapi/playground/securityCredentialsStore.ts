@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { schemeSetKey } from "../../../hooks/useIdentityStore.js";
 import type { SecuritySchemeType } from "../graphql/graphql.js";
 
 export type BasicCredentials = { username: string; password: string };
@@ -71,6 +72,67 @@ const findSatisfiedRequirement = (
       req.schemes.length > 0 &&
       req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
   );
+
+export const areSchemesAuthorized = (
+  schemeNames: string[],
+  credentials: Record<string, SecurityCredential>,
+) => schemeNames.every((name) => credentials[name]?.isAuthorized);
+
+const findSecurityRequirement = <T extends SecurityRequirement>(
+  security: T[] | null | undefined,
+  schemeNames: string[],
+) => {
+  const key = schemeSetKey(schemeNames);
+  return security?.find(
+    (requirement) =>
+      schemeSetKey(requirement.schemes.map((s) => s.scheme.name)) === key,
+  );
+};
+
+/**
+ * Narrow `security` and `credentials` to the selected requirement, so helpers
+ * below apply every scheme it combines. `undefined` unless all are authorized.
+ */
+export const resolveSelectedRequirement = <T extends SecurityRequirement>(
+  security: T[] | null | undefined,
+  schemeNames: string[],
+  credentials: Record<string, SecurityCredential>,
+) => {
+  const requirement = findSecurityRequirement(security, schemeNames);
+  if (!requirement || !areSchemesAuthorized(schemeNames, credentials)) {
+    return undefined;
+  }
+
+  return {
+    security: [requirement],
+    credentials: Object.fromEntries(
+      schemeNames.flatMap((name) => {
+        const credential = credentials[name];
+        return credential ? [[name, credential] as const] : [];
+      }),
+    ),
+  };
+};
+
+export type SelectedRequirement = NonNullable<
+  ReturnType<typeof resolveSelectedRequirement>
+>;
+
+export const createAuthorizedRequest = (
+  url: URL,
+  init: RequestInit | undefined,
+  selected: SelectedRequirement,
+) => {
+  for (const [name, value] of getSecurityQueryParams(
+    selected.security,
+    selected.credentials,
+  )) {
+    url.searchParams.set(name, value);
+  }
+  const request = new Request(url, init);
+  applySecurityCredentials(request, selected.security, selected.credentials);
+  return request;
+};
 
 /**
  * Get the list of header names that will be auto-injected by security credentials.

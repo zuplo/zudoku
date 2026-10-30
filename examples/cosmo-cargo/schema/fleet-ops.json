@@ -36,6 +36,12 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-Fleet-Key"
+      },
+      "WarpSecret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Warp-Secret",
+        "description": "Signing secret issued with your fleet key. Route calculations touch warp-drive telemetry, so they require both."
       }
     },
     "schemas": {
@@ -268,6 +274,7 @@
         "summary": "Calculate warp route",
         "description": "Computes optimal hyperspace route between two systems.",
         "operationId": "calculateRoute_v2",
+        "security": [{ "ApiKeyAuth": [], "WarpSecret": [] }],
         "requestBody": {
           "required": true,
           "content": {

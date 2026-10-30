@@ -1,12 +1,12 @@
 import type { ApiIdentity } from "../../../core/ZudokuContext.js";
 import {
-  NO_IDENTITY,
-  SECURITY_SCHEME_PREFIX,
+  securitySchemeNamesLabel,
+  valueToIdentitySelection,
 } from "../../../hooks/useIdentityStore.js";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 import {
-  applySecurityCredentials,
-  getSecurityQueryParams,
+  createAuthorizedRequest,
+  resolveSelectedRequirement,
   type SecurityCredential,
 } from "../playground/securityCredentialsStore.js";
 import { EMPTY_RESOLVED_AUTH, type ResolvedAuth } from "./createHttpSnippet.js";
@@ -19,37 +19,43 @@ const headersFromRequest = (request: Request) =>
     value,
   }));
 
+const queryStringFromRequest = (request: Request) =>
+  Array.from(new URL(request.url).searchParams.entries()).map(
+    ([name, value]) => ({ name, value }),
+  );
+
 export const resolveSchemeAuth = ({
   operation,
-  schemeName,
+  schemeNames,
   credentials,
 }: {
   operation: OperationsFragmentFragment;
-  schemeName: string;
+  schemeNames: string[];
   credentials: Record<string, SecurityCredential>;
 }): ResolvedAuth => {
-  const cred = credentials[schemeName];
-  if (!cred?.isAuthorized) return EMPTY_RESOLVED_AUTH;
-
-  const security = operation.security;
-  const schemeInOperation = security?.some((req) =>
-    req.schemes.some((s) => s.scheme.name === schemeName),
+  const selected = resolveSelectedRequirement(
+    operation.security,
+    schemeNames,
+    credentials,
   );
-  if (!schemeInOperation) return EMPTY_RESOLVED_AUTH;
+  if (!selected) {
+    return EMPTY_RESOLVED_AUTH;
+  }
 
-  const schemeCredentials = { [schemeName]: cred };
   try {
-    const request = new Request(PLACEHOLDER_URL);
-    applySecurityCredentials(request, security, schemeCredentials);
-    const queryEntries = getSecurityQueryParams(security, schemeCredentials);
+    const request = createAuthorizedRequest(
+      new URL(PLACEHOLDER_URL),
+      undefined,
+      selected,
+    );
     return {
       headers: headersFromRequest(request),
-      queryString: queryEntries.map(([name, value]) => ({ name, value })),
+      queryString: queryStringFromRequest(request),
     };
   } catch (error) {
     // biome-ignore lint/suspicious/noConsole: Intentional warning
     console.warn(
-      `[Zudoku] Failed to apply security scheme "${schemeName}" to snippet:`,
+      `[Zudoku] Failed to apply security scheme "${securitySchemeNamesLabel(schemeNames)}" to snippet:`,
       error,
     );
     return EMPTY_RESOLVED_AUTH;
@@ -63,12 +69,9 @@ export const resolveIdentityAuth = async (
   try {
     const baseRequest = new Request(URL.canParse(url) ? url : PLACEHOLDER_URL);
     const authorized = await identity.authorizeRequest(baseRequest);
-    const queryString = Array.from(
-      new URL(authorized.url).searchParams.entries(),
-    ).map(([name, value]) => ({ name, value }));
     return {
       headers: headersFromRequest(authorized),
-      queryString,
+      queryString: queryStringFromRequest(authorized),
     };
   } catch (error) {
     // biome-ignore lint/suspicious/noConsole: Intentional warning
@@ -95,17 +98,20 @@ export const resolveAuthForSnippet = async ({
   credentials: Record<string, SecurityCredential>;
   url?: string;
 }): Promise<ResolvedAuth> => {
-  if (!identityId || identityId === NO_IDENTITY) return EMPTY_RESOLVED_AUTH;
+  const selection = valueToIdentitySelection(identityId);
+  if (selection.type === "none") {
+    return EMPTY_RESOLVED_AUTH;
+  }
 
-  if (identityId.startsWith(SECURITY_SCHEME_PREFIX)) {
+  if (selection.type === "scheme") {
     return resolveSchemeAuth({
       operation,
-      schemeName: identityId.slice(SECURITY_SCHEME_PREFIX.length),
+      schemeNames: selection.names,
       credentials,
     });
   }
 
-  const identity = identities?.find((i) => i.id === identityId);
+  const identity = identities?.find((i) => i.id === selection.id);
   if (!identity) return EMPTY_RESOLVED_AUTH;
   return resolveIdentityAuth(identity, url);
 };

@@ -2,7 +2,7 @@ import { useOasConfig } from "./context.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import type { Content } from "./interfaces.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
-import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
+import { extractOperationSecurityOptions } from "./util/extractOperationSecurityOptions.js";
 
 const extractRefName = (ref: unknown): string | undefined => {
   if (typeof ref !== "string") return undefined;
@@ -59,9 +59,9 @@ export const PlaygroundDialogWrapper = ({
 
   const { options } = useOasConfig();
 
-  const securitySchemes = options?.disableSecurity
+  const securityOptions = options?.disableSecurity
     ? []
-    : extractOperationSecuritySchemes(operation);
+    : extractOperationSecurityOptions(operation);
 
   // Keep unnamed statuses so `default` only applies to undefined status codes.
   const responseSchemas = Object.fromEntries(
@@ -91,7 +91,7 @@ export const PlaygroundDialogWrapper = ({
           ? (operation.security ?? undefined)
           : undefined
       }
-      securitySchemes={securitySchemes}
+      securityOptions={securityOptions}
       responseSchemas={responseSchemas}
     />
   );
