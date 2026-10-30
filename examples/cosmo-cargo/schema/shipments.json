@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "contact": {
       "name": "Cosmo Cargo API Support",
-      "email": "api@sh.example.com",
+      "email": "api@cosmocargo.dev",
       "url": "https://developers.sh.example.com"
     },
     "license": {
@@ -48,7 +48,11 @@
     {
       "name": "Tracking & Notifications",
       "description": "Endpoints for tracking shipments and configuring notifications for shipment status updates.",
-      "x-displayName": "Notifications"
+      "x-displayName": "Notifications",
+      "x-zudoku-seo": {
+        "title": "Interstellar Shipment Tracking & Notifications",
+        "description": "Follow cargo across warp lanes in real time and get notified the moment a shipment changes status."
+      }
     },
     {
       "name": "System",
@@ -62,11 +66,15 @@
       "name": "Schemas",
       "description": "Endpoints for retrieving and validating data schemas used across the Cosmo Cargo platform.",
       "x-zudoku-collapsed": false
+    },
+    {
+      "name": "GraphQL",
+      "description": "GraphQL endpoint for querying the Cosmo Cargo registry. Issue GraphQL queries to fetch shipments, fleets, and route data in a single round trip."
     }
   ],
   "servers": [
     {
-      "url": "https://8f9618f3bc0f4eec989627ceaafd5e4d_oas.api.mockbin.io/",
+      "url": "https://c1cf69108515455da09b5a33ff336111-oas.api.mockbin.io/",
       "description": "Production environment"
     },
     {
@@ -84,10 +92,10 @@
   ],
   "security": [
     {
-      "ApiKeyAuth": []
+      "BearerAuth": []
     },
     {
-      "BearerAuth": []
+      "ApiKeyAuth": []
     }
   ],
   "components": {
@@ -151,7 +159,7 @@
           "recipientEmail": {
             "type": "string",
             "format": "email",
-            "example": "recipient@example.com"
+            "example": "recipient@cosmocargo.dev"
           },
           "notes": {
             "type": "array",
@@ -178,6 +186,12 @@
           "status": {
             "type": "string",
             "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"],
+            "x-enumDescriptions": {
+              "CREATED": "Manifest logged and cargo sealed in the stasis bay, awaiting launch clearance.",
+              "IN_TRANSIT": "Cargo is aboard a freighter, currently in warp between waypoints.",
+              "DELIVERED": "Docked at the destination port and signed for by the recipient.",
+              "EXCEPTION": "Delayed by an anomaly such as an ion storm, customs hold or quantum drift."
+            },
             "nullable": true
           },
           "trackingNumber": {
@@ -743,7 +757,7 @@
             "source": "import requests\n\nresponse = requests.post(\n    'https://api.cosmocargo.com/v1/shipments',\n    headers={\n        'Content-Type': 'application/json',\n        'X-API-Key': 'YOUR_API_KEY',\n    },\n    json={\n        'recipientAddress': {\n            'name': 'Zara Nebula',\n            'planet': 'Mars',\n            'station': 'Olympus Mons Hub',\n        },\n        'packages': [{'weight': 2.5, 'dimensions': '30x20x15'}],\n    },\n)\n\nshipment = response.json()"
           }
         ],
-        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }],
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
         "parameters": [
           {
             "$ref": "#/components/parameters/CorrelationId"
@@ -776,7 +790,7 @@
                 "simple": {
                   "summary": "Simple domestic shipment",
                   "value": {
-                    "recipientEmail": "test@example.com",
+                    "recipientEmail": "test@cosmocargo.dev",
                     "recipientAddress": {
                       "street": "123 Delivery St",
                       "city": "Shiptown",
@@ -856,7 +870,7 @@
                     "summary": "Domestic shipment response",
                     "value": {
                       "id": "123e4567-e89b-12d3-a456-426614174000",
-                      "recipientEmail": "test@example.com",
+                      "recipientEmail": "test@cosmocargo.dev",
                       "recipientAddress": {
                         "street": "123 Delivery St",
                         "city": "Shiptown",
@@ -1123,6 +1137,20 @@
                 }
               }
             }
+          },
+          "default": {
+            "description": "Unexpected error retrieving shipments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "QUANTUM_FLUX_ERROR",
+                  "message": "Shipment manifest lost in a warp-field anomaly"
+                }
+              }
+            }
           }
         }
       }
@@ -1181,7 +1209,7 @@
                 },
                 "example": {
                   "id": "123e4567-e89b-12d3-a456-426614174000",
-                  "recipientEmail": "test@example.com",
+                  "recipientEmail": "test@cosmocargo.dev",
                   "recipientAddress": {
                     "street": "123 Delivery St",
                     "city": "Shiptown",
@@ -1234,7 +1262,7 @@
         "summary": "Cancel shipment",
         "description": "Cancel a shipment that hasn't been picked up yet.",
         "operationId": "cancelShipment",
-        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }],
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
         "parameters": [
           {
             "name": "trackingNumber",
@@ -2773,7 +2801,7 @@
                               "Commercial Invoice",
                               "Certificate of Origin"
                             ],
-                            "contactEmail": "customs@sh.example.com"
+                            "contactEmail": "customs@cosmocargo.dev"
                           }
                         },
                         {
@@ -2883,6 +2911,11 @@
               }
             }
           }
+        },
+        "responses": {
+          "204": {
+            "description": "Notification preferences updated"
+          }
         }
       }
     },
@@ -2919,6 +2952,11 @@
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Shipment priority updated"
           }
         }
       }
@@ -3798,6 +3836,83 @@
                 "example": {
                   "status": "healthy",
                   "timestamp": "2025-01-09T12:00:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/graphql": {
+      "post": {
+        "tags": ["GraphQL"],
+        "operationId": "graphqlShipmentQuery",
+        "summary": "GraphQL endpoint",
+        "description": "Query the Cosmo Cargo registry via GraphQL. Test live against the public Rick and Morty universe schema.",
+        "security": [{ "BearerAuth": [] }, { "ApiKeyAuth": [] }],
+        "x-graphql": {
+          "endpoint": "https://rickandmortyapi.com/graphql"
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "GraphQL operation document"
+                  },
+                  "variables": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "operationName": {
+                    "type": ["string", "null"]
+                  }
+                }
+              },
+              "examples": {
+                "list-characters": {
+                  "summary": "List characters",
+                  "value": {
+                    "query": "query ListCharacters($page: Int) {\n  characters(page: $page) {\n    info { count pages }\n    results { id name species }\n  }\n}",
+                    "variables": { "page": 1 }
+                  }
+                },
+                "get-character": {
+                  "summary": "Get a character",
+                  "value": {
+                    "query": "query GetCharacter($id: ID!) {\n  character(id: $id) {\n    id\n    name\n    status\n    origin { name }\n  }\n}",
+                    "variables": { "id": "1" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "GraphQL response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": ["object", "null"],
+                      "additionalProperties": true
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  },
+                  "additionalProperties": true
                 }
               }
             }

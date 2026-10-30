@@ -40,11 +40,11 @@ export const EmbeddedCodeBlock = ({
         fullHeight && "h-full",
       )}
     >
-      <div className="relative overflow-auto">
+      <div className={cn("relative overflow-auto", fullHeight && "h-full")}>
         <div
           className={cn(
             "code-block text-sm not-prose scrollbar [&>pre]:overflow-x-auto [&_code]:p-2",
-            fullHeight && "h-full [&>pre]:h-full",
+            fullHeight && "h-full [&>pre]:h-full [&>code]:min-h-full",
             props.className,
           )}
           ref={ref}

@@ -5,19 +5,24 @@ import {
   type ConfigEnv,
   type InlineConfig,
   type LogLevel,
+  type Rolldown,
   loadConfigFromFile,
   mergeConfig,
 } from "vite";
-import packageJson from "../../package.json" with { type: "json" };
 import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
-import { getZudokuRootDir } from "../cli/common/package-json.js";
+import {
+  getZudokuPackageJson,
+  getZudokuRootDir,
+} from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
-import { CdnUrlSchema } from "../config/validators/ZudokuConfig.js";
+import { PROTECTED_CHUNK_DIR } from "../lib/manifest.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import type { SSRAdapter } from "./build.js";
 import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
-import { getZuploSystemConfigurations } from "./zuplo.js";
+import { protectedAnnotatorPlugin } from "./protected/annotator.js";
+import { getProtectedSourceMatcher } from "./protected/registry.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
@@ -34,6 +39,35 @@ let hasLoggedCdnInfo = false;
 const MEDIA_REGEX =
   /\.(a?png|jpe?g|gif|bmp|svg|webp|tiff|ico|webm|ogg|mp3|wav|m4a|avif|mp4)/i;
 
+/**
+ * Seeds Vite's dependency scanner with Zudoku's own source.
+ *
+ * `zudoku` is in `optimizeDeps.exclude`, so its source is served to the browser
+ * unbundled and its bare imports have to be pre-bundled by name. When Zudoku is
+ * installed normally its source lives inside `node_modules`, and Vite skips
+ * runtime dependency discovery for any importer under `node_modules` (it serves
+ * the raw file with a `?v=` query instead). This scan is therefore the only
+ * chance to find those dependencies — anything it misses reaches the browser as
+ * raw CommonJS and fails to parse as ESM.
+ *
+ * The scan aborts wholesale on a single unresolvable import, so the entries must
+ * not include modules that only resolve in another environment.
+ */
+export const getDepScanEntries = () => {
+  const src = path.posix.join(getZudokuRootDir(), "src");
+
+  return [
+    `${src}/{app,lib}/**/*.{ts,tsx}`,
+    // Client-environment scan: `entry.server.tsx` imports
+    // `virtual:zudoku-markdown-files`, which only the `ssr` environment
+    // provides. Including it fails the scan and disables pre-bundling entirely.
+    `!${getAppServerEntryPath()}`,
+    // Not published, but present in the monorepo — keeps local dev scanning the
+    // same file set an installed site does (and out of vitest's dependencies).
+    `!${src}/**/*.test.*`,
+  ];
+};
+
 const defineEnvVars = (vars: string[]) =>
   Object.fromEntries(
     vars.flatMap((v) => [
@@ -45,13 +79,24 @@ const defineEnvVars = (vars: string[]) =>
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
+  options: { adapter?: SSRAdapter; ssr?: boolean } = {},
 ): Promise<InlineConfig> {
   const { config, publicEnv, envPrefix } = await loadZudokuConfig(
     configEnv,
     dir,
   );
+  const { match: isProtectedSource, enabled: hasProtectedSources } =
+    getProtectedSourceMatcher(config);
+  const shouldProtectChunks = hasProtectedSources && options.ssr === true;
 
-  const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
+  // Check facadeModuleId too: codeSplitting may move the body into a captured
+  // group, leaving a stub whose moduleIds no longer reference the protected source.
+  const isProtectedChunk = (chunk: Rolldown.PreRenderedChunk) =>
+    (chunk.facadeModuleId && isProtectedSource(chunk.facadeModuleId)) ||
+    chunk.moduleIds.some(isProtectedSource);
+
+  const isWorker = options.adapter === "cloudflare";
+  const cdnUrl = config.cdnUrl;
 
   const base = cdnUrl?.base
     ? joinUrl(cdnUrl.base, config.basePath)
@@ -79,15 +124,16 @@ export async function getViteConfig(
     });
   }
 
-  const deploymentName =
-    ZuploEnv.buildConfig?.deploymentName ||
-    getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
-      ?.__ZUPLO_DEPLOYMENT_NAME;
+  const deploymentName = ZuploEnv.deploymentName;
 
   const viteConfig: InlineConfig = {
     root: dir,
     base,
     appType: "custom",
+    // Cloudflare Workers: `webworker` makes Vite pick the browser platform
+    // for rolldown and avoids emitting `createRequire(import.meta.url)`,
+    // which is undefined in Workers. See vitejs/vite#21969 (fix in 8.0.4+).
+    ssr: isWorker ? { target: "webworker" } : undefined,
     configFile: false,
     clearScreen: false,
     logLevel: (process.env.LOG_LEVEL ?? "info") as LogLevel,
@@ -100,15 +146,21 @@ export async function getViteConfig(
       },
     },
     define: {
-      "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
+      "process.env.ZUDOKU_VERSION": JSON.stringify(
+        getZudokuPackageJson().version,
+      ),
       "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
       "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
+      "import.meta.env.ZUDOKU_HAS_SERVER": JSON.stringify(options.ssr === true),
       "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME":
         JSON.stringify(deploymentName),
+      // Derived value only; the raw env var is read at build time.
+      "import.meta.env.ZUPLO_DEV_PORTAL_ZUPLO_BRANDING": JSON.stringify(
+        ZuploEnv.devPortalZuploBranding,
+      ),
       ...defineEnvVars([
         "SENTRY_DSN",
         "ZUPLO_BUILD_ID",
-        "ZUPLO_BUILD_CONFIG",
         "ZUPLO_ENVIRONMENT_TYPE",
         "ZUPLO_SERVER_URL",
         "ZUPLO_GATEWAY_SERVICE_URL",
@@ -146,21 +198,40 @@ export async function getViteConfig(
     environments: {
       client: {
         build: {
+          manifest: true,
           rolldownOptions: {
             input: "zudoku/app/entry.client.tsx",
+            output: shouldProtectChunks
+              ? {
+                  entryFileNames: (chunk) =>
+                    isProtectedChunk(chunk)
+                      ? `${PROTECTED_CHUNK_DIR}/[name]-[hash].js`
+                      : "assets/[name]-[hash].js",
+                  chunkFileNames: (chunk) =>
+                    isProtectedChunk(chunk)
+                      ? `${PROTECTED_CHUNK_DIR}/[name]-[hash].js`
+                      : "assets/[name]-[hash].js",
+                }
+              : undefined,
           },
         },
       },
       ssr: {
-        resolve: {
-          noExternal: [/zudoku/, "@mdx-js/react"],
-          external: ["@shikijs/themes", "@shikijs/langs"],
-        },
+        // Build: bundle all for self-contained SSR output; dev uses minimal externals for speed.
+        resolve:
+          configEnv.command === "build"
+            ? { noExternal: true }
+            : {
+                noExternal: [/zudoku/, "@mdx-js/react"],
+                external: ["@shikijs/themes", "@shikijs/langs"],
+              },
         build: {
           outDir: path.resolve(
             path.join(dir, "dist", config.basePath ?? "", "server"),
           ),
+          copyPublicDir: false,
           rolldownOptions: {
+            logLevel: "warn",
             input: ["zudoku/app/entry.server.tsx", config.__meta.configPath],
           },
         },
@@ -168,6 +239,12 @@ export async function getViteConfig(
     },
     experimental: {
       renderBuiltUrl(filename) {
+        // Protected chunks must resolve through the SSR origin so the auth
+        // gate runs; never prefix with a CDN.
+        if (filename.startsWith(`${PROTECTED_CHUNK_DIR}/`)) {
+          return joinUrl(config.basePath, `/${filename}`);
+        }
+
         if (cdnUrl?.base && [".js", ".css"].includes(path.extname(filename))) {
           return joinUrl(cdnUrl.base, filename);
         }
@@ -180,7 +257,7 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
-      entries: [path.posix.join(getZudokuRootDir(), "src/{app,lib}/**")],
+      entries: getDepScanEntries(),
       exclude: ["zudoku"],
       include: [
         "@mdx-js/react",
@@ -194,7 +271,7 @@ export async function getViteConfig(
       "/__z/entry.client.tsx",
       "**/pagefind.js",
     ],
-    plugins: [vitePlugin()],
+    plugins: [protectedAnnotatorPlugin(), vitePlugin()],
     future: {
       removeServerModuleGraph: "warn",
       removeSsrLoadModule: "warn",

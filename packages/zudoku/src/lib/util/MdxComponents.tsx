@@ -6,6 +6,7 @@ import { AnchorLink } from "../components/AnchorLink.js";
 import { Framed } from "../components/Framed.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
+import { ScrollableTable } from "../components/ScrollableTable.js";
 import { HIGHLIGHT_CODE_BLOCK_CLASS } from "../shiki-constants.js";
 import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
@@ -106,12 +107,19 @@ export const MdxComponents = {
   caution: (props) => <Callout type="caution" {...props} />,
   warning: (props) => <Callout type="caution" {...props} />,
   danger: (props) => <Callout type="danger" {...props} />,
+  sparkles: (props) => <Callout type="sparkles" {...props} />,
+  rocket: (props) => <Callout type="rocket" {...props} />,
+  settings: (props) => <Callout type="settings" {...props} />,
+  zap: (props) => <Callout type="zap" {...props} />,
+  lock: (props) => <Callout type="lock" {...props} />,
+  megaphone: (props) => <Callout type="megaphone" {...props} />,
   CodeTabs: (props) => (
     <Suspense>
       <CodeTabs {...props} />
     </Suspense>
   ),
   CodeTabPanel,
+  table: ({ node: _node, ...props }) => <ScrollableTable {...props} />,
   pre: (props) => (
     <pre className={cn("not-prose my-4", props.className)} {...props} />
   ),

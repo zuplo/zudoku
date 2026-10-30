@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { format } from "oxfmt";
 
-const icons = await import("lucide-react/dist/esm/dynamicIconImports.js").then(
+const icons = await import("lucide-react/dynamicIconImports.mjs").then(
   (module) => module.default,
 );
 

@@ -1,0 +1,283 @@
+---
+title: Landing Page
+sidebar_icon: layout-template
+---
+
+import { BrowserWindow, LandingPage } from "zudoku/components";
+import { BookOpenIcon, CodeIcon, KeyIcon, RocketIcon, WebhookIcon, ZapIcon } from "zudoku/icons";
+
+A ready-made, customizable landing page for your developer portal. It comes in three variants
+covering the most common layouts: a centered hero, a two-column split hero, and a compact
+documentation hub.
+
+Use it as the `element` of a [custom page](/docs/guides/custom-pages) — typically your home page:
+
+```tsx title=zudoku.config.tsx
+import { LandingPage } from "zudoku/components";
+
+const config = {
+  navigation: [
+    {
+      type: "custom-page",
+      path: "/",
+      element: (
+        <LandingPage
+          title="Build with our API"
+          description="Everything you need to integrate in minutes."
+          actions={[
+            { label: "Get started", href: "/getting-started" },
+            { label: "API Reference", href: "/api" },
+          ]}
+        />
+      ),
+    },
+    // ...
+  ],
+};
+```
+
+## Import
+
+```tsx
+import { LandingPage } from "zudoku/components";
+```
+
+## Variants
+
+### Hero (default)
+
+A centered hero with call-to-action buttons and an optional feature grid below. The classic landing
+page for product-focused portals. The previews on this page are presented in a
+[Browser Window](./browser-window) component.
+
+<BrowserWindow url="https://developers.example.com" scale={0.75} contentClassName="px-8">
+  <LandingPage
+    eyebrow="Developer Platform"
+    title="Build with our API"
+    description="Everything you need to integrate payments, webhooks, and more — in minutes, not days."
+    actions={[
+      { label: "Get started", href: "/docs/getting-started" },
+      { label: "API Reference", href: "/docs", variant: "outline" },
+    ]}
+    features={[
+      {
+        icon: <ZapIcon />,
+        title: "Fast integration",
+        description: "Go from zero to your first API call in under five minutes.",
+      },
+      {
+        icon: <KeyIcon />,
+        title: "API keys built in",
+        description: "Issue, rotate, and revoke keys right from the portal.",
+      },
+      {
+        icon: <WebhookIcon />,
+        title: "Webhooks",
+        description: "Subscribe to events and react to changes in real time.",
+      },
+    ]}
+  />
+</BrowserWindow>
+
+```tsx
+<LandingPage
+  eyebrow="Developer Platform"
+  title="Build with our API"
+  description="Everything you need to integrate payments, webhooks, and more — in minutes, not days."
+  actions={[
+    { label: "Get started", href: "/getting-started" },
+    { label: "API Reference", href: "/api", variant: "outline" },
+  ]}
+  features={[
+    {
+      icon: <ZapIcon />,
+      title: "Fast integration",
+      description: "Go from zero to your first API call in under five minutes.",
+    },
+    {
+      icon: <KeyIcon />,
+      title: "API keys built in",
+      description: "Issue, rotate, and revoke keys right from the portal.",
+    },
+    {
+      icon: <WebhookIcon />,
+      title: "Webhooks",
+      description: "Subscribe to events and react to changes in real time.",
+    },
+  ]}
+/>
+```
+
+### Split
+
+A two-column hero with your own content on the side — an illustration, screenshot, or code sample
+passed via the `aside` prop. A great fit for developer-oriented portals that want to show code up
+front.
+
+<BrowserWindow url="https://shipping.example.com" scale={0.75} contentClassName="px-8">
+  <LandingPage
+    variant="split"
+    eyebrow="Shipping API"
+    title="Ship anywhere in the whole universe"
+    description="Create and manage shipments, track packages in real-time, and integrate with multiple carriers through a single interface."
+    actions={[
+      { label: "Get started", href: "/docs/getting-started" },
+      { label: "View on GitHub", href: "https://github.com/zuplo/zudoku", variant: "outline" },
+    ]}
+    aside={
+      <div className="rounded-xl border bg-card p-4 font-mono text-sm">
+        <pre>{`curl https://api.example.com/v1/shipments \\
+  -H "Authorization: Bearer $API_KEY" \\
+  -d destination="alpha-centauri"`}</pre>
+      </div>
+    }
+  />
+</BrowserWindow>
+
+```tsx
+<LandingPage
+  variant="split"
+  eyebrow="Shipping API"
+  title="Ship anywhere in the whole universe"
+  description="Create and manage shipments, track packages in real-time, and integrate with multiple carriers through a single interface."
+  actions={[
+    { label: "Get started", href: "/getting-started" },
+    {
+      label: "View on GitHub",
+      href: "https://github.com/zuplo/zudoku",
+      variant: "outline",
+    },
+  ]}
+  aside={
+    <div className="rounded-xl border bg-card p-4 font-mono text-sm">
+      <pre>{`curl https://api.example.com/v1/shipments \\
+  -H "Authorization: Bearer $API_KEY" \\
+  -d destination="alpha-centauri"`}</pre>
+    </div>
+  }
+/>
+```
+
+The `aside` accepts any React node — use an `<img />` for an illustration instead of code:
+
+```tsx
+<LandingPage
+  variant="split"
+  title="Ship anywhere"
+  aside={<img src="/hero.webp" alt="Hero" className="rounded-3xl" />}
+/>
+```
+
+### Grid
+
+A compact header followed by prominent, clickable feature cards. Ideal as a documentation hub that
+routes visitors to the right section quickly.
+
+<BrowserWindow url="https://developers.example.com/docs" scale={0.75} contentClassName="px-8">
+  <LandingPage
+    variant="grid"
+    title="Documentation"
+    description="Explore guides, API references, and examples to get the most out of the platform."
+    features={[
+      {
+        icon: <RocketIcon />,
+        title: "Getting Started",
+        description: "Set up your account and make your first request.",
+        href: "/docs/getting-started",
+      },
+      {
+        icon: <BookOpenIcon />,
+        title: "Guides",
+        description: "Step-by-step tutorials for common use cases.",
+        href: "/docs",
+      },
+      {
+        icon: <CodeIcon />,
+        title: "API Reference",
+        description: "Complete reference for every endpoint and type.",
+        href: "/docs",
+      },
+      {
+        icon: <WebhookIcon />,
+        title: "Webhooks",
+        description: "Listen to events and build real-time integrations.",
+        href: "/docs",
+      },
+    ]}
+  />
+</BrowserWindow>
+
+```tsx
+<LandingPage
+  variant="grid"
+  title="Documentation"
+  description="Explore guides, API references, and examples to get the most out of the platform."
+  features={[
+    {
+      icon: <RocketIcon />,
+      title: "Getting Started",
+      description: "Set up your account and make your first request.",
+      href: "/getting-started",
+    },
+    {
+      icon: <BookOpenIcon />,
+      title: "Guides",
+      description: "Step-by-step tutorials for common use cases.",
+      href: "/guides",
+    },
+    {
+      icon: <CodeIcon />,
+      title: "API Reference",
+      description: "Complete reference for every endpoint and type.",
+      href: "/api",
+    },
+    {
+      icon: <WebhookIcon />,
+      title: "Webhooks",
+      description: "Listen to events and build real-time integrations.",
+      href: "/webhooks",
+    },
+  ]}
+/>
+```
+
+## Props
+
+| Prop          | Type                          | Description                                                                                      |
+| ------------- | ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| `variant`     | `"hero" \| "split" \| "grid"` | Layout variant. Defaults to `"hero"`.                                                            |
+| `title`       | `ReactNode`                   | Main headline. Required.                                                                         |
+| `eyebrow`     | `ReactNode`                   | Short label displayed above the title.                                                           |
+| `description` | `ReactNode`                   | Supporting text below the title.                                                                 |
+| `actions`     | `LandingPageAction[]`         | Call-to-action buttons. Each action has `label`, `href`, and an optional Button `variant`.       |
+| `features`    | `LandingPageFeature[]`        | Feature cards with optional `icon`, `title`, `description`, and `href` (making the card a link). |
+| `aside`       | `ReactNode`                   | Side content for the `split` variant (image, code sample, …).                                    |
+| `children`    | `ReactNode`                   | Additional content rendered below the built-in sections.                                         |
+| `className`   | `string`                      | Additional classes for the outer `<section>`.                                                    |
+
+### Links
+
+`href` values in `actions` and `features` are rendered as client-side router links for internal
+paths (e.g. `/getting-started`) and as regular links opening in a new tab for external URLs (e.g.
+`https://github.com/...`).
+
+## Customization
+
+- **Buttons**: The first action defaults to the primary button style, all following actions to
+  `outline`. Override per action with `variant` (any [Button](/docs/components/button) variant).
+- **Rich titles**: `title`, `description`, and `eyebrow` accept any React node, so you can use
+  custom markup like highlighted words:
+  `title={<>Ship <span className="text-primary">faster</span></>}`.
+- **Extra sections**: Pass `children` to append your own sections (testimonials, pricing, …) below
+  the built-in layout.
+- **Page metadata**: Combine with the [Head](/docs/components/head) component to set the page title:
+
+```tsx
+import { Head, LandingPage } from "zudoku/components";
+
+<LandingPage title="Build with our API">
+  <Head>
+    <title>Home</title>
+  </Head>
+</LandingPage>;
+```

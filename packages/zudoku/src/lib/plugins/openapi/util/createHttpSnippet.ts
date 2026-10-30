@@ -1,4 +1,15 @@
-import { HTTPSnippet } from "@zudoku/httpsnippet";
+import type { HarRequest, Plugin } from "@scalar/snippetz";
+import { csharpHttpclient } from "@scalar/snippetz/plugins/csharp/httpclient";
+import { goNative } from "@scalar/snippetz/plugins/go/native";
+import { javaOkhttp } from "@scalar/snippetz/plugins/java/okhttp";
+import { jsFetch } from "@scalar/snippetz/plugins/js/fetch";
+import { kotlinOkhttp } from "@scalar/snippetz/plugins/kotlin/okhttp";
+import { objcNsurlsession } from "@scalar/snippetz/plugins/objc/nsurlsession";
+import { phpCurl } from "@scalar/snippetz/plugins/php/curl";
+import { pythonRequests } from "@scalar/snippetz/plugins/python/requests";
+import { rubyNative } from "@scalar/snippetz/plugins/ruby/native";
+import { shellCurl } from "@scalar/snippetz/plugins/shell/curl";
+import { swiftNsurlsession } from "@scalar/snippetz/plugins/swift/nsurlsession";
 import { joinUrl } from "../../../util/joinUrl.js";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 
@@ -36,6 +47,52 @@ export const EMPTY_RESOLVED_AUTH: ResolvedAuth = {
   queryString: [],
 };
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// Picks the first non-empty security requirement. OpenAPI requirements are OR'd
+// (any one satisfies); we only show one alternative as a placeholder.
+const getPlaceholderAuth = (
+  operation: OperationsFragmentFragment,
+): ResolvedAuth => {
+  const requirement = operation.security?.find((r) => r.schemes.length > 0);
+  if (!requirement) return EMPTY_RESOLVED_AUTH;
+
+  const headers: Array<{ name: string; value: string }> = [];
+  const queryString: Array<{ name: string; value: string }> = [];
+
+  for (const { scheme } of requirement.schemes) {
+    switch (scheme.type) {
+      case "apiKey": {
+        if (!scheme.paramName) break;
+        const entry = { name: scheme.paramName, value: "<api-key>" };
+        if (scheme.in === "header") headers.push(entry);
+        else if (scheme.in === "query") queryString.push(entry);
+        break;
+      }
+      case "http": {
+        const httpScheme = scheme.scheme?.toLowerCase();
+        if (httpScheme === "basic") {
+          headers.push({ name: "Authorization", value: "Basic <credentials>" });
+        } else if (httpScheme === "bearer" || !scheme.scheme) {
+          headers.push({ name: "Authorization", value: "Bearer <token>" });
+        } else {
+          headers.push({
+            name: "Authorization",
+            value: `${capitalize(scheme.scheme)} <token>`,
+          });
+        }
+        break;
+      }
+      case "oauth2":
+      case "openIdConnect":
+        headers.push({ name: "Authorization", value: "Bearer <token>" });
+        break;
+    }
+  }
+
+  return { headers, queryString };
+};
+
 export const createHttpSnippet = ({
   operation,
   selectedServer,
@@ -49,9 +106,9 @@ export const createHttpSnippet = ({
     text?: string;
   };
   resolvedAuth?: ResolvedAuth;
-}) => {
-  const postData =
-    exampleBody.mimeType === "multipart/form-data"
+}): Partial<HarRequest> => {
+  const postData = exampleBody.text
+    ? exampleBody.mimeType === "multipart/form-data"
       ? {
           mimeType: exampleBody.mimeType,
           params: toMultipartParams(exampleBody.text),
@@ -61,7 +118,8 @@ export const createHttpSnippet = ({
             mimeType: exampleBody.mimeType,
             params: toUrlEncodedParams(exampleBody.text),
           }
-        : exampleBody;
+        : { mimeType: exampleBody.mimeType, text: exampleBody.text }
+    : undefined;
 
   const baseHeaders = [
     ...(exampleBody.text
@@ -101,14 +159,18 @@ export const createHttpSnippet = ({
                 : "<value>"),
       })) ?? [];
 
-  const authHeaderNames = new Set(
-    resolvedAuth?.headers.map((h) => h.name.toLowerCase()) ?? [],
-  );
-  const authQueryNames = new Set(
-    resolvedAuth?.queryString.map((q) => q.name) ?? [],
-  );
+  const effectiveAuth =
+    resolvedAuth &&
+    (resolvedAuth.headers.length > 0 || resolvedAuth.queryString.length > 0)
+      ? resolvedAuth
+      : getPlaceholderAuth(operation);
 
-  return new HTTPSnippet({
+  const authHeaderNames = new Set(
+    effectiveAuth.headers.map((h) => h.name.toLowerCase()),
+  );
+  const authQueryNames = new Set(effectiveAuth.queryString.map((q) => q.name));
+
+  return {
     method: operation.method.toUpperCase(),
     url: joinUrl(
       selectedServer,
@@ -117,60 +179,33 @@ export const createHttpSnippet = ({
     postData,
     headers: [
       ...baseHeaders.filter((h) => !authHeaderNames.has(h.name.toLowerCase())),
-      ...(resolvedAuth?.headers ?? []),
+      ...effectiveAuth.headers,
     ],
     queryString: [
       ...baseQueryString.filter((q) => !authQueryNames.has(q.name)),
-      ...(resolvedAuth?.queryString ?? []),
+      ...effectiveAuth.queryString,
     ],
-    httpVersion: "",
-    cookies: [],
-    headersSize: 0,
-    bodySize: 0,
-  });
+  } satisfies Partial<HarRequest>;
 };
 
-export const getConverted = (snippet: HTTPSnippet, option: string) => {
-  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
-  let converted: any;
-  switch (option) {
-    case "shell":
-      converted = snippet.convert("shell", "curl");
-      break;
-    case "js":
-      converted = snippet.convert("javascript", "fetch");
-      break;
-    case "python":
-      converted = snippet.convert("python", "requests");
-      break;
-    case "java":
-      converted = snippet.convert("java", "okhttp");
-      break;
-    case "go":
-      converted = snippet.convert("go", "native");
-      break;
-    case "csharp":
-      converted = snippet.convert("csharp", "httpclient");
-      break;
-    case "kotlin":
-      converted = snippet.convert("kotlin", "okhttp");
-      break;
-    case "objc":
-      converted = snippet.convert("objc", "nsurlsession");
-      break;
-    case "php":
-      converted = snippet.convert("php", "http2");
-      break;
-    case "ruby":
-      converted = snippet.convert("ruby");
-      break;
-    case "swift":
-      converted = snippet.convert("swift");
-      break;
-    default:
-      converted = snippet.convert("shell");
-      break;
-  }
+const PLUGINS: Record<string, Plugin> = {
+  shell: shellCurl,
+  js: jsFetch,
+  python: pythonRequests,
+  java: javaOkhttp,
+  go: goNative,
+  csharp: csharpHttpclient,
+  kotlin: kotlinOkhttp,
+  objc: objcNsurlsession,
+  php: phpCurl,
+  ruby: rubyNative,
+  swift: swiftNsurlsession,
+};
 
-  return converted ? converted[0] : "";
+export const getConverted = (
+  request: Partial<HarRequest>,
+  language: string,
+): string => {
+  const plugin = PLUGINS[language] ?? shellCurl;
+  return plugin.generate(request) ?? "";
 };

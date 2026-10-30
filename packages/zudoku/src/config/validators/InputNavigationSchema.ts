@@ -22,6 +22,11 @@ const InputNavigationCategoryLinkDocSchema = z.union([
     label: z.string().optional(),
     path: z.string().optional(),
   }),
+  z.object({
+    type: z.literal("link"),
+    to: z.string(),
+    label: z.string().optional(),
+  }),
 ]);
 
 export const DisplaySchema = z
@@ -33,6 +38,91 @@ export const DisplaySchema = z
   ])
   .optional();
 
+const CommonItemFields = {
+  icon: IconSchema.optional(),
+  badge: BadgeSchema.optional(),
+  display: DisplaySchema,
+};
+
+const InputNavigationDocObjectSchema = z.object({
+  type: z.literal("doc"),
+  file: z.string(),
+  // Custom URL path for this document (overrides file-based path)
+  path: z.string().optional(),
+  label: z.string().optional(),
+  ...CommonItemFields,
+});
+
+const InputNavigationLinkSchema = z.object({
+  type: z.literal("link"),
+  to: z.string(),
+  label: z.string(),
+  target: z.enum(["_self", "_blank"]).optional(),
+  stack: z.boolean().optional(),
+  ...CommonItemFields,
+});
+
+const InputNavigationCustomPageSchema = z.object({
+  type: z.literal("custom-page"),
+  path: z.string(),
+  label: z.string().optional(),
+  element: z.any(),
+  layout: z.enum(["default", "none"]).optional(),
+  ...CommonItemFields,
+});
+
+const InputNavigationSeparatorSchema = z.object({
+  type: z.literal("separator"),
+  display: DisplaySchema,
+});
+
+const InputNavigationSectionSchema = z.object({
+  type: z.literal("section"),
+  label: z.string(),
+  display: DisplaySchema,
+});
+
+const InputNavigationFilterSchema = z.object({
+  type: z.literal("filter"),
+  placeholder: z.string().optional(),
+  display: DisplaySchema,
+});
+
+// Category fields without `items`, needed to define `InputNavigationCategory`
+// without a circular type reference
+const BaseInputNavigationCategorySchema = z.object({
+  type: z.literal("category"),
+  icon: IconSchema.optional(),
+  label: z.string(),
+  collapsible: z.boolean().optional(),
+  collapsed: z.boolean().optional(),
+  link: InputNavigationCategoryLinkDocSchema.optional(),
+  display: DisplaySchema,
+  stack: z.boolean().optional(),
+});
+
+const InputNavigationCategorySchema = z.object({
+  ...BaseInputNavigationCategorySchema.shape,
+  get items(): z.ZodType<InputNavigationItem[]> {
+    return InputNavigationItemSchema.array();
+  },
+});
+
+const InputNavigationItemSchema = z.union([
+  z.string(),
+  z.discriminatedUnion("type", [
+    InputNavigationDocObjectSchema,
+    InputNavigationLinkSchema,
+    InputNavigationCustomPageSchema,
+    InputNavigationSeparatorSchema,
+    InputNavigationSectionSchema,
+    InputNavigationFilterSchema,
+    InputNavigationCategorySchema,
+  ]),
+]);
+
+export const InputNavigationSchema = InputNavigationItemSchema.array();
+
 const NavigationModifyRuleSchema = z.object({
   type: z.literal("modify"),
   match: z.string(),
@@ -43,6 +133,9 @@ const NavigationModifyRuleSchema = z.object({
     collapsed: z.boolean().optional(),
     collapsible: z.boolean().optional(),
     display: DisplaySchema,
+    // Turn a (plugin-generated) category into a stacked sub-nav
+    // E.g. make each OpenAPI tag drill into its own panel. See `stack` above.
+    stack: z.boolean().optional(),
   }),
 });
 
@@ -50,7 +143,7 @@ const NavigationInsertRuleSchema = z.object({
   type: z.literal("insert"),
   match: z.string(),
   position: z.enum(["before", "after"]),
-  items: z.lazy(() => InputNavigationItemSchema.array()),
+  items: InputNavigationItemSchema.array(),
 });
 
 const NavigationRemoveRuleSchema = z.object({
@@ -90,101 +183,9 @@ export type NavigationRemoveRule = z.infer<typeof NavigationRemoveRuleSchema>;
 export type NavigationSortRule = z.infer<typeof NavigationSortRuleSchema>;
 export type NavigationMoveRule = z.infer<typeof NavigationMoveRuleSchema>;
 
-const InputNavigationDocSchema = z.union([
-  z.string(),
-  z.object({
-    type: z.literal("doc"),
-    file: z.string(),
-    // Custom URL path for this document (overrides file-based path)
-    path: z.string().optional(),
-    icon: IconSchema.optional(),
-    label: z.string().optional(),
-    badge: BadgeSchema.optional(),
-    display: DisplaySchema,
-  }),
-]);
-
-const InputNavigationLinkSchema = z.object({
-  type: z.literal("link"),
-  to: z.string(),
-  label: z.string(),
-  target: z.enum(["_self", "_blank"]).optional(),
-  icon: IconSchema.optional(),
-  badge: BadgeSchema.optional(),
-  display: DisplaySchema,
-});
-
-const InputNavigationCustomPageSchema = z.object({
-  type: z.literal("custom-page"),
-  path: z.string(),
-  label: z.string().optional(),
-  element: z.any(),
-  icon: IconSchema.optional(),
-  badge: BadgeSchema.optional(),
-  display: DisplaySchema,
-  layout: z.enum(["default", "none"]).optional(),
-});
-
-const InputNavigationSeparatorSchema = z.object({
-  type: z.literal("separator"),
-  display: DisplaySchema,
-});
-
-const InputNavigationSectionSchema = z.object({
-  type: z.literal("section"),
-  label: z.string(),
-  display: DisplaySchema,
-});
-
-const InputNavigationFilterSchema = z.object({
-  type: z.literal("filter"),
-  placeholder: z.string().optional(),
-  display: DisplaySchema,
-});
-
-// Base category schema without items
-const BaseInputNavigationCategorySchema = z.object({
-  type: z.literal("category"),
-  icon: IconSchema.optional(),
-  label: z.string(),
-  collapsible: z.boolean().optional(),
-  collapsed: z.boolean().optional(),
-  link: InputNavigationCategoryLinkDocSchema.optional(),
-  display: DisplaySchema,
-});
-
-export type InputNavigationItem =
-  | z.infer<typeof InputNavigationDocSchema>
-  | z.infer<typeof InputNavigationLinkSchema>
-  | z.infer<typeof InputNavigationCustomPageSchema>
-  | z.infer<typeof InputNavigationSeparatorSchema>
-  | z.infer<typeof InputNavigationSectionSchema>
-  | z.infer<typeof InputNavigationFilterSchema>
-  | (z.infer<typeof BaseInputNavigationCategorySchema> & {
-      items: InputNavigationItem[];
-    });
-
-const InputNavigationCategorySchema: z.ZodType<
-  z.infer<typeof BaseInputNavigationCategorySchema> & {
-    items: InputNavigationItem[];
-  }
-> = BaseInputNavigationCategorySchema.extend({
-  items: z.lazy(() => InputNavigationItemSchema.array()),
-});
-
-const InputNavigationItemSchema: z.ZodType<InputNavigationItem> = z.union([
-  InputNavigationDocSchema,
-  InputNavigationLinkSchema,
-  InputNavigationCustomPageSchema,
-  InputNavigationSeparatorSchema,
-  InputNavigationSectionSchema,
-  InputNavigationFilterSchema,
-  InputNavigationCategorySchema,
-]);
-
-export const InputNavigationSchema = InputNavigationItemSchema.array();
-
-export type InputNavigationDoc = z.infer<typeof InputNavigationDocSchema>;
+export type InputNavigationDoc =
+  | string
+  | z.infer<typeof InputNavigationDocObjectSchema>;
 export type InputNavigationLink = z.infer<typeof InputNavigationLinkSchema>;
 export type InputNavigationCustomPage = z.infer<
   typeof InputNavigationCustomPageSchema
@@ -203,4 +204,13 @@ export type InputNavigationCategoryLinkDoc = z.infer<
   typeof InputNavigationCategoryLinkDocSchema
 >;
 
-export type InputNavigation = z.infer<typeof InputNavigationSchema>;
+export type InputNavigationItem =
+  | InputNavigationDoc
+  | InputNavigationLink
+  | InputNavigationCustomPage
+  | InputNavigationSeparator
+  | InputNavigationSection
+  | InputNavigationFilter
+  | InputNavigationCategory;
+
+export type InputNavigation = InputNavigationItem[];

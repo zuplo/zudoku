@@ -4,13 +4,14 @@ import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { cn } from "zudoku/ui/util.js";
 import { Markdown } from "../../../components/Markdown.js";
-import type { MediaTypeObject } from "../graphql/graphql.js";
+import type { Content } from "../interfaces.js";
 import { SchemaView } from "../schema/SchemaView.js";
+import { withBinaryMediaType } from "../schema/utils.js";
 
 type Response = {
   statusCode: string;
   description?: string | null;
-  content?: MediaTypeObject[] | null;
+  content?: Content[] | null;
 };
 
 export const ResponseContent = ({
@@ -99,11 +100,12 @@ export const ResponseContent = ({
         {responses.map((response) => (
           <Tabs.Content key={response.statusCode} value={response.statusCode}>
             <SchemaView
-              schema={
+              schema={withBinaryMediaType(
                 response.content?.find(
                   (content) => content.mediaType === selectedMediaType,
-                )?.schema
-              }
+                )?.schema,
+                selectedMediaType,
+              )}
               cardHeader={cardHeader}
             />
           </Tabs.Content>

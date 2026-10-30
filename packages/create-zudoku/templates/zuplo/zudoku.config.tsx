@@ -1,3 +1,5 @@
+// import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
+// import { graphqlPlugin } from "@zudoku/plugin-graphql";
 import type { ZudokuConfig } from "zudoku";
 
 /**
@@ -88,6 +90,16 @@ const config: ZudokuConfig = {
   apiKeys: {
     enabled: true,
   },
+  plugins: [
+    // Uncomment to document a GraphQL API:
+    // graphqlPlugin({
+    //   path: "/graphql",
+    //   schema: "./schema.graphql",
+    //   endpoint: "/graphql", // (optional, default: "/graphql")
+    // }),
+    // Uncomment to enable monetization:
+    // zuploMonetizationPlugin(),
+  ],
 };
 
 export default config;

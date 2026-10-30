@@ -46,8 +46,15 @@ export interface ApiIdentityPlugin {
 export interface SearchProviderPlugin {
   renderSearch: (o: {
     isOpen: boolean;
+    onOpen: () => void;
     onClose: () => void;
   }) => React.JSX.Element | null;
+  /**
+   * Start loading whatever `renderSearch` needs, without opening it. Called
+   * when the page goes idle and again on hover/focus of a search trigger, so
+   * a lazily loaded search UI is warm by the time it is opened.
+   */
+  preloadSearch?: () => void;
 }
 
 export interface ProfileMenuPlugin {
@@ -71,6 +78,12 @@ export interface ConfigHookContext {
 }
 
 export interface TransformConfigContext {
+  /**
+   * The raw authored config; schema defaults and transforms are not applied
+   * yet. On the server/build side the transformed result is schema-parsed
+   * afterwards, so additions must conform to the schema (unknown keys are
+   * stripped there).
+   */
   config: ZudokuConfig;
   merge: <T extends Partial<ZudokuConfig>>(partial: T) => ZudokuConfig & T;
 }

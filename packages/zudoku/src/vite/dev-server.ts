@@ -3,6 +3,7 @@ import type { Server } from "node:http";
 import http from "node:http";
 import https from "node:https";
 import path from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import {
   createServer as createViteServer,
@@ -15,7 +16,9 @@ import { printDiagnosticsToConsole } from "../cli/common/output.js";
 import { findAvailablePort } from "../cli/common/utils/ports.js";
 import type { LoadedConfig } from "../config/config.js";
 import { loadZudokuConfig } from "../config/loader.js";
+import { SESSION_ENDPOINT_PATH } from "../lib/authentication/cookies.js";
 import { createGraphQLServer } from "../lib/oas/graphql/index.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import {
   getAppClientEntryPath,
   getAppServerEntryPath,
@@ -68,7 +71,9 @@ export class DevServer {
       mode: "development",
       command: "serve",
     };
-    const viteConfig = await getViteConfig(this.#options.dir, configEnv);
+    const viteConfig = await getViteConfig(this.#options.dir, configEnv, {
+      ssr: this.#options.ssr,
+    });
     const { config } = await loadZudokuConfig(configEnv, this.#options.dir);
 
     this.resolvedPort = await findAvailablePort(
@@ -130,6 +135,60 @@ export class DevServer {
     });
 
     vite.middlewares.use(graphql.graphqlEndpoint, graphql);
+
+    // Auth session endpoint for cookie sync
+    const sessionEndpoint = joinUrl(config.basePath, SESSION_ENDPOINT_PATH);
+    vite.middlewares.use(sessionEndpoint, async (req, res) => {
+      if (
+        req.method !== "GET" &&
+        req.method !== "POST" &&
+        req.method !== "DELETE"
+      ) {
+        res.writeHead(405, { Allow: "GET, POST, DELETE" });
+        res.end();
+        return;
+      }
+
+      const ssrEnvironment = vite.environments.ssr;
+      if (!isRunnableDevEnvironment(ssrEnvironment)) {
+        res.writeHead(500);
+        res.end("SSR environment not available");
+        return;
+      }
+
+      const entryServer = await ssrEnvironment.runner.import<EntryServerImport>(
+        getAppServerEntryPath(),
+      );
+
+      const url = `${this.protocol}://${req.headers.host}${req.originalUrl ?? req.url}`;
+      const body =
+        req.method === "POST"
+          ? await new Promise<string>((resolve) => {
+              let data = "";
+              req.on("data", (chunk: Buffer) => (data += chunk));
+              req.on("end", () => resolve(data));
+            })
+          : undefined;
+
+      const request = new Request(url, {
+        method: req.method,
+        headers: req.headers as HeadersInit,
+        body,
+      });
+
+      const app = entryServer.createServer({ template: "" });
+      const response = await app.fetch(request);
+
+      for (const [name, value] of response.headers) {
+        if (name.toLowerCase() === "set-cookie") continue;
+        res.setHeader(name, value);
+      }
+      for (const cookie of response.headers.getSetCookie()) {
+        res.appendHeader("Set-Cookie", cookie);
+      }
+      res.writeHead(response.status);
+      res.end(Buffer.from(await response.arrayBuffer()));
+    });
 
     // Pagefind reindex endpoint (SSE)
     vite.middlewares.use("/__z/pagefind-reindex", async (_req, res) => {
@@ -238,15 +297,16 @@ export class DevServer {
             },
           );
 
-          const response = await entryServer.handleRequest({
-            template,
-            request,
-            routes: entryServer.getRoutesByConfig(currentConfig),
-            basePath: currentConfig.basePath,
-          });
+          const app = entryServer.createServer({ template });
+          const response = await app.fetch(request);
 
-          for (const [key, value] of response.headers) {
-            res.appendHeader(key, value);
+          response.headers.forEach((value, key) => {
+            if (key.toLowerCase() !== "set-cookie") {
+              res.setHeader(key, value);
+            }
+          });
+          for (const cookie of response.headers.getSetCookie()) {
+            res.appendHeader("Set-Cookie", cookie);
           }
           res.writeHead(response.status);
 
@@ -263,11 +323,15 @@ export class DevServer {
         const html = `<!DOCTYPE html><html><body><script type="module">
           import { ErrorOverlay } from '/@vite/client';
           document.body.appendChild(new ErrorOverlay(${JSON.stringify({
-            message: e instanceof Error ? e.message : String(e),
-            stack: e instanceof Error ? e.stack : "",
+            message: stripVTControlCharacters(
+              e instanceof Error ? e.message : String(e),
+            ),
+            stack: stripVTControlCharacters(
+              e instanceof Error ? (e.stack ?? "") : "",
+            ),
           })}));
         </script></body></html>`;
-        res.writeHead(500, { "Content-Type": "text/html" });
+        res.writeHead(500, { "Content-Type": "text/html; charset=utf-8" });
         res.end(html);
       }
     });

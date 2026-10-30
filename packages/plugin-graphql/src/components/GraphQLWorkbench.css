@@ -1,0 +1,15 @@
+::view-transition-group(graphql-workbench) {
+  z-index: 1;
+}
+
+/* Blur eases in, but is removed instantly (transition only while blurred). This
+ * keeps backdrop-filter out of the view-transition snapshots: a baked blur
+ * flashes for a frame when the snapshot is swapped for the live element, both on
+ * fade in and fade out. */
+.gql-workbench-backdrop {
+  transition: backdrop-filter 200ms;
+}
+
+.gql-workbench-backdrop:not(.backdrop-blur-sm) {
+  transition-duration: 0s;
+}

@@ -1,11 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import Piscina from "piscina";
-import { matchPath } from "react-router";
-import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
-import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
+import { validateConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
+import { matchesAnyProtectedPattern } from "../../lib/util/url.js";
 import type { WorkerResult } from "./prerender.js";
 
 type EntryServer = typeof import("../../app/entry.server.js");
@@ -24,10 +23,9 @@ const { template, distDir, serverConfigPath, entryServerPath, writeRedirects } =
   Piscina.workerData as StaticWorkerData;
 
 const server: EntryServer = await import(entryServerPath);
-const rawConfig: ZudokuConfig = await import(serverConfigPath).then(
-  (m) => m.default,
-);
-const config = await runPluginTransformConfig(rawConfig);
+// Same order as the loader: transform the raw bundle config, then parse.
+const rawConfig = await import(serverConfigPath).then((m) => m.default);
+const config = validateConfig(await runPluginTransformConfig(rawConfig));
 
 const routes = server.getRoutesByConfig(config);
 const { basePath } = config;
@@ -40,11 +38,8 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
 
   const request = new Request(url);
 
-  const protectedRoutes = ProtectedRoutesSchema.parse(config.protectedRoutes);
-  const isProtectedRoute = protectedRoutes
-    ? Object.keys(protectedRoutes).some((route) =>
-        matchPath({ path: route, end: true }, urlPath),
-      )
+  const isProtectedRoute = config.protectedRoutes
+    ? matchesAnyProtectedPattern(Object.keys(config.protectedRoutes), urlPath)
     : false;
 
   // Get the main response
@@ -69,6 +64,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
       outputPath,
       redirect: { from: pathname, to: redirectTo },
       statusCode: response.status,
+      indexStatusCode: response.status,
       html: "",
     };
   }
@@ -82,8 +78,12 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   // Get HTML content for file write
   const fileContent = response.body ? await response.text() : "";
 
-  // For protected routes, do a second render with protection bypassed for search index
+  // For protected routes, do a second render with protection bypassed so the
+  // search index gets the full content instead of the gated sign-in page. The
+  // file on disk stays the gated (401) render; only `html`/`indexStatusCode`
+  // reflect the bypass render.
   let html = fileContent;
+  let indexStatusCode = response.status;
   if (isProtectedRoute) {
     const bypassRequest = new Request(url);
     const bypassResponse = await server.handleRequest({
@@ -101,6 +101,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
     }
 
     html = bypassResponse.body ? await bypassResponse.text() : "";
+    indexStatusCode = bypassResponse.status;
   }
 
   // Write the file
@@ -110,6 +111,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   return {
     outputPath,
     statusCode: response.status,
+    indexStatusCode,
     redirect: undefined,
     html,
   };

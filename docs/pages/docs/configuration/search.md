@@ -168,3 +168,44 @@ your [Zudoku Configuration](./overview.md):
   // ...
 }
 ```
+
+### Customizing Inkeep
+
+Any other [base settings](https://docs.inkeep.com/cloud/ui-components/common-settings/base) can be
+set alongside the required fields, for example `filters` to scope results or `transformSource` to
+customize how sources are displayed.
+
+You can also pass
+[`searchSettings`](https://docs.inkeep.com/cloud/ui-components/common-settings/search),
+[`aiChatSettings`](https://docs.inkeep.com/cloud/ui-components/common-settings/ai-chat), and
+`modalSettings` to customize the respective parts of the search experience. They are merged with
+Zudoku's defaults and passed through to Inkeep as-is, so any option Inkeep supports can be used —
+including ones added after this Zudoku version was released.
+
+Zudoku owns the search modal's open state, so `modalSettings.isOpen` is managed for you. The
+<kbd>⌘</kbd>+<kbd>K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> shortcut is handled by Zudoku's search
+button as well, which is why Inkeep's own `shortcutKey` is disabled by default. Setting it adds an
+additional shortcut rather than replacing it.
+
+For example, to categorize results into tabs based on their URL:
+
+```typescript
+{
+  // ...
+  search: {
+    type: "inkeep",
+    // ...required fields from above
+    transformSource: (source) => {
+      if (!source.url.includes("/blog/")) return source;
+      return { ...source, tabs: [...(source.tabs ?? []), "Blog"] };
+    },
+    searchSettings: {
+      tabs: [["All", { isAlwaysVisible: true }], "Blog"],
+    },
+    aiChatSettings: {
+      aiAssistantName: "My Assistant",
+    },
+  },
+  // ...
+}
+```

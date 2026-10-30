@@ -1,5 +1,6 @@
 import type { RouteObject } from "react-router";
 import { joinUrl } from "../../lib/util/joinUrl.js";
+import { isDynamicRedirect } from "../../lib/util/redirectPattern.js";
 
 const resolveRoutePath = (path: string): string | undefined => {
   const segments = path.split("/");
@@ -72,5 +73,65 @@ const collectRewrites = (resolved: ResolvedRoute[]): RouteRewrite[] =>
 export const routesToPaths = (routes: RouteObject[]): string[] =>
   collectPaths(resolveRoutes(routes), "");
 
+// Dynamic redirects (`/:param`, `/*`) can't be prerendered to a file; they are
+// emitted as Build Output API routes instead (see `generateOutput`). Their
+// top-level route objects are dropped so optional params don't get stripped
+// into a prerendered path and rewrite.
+export const withoutDynamicRedirectRoutes = (
+  routes: RouteObject[],
+  redirects: readonly { from: string }[] = [],
+): RouteObject[] => {
+  const paths = new Set(
+    redirects.filter(isDynamicRedirect).map(({ from }) => joinUrl(from)),
+  );
+  return routes.filter((route) => !route.path || !paths.has(route.path));
+};
+
+export const routesToPrerenderPaths = (
+  routes: RouteObject[],
+  redirects: readonly { from: string }[] = [],
+): string[] =>
+  Array.from(
+    new Set([
+      ...routesToPaths(routes),
+      ...redirects
+        .filter((redirect) => !isDynamicRedirect(redirect))
+        .map(({ from }) => joinUrl(from)),
+    ]),
+  );
+
 export const routesToRewrites = (routes: RouteObject[]): RouteRewrite[] =>
   collectRewrites(resolveRoutes(routes));
+
+type IndexablePage = { indexStatusCode: number; html: string };
+
+type IndexSelection = {
+  include: { url: string; html: string }[];
+  exclude: { url: string; status: number }[];
+};
+
+// Splits prerendered pages into those added to the search index and those
+// skipped because their indexed render failed. `indexStatusCode` is the status
+// of the render whose HTML is indexed: for protected routes that's the bypass
+// render (200), not the gated main render (401), so protected pages aren't
+// silently dropped (issue #2672). Excluded pages are returned rather than
+// dropped in silence so the caller can warn about them, since a protected page
+// missing from the index is exactly the symptom this fix targets.
+export const selectPagesToIndex = (
+  pages: IndexablePage[],
+  paths: string[],
+): IndexSelection => {
+  const withUrl = pages.flatMap(({ indexStatusCode, html }, i) => {
+    const url = paths[i];
+    return url === undefined ? [] : [{ url, html, indexStatusCode }];
+  });
+
+  return {
+    include: withUrl
+      .filter((p) => p.indexStatusCode < 400)
+      .map(({ url, html }) => ({ url, html })),
+    exclude: withUrl
+      .filter((p) => p.indexStatusCode >= 400)
+      .map(({ url, indexStatusCode }) => ({ url, status: indexStatusCode })),
+  };
+};

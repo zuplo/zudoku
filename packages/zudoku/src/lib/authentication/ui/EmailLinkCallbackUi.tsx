@@ -12,6 +12,7 @@ import {
 } from "zudoku/ui/Card.js";
 import { Input } from "zudoku/ui/Input.js";
 import { EMAIL_LINK_STORAGE_KEY } from "../constants.js";
+import { redirectAfterAuth } from "../utils/redirectAfterAuth.js";
 import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
 import { AuthCard } from "./AuthCard.js";
 
@@ -33,7 +34,7 @@ export const EmailLinkCallbackUi = ({
     mutationFn: (email: string) => onCompleteSignIn(email),
     onSuccess: () => {
       localStorage.removeItem(EMAIL_LINK_STORAGE_KEY);
-      void navigate(relativeRedirectTo, { replace: true });
+      void redirectAfterAuth(navigate, relativeRedirectTo, { replace: true });
     },
   });
 

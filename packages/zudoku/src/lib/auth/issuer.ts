@@ -1,5 +1,8 @@
 import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
-import { getClerkFrontendApi } from "../authentication/providers/util.js";
+import {
+  getClerkFrontendApi,
+  getEntraIssuer,
+} from "../authentication/providers/util.js";
 
 export const getIssuer = async (config: ZudokuConfig) => {
   switch (config.authentication?.type) {
@@ -11,6 +14,9 @@ export const getIssuer = async (config: ZudokuConfig) => {
     }
     case "openid": {
       return config.authentication.issuer;
+    }
+    case "entra": {
+      return getEntraIssuer(config.authentication);
     }
     case "supabase": {
       return config.authentication.supabaseUrl;

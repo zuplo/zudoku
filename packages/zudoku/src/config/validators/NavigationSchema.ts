@@ -27,7 +27,6 @@ import type {
   NavigationRule,
   NavigationSortRule,
 } from "./InputNavigationSchema.js";
-import { DocsConfigSchema } from "./ZudokuConfig.js";
 
 type ReplaceFields<Base, Overrides> = Omit<Base, keyof Overrides> & Overrides;
 // string icons will be transformed to `LucideIcon` in `vite/plugin-navigation.ts`
@@ -57,11 +56,21 @@ export type NavigationCategoryLinkDoc = ReplaceFields<
   { label: string; path: string } & ResolvedIcon
 >;
 
+export type NavigationCategoryLinkLink = {
+  type: "link";
+  to: string;
+  label?: string;
+} & ResolvedIcon;
+
+export type NavigationCategoryLink =
+  | NavigationCategoryLinkDoc
+  | NavigationCategoryLinkLink;
+
 export type NavigationCategory = ReplaceFields<
   InputNavigationCategory,
   {
     items: NavigationItem[];
-    link?: NavigationCategoryLinkDoc;
+    link?: NavigationCategoryLink;
   } & ResolvedIcon
 >;
 export type NavigationCustomPage = ReplaceFields<
@@ -166,7 +175,7 @@ export class NavigationResolver {
 
   constructor(config: ConfigWithMeta) {
     this.rootDir = config.__meta.rootDir;
-    this.globPatterns = DocsConfigSchema.parse(config.docs ?? {}).files;
+    this.globPatterns = config.docs.files;
     this.items = config.navigation ?? [];
   }
 
@@ -270,9 +279,13 @@ export class NavigationResolver {
 
   private async resolveItemCategoryLinkDoc(
     item: string | InputNavigationCategoryLinkDoc,
-  ): Promise<NavigationCategoryLinkDoc | undefined> {
+  ): Promise<NavigationCategoryLink | undefined> {
     if (typeof item === "string") {
       return this.resolveLink(item);
+    }
+
+    if (item.type === "link") {
+      return { type: "link", to: item.to, label: item.label };
     }
 
     const doc = await this.resolveDoc(item.file);
@@ -322,7 +335,7 @@ export class NavigationResolver {
 
         const items = (
           await Promise.all(
-            (categoryItem.items as InputNavigationItem[]).map((subItem) =>
+            categoryItem.items.map((subItem) =>
               this.resolveItem(subItem, categoryItem.label),
             ),
           )

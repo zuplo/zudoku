@@ -2,33 +2,51 @@ import { Button, Head, Heading, Slot } from "zudoku/components";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { useQuery } from "zudoku/react-query";
 import { Link } from "zudoku/router";
-import { useDeploymentName } from "../hooks/useDeploymentName";
+import { ContactLinkButton } from "../components/ContactLinkButton.js";
 import { usePlans } from "../hooks/usePlans";
-import type { SubscriptionsResponse } from "../hooks/useSubscriptions";
 import { useMonetizationConfig } from "../MonetizationContext";
 import { PricingTable } from "../pricing-ui/PricingTable.js";
+import { subscriptionsQuery } from "../queries.js";
+import { isCustomPlan } from "../utils/isCustomPlan.js";
+import { getPlanContact } from "../utils/planContact.js";
 
 const PricingPage = () => {
   const { pricing } = useMonetizationConfig();
 
   const zudoku = useZudoku();
-  const deploymentName = useDeploymentName();
   const auth = useAuth();
 
   const { data: pricingTable } = usePlans();
 
-  const { data: subscriptions = { items: [] } } =
-    useQuery<SubscriptionsResponse>({
-      meta: {
-        context: zudoku,
-      },
-      queryKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
-      enabled: auth.isAuthenticated,
-    });
+  const { data: subscriptions = { items: [] } } = useQuery({
+    ...subscriptionsQuery(zudoku),
+    enabled: auth.isAuthenticated,
+  });
 
-  const isSubscribed = subscriptions.items.some((subscription) =>
+  const currentSubscriptions = subscriptions.items.filter((subscription) =>
     ["active", "canceled"].includes(subscription.status),
   );
+  const isSubscribed = currentSubscriptions.length > 0;
+
+  // With multi-subscription enabled, only plans the user already holds switch to
+  // "Manage Subscriptions" — every other plan keeps its Subscribe action. Plans are
+  // matched by key (stable across plan versions), falling back to id.
+  const multipleSubscriptionsEnabled =
+    pricingTable.multipleSubscriptionsEnabled ?? false;
+  const subscribedPlanKeys = new Set(
+    currentSubscriptions.flatMap((subscription) =>
+      subscription.plan?.key ? [subscription.plan.key] : [],
+    ),
+  );
+  const subscribedPlanIds = new Set(
+    currentSubscriptions.flatMap((subscription) =>
+      subscription.plan?.id ? [subscription.plan.id] : [],
+    ),
+  );
+  const holdsPlan = (plan: { id: string; key: string }) =>
+    subscribedPlanKeys.has(plan.key) || subscribedPlanIds.has(plan.id);
+  const showManageAction = (plan: { id: string; key: string }) =>
+    multipleSubscriptionsEnabled ? holdsPlan(plan) : isSubscribed;
 
   return (
     <div className="w-full px-4 pt-(--padding-content-top) pb-(--padding-content-bottom)">
@@ -53,10 +71,25 @@ const PricingPage = () => {
       </div>
       <PricingTable
         plans={pricingTable.items}
-        showYearlyPrice={pricing?.showYearlyPrice !== false}
         units={pricing?.units}
-        renderAction={(plan, isPopular) =>
-          isSubscribed ? (
+        renderAction={(plan, isPopular) => {
+          // Contact-sales plans have no self-serve price, so they never route
+          // to checkout. A plan the user already holds still gets the regular
+          // "Manage Subscriptions" action below.
+          if (isCustomPlan(plan) && !holdsPlan(plan)) {
+            const contact = getPlanContact(plan);
+            // Without a `contactUrl` in the plan metadata there is nowhere to
+            // send the user, so the card's "Contact Sales" price line stands
+            // on its own rather than gaining a button that goes nowhere.
+            return contact ? (
+              <ContactLinkButton
+                contact={contact}
+                variant={isPopular ? "default" : "outline"}
+              />
+            ) : null;
+          }
+
+          return showManageAction(plan) ? (
             <Button variant={isPopular ? "default" : "outline"} asChild>
               <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
             </Button>
@@ -66,8 +99,8 @@ const PricingPage = () => {
                 Subscribe
               </Link>
             </Button>
-          )
-        }
+          );
+        }}
       />
       <Slot.Target name="pricing-page-after" />
     </div>

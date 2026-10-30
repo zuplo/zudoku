@@ -1,0 +1,543 @@
+"""
+A simple e-commerce GraphQL API example.
+
+Browse products, manage a cart, and place orders.
+"""
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+"""
+Read-only entry points for fetching products, carts, and orders.
+"""
+type Query {
+  """
+  Get a product by ID
+  """
+  product(id: ID!): Product
+
+  """
+  List products in the catalog with optional filtering and pagination.
+
+  Results are returned as a `ProductConnection`, which exposes the matching
+  `items` along with a `totalCount` and a `hasNextPage` flag. Combine
+  `category`, `limit`, and `offset` to page through large catalogs.
+
+  Learn more about [pagination](https://graphql.org/learn/pagination/).
+  """
+  products(
+    """
+    Restrict results to products in the category with this name. Omit to return
+    products from every category.
+    """
+    category: String
+    """
+    Filter products by category name.
+    """
+    categoryName: String @deprecated(reason: "Use `category` instead.")
+    """
+    Maximum number of products to return in a single page. Defaults to `10` and
+    is capped at `100`.
+    """
+    limit: Int = 10
+    """
+    Number of products to skip before collecting the result page. Combine with
+    `limit` to paginate.
+    """
+    offset: Int = 0
+  ): ProductConnection!
+
+  """
+  Get the current user
+  """
+  me: User
+
+  """
+  Search for products by name or description
+  """
+  searchProducts(query: String!): [Product!]!
+
+  """
+  Full-text search across products and categories.
+
+  Returns a list of `SearchResult` union members, so you must use inline
+  fragments (`... on Product`, `... on Category`) to select fields for each
+  possible type. Matches are ranked by relevance.
+
+  Learn more about [unions](https://graphql.org/learn/schema/#union-types).
+  """
+  search(
+    """
+    The search term to match against product and category names.
+    """
+    query: String!
+  ): [SearchResult!]!
+
+  """
+  Look up any node by its global ID
+  """
+  node(id: ID!): Node
+}
+
+type Mutation {
+  """
+  Create a new product
+  """
+  createProduct(input: CreateProductInput!): Product!
+
+  """
+  Update an existing product
+  """
+  updateProduct(id: ID!, input: UpdateProductInput!): Product
+
+  """
+  Delete a product
+  """
+  deleteProduct(id: ID!): Boolean!
+
+  """
+  Add a product to the cart
+  """
+  addToCart(productId: ID!, quantity: Int!): Cart!
+
+  """
+  Remove a product from the cart
+  """
+  removeFromCart(productId: ID!): Cart!
+
+  """
+  Place an order from the current cart.
+
+  Converts the authenticated user's `Cart` into an `Order`, charging the
+  selected payment method and shipping to the chosen address. The cart is
+  emptied once the order is created.
+
+  This operation is **not** idempotent: calling it twice creates two orders.
+  """
+  checkout(input: CheckoutInput!): Order!
+}
+
+type Subscription {
+  """
+  Subscribe to real-time updates for a single product.
+
+  Emits the updated `Product` whenever its price, stock, or other fields
+  change. Useful for keeping product detail pages and inventory dashboards in
+  sync without polling.
+
+  Learn more about [subscriptions](https://graphql.org/learn/subscriptions/).
+  """
+  productUpdated(id: ID!): Product!
+
+  """
+  Subscribe to new orders
+  """
+  orderCreated: Order!
+}
+
+"""
+An object with a globally unique identifier.
+"""
+interface Node {
+  """
+  Unique identifier
+  """
+  id: ID!
+}
+
+"""
+A result returned from a search query, either a product or a category.
+"""
+union SearchResult = Product | Category
+
+"""
+A product in the catalog.
+
+Products are the core sellable items in the store. Each product has a `price`
+(stored in cents), belongs to a `Category`, and can carry multiple `images`,
+`reviews`, and stock information.
+
+Use the `product` query to fetch a single product by ID, or `products` to page
+through the catalog.
+"""
+type Product implements Node {
+  """
+  Unique identifier
+  """
+  id: ID!
+  """
+  Product name
+  """
+  name: String!
+  """
+  Product description
+  """
+  description: String
+  """
+  Price in cents
+  """
+  price: Int!
+  """
+  Category of the product
+  """
+  category: Category!
+  """
+  Images of the product
+  """
+  images: [String!]!
+  """
+  Legacy primary image URL.
+  """
+  imageUrl: String @deprecated(reason: "Use `images` instead.")
+  """
+  Available stock quantity
+  """
+  stock: Int!
+  """
+  Date the product was created
+  """
+  createdAt: DateTime!
+  """
+  Reviews for this product. Can be Markdown text with embedded HTML ensured to be sanitized on the client side.
+  """
+  reviews: [Review!]!
+  """
+  Average rating (1-5)
+  """
+  averageRating: Float
+}
+
+"""
+A paginated list of products
+"""
+type ProductConnection {
+  """
+  List of products
+  """
+  items: [Product!]!
+  """
+  Total number of products matching the query
+  """
+  totalCount: Int!
+  """
+  Whether there are more results
+  """
+  hasNextPage: Boolean!
+}
+
+"""
+A product category
+"""
+type Category implements Node {
+  """
+  Unique identifier
+  """
+  id: ID!
+  """
+  Category name
+  """
+  name: String!
+  """
+  Parent category, if any
+  """
+  parent: Category
+  """
+  Products in this category
+  """
+  products: [Product!]!
+}
+
+"""
+A user in the system
+"""
+type User {
+  """
+  Unique identifier
+  """
+  id: ID!
+  """
+  User's email address
+  """
+  email: String!
+  """
+  User's display name
+  """
+  name: String!
+  """
+  User's orders
+  """
+  orders: [Order!]!
+  """
+  User's shopping cart
+  """
+  cart: Cart
+  """
+  User's shipping addresses
+  """
+  addresses: [Address!]!
+}
+
+"""
+A shopping cart
+"""
+type Cart {
+  """
+  Unique identifier
+  """
+  id: ID!
+  """
+  Items in the cart
+  """
+  items: [CartItem!]!
+  """
+  Total price in cents
+  """
+  total: Int!
+}
+
+"""
+An item in a shopping cart
+"""
+type CartItem {
+  """
+  The product
+  """
+  product: Product!
+  """
+  Quantity
+  """
+  quantity: Int!
+  """
+  Subtotal in cents
+  """
+  subtotal: Int!
+}
+
+"""
+A customer order.
+
+Created at `checkout` from the items in a `Cart`. An order captures the
+purchased `items`, the `total` (in cents), the shipping `Address`, and a
+lifecycle `status` that moves from `PENDING` through to `DELIVERED` or
+`CANCELLED`.
+"""
+type Order {
+  """
+  Unique identifier
+  """
+  id: ID!
+  """
+  Order status
+  """
+  status: OrderStatus!
+  """
+  Items in the order
+  """
+  items: [OrderItem!]!
+  """
+  Total price in cents
+  """
+  total: Int!
+  """
+  Shipping address
+  """
+  shippingAddress: Address!
+  """
+  Date the order was placed
+  """
+  createdAt: DateTime!
+  """
+  Date the order was last updated
+  """
+  updatedAt: DateTime!
+}
+
+"""
+An item in an order
+"""
+type OrderItem {
+  """
+  The product
+  """
+  product: Product!
+  """
+  Quantity ordered
+  """
+  quantity: Int!
+  """
+  Price at time of order (in cents)
+  """
+  price: Int!
+}
+
+"""
+A shipping address
+"""
+type Address {
+  """
+  Unique identifier
+  """
+  id: ID!
+  """
+  Street address
+  """
+  street: String!
+  """
+  City
+  """
+  city: String!
+  """
+  State/Province
+  """
+  state: String!
+  """
+  Postal code
+  """
+  postalCode: String!
+  """
+  Country
+  """
+  country: String!
+}
+
+"""
+A product review
+"""
+type Review {
+  """
+  Unique identifier
+  """
+  id: ID!
+  """
+  The user who wrote the review
+  """
+  author: User!
+  """
+  Rating (1-5)
+  """
+  rating: Int!
+  """
+  Review text
+  """
+  comment: String
+  """
+  Date the review was created
+  """
+  createdAt: DateTime!
+}
+
+"""
+Order status
+"""
+enum OrderStatus {
+  """
+  Order has been placed but not yet processed
+  """
+  PENDING
+  """
+  Order is being prepared
+  """
+  PROCESSING
+  """
+  Order has been shipped
+  """
+  SHIPPED
+  """
+  Order has been delivered
+  """
+  DELIVERED
+  """
+  Order has been cancelled
+  """
+  CANCELLED
+  """
+  Order was refunded.
+  """
+  REFUNDED @deprecated(reason: "Refunds are now tracked on the payment record.")
+}
+
+"""
+Input for creating a new product
+"""
+input CreateProductInput {
+  """
+  Product name
+  """
+  name: String!
+  """
+  Product description
+  """
+  description: String
+  """
+  Price in cents
+  """
+  price: Int!
+  """
+  Category ID
+  """
+  categoryId: ID!
+  """
+  Initial stock quantity
+  """
+  stock: Int!
+  """
+  Image URLs
+  """
+  images: [String!]
+  """
+  Legacy single image URL.
+  """
+  imageUrl: String @deprecated(reason: "Use `images` instead.")
+}
+
+"""
+Input for updating a product
+"""
+input UpdateProductInput {
+  """
+  Product name
+  """
+  name: String
+  """
+  Product description
+  """
+  description: String
+  """
+  Price in cents
+  """
+  price: Int
+  """
+  Category ID
+  """
+  categoryId: ID
+  """
+  Stock quantity
+  """
+  stock: Int
+  """
+  Image URLs
+  """
+  images: [String!]
+}
+
+"""
+Input for checkout
+"""
+input CheckoutInput {
+  """
+  Shipping address ID
+  """
+  shippingAddressId: ID!
+  """
+  Payment method ID
+  """
+  paymentMethodId: String!
+}
+
+"""
+A date-time string in ISO 8601 format
+"""
+scalar DateTime
+  @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc3339")

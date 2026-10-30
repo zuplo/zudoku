@@ -59,6 +59,7 @@ metadata. In this case, the operation's `summary` is used as the server name.
 | --------- | -------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `name`    | `string` | No       | Display name used in the generated client configuration snippets. Falls back to the operation `summary`, then `"mcp-server"` |
 | `version` | `string` | No       | Version metadata (included for completeness; not currently rendered in UI)                                                   |
+| `url`     | `string` | No       | Overrides the endpoint URL shown in the card and install snippets                                                            |
 | `tools`   | `array`  | No       | Tools metadata (used by Zuplo enrichment; not currently rendered in UI)                                                      |
 
 Each tool in the `tools` array has:
@@ -91,6 +92,53 @@ For example, with this configuration:
 ```
 
 The displayed MCP URL will be `https://api.example.com/mcp/docs`.
+
+If your MCP server lives on its own hostname, set `url` on the extension to override the derived
+endpoint:
+
+```json
+{
+  "x-mcp-server": { "name": "docs-mcp", "url": "https://mcp.example.com/mcp" }
+}
+```
+
+An absolute URL is used verbatim everywhere the endpoint appears, and takes precedence over the
+server dropdown. A value without a scheme (such as `/v2/mcp`) is treated as a path on the server URL
+instead. See the
+[`x-mcp-server` reference](/docs/openapi-extensions/x-mcp-server#overriding-the-url) for details.
+
+## Authentication instructions
+
+When the `x-mcp-server` extension carries `security` and `securitySchemes` (Zuplo adds these
+automatically for authenticated routes), the card derives the credential header from the first
+scheme and threads it through every install snippet — for example an
+`Authorization: Bearer YOUR_API_KEY` header in the `mcp.json` samples, plus a step telling users to
+replace the placeholder with their key. API key auth also hides the clients that cannot send custom
+headers (Claude Desktop and ChatGPT), and the one-click install buttons for Cursor and VS Code,
+since those links cannot carry a secret.
+
+If your users get their credentials some other way — the key is injected by a proxy, handled by your
+own login flow, or simply documented elsewhere — turn the authentication instructions off in your
+Zudoku config:
+
+```tsx title="zudoku.config.tsx"
+const config: ZudokuConfig = {
+  apis: [
+    {
+      type: "file",
+      input: "./mcp-api.json",
+      path: "mcp",
+      options: {
+        disableMcpAuthInstructions: true,
+      },
+    },
+  ],
+};
+```
+
+The card then renders the server as if it were unauthenticated, whatever its security says: no
+header in the snippets, no placeholder step, and every client available again. Set it under
+`defaults.apis` instead to apply it to all APIs.
 
 ## Complete example
 
@@ -187,3 +235,29 @@ since they use a different interaction model.
 If you are using [Zuplo](https://zuplo.com) to host your API, the `x-mcp-server` extension is
 automatically added to POST operations that use the `mcpServerHandler`. No manual schema changes are
 needed. See the [Zuplo MCP documentation](https://zuplo.com/docs/handlers/mcp-server) for details.
+
+The server name shown in the install snippets (for example `claude mcp add … 'MCP Server' …`) is
+taken from the handler's `name` option — the same name your MCP server advertises to clients. Set it
+to override the default `"MCP Server"` title:
+
+```json title="config/routes.oas.json (paths section)"
+{
+  "/mcp": {
+    "post": {
+      "operationId": "mcpServerHandler",
+      "x-zuplo-route": {
+        "handler": {
+          "export": "mcpServerHandler",
+          "module": "$import(@zuplo/runtime)",
+          "options": {
+            "name": "Acme API",
+            "operations": [{ "file": "./config/routes.oas.json", "id": "get-users" }]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+With this configuration the snippets read `claude mcp add --transport http 'Acme API' …`.

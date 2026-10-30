@@ -12,7 +12,7 @@ const makePhase = (overrides: Partial<PlanPhase> = {}): PlanPhase => ({
 });
 
 describe("PlanEntitlements", () => {
-  it("shows phase headers (name + duration) when there are multiple phases", () => {
+  it("shows phase headers (name + duration + price) when phases differ", () => {
     const phases: PlanPhase[] = [
       makePhase({
         key: "trial",
@@ -45,11 +45,142 @@ describe("PlanEntitlements", () => {
       }),
     ];
 
-    render(<PlanEntitlements phases={phases} billingCadence="P1M" />);
+    render(
+      <PlanEntitlements phases={phases} currency="USD" billingCadence="P1M" />,
+    );
 
     expect(screen.getByText("Free Trial")).toBeInTheDocument();
     expect(screen.getByText("Main")).toBeInTheDocument();
     expect(screen.getByText(`— ${formatDuration("PT1H")}`)).toBeInTheDocument();
+    // Each section header carries the phase's own price.
+    expect(screen.getByText("· Free")).toBeInTheDocument();
+    expect(screen.getByText("· $10/month")).toBeInTheDocument();
+  });
+
+  it("collapses phases with identical entitlements into a single list", () => {
+    const entitlementCards = (
+      order: "quota-first" | "feature-first",
+    ): PlanPhase["rateCards"] => {
+      const quota: PlanPhase["rateCards"][number] = {
+        type: "flat_fee",
+        key: "jobs",
+        name: "Jobs",
+        billingCadence: null,
+        price: null,
+        featureKey: "jobs",
+        entitlementTemplate: {
+          type: "metered",
+          issueAfterReset: 500_000,
+          usagePeriod: "P1M",
+        },
+      };
+      const feature: PlanPhase["rateCards"][number] = {
+        type: "flat_fee",
+        key: "expired_jobs_api",
+        name: "Expired Jobs API",
+        billingCadence: null,
+        price: null,
+        featureKey: "expired_jobs_api",
+        entitlementTemplate: { type: "boolean" },
+      };
+      return order === "quota-first" ? [quota, feature] : [feature, quota];
+    };
+
+    const phases: PlanPhase[] = [
+      makePhase({
+        key: "intro",
+        name: "First 3 months",
+        duration: "P3M",
+        // A free intro fee — no entitlement, so it must not affect the
+        // collapse comparison.
+        rateCards: [
+          {
+            type: "flat_fee",
+            key: "monthly_fee",
+            name: "Monthly Fee",
+            billingCadence: null,
+            price: null,
+          },
+          ...entitlementCards("quota-first"),
+        ],
+      }),
+      makePhase({
+        key: "main",
+        name: "After 3 months",
+        // Same entitlements, different rate-card order and a priced fee.
+        rateCards: [
+          ...entitlementCards("feature-first"),
+          {
+            type: "flat_fee",
+            key: "monthly_fee",
+            name: "Monthly Fee",
+            billingCadence: "P1M",
+            price: { type: "flat", amount: "750" },
+          },
+        ],
+      }),
+    ];
+
+    render(
+      <PlanEntitlements phases={phases} currency="USD" billingCadence="P1M" />,
+    );
+
+    // One list, no phase headers, each entitlement rendered exactly once.
+    expect(screen.queryByText("First 3 months")).not.toBeInTheDocument();
+    expect(screen.queryByText("After 3 months")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Jobs:")).toHaveLength(1);
+    expect(screen.getAllByText("Expired Jobs API")).toHaveLength(1);
+  });
+
+  it("keeps per-phase sections when entitlements differ between phases", () => {
+    const quota = (
+      issueAfterReset: number,
+    ): PlanPhase["rateCards"][number] => ({
+      type: "flat_fee",
+      key: "jobs",
+      name: "Jobs",
+      billingCadence: null,
+      price: null,
+      featureKey: "jobs",
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset,
+        usagePeriod: "P1M",
+      },
+    });
+
+    const phases: PlanPhase[] = [
+      makePhase({
+        key: "intro",
+        name: "First 3 months",
+        duration: "P3M",
+        rateCards: [quota(100_000)],
+      }),
+      makePhase({
+        key: "main",
+        name: "After 3 months",
+        rateCards: [
+          quota(500_000),
+          {
+            type: "flat_fee",
+            key: "monthly_fee",
+            name: "Monthly Fee",
+            billingCadence: "P1M",
+            price: { type: "flat", amount: "750" },
+          },
+        ],
+      }),
+    ];
+
+    render(
+      <PlanEntitlements phases={phases} currency="USD" billingCadence="P1M" />,
+    );
+
+    expect(screen.getByText("First 3 months")).toBeInTheDocument();
+    expect(screen.getByText("After 3 months")).toBeInTheDocument();
+    expect(screen.getByText("· Free")).toBeInTheDocument();
+    expect(screen.getByText("· $750/month")).toBeInTheDocument();
+    expect(screen.getAllByText("Jobs:")).toHaveLength(2);
   });
 
   it("does not render headers when there is only one phase", () => {

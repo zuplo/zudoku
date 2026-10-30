@@ -9,7 +9,11 @@ import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useNavigationFilter } from "./NavigationFilterContext.js";
 import { NavigationItem } from "./NavigationItem.js";
-import { navigationListItem, useIsCategoryOpen } from "./utils.js";
+import {
+  navigationItemKey,
+  navigationListItem,
+  useIsCategoryOpen,
+} from "./utils.js";
 
 const NavigationCategoryInner = ({
   category,
@@ -29,7 +33,12 @@ const NavigationCategoryInner = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const match = useMatch(category.link?.path ?? "");
+  const linkHref = category.link
+    ? category.link.type === "doc"
+      ? category.link.path
+      : category.link.to
+    : "";
+  const match = useMatch(linkHref);
   const isActive = category.link ? match : false;
 
   useEffect(() => {
@@ -54,11 +63,12 @@ const NavigationCategoryInner = ({
         setOpen((prev) => !prev);
         setHasInteracted(true);
       }}
-      variant="ghost"
+      variant="none"
       size="icon"
       aria-label={open ? "Collapse section" : "Expand section"}
       aria-expanded={open}
-      className="size-6 hover:bg-[hsl(from_var(--accent)_h_s_calc(l+6*var(--dark)))]"
+      // -my-0.5 keeps the chevron from making folder rows taller than plain ones
+      className="size-6 -my-0.5"
     >
       <ChevronRightIcon
         size={16}
@@ -73,8 +83,10 @@ const NavigationCategoryInner = ({
 
   const icon = category.icon && (
     <category.icon
-      size={16}
-      className={cn("align-[-0.125em] ", isActive && "text-primary")}
+      className={cn(
+        "size-4 shrink-0 align-[-0.125em]",
+        isActive && "text-primary",
+      )}
     />
   );
 
@@ -92,29 +104,48 @@ const NavigationCategoryInner = ({
       className="flex flex-col"
       defaultOpen={isDefaultOpen}
       open={open}
-      onOpenChange={() => setOpen(true)}
+      onOpenChange={(value) => {
+        if (!isCollapsible) return;
+        // Categories with a link navigate on row click, so they only open here
+        // (closing is done via the chevron). Without a link the row toggles.
+        const nextOpen = category.link ? true : value;
+        if (nextOpen !== open) setHasInteracted(true);
+        setOpen(nextOpen);
+      }}
     >
       <Collapsible.Trigger className="group" asChild disabled={!isCollapsible}>
-        {category.link?.type === "doc" ? (
+        {category.link ? (
           <NavLink
             to={{
-              pathname: joinUrl(category.link.path),
+              pathname: joinUrl(linkHref),
               search: location.search,
             }}
             className={styles}
-            onClick={() => {
+            onClick={(event) => {
+              // The chevron toggle prevents default to collapse without navigating
+              if (event.defaultPrevented) return;
               // if it is the current path and closed then open it because there's no path change to trigger the open
               if (isActive && !open) {
                 setHasInteracted(true);
                 setOpen(true);
               }
+              onRequestClose?.();
             }}
           >
-            {icon}
-            <div className="flex items-center gap-2 justify-between w-full text-foreground/80 group-aria-[current='page']:text-primary">
-              <div className="truncate">{category.label}</div>
-              {ToggleButton}
-            </div>
+            {({ isActive: linkActive, isPending }) => (
+              <>
+                {icon}
+                <div
+                  className={cn(
+                    "flex items-center gap-2 justify-between w-full text-foreground/80",
+                    (linkActive || isPending) && "text-primary",
+                  )}
+                >
+                  <div className="truncate">{category.label}</div>
+                  {ToggleButton}
+                </div>
+              </>
+            )}
           </NavLink>
         ) : (
           <div className={styles}>
@@ -138,13 +169,7 @@ const NavigationCategoryInner = ({
         <ul className="relative after:absolute after:-inset-s-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (
             <NavigationItem
-              key={
-                item.type +
-                (item.label ?? "") +
-                ("path" in item ? item.path : "") +
-                ("file" in item ? item.file : "") +
-                ("to" in item ? item.to : "")
-              }
+              key={navigationItemKey(item)}
               onRequestClose={onRequestClose}
               item={item}
             />

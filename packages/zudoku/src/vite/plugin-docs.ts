@@ -7,7 +7,6 @@ import {
   type NavigationItem,
   NavigationResolver,
 } from "../config/validators/NavigationSchema.js";
-import { DocsConfigSchema } from "../config/validators/ZudokuConfig.js";
 import { traverseNavigation } from "../lib/components/navigation/utils.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { readFrontmatter } from "../lib/util/readFrontmatter.js";
@@ -20,10 +19,9 @@ export const globMarkdownFiles = async (
   config: ConfigWithMeta,
   options: { absolute: boolean } = { absolute: false },
 ): Promise<Record<string, string>> => {
-  const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
   const fileMapping: Record<string, string> = {};
 
-  for (const globPattern of docsConfig.files) {
+  for (const globPattern of config.docs.files) {
     const globbedFiles = await glob(globPattern, {
       root: config.__meta.rootDir,
       ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
@@ -88,7 +86,7 @@ export const resolveCustomNavigationPaths = async (
     const doc =
       item.type === "doc"
         ? { file: item.file, path: item.path }
-        : item.type === "category" && item.link
+        : item.type === "category" && item.link?.type === "doc"
           ? { file: item.link.file, path: item.link.path }
           : undefined;
 
@@ -101,7 +99,8 @@ export const resolveCustomNavigationPaths = async (
 
     const customPath = ensureLeadingSlash(doc.path);
     mapping[customPath] = filePath;
-    delete mapping[fileRoutePath];
+
+    if (customPath !== fileRoutePath) delete mapping[fileRoutePath];
   };
 
   if (config.navigation) {
@@ -145,8 +144,6 @@ const viteDocsPlugin = (): Plugin => {
         'import { markdownPlugin } from "zudoku/plugins/markdown";',
       ];
 
-      const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
-
       // Glob markdown files and resolve custom navigation paths
       const fileMapping = await resolveCustomNavigationPaths(
         config,
@@ -170,8 +167,8 @@ const viteDocsPlugin = (): Plugin => {
         `export const configuredDocsPlugin = markdownPlugin({`,
         `  basePath: "${config.basePath ?? ""}",`,
         `  fileImports,`,
-        `  defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)},`,
-        `  publishMarkdown: ${JSON.stringify(docsConfig.publishMarkdown)},`,
+        `  defaultOptions: ${JSON.stringify(config.docs.defaultOptions)},`,
+        `  publishMarkdown: ${JSON.stringify(config.docs.publishMarkdown)},`,
         `});`,
       );
 

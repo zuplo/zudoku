@@ -15,8 +15,8 @@ authentication provider you use.
 
 ## Authentication Providers
 
-Zudoku supports Clerk, Auth0, Supabase, Firebase, Azure B2C, and any OpenID Connect provider
-(including Okta, Keycloak, Authentik, and PingFederate).
+Zudoku supports Clerk, Auth0, Supabase, Firebase, Microsoft Entra ID, Azure B2C, and any OpenID
+Connect provider (including Okta, Keycloak, Authentik, and PingFederate).
 
 Not seeing your authentication provider? [Let us know](https://github.com/zuplo/zudoku/issues)
 
@@ -98,6 +98,26 @@ providing your own array of scopes.
 
 For provider-specific guides (Okta, Keycloak, etc.), see the
 [OpenID Connect setup page](./authentication-openid.md).
+
+### Microsoft Entra ID
+
+For Microsoft Entra ID (formerly Azure AD), you will need the `clientId` from your app registration
+and your `tenantId`.
+
+```typescript
+{
+  // ...
+  authentication: {
+    type: "entra",
+    clientId: "<your-application-client-id>",
+    tenantId: "<your-tenant-id>", // Or "common" for multitenant. Defaults to "common".
+  },
+  // ...
+}
+```
+
+For full setup instructions, see the
+[Azure AD / Entra ID setup guide](./authentication-azure-ad.md).
 
 ### Firebase
 
@@ -193,6 +213,31 @@ fields are used to display the user profile:
 - `email_verified` - Whether the user's email address has been verified
 
 If the provider does not return a field, it will be left blank.
+
+## Redirects after sign-in
+
+By default, users return to the page they started from after signing in. For
+[protected routes](./protected-routes.md) that is the path and query string they tried to open; for
+`useAuth().login({ redirectTo })` it is the `redirectTo` you pass.
+
+Setting `redirectToAfterSignIn` overrides that return URL: every sign-in lands on the configured
+path instead. Only set it if you always want users to land on the same page, and leave it unset to
+return users to where they were. `redirectToAfterSignUp` behaves the same way for sign-up.
+
+```typescript title="zudoku.config.ts"
+{
+  authentication: {
+    type: "auth0",
+    // ...
+    // Omit to return users to the page they came from
+    redirectToAfterSignIn: "/docs",
+  },
+}
+```
+
+This applies to all built-in providers. For Supabase social (OAuth) sign-in, the return URL must
+also be allowed under **Redirect URLs** in your Supabase project's authentication settings, and a
+return URL on another origin falls back to your site's root.
 
 ## Protected Routes
 

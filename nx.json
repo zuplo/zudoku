@@ -28,9 +28,9 @@
   },
   "release": {
     "projects": ["zudoku", "create-zudoku"],
-    "releaseTagPattern": "v{version}",
     "versionPlans": true,
     "version": {
+      "adjustSemverBumpsForZeroMajorVersion": false,
       "git": {
         "commitMessage": "chore(release): publish {version} [skip ci]"
       }
@@ -50,6 +50,9 @@
           "versionTitleDate": true
         }
       }
+    },
+    "releaseTag": {
+      "pattern": "v{version}"
     }
   },
   "neverConnectToCloud": true,
