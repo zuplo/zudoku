@@ -101,7 +101,7 @@ const parseMarkdown = (content: string, isMdx: boolean): Root | undefined => {
   // HTML comments are supported in MDX via `remark-comment`, but would be
   // invalid JSX here. Repeated so that removing one can't form another.
   let withoutComments = content;
-  for (let previous = ""; previous !== withoutComments; ) {
+  for (let previous = ""; previous !== withoutComments;) {
     previous = withoutComments;
     withoutComments = withoutComments.replace(/<!--[\s\S]*?-->/g, "");
   }
