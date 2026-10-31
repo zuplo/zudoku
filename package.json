@@ -35,7 +35,7 @@
     "@vitest/coverage-v8": "4.1.11",
     "lefthook": "2.2.2",
     "nx": "24.0.1",
-    "oxfmt": "0.36.0",
+    "oxfmt": "0.75.0",
     "publint": "^0.3.25",
     "size-limit": "^14.3.0",
     "typescript": "catalog:",
