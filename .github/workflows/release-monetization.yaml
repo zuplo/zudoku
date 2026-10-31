@@ -128,9 +128,18 @@ jobs:
           app-id: ${{ vars.ZUDOKU_GH_APP_ID }}
           private-key: ${{ secrets.ZUDOKU_GH_APP_PRIVATE_KEY }}
           owner: zuplo
-          repositories: core
+          repositories: |
+            core
+            portal
 
       - name: Trigger zudoku builder rebuild
         run: gh workflow run zudoku-builder.yaml --repo zuplo/core --ref main
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      # The portal installs the plugin from an npmjs tarball pin that Dependabot
+      # can't see; this bumps it and pushes to the portal's main.
+      - name: Update the plugin in the portal
+        run: gh workflow run update-monetization-plugin.yaml --repo zuplo/portal --ref main
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
