@@ -100,13 +100,13 @@ describe("validateConfig", () => {
     },
     { type: "entra" as const, clientId: "client123" },
     { type: "auth0" as const, clientId: "client123", domain: "example.com" },
-  ])("should accept loadUserInfo in $type config", (authentication) => {
+  ])("should accept disableUserInfo in $type config", (authentication) => {
     const config = {
-      authentication: { ...authentication, loadUserInfo: false },
+      authentication: { ...authentication, disableUserInfo: true },
     };
 
     expect(validateConfig(config).authentication).toMatchObject({
-      loadUserInfo: false,
+      disableUserInfo: true,
     });
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });

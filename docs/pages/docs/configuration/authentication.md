@@ -214,7 +214,7 @@ fields are used to display the user profile:
 
 If the provider does not return a field, it will be left blank.
 
-For the `openid`, `entra`, and `auth0` providers you can set `loadUserInfo: false` to read these
+For the `openid`, `entra`, and `auth0` providers you can set `disableUserInfo: true` to read these
 fields from the ID token instead of calling the User Info endpoint. See
 [Without the UserInfo Endpoint](./authentication-openid.md#without-the-userinfo-endpoint).
 

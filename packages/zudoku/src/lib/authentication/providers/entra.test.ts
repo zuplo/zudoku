@@ -265,7 +265,7 @@ describe("EntraAuthenticationProvider", () => {
         new EntraAuthenticationProvider({
           type: "entra",
           clientId: "test-client",
-          loadUserInfo: false,
+          disableUserInfo: true,
         }) as unknown as {
           getExpectedAccessTokenIssuer: (
             as: oauth.AuthorizationServer,

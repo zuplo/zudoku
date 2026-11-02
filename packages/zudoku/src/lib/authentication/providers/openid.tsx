@@ -121,7 +121,7 @@ export class OpenIDAuthenticationProvider
     "acr_values",
   ];
   private readonly allowInsecureRequests: boolean;
-  private readonly loadUserInfo: boolean;
+  private readonly disableUserInfo: boolean;
   private readonly sessionEndpoint: string;
   private serverSessionHydration?: Promise<OpenIdProviderData | undefined>;
   private jwks?: ReturnType<typeof import("jose").createRemoteJWKSet>;
@@ -140,7 +140,7 @@ export class OpenIDAuthenticationProvider
     authorizationParams,
     forwardAuthorizationParams,
     allowInsecureRequests,
-    loadUserInfo,
+    disableUserInfo,
   }: OpenIDAuthenticationConfig) {
     super();
     this.client = {
@@ -154,7 +154,7 @@ export class OpenIDAuthenticationProvider
     this.sessionEndpoint = joinUrl(basePath, SESSION_ENDPOINT_PATH);
     this.scopes = scopes ?? ["openid", "profile", "email"];
     this.allowInsecureRequests = allowInsecureRequests ?? false;
-    this.loadUserInfo = loadUserInfo ?? true;
+    this.disableUserInfo = disableUserInfo ?? false;
 
     this.redirectToAfterSignUp = redirectToAfterSignUp;
     this.redirectToAfterSignIn = redirectToAfterSignIn;
@@ -218,11 +218,11 @@ export class OpenIDAuthenticationProvider
     return as.issuer;
   }
 
-  // Off when the config opts out (`loadUserInfo: false`) or the issuer doesn't
+  // Off when the config opts out (`disableUserInfo: true`) or the issuer doesn't
   // advertise the endpoint. The profile then comes from the ID token in the
   // browser, and from the verified JWT access token on the server.
   protected usesUserInfo(as: oauth.AuthorizationServer): boolean {
-    return this.loadUserInfo && typeof as.userinfo_endpoint === "string";
+    return !this.disableUserInfo && typeof as.userinfo_endpoint === "string";
   }
 
   /**

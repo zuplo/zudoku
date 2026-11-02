@@ -28,13 +28,13 @@ Add the `authentication` property to your [Zudoku configuration](./overview.md):
 }
 ```
 
-| Option                  | Required | Description                                                                                                                                                      |
-| ----------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `clientId`              | Yes      | The OAuth client ID issued by your provider.                                                                                                                     |
-| `issuer`                | Yes      | The issuer URL. Zudoku discovers endpoints from `<issuer>/.well-known/openid-configuration`.                                                                     |
-| `scopes`                | No       | Scopes to request. Defaults to `["openid", "profile", "email"]`.                                                                                                 |
-| `allowInsecureRequests` | No       | Allow discovery and token requests against an `http://` issuer. Defaults to `false`. Intended only for local development — never enable this in production.      |
-| `loadUserInfo`          | No       | Load the user profile from the UserInfo endpoint. Defaults to `true`. Set it to `false` to use the ID token's claims instead; see [User Profile](#user-profile). |
+| Option                  | Required | Description                                                                                                                                                 |
+| ----------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clientId`              | Yes      | The OAuth client ID issued by your provider.                                                                                                                |
+| `issuer`                | Yes      | The issuer URL. Zudoku discovers endpoints from `<issuer>/.well-known/openid-configuration`.                                                                |
+| `scopes`                | No       | Scopes to request. Defaults to `["openid", "profile", "email"]`.                                                                                            |
+| `allowInsecureRequests` | No       | Allow discovery and token requests against an `http://` issuer. Defaults to `false`. Intended only for local development — never enable this in production. |
+| `disableUserInfo`       | No       | Don't call the UserInfo endpoint and build the user profile from the ID token's claims instead. Defaults to `false`. See [User Profile](#user-profile).     |
 
 ## Provider Setup
 
@@ -131,7 +131,7 @@ provider if they are not emitted by default.
 ### Without the UserInfo Endpoint
 
 Some providers don't let a browser call the UserInfo endpoint, for example because it doesn't allow
-cross-origin requests from your site. Set `loadUserInfo` to `false` and Zudoku never calls it:
+cross-origin requests from your site. Set `disableUserInfo` to `true` and Zudoku never calls it:
 
 ```typescript title="zudoku.config.ts"
 {
@@ -139,7 +139,7 @@ cross-origin requests from your site. Set `loadUserInfo` to `false` and Zudoku n
     type: "openid",
     clientId: "<your-client-id>",
     issuer: "<the-issuer-url>",
-    loadUserInfo: false,
+    disableUserInfo: true,
   },
 }
 ```
@@ -196,10 +196,10 @@ production issuer.
 - **Discovery fails**: verify `<issuer>/.well-known/openid-configuration` resolves and matches the
   `issuer` value in the document.
 - **CORS errors on token / userinfo**: add your site origin to the provider's allowed origins. If
-  your provider can't allow browser calls to the UserInfo endpoint, set `loadUserInfo` to `false`
+  your provider can't allow browser calls to the UserInfo endpoint, set `disableUserInfo` to `true`
   (see [Without the UserInfo Endpoint](#without-the-userinfo-endpoint)).
 - **Redirect URI mismatch**: the URI registered with the provider must match the Zudoku origin
   exactly, including protocol and port.
 - **Missing profile fields**: ensure `profile` and `email` scopes are granted and that the provider
   includes `name`, `email`, and `picture` claims in the UserInfo response, or in the ID token when
-  `loadUserInfo` is `false`.
+  `disableUserInfo` is `true`.

@@ -917,7 +917,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         type: "openid",
         issuer: "https://issuer.example.com",
         clientId: "test-client",
-        loadUserInfo: false,
+        disableUserInfo: true,
       });
 
     const setupCallback = ({ withIdToken }: { withIdToken: boolean }) => {
@@ -952,7 +952,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       vi.mocked(oauth.userInfoRequest).mockClear();
     });
 
-    test("builds the profile from the ID token claims when loadUserInfo is false", async () => {
+    test("builds the profile from the ID token claims when disableUserInfo is set", async () => {
       const provider = createProviderWithoutUserInfo();
       setupCallback({ withIdToken: true });
 
@@ -1232,7 +1232,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
           issuer: "https://issuer.example.com",
           clientId: "test-client",
           audience: "https://api.example.com",
-          loadUserInfo: false,
+          disableUserInfo: true,
         });
 
         expect(
