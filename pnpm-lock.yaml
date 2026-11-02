@@ -19,8 +19,8 @@ catalogs:
       specifier: 14.6.7
       version: 14.6.7
     '@tsdown/css':
-      specifier: 0.23.0
-      version: 0.23.0
+      specifier: 0.23.4
+      version: 0.23.4
     '@types/node':
       specifier: 22.20.5
       version: 22.20.5
@@ -515,7 +515,7 @@ importers:
     devDependencies:
       '@tsdown/css':
         specifier: 'catalog:'
-        version: 0.23.0(jiti@2.7.0)(postcss@8.5.31)(tsdown@0.23.2)(tsx@4.23.15)(yaml@2.9.1)
+        version: 0.23.4(jiti@2.7.0)(postcss@8.5.31)(tsdown@0.23.2)(tsx@4.23.15)(yaml@2.9.1)
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.5
@@ -536,7 +536,7 @@ importers:
         version: 19.3.1(react@19.3.1)
       tsdown:
         specifier: 'catalog:'
-        version: 0.23.2(@tsdown/css@0.23.0)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3)
+        version: 0.23.2(@tsdown/css@0.23.4)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -570,7 +570,7 @@ importers:
         version: 19.3.1(react@19.3.1)
       tsdown:
         specifier: 'catalog:'
-        version: 0.23.2(@tsdown/css@0.23.0)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3)
+        version: 0.23.2(@tsdown/css@0.23.4)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3)
       zudoku:
         specifier: workspace:*
         version: link:../zudoku
@@ -616,7 +616,7 @@ importers:
         version: 19.3.1(react@19.3.1)
       tsdown:
         specifier: 'catalog:'
-        version: 0.23.2(@tsdown/css@0.23.0)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3)
+        version: 0.23.2(@tsdown/css@0.23.4)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3)
       zudoku:
         specifier: workspace:*
         version: link:../zudoku
@@ -5062,8 +5062,8 @@ packages:
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
 
-  '@tsdown/css@0.23.0':
-    resolution: {integrity: sha512-EfSQCVAz24CRz92WdJj/Yb+gJMV3m2C/iDsFO4XJkd12Ez9WnW0KtpLohAFtc4gDzflFlh9I0UHTZc6BQmxSHw==}
+  '@tsdown/css@0.23.4':
+    resolution: {integrity: sha512-lkEj33E0r7KhmiTQC+UYkOUoe5W50eHsDXoloDkj52OMFxAUfRieF1k4QcOIqMFKd7s0BjFHD8PFElnThVLHGA==}
     engines: {node: ^22.18.0 || ^24.11.0 || >=26.0.0}
     peerDependencies:
       postcss: ^8.4.0
@@ -5071,7 +5071,7 @@ packages:
       postcss-modules: ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
       sass: '*'
       sass-embedded: '*'
-      tsdown: 0.23.0
+      tsdown: 0.23.4
     peerDependenciesMeta:
       postcss:
         optional: true
@@ -13375,12 +13375,12 @@ snapshots:
     dependencies:
       '@testing-library/dom': 10.4.2
 
-  '@tsdown/css@0.23.0(jiti@2.7.0)(postcss@8.5.31)(tsdown@0.23.2)(tsx@4.23.15)(yaml@2.9.1)':
+  '@tsdown/css@0.23.4(jiti@2.7.0)(postcss@8.5.31)(tsdown@0.23.2)(tsx@4.23.15)(yaml@2.9.1)':
     dependencies:
       lightningcss: 1.33.0
       postcss-load-config: 6.0.1(jiti@2.7.0)(postcss@8.5.31)(tsx@4.23.15)(yaml@2.9.1)
       rolldown: 1.2.15
-      tsdown: 0.23.2(@tsdown/css@0.23.0)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3)
+      tsdown: 0.23.2(@tsdown/css@0.23.4)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3)
     optionalDependencies:
       postcss: 8.5.31
     transitivePeerDependencies:
@@ -17724,7 +17724,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tsdown@0.23.2(@tsdown/css@0.23.0)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3):
+  tsdown@0.23.2(@tsdown/css@0.23.4)(publint@0.3.25)(tsx@4.23.15)(typescript@6.0.3):
     dependencies:
       cac: 7.1.0
       defu: 6.1.7
@@ -17741,7 +17741,7 @@ snapshots:
       unconfig-core: 7.5.0
       verkit: 0.5.0
     optionalDependencies:
-      '@tsdown/css': 0.23.0(jiti@2.7.0)(postcss@8.5.31)(tsdown@0.23.2)(tsx@4.23.15)(yaml@2.9.1)
+      '@tsdown/css': 0.23.4(jiti@2.7.0)(postcss@8.5.31)(tsdown@0.23.2)(tsx@4.23.15)(yaml@2.9.1)
       publint: 0.3.25
       tsx: 4.23.15
       typescript: 6.0.3
