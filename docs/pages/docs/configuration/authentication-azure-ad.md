@@ -208,6 +208,13 @@ Azure AD provides rich user profile data through OpenID Connect:
 - `preferred_username` - User's UPN (User Principal Name)
 - Additional claims based on your API permissions
 
+Entra's UserInfo endpoint is part of Microsoft Graph and only accepts access tokens issued for
+Graph. If your `scopes` request a token for your own API instead, set `loadUserInfo: false` so the
+profile comes from the ID token. In SSR mode the server then verifies the access token itself, so it
+must be a v2.0 token for your API (`"accessTokenAcceptedVersion": 2` in the app manifest): tokens
+for Graph can't be verified outside Graph. See
+[Without the UserInfo Endpoint](./authentication-openid.md#without-the-userinfo-endpoint).
+
 ## Troubleshooting
 
 ### Common Issues

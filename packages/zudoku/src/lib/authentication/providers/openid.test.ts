@@ -1,6 +1,15 @@
 // @vitest-environment happy-dom
+import * as jose from "jose";
 import * as oauth from "oauth4webapi";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from "vitest";
 import { useAuthState } from "../state.js";
 import auth0Auth from "./auth0.js";
 import {
@@ -27,8 +36,15 @@ vi.mock("oauth4webapi", async (importOriginal) => {
   };
 });
 
+vi.mock("jose", async (importOriginal) => {
+  const actual = await importOriginal<typeof jose>();
+  return { ...actual, createRemoteJWKSet: vi.fn() };
+});
+
 const AUTH_SERVER: oauth.AuthorizationServer = {
   issuer: "https://issuer.example.com",
+  userinfo_endpoint: "https://issuer.example.com/userinfo",
+  jwks_uri: "https://issuer.example.com/jwks",
 };
 
 const createProvider = () =>
@@ -170,6 +186,16 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
           accessToken: OPAQUE_ACCESS_TOKEN,
         },
       });
+    });
+
+    test("calls UserInfo once per sign-in", async () => {
+      const provider = createProvider();
+      setupCallback({ userInfoEmailVerified: true });
+      vi.mocked(oauth.userInfoRequest).mockClear();
+
+      await provider.handleCallback();
+
+      expect(oauth.userInfoRequest).toHaveBeenCalledTimes(1);
     });
 
     test("emailVerified defaults to false when absent everywhere", async () => {
@@ -856,6 +882,364 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         expect.anything(),
         expect.objectContaining({ [oauth.allowInsecureRequests]: true }),
       );
+    });
+  });
+
+  describe("without UserInfo", () => {
+    const ID_TOKEN_CLAIMS = {
+      iss: "https://issuer.example.com",
+      sub: "user-1",
+      aud: "test-client",
+      iat: 0,
+      exp: 0,
+      nonce: "test-nonce",
+      auth_time: 0,
+      email: "user@example.com",
+      email_verified: true,
+      name: "Test User",
+      picture: "https://example.com/pic.jpg",
+      groups: ["admins"],
+    } satisfies oauth.IDToken;
+
+    const PROFILE_FROM_CLAIMS = {
+      sub: "user-1",
+      email: "user@example.com",
+      email_verified: true,
+      emailVerified: true,
+      name: "Test User",
+      picture: "https://example.com/pic.jpg",
+      pictureUrl: "https://example.com/pic.jpg",
+      groups: ["admins"],
+    };
+
+    const createProviderWithoutUserInfo = () =>
+      new OpenIDAuthenticationProvider({
+        type: "openid",
+        issuer: "https://issuer.example.com",
+        clientId: "test-client",
+        loadUserInfo: false,
+      });
+
+    const setupCallback = ({ withIdToken }: { withIdToken: boolean }) => {
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: new URL(
+          "http://localhost/oauth/callback?state=test-state&code=test-code",
+        ),
+      });
+      sessionStorage.setItem("oauth-state", "test-state");
+      sessionStorage.setItem("code-verifier", "test-verifier");
+
+      vi.mocked(oauth.validateAuthResponse).mockReturnValue(
+        new URLSearchParams({ code: "test-code" }),
+      );
+      vi.mocked(oauth.authorizationCodeGrantRequest).mockResolvedValue(
+        new Response(),
+      );
+      vi.mocked(oauth.processAuthorizationCodeResponse).mockResolvedValue({
+        access_token: OPAQUE_ACCESS_TOKEN,
+        token_type: "bearer",
+        expires_in: 3600,
+        id_token: withIdToken ? "test-id-token" : undefined,
+        refresh_token: "test-refresh-token",
+      } as oauth.TokenEndpointResponse);
+      vi.mocked(oauth.getValidatedIdTokenClaims).mockReturnValue(
+        ID_TOKEN_CLAIMS,
+      );
+    };
+
+    beforeEach(() => {
+      vi.mocked(oauth.userInfoRequest).mockClear();
+    });
+
+    test("builds the profile from the ID token claims when loadUserInfo is false", async () => {
+      const provider = createProviderWithoutUserInfo();
+      setupCallback({ withIdToken: true });
+
+      await provider.handleCallback();
+
+      expect(oauth.userInfoRequest).not.toHaveBeenCalled();
+      expect(useAuthState.getState()).toMatchObject({
+        isAuthenticated: true,
+        isPending: false,
+      });
+      // Token and sign-in claims (iss, aud, exp, nonce, auth_time…) are not
+      // part of the profile; custom claims are.
+      expect(useAuthState.getState().profile).toEqual(PROFILE_FROM_CLAIMS);
+    });
+
+    test("skips UserInfo when the issuer doesn't advertise it", async () => {
+      vi.mocked(oauth.processDiscoveryResponse).mockResolvedValue({
+        issuer: "https://issuer.example.com",
+      });
+      const provider = createProvider();
+      setupCallback({ withIdToken: true });
+
+      await provider.handleCallback();
+
+      expect(oauth.userInfoRequest).not.toHaveBeenCalled();
+      expect(useAuthState.getState().profile).toEqual(PROFILE_FROM_CLAIMS);
+    });
+
+    test("fails sign-in when the token response has no ID token", async () => {
+      const provider = createProviderWithoutUserInfo();
+      setupCallback({ withIdToken: false });
+
+      await expect(provider.handleCallback()).rejects.toThrow(/no ID token/);
+
+      expect(useAuthState.getState()).toMatchObject({
+        isAuthenticated: false,
+        profile: null,
+        providerData: null,
+      });
+    });
+
+    test("keeps the ID token across a refresh that returns none", async () => {
+      const provider = createProviderWithoutUserInfo();
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: PROFILE_FROM_CLAIMS,
+        providerData: {
+          type: "openid",
+          accessToken: OPAQUE_ACCESS_TOKEN,
+          idToken: "test-id-token",
+          expiresOn: new Date(Date.now() - 1000),
+          refreshToken: "test-refresh-token",
+          tokenType: "bearer",
+          claims: ID_TOKEN_CLAIMS,
+        } satisfies OpenIdProviderData,
+      });
+      vi.mocked(oauth.refreshTokenGrantRequest).mockResolvedValue(
+        new Response(),
+      );
+      vi.mocked(oauth.processRefreshTokenResponse).mockResolvedValue({
+        access_token: NEW_OPAQUE_ACCESS_TOKEN,
+        token_type: "bearer",
+        expires_in: 3600,
+      } as oauth.TokenEndpointResponse);
+
+      expect(await provider.refreshUserProfile()).toBe(true);
+
+      expect(oauth.userInfoRequest).not.toHaveBeenCalled();
+      expect(useAuthState.getState()).toMatchObject({
+        profile: PROFILE_FROM_CLAIMS,
+        providerData: {
+          accessToken: NEW_OPAQUE_ACCESS_TOKEN,
+          idToken: "test-id-token",
+          claims: ID_TOKEN_CLAIMS,
+        },
+      });
+    });
+
+    test("keeps the current profile when there are no ID token claims", async () => {
+      const provider = createProviderWithoutUserInfo();
+      const ssrProfile = {
+        sub: "user-1",
+        email: "user@example.com",
+        emailVerified: true,
+        name: "From SSR",
+        pictureUrl: undefined,
+      };
+      // A session restored from the SSR cookie has an access token only.
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: ssrProfile,
+        providerData: {
+          type: "openid",
+          accessToken: OPAQUE_ACCESS_TOKEN,
+          expiresOn: new Date(Date.now() + 3600_000),
+          tokenType: "Bearer",
+          claims: undefined,
+        } satisfies OpenIdProviderData,
+      });
+
+      expect(await provider.refreshUserProfile()).toBe(false);
+
+      expect(oauth.userInfoRequest).not.toHaveBeenCalled();
+      expect(useAuthState.getState().profile).toEqual(ssrProfile);
+    });
+
+    describe("verifyAccessToken", () => {
+      let privateKey: CryptoKey;
+      let otherPrivateKey: CryptoKey;
+      let jwks: jose.JSONWebKeySet;
+
+      beforeAll(async () => {
+        const pair = await jose.generateKeyPair("RS256");
+        privateKey = pair.privateKey;
+        otherPrivateKey = (await jose.generateKeyPair("RS256")).privateKey;
+        jwks = {
+          keys: [
+            {
+              ...(await jose.exportJWK(pair.publicKey)),
+              alg: "RS256",
+              kid: "k1",
+            },
+          ],
+        };
+      });
+
+      beforeEach(() => {
+        // The local key set stands in for the issuer's remote JWKS.
+        vi.mocked(jose.createRemoteJWKSet).mockImplementation(
+          () =>
+            jose.createLocalJWKSet(jwks) as unknown as ReturnType<
+              typeof jose.createRemoteJWKSet
+            >,
+        );
+      });
+
+      const sign = (
+        claims: jose.JWTPayload,
+        {
+          key = privateKey,
+          exp = Math.floor(Date.now() / 1000) + 3600,
+        }: { key?: CryptoKey; exp?: number } = {},
+      ) =>
+        new jose.SignJWT(claims)
+          .setProtectedHeader({ alg: "RS256", kid: "k1" })
+          .setIssuedAt()
+          .setExpirationTime(exp)
+          .sign(key);
+
+      const USER_CLAIMS = {
+        iss: "https://issuer.example.com",
+        sub: "user-1",
+        email: "user@example.com",
+        email_verified: true,
+        name: "Test User",
+        picture: "https://example.com/pic.jpg",
+      };
+
+      test("verifies a JWT access token against the issuer's JWKS", async () => {
+        const provider = createProviderWithoutUserInfo();
+        const exp = Math.floor(Date.now() / 1000) + 600;
+
+        const result = await provider.verifyAccessToken(
+          await sign(USER_CLAIMS, { exp }),
+        );
+
+        expect(result).toEqual({
+          profile: {
+            sub: "user-1",
+            email: "user@example.com",
+            name: "Test User",
+            emailVerified: true,
+            pictureUrl: "https://example.com/pic.jpg",
+          },
+          expiresAt: exp,
+        });
+        expect(jose.createRemoteJWKSet).toHaveBeenCalledWith(
+          new URL("https://issuer.example.com/jwks"),
+        );
+        expect(oauth.userInfoRequest).not.toHaveBeenCalled();
+      });
+
+      test("is used when the issuer doesn't advertise UserInfo", async () => {
+        vi.mocked(oauth.processDiscoveryResponse).mockResolvedValue({
+          issuer: "https://issuer.example.com",
+          jwks_uri: "https://issuer.example.com/jwks",
+        });
+        const provider = createProvider();
+
+        const result = await provider.verifyAccessToken(
+          await sign(USER_CLAIMS),
+        );
+
+        expect(result?.profile.sub).toBe("user-1");
+        expect(oauth.userInfoRequest).not.toHaveBeenCalled();
+      });
+
+      test("rejects a token from another issuer", async () => {
+        const provider = createProviderWithoutUserInfo();
+        const token = await sign({
+          ...USER_CLAIMS,
+          iss: "https://evil.example.com",
+        });
+
+        expect(await provider.verifyAccessToken(token)).toBeUndefined();
+      });
+
+      test("rejects a token signed by another key", async () => {
+        const provider = createProviderWithoutUserInfo();
+        const token = await sign(USER_CLAIMS, { key: otherPrivateKey });
+
+        expect(await provider.verifyAccessToken(token)).toBeUndefined();
+      });
+
+      test("rejects an expired token", async () => {
+        const provider = createProviderWithoutUserInfo();
+        const token = await sign(USER_CLAIMS, {
+          exp: Math.floor(Date.now() / 1000) - 60,
+        });
+
+        expect(await provider.verifyAccessToken(token)).toBeUndefined();
+      });
+
+      test("rejects a token without sub", async () => {
+        const provider = createProviderWithoutUserInfo();
+        const { sub: _, ...withoutSub } = USER_CLAIMS;
+
+        expect(
+          await provider.verifyAccessToken(await sign(withoutSub)),
+        ).toBeUndefined();
+      });
+
+      test("rejects opaque access tokens", async () => {
+        const provider = createProviderWithoutUserInfo();
+
+        expect(
+          await provider.verifyAccessToken(OPAQUE_ACCESS_TOKEN),
+        ).toBeUndefined();
+      });
+
+      test("checks the audience when one is configured", async () => {
+        const provider = new OpenIDAuthenticationProvider({
+          type: "openid",
+          issuer: "https://issuer.example.com",
+          clientId: "test-client",
+          audience: "https://api.example.com",
+          loadUserInfo: false,
+        });
+
+        expect(
+          await provider.verifyAccessToken(
+            await sign({ ...USER_CLAIMS, aud: "https://other.example.com" }),
+          ),
+        ).toBeUndefined();
+        expect(
+          await provider.verifyAccessToken(
+            await sign({ ...USER_CLAIMS, aud: "https://api.example.com" }),
+          ),
+        ).toBeDefined();
+      });
+
+      test("throws when the JWKS can't be loaded (→ 502 at the handler)", async () => {
+        vi.mocked(jose.createRemoteJWKSet).mockImplementation(
+          () =>
+            (async () => {
+              throw new jose.errors.JWKSTimeout();
+            }) as unknown as ReturnType<typeof jose.createRemoteJWKSet>,
+        );
+        const provider = createProviderWithoutUserInfo();
+
+        await expect(
+          provider.verifyAccessToken(await sign(USER_CLAIMS)),
+        ).rejects.toBeInstanceOf(jose.errors.JWKSTimeout);
+      });
+
+      test("throws when the issuer advertises no jwks_uri", async () => {
+        vi.mocked(oauth.processDiscoveryResponse).mockResolvedValue({
+          issuer: "https://issuer.example.com",
+        });
+        const provider = createProviderWithoutUserInfo();
+
+        await expect(
+          provider.verifyAccessToken(await sign(USER_CLAIMS)),
+        ).rejects.toThrow(/jwks_uri/);
+      });
     });
   });
 

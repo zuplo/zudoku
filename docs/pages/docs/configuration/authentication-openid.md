@@ -28,12 +28,13 @@ Add the `authentication` property to your [Zudoku configuration](./overview.md):
 }
 ```
 
-| Option                  | Required | Description                                                                                                                                                 |
-| ----------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `clientId`              | Yes      | The OAuth client ID issued by your provider.                                                                                                                |
-| `issuer`                | Yes      | The issuer URL. Zudoku discovers endpoints from `<issuer>/.well-known/openid-configuration`.                                                                |
-| `scopes`                | No       | Scopes to request. Defaults to `["openid", "profile", "email"]`.                                                                                            |
-| `allowInsecureRequests` | No       | Allow discovery and token requests against an `http://` issuer. Defaults to `false`. Intended only for local development — never enable this in production. |
+| Option                  | Required | Description                                                                                                                                                      |
+| ----------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clientId`              | Yes      | The OAuth client ID issued by your provider.                                                                                                                     |
+| `issuer`                | Yes      | The issuer URL. Zudoku discovers endpoints from `<issuer>/.well-known/openid-configuration`.                                                                     |
+| `scopes`                | No       | Scopes to request. Defaults to `["openid", "profile", "email"]`.                                                                                                 |
+| `allowInsecureRequests` | No       | Allow discovery and token requests against an `http://` issuer. Defaults to `false`. Intended only for local development — never enable this in production.      |
+| `loadUserInfo`          | No       | Load the user profile from the UserInfo endpoint. Defaults to `true`. Set it to `false` to use the ID token's claims instead; see [User Profile](#user-profile). |
 
 ## Provider Setup
 
@@ -127,6 +128,42 @@ After sign-in Zudoku calls the provider's
 `name`, `email`, `picture`, and `email_verified` from the response. Map these claims in your
 provider if they are not emitted by default.
 
+### Without the UserInfo Endpoint
+
+Some providers don't let a browser call the UserInfo endpoint, for example because it doesn't allow
+cross-origin requests from your site. Set `loadUserInfo` to `false` and Zudoku never calls it:
+
+```typescript title="zudoku.config.ts"
+{
+  authentication: {
+    type: "openid",
+    clientId: "<your-client-id>",
+    issuer: "<the-issuer-url>",
+    loadUserInfo: false,
+  },
+}
+```
+
+Zudoku also skips UserInfo when the discovery document doesn't advertise a `userinfo_endpoint`. The
+option works the same way for the `entra` and `auth0` providers.
+
+Without UserInfo, the profile is built from the claims of the ID token that the token endpoint
+returns at sign-in:
+
+- The ID token must contain `name`, `email`, `picture`, and `email_verified`. Most providers add
+  them for the `profile` and `email` scopes, but some only put them in the UserInfo response unless
+  you configure them for the ID token.
+- Custom claims in the ID token, such as roles or groups, are part of the profile. Claims that
+  describe the token itself (`iss`, `aud`, `exp`, `nonce` and the like) are not.
+- Sign-in fails if the token response contains no ID token, so keep the `openid` scope.
+
+In [SSR mode](./protected-routes.md#server-side-protection-ssr-mode) the server checks the access
+token on every request. Without UserInfo, the access token must be a JWT signed by your provider:
+Zudoku verifies it against the provider's `jwks_uri` and checks its issuer and, when `audience` is
+set, its audience. The server-side profile then comes from the access token's claims, so add `name`
+and `email` to it if you show them. Opaque access tokens can't be verified this way, so the server
+rejects them and the user is signed out on the next page load.
+
 ## Local Development with an HTTP Issuer
 
 `oauth4webapi` (the library Zudoku uses under the hood) rejects issuers that don't use `https://` by
@@ -152,8 +189,11 @@ production issuer.
 
 - **Discovery fails**: verify `<issuer>/.well-known/openid-configuration` resolves and matches the
   `issuer` value in the document.
-- **CORS errors on token / userinfo**: add your site origin to the provider's allowed origins.
+- **CORS errors on token / userinfo**: add your site origin to the provider's allowed origins. If
+  your provider can't allow browser calls to the UserInfo endpoint, set `loadUserInfo` to `false`
+  (see [Without the UserInfo Endpoint](#without-the-userinfo-endpoint)).
 - **Redirect URI mismatch**: the URI registered with the provider must match the Zudoku origin
   exactly, including protocol and port.
 - **Missing profile fields**: ensure `profile` and `email` scopes are granted and that the provider
-  includes `name`, `email`, and `picture` claims in the UserInfo response.
+  includes `name`, `email`, and `picture` claims in the UserInfo response, or in the ID token when
+  `loadUserInfo` is `false`.
