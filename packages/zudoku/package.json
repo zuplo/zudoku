@@ -89,7 +89,7 @@
     "codegen": "graphql-codegen --config ./src/codegen.ts"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "15.5.0",
+    "@apidevtools/json-schema-ref-parser": "16.0.5",
     "@base-ui/react": "^1.8.0",
     "@envelop/core": "5.6.1",
     "@fontsource-variable/geist": "5.3.0",
