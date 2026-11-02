@@ -36,6 +36,7 @@ const createVariantComponent = <
   cvx: ClassValue | C,
   // variantProps: Array<keyof VariantProps<C>> = [],
 ) => {
+  // biome-ignore lint/correctness/noComponentHookFactories: factory called once at module scope to define a component, not during render
   const MyVariant = React.forwardRef<
     RefOf<E>,
     PropsOf<E> & { className?: ClassValue; asChild?: boolean }
