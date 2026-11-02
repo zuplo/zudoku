@@ -151,7 +151,7 @@
     "estree-util-is-identifier-name": "3.0.0",
     "estree-util-value-to-estree": "3.5.0",
     "fast-equals": "6.1.0",
-    "glob": "13.0.6",
+    "glob": "14.0.2",
     "glob-parent": "6.0.2",
     "graphql": "catalog:",
     "graphql-type-json": "0.3.2",
