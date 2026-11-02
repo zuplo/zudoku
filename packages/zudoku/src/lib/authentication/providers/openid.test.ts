@@ -1096,16 +1096,17 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         {
           key = privateKey,
           exp = Math.floor(Date.now() / 1000) + 3600,
-        }: { key?: CryptoKey; exp?: number } = {},
-      ) =>
-        new jose.SignJWT(claims)
+        }: { key?: CryptoKey; exp?: number | null } = {},
+      ) => {
+        const jwt = new jose.SignJWT(claims)
           .setProtectedHeader({ alg: "RS256", kid: "k1" })
-          .setIssuedAt()
-          .setExpirationTime(exp)
-          .sign(key);
+          .setIssuedAt();
+        return (exp === null ? jwt : jwt.setExpirationTime(exp)).sign(key);
+      };
 
       const USER_CLAIMS = {
         iss: "https://issuer.example.com",
+        azp: "test-client",
         sub: "user-1",
         email: "user@example.com",
         email_verified: true,
@@ -1178,6 +1179,36 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         expect(await provider.verifyAccessToken(token)).toBeUndefined();
       });
 
+      test("rejects a token without exp", async () => {
+        const provider = createProviderWithoutUserInfo();
+        const token = await sign(USER_CLAIMS, { exp: null });
+
+        expect(await provider.verifyAccessToken(token)).toBeUndefined();
+      });
+
+      test("rejects a token issued to another client", async () => {
+        const provider = createProviderWithoutUserInfo();
+        const token = await sign({
+          ...USER_CLAIMS,
+          azp: "other-client",
+          aud: "other-client",
+        });
+
+        expect(await provider.verifyAccessToken(token)).toBeUndefined();
+      });
+
+      test.each([
+        { aud: ["https://api.example.com", "test-client"] },
+        { client_id: "test-client" },
+        { cid: "test-client" },
+      ])("accepts a token issued to this client via %o", async (claims) => {
+        const provider = createProviderWithoutUserInfo();
+        const { azp: _, ...withoutAzp } = USER_CLAIMS;
+        const token = await sign({ ...withoutAzp, ...claims });
+
+        expect(await provider.verifyAccessToken(token)).toBeDefined();
+      });
+
       test("rejects a token without sub", async () => {
         const provider = createProviderWithoutUserInfo();
         const { sub: _, ...withoutSub } = USER_CLAIMS;
@@ -1228,6 +1259,27 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         await expect(
           provider.verifyAccessToken(await sign(USER_CLAIMS)),
         ).rejects.toBeInstanceOf(jose.errors.JWKSTimeout);
+      });
+
+      test("throws when the JWKS endpoint responds with an error (→ 502, cookies kept)", async () => {
+        const { createRemoteJWKSet } =
+          await vi.importActual<typeof jose>("jose");
+        vi.mocked(jose.createRemoteJWKSet).mockImplementation((url) =>
+          createRemoteJWKSet(url),
+        );
+        vi.stubGlobal(
+          "fetch",
+          vi.fn(async () => new Response(null, { status: 503 })),
+        );
+        const provider = createProviderWithoutUserInfo();
+
+        try {
+          await expect(
+            provider.verifyAccessToken(await sign(USER_CLAIMS)),
+          ).rejects.toThrow(/200 OK/);
+        } finally {
+          vi.unstubAllGlobals();
+        }
       });
 
       test("throws when the issuer advertises no jwks_uri", async () => {

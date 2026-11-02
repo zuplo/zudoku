@@ -1,3 +1,4 @@
+import type { JWTPayload } from "jose";
 import * as oauth from "oauth4webapi";
 import { ErrorBoundary } from "react-error-boundary";
 import type { NavigateFunction } from "react-router";
@@ -361,10 +362,26 @@ export class OpenIDAuthenticationProvider
     };
   }
 
+  // A token the issuer minted for another application must not open a session
+  // here. With `audience` set, jwtVerify has already checked `aud`. Without
+  // it, this client has to be named in `aud` or in the claim saying who the
+  // token was issued to: `azp` (OIDC), `client_id` (RFC 9068) or `cid` (Okta).
+  private isIssuedToThisClient(payload: JWTPayload): boolean {
+    if (this.audience) return true;
+
+    const clientId = this.client.client_id;
+    const audiences =
+      typeof payload.aud === "string" ? [payload.aud] : (payload.aud ?? []);
+    return (
+      audiences.includes(clientId) ||
+      [payload.azp, payload.client_id, payload.cid].includes(clientId)
+    );
+  }
+
   // Without UserInfo the access token has to be a JWT signed by the issuer: it
-  // is checked against the issuer's JWKS (and `audience`, when configured),
-  // and the profile comes from its claims. Opaque tokens can't be verified
-  // this way, so they are rejected.
+  // is checked against the issuer's JWKS, must expire, and must be issued to
+  // this application. The profile comes from its claims. Opaque tokens can't
+  // be verified this way, so they are rejected.
   private async verifyJwtAccessToken(
     authServer: oauth.AuthorizationServer,
     token: string,
@@ -380,13 +397,18 @@ export class OpenIDAuthenticationProvider
 
     try {
       const { payload } = await jose.jwtVerify(token, this.jwks, {
+        // jwtVerify only checks `exp` when present; a token without one could
+        // keep opening sessions forever.
+        requiredClaims: ["exp"],
         ...(this.audience && { audience: this.audience }),
       });
 
       const sub = stringClaim(payload.sub);
       if (
         !sub ||
-        payload.iss !== this.getExpectedAccessTokenIssuer(authServer, payload)
+        payload.iss !==
+          this.getExpectedAccessTokenIssuer(authServer, payload) ||
+        !this.isIssuedToThisClient(payload)
       ) {
         return undefined;
       }
@@ -402,10 +424,14 @@ export class OpenIDAuthenticationProvider
         expiresAt: typeof payload.exp === "number" ? payload.exp : undefined,
       };
     } catch (e) {
-      // A JWKS that can't be loaded is an outage (→ 502), not a bad token.
+      // A JWKS that can't be loaded is an outage (→ 502, cookies kept), not a
+      // bad token. jose reports a non-200 or unparsable JWKS response as a
+      // bare JOSEError, which carries the generic code.
       if (
         e instanceof jose.errors.JWKSTimeout ||
-        e instanceof jose.errors.JWKSInvalid
+        e instanceof jose.errors.JWKSInvalid ||
+        (e instanceof jose.errors.JOSEError &&
+          e.code === jose.errors.JOSEError.code)
       ) {
         throw e;
       }

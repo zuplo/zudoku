@@ -158,11 +158,17 @@ returns at sign-in:
 - Sign-in fails if the token response contains no ID token, so keep the `openid` scope.
 
 In [SSR mode](./protected-routes.md#server-side-protection-ssr-mode) the server checks the access
-token on every request. Without UserInfo, the access token must be a JWT signed by your provider:
-Zudoku verifies it against the provider's `jwks_uri` and checks its issuer and, when `audience` is
-set, its audience. The server-side profile then comes from the access token's claims, so add `name`
-and `email` to it if you show them. Opaque access tokens can't be verified this way, so the server
-rejects them and the user is signed out on the next page load.
+token on every request. Without UserInfo, the access token must be a JWT signed by your provider.
+Zudoku verifies it against the provider's `jwks_uri` and requires:
+
+- the issuer's `iss` and an `exp`;
+- that it was issued to your app: with `audience` set, its `aud` must match `audience`; without it,
+  your `clientId` must appear in `aud`, `azp`, `client_id` or `cid` (Okta). Set `audience` if your
+  provider puts none of these in its access tokens.
+
+The server-side profile then comes from the access token's claims, so add `name` and `email` to it
+if you show them. Opaque access tokens can't be verified this way, so the server rejects them and
+the user is signed out on the next page load.
 
 ## Local Development with an HTTP Issuer
 
