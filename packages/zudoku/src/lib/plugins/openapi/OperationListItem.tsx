@@ -58,8 +58,11 @@ export const OperationListItem = ({
   const selectedRequestContent = requestContent.find(
     (content) => content.mediaType === selectedRequestExample.mediaType,
   );
+  const hasMultipleRequestContentTypes = requestContent.length > 1;
+  // Keep the section (and its selector) visible when the selected content type
+  // has no schema, so readers can still switch to another one.
   const showRequestBody =
-    requestContent.length > 1 || Boolean(selectedRequestContent?.schema);
+    hasMultipleRequestContentTypes || Boolean(selectedRequestContent?.schema);
   const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
   const graphqlEndpoint = getGraphQLEndpoint(operation);
   const isGraphQLEndpoint = graphqlEndpoint !== undefined;
@@ -171,59 +174,65 @@ export const OperationListItem = ({
                     ),
                   )}
                 {renderIf(showRequestBody, () => (
-                  <Separator className="my-4" />
-                ))}
-                {renderIf(showRequestBody, () => (
-                  <div className="flex flex-col gap-4">
-                    <Heading
-                      level={3}
-                      className="capitalize flex items-center gap-2"
-                      id={`${operation.slug}/request-body`}
-                    >
-                      {operation.summary && (
-                        <PagefindSearchMeta>
-                          {operation.summary} &rsaquo;{" "}
-                        </PagefindSearchMeta>
-                      )}
-                      Request Body{" "}
-                      {operation.requestBody?.required === false ? (
-                        <Badge variant="muted">optional</Badge>
-                      ) : (
-                        ""
-                      )}
-                    </Heading>
-                    {requestContent.length > 1 && (
-                      <NativeSelect
-                        aria-label="Request body content type"
-                        className="max-w-full"
-                        value={selectedRequestExample.mediaType}
-                        onChange={(event) =>
-                          setSelectedRequestExample({
-                            mediaType: event.target.value,
-                            exampleIndex: 0,
-                          })
-                        }
-                      >
-                        {requestContent.map((content) => (
-                          <NativeSelectOption
-                            key={content.mediaType}
-                            value={content.mediaType}
+                  <>
+                    <Separator className="my-4" />
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <Heading
+                          level={3}
+                          className="capitalize flex items-center gap-2"
+                          id={`${operation.slug}/request-body`}
+                        >
+                          {operation.summary && (
+                            <PagefindSearchMeta>
+                              {operation.summary} &rsaquo;{" "}
+                            </PagefindSearchMeta>
+                          )}
+                          Request Body{" "}
+                          {operation.requestBody?.required === false ? (
+                            <Badge variant="muted">optional</Badge>
+                          ) : (
+                            ""
+                          )}
+                        </Heading>
+                        {hasMultipleRequestContentTypes && (
+                          <NativeSelect
+                            aria-label="Request body content type"
+                            className="text-xs h-fit py-1 max-w-full truncate bg-background"
+                            value={selectedRequestExample.mediaType}
+                            onChange={(event) =>
+                              setSelectedRequestExample({
+                                mediaType: event.target.value,
+                                exampleIndex: 0,
+                              })
+                            }
                           >
-                            {content.mediaType}
-                          </NativeSelectOption>
-                        ))}
-                      </NativeSelect>
-                    )}
-                    {renderIf(selectedRequestContent?.schema, (schema) => (
-                      <SchemaView
-                        key={selectedRequestContent?.mediaType}
-                        schema={withBinaryMediaType(
-                          schema,
-                          selectedRequestContent?.mediaType,
+                            {requestContent.map((content) => (
+                              <NativeSelectOption
+                                key={content.mediaType}
+                                value={content.mediaType}
+                              >
+                                {content.mediaType}
+                              </NativeSelectOption>
+                            ))}
+                          </NativeSelect>
                         )}
-                      />
-                    ))}
-                  </div>
+                      </div>
+                      {selectedRequestContent?.schema ? (
+                        <SchemaView
+                          key={selectedRequestContent.mediaType}
+                          schema={withBinaryMediaType(
+                            selectedRequestContent.schema,
+                            selectedRequestContent.mediaType,
+                          )}
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">
+                          No schema defined for this content type.
+                        </p>
+                      )}
+                    </div>
+                  </>
                 ))}
                 <Separator className="my-4" />
                 {operation.responses.length > 0 && (
