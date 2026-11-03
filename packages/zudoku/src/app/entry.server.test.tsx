@@ -15,6 +15,7 @@ vi.mock("virtual:zudoku-config", () => ({
       llms: { llmsTxt: true },
     },
     sitemap: { siteUrl: "https://example.com" },
+    protectedRoutes: ["/docs/*"],
   },
 }));
 
@@ -210,6 +211,26 @@ describe("handleRequest", () => {
     );
     expect(response.headers.get("Vary")).toBe("Accept");
     await expect(response.text()).resolves.toBe("");
+  });
+
+  // With basePath "/docs", a page at "/docs/intro" is served at
+  // /docs/docs/intro. Its route path is relative to the basename, so
+  // "/docs/*" protects it and its chunk must not load for a signed-out user.
+  it("does not load a protected chunk for a route under the basePath", async () => {
+    const protectedLazy = vi.fn(async () => ({
+      element: <main>Protected content</main>,
+    }));
+    const response = await handleRequest({
+      template,
+      request: new Request("http://localhost/docs/docs/intro", {
+        headers: { Accept: "text/html" },
+      }),
+      routes: [{ path: "/docs/intro", lazy: protectedLazy }, notFoundRoute],
+      basePath: "/docs",
+    });
+
+    expect(protectedLazy).not.toHaveBeenCalled();
+    await expect(response.text()).resolves.not.toContain("Protected content");
   });
 
   it("inlines large suspended content instead of deferring it to a script", async () => {

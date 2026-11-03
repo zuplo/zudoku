@@ -1,0 +1,26 @@
+---
+title: Shipment API v2
+description: Webhooks for every status change, idempotent bookings, and a cleaner rates endpoint.
+authors:
+  - nova
+  - name: Lyra Okonkwo
+    title: Developer Relations, Titan Station
+tags: [API, Release]
+---
+
+Version 2 of the Shipment API is live. It is fully backwards compatible: existing integrations keep
+working, and you can adopt the new features one at a time.
+
+## Webhooks for every status change
+
+Subscribe once and receive a signed event whenever a shipment changes state, from `booked` to
+`delivered`. No more polling the events endpoint.
+
+## Idempotent bookings
+
+Send an `Idempotency-Key` header with `POST /shipments` and retries after a dropped subspace link
+will never book the same cargo twice.
+
+## Migrating
+
+Read the [Shipment API reference](/api-shipments) for the full list of changes.

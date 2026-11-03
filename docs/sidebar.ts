@@ -29,6 +29,11 @@ export const docs: Navigation = [
     items: [
       "docs/customization/colors-theme",
       "docs/configuration/docs",
+      {
+        type: "doc",
+        file: "docs/configuration/blog",
+        badge: { label: "Beta", color: "yellow" },
+      },
       "docs/configuration/navigation",
       "docs/configuration/site",
       "docs/configuration/search",

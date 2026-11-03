@@ -32,6 +32,7 @@ import { remarkLinkRewrite } from "./mdx/remark-link-rewrite.js";
 import { remarkNormalizeImageUrl } from "./mdx/remark-normalize-image-url.js";
 import { remarkStaticGeneration } from "./mdx/remark-static-generation.js";
 import { exportMdxjsConst } from "./mdx/utils.js";
+import { getBlogRoutesByFile } from "./plugin-blog.js";
 import {
   globMarkdownFiles,
   resolveCustomNavigationPaths,
@@ -155,6 +156,10 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
   );
   for (const [route, filePath] of Object.entries(fileMapping)) {
     routesByFile.set(filePath.replace(/\.mdx?$/, ""), route);
+  }
+  // Blog posts are served at their slug, not their file name
+  for (const [filePath, route] of await getBlogRoutesByFile(config)) {
+    routesByFile.set(filePath, route);
   }
 
   const defaultRemarkPlugins = [
