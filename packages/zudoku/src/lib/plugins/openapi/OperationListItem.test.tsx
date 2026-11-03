@@ -54,17 +54,19 @@ const config: OasPluginContext = {
   options: { disableSidecar: true },
 };
 
+const operationElement = (requestContent: RequestBodyContent[]) => (
+  <OasConfigProvider value={{ config }}>
+    <OperationListItem
+      operationFragment={makeFragmentData(
+        operation(requestContent),
+        OperationsFragment,
+      )}
+    />
+  </OasConfigProvider>
+);
+
 const renderOperation = (requestContent: RequestBodyContent[]) =>
-  render(
-    <OasConfigProvider value={{ config }}>
-      <OperationListItem
-        operationFragment={makeFragmentData(
-          operation(requestContent),
-          OperationsFragment,
-        )}
-      />
-    </OasConfigProvider>,
-  );
+  render(operationElement(requestContent));
 
 const requestBodyHeading = () =>
   screen.queryByRole("heading", { level: 3, name: /Request Body/ });
@@ -119,6 +121,26 @@ describe("OperationListItem request body", () => {
     await user.selectOptions(contentTypeSelect(), "application/json");
 
     expect(screen.getByText("evidenceUrls")).toBeInTheDocument();
+  });
+
+  it("falls back to the first content type when the selected one disappears", async () => {
+    // e.g. switching API versions re-renders the same item (same slug)
+    const user = userEvent.setup();
+    const { rerender } = renderOperation([
+      content("multipart/form-data", objectSchema("photos")),
+      content("application/json", objectSchema("evidenceUrls")),
+    ]);
+
+    await user.selectOptions(contentTypeSelect(), "application/json");
+
+    rerender(
+      operationElement([
+        content("application/merge-patch+json", objectSchema("claimNotes")),
+      ]),
+    );
+
+    expect(requestBodyHeading()).toBeInTheDocument();
+    expect(screen.getByText("claimNotes")).toBeInTheDocument();
   });
 
   it("hides the request body when its only content type has no schema", () => {

@@ -50,14 +50,22 @@ export const OperationListItem = ({
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
   const requestContent = operation.requestBody?.content ?? [];
-  const [selectedRequestExample, setSelectedRequestExample] =
+  const [requestExampleSelection, setSelectedRequestExample] =
     useState<RequestExampleSelection>({
       mediaType: requestContent.at(0)?.mediaType,
       exampleIndex: 0,
     });
-  const selectedRequestContent = requestContent.find(
-    (content) => content.mediaType === selectedRequestExample.mediaType,
-  );
+  // The stored media type goes stale when this item re-renders with different
+  // content (e.g. switching API versions keeps the same slug), so fall back to
+  // the first content type instead of dropping the request body.
+  const selectedRequestContent =
+    requestContent.find(
+      (content) => content.mediaType === requestExampleSelection.mediaType,
+    ) ?? requestContent.at(0);
+  const selectedRequestExample: RequestExampleSelection =
+    selectedRequestContent?.mediaType === requestExampleSelection.mediaType
+      ? requestExampleSelection
+      : { mediaType: selectedRequestContent?.mediaType, exampleIndex: 0 };
   const hasMultipleRequestContentTypes = requestContent.length > 1;
   // Keep the section (and its selector) visible when the selected content type
   // has no schema, so readers can still switch to another one.

@@ -162,6 +162,14 @@ export const Sidecar = ({
       (content) => content.mediaType === selectedRequestExample.mediaType,
     ) ?? -1;
   const selectedContent = transformedRequestBodyContent?.[selectedContentIndex];
+  // `transformExamples` may drop the selected media type. Fall back to its
+  // untransformed content so the generated example and snippet still match the
+  // type selected in the request body section.
+  const selectedSchemaContent =
+    selectedContent ??
+    requestBodyContent?.find(
+      (content) => content.mediaType === selectedRequestExample.mediaType,
+    );
   const requestMediaType =
     selectedRequestExample.mediaType ?? "application/json";
   const currentExample = selectedContent?.examples?.at(
@@ -170,11 +178,11 @@ export const Sidecar = ({
 
   const currentExampleCode = currentExample
     ? (currentExample?.value ?? currentExample)
-    : selectedContent?.schema
+    : selectedSchemaContent?.schema
       ? generateSchemaExample(
           withBinaryMediaType(
-            selectedContent.schema,
-            selectedContent.mediaType,
+            selectedSchemaContent.schema,
+            selectedSchemaContent.mediaType,
           ),
         )
       : undefined;
@@ -264,7 +272,7 @@ export const Sidecar = ({
               mimeType: requestMediaType,
               text:
                 formatRequestBodyForDisplay(
-                  selectedContent?.mediaType,
+                  selectedSchemaContent?.mediaType,
                   currentExampleCode,
                 ) ?? "",
             },
@@ -279,7 +287,7 @@ export const Sidecar = ({
     operation,
     selectedServer,
     selectedLang,
-    selectedContent,
+    selectedSchemaContent,
     requestMediaType,
     options,
     auth,
@@ -449,11 +457,11 @@ export const Sidecar = ({
         <GeneratedExampleSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
-          language={getLanguageForMediaType(selectedContent?.mediaType)}
-          mediaType={selectedContent?.mediaType}
+          language={getLanguageForMediaType(selectedSchemaContent?.mediaType)}
+          mediaType={selectedSchemaContent?.mediaType}
           code={
             formatRequestBodyForDisplay(
-              selectedContent?.mediaType,
+              selectedSchemaContent?.mediaType,
               currentExampleCode,
             ) ?? ""
           }
