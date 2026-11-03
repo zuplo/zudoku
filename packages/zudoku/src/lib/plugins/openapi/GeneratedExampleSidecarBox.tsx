@@ -1,4 +1,5 @@
 import { InfoIcon } from "lucide-react";
+import { Badge } from "zudoku/ui/Badge.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import {
   Tooltip,
@@ -12,11 +13,13 @@ import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 export const GeneratedExampleSidecarBox = ({
   code,
   language = "json",
+  mediaType,
   isOnScreen,
   shouldLazyHighlight,
 }: {
   code: string;
   language?: string;
+  mediaType?: string;
   isOnScreen: boolean;
   shouldLazyHighlight?: boolean;
 }) => {
@@ -49,6 +52,16 @@ export const GeneratedExampleSidecarBox = ({
           />
         )}
       </SidecarBox.Body>
+      {mediaType && (
+        <SidecarBox.Footer className="text-xs">
+          <Badge
+            className="text-[11px] font-mono font-normal"
+            variant="outline"
+          >
+            {mediaType}
+          </Badge>
+        </SidecarBox.Footer>
+      )}
     </SidecarBox.Root>
   );
 };

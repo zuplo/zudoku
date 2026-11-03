@@ -450,6 +450,7 @@ export const Sidecar = ({
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
           language={getLanguageForMediaType(selectedContent?.mediaType)}
+          mediaType={selectedContent?.mediaType}
           code={
             formatRequestBodyForDisplay(
               selectedContent?.mediaType,
