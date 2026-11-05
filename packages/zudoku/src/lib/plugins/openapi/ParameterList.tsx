@@ -41,6 +41,13 @@ export const ParameterItemList = ({
   );
 };
 
+const GROUP_LABELS: Record<ParameterGroup, string> = {
+  path: "Path Parameters",
+  query: "Query Parameters",
+  header: "Headers",
+  cookie: "Cookies",
+};
+
 export const ParameterList = ({
   summary,
   group,
@@ -52,13 +59,17 @@ export const ParameterList = ({
   parameters: ParameterItem[];
   id: string;
 }) => (
-  <>
-    <Heading level={3} id={`${id}/${group}-parameters`} className="capitalize">
+  <div className="flex flex-col gap-3">
+    <Heading
+      level={4}
+      id={`${id}/${group}-parameters`}
+      className="text-lg! font-semibold"
+    >
       {summary && <VisuallyHidden>{summary} &rsaquo; </VisuallyHidden>}
-      {group === "header" ? "Headers" : `${group} Parameters`}
+      {GROUP_LABELS[group]}
     </Heading>
     <Frame>
       <ParameterItemList parameters={parameters} group={group} id={id} />
     </Frame>
-  </>
+  </div>
 );
