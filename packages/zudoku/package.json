@@ -150,7 +150,7 @@
     "esbuild": "^0.28.2",
     "estree-util-is-identifier-name": "3.0.0",
     "estree-util-value-to-estree": "3.5.0",
-    "fast-equals": "6.1.0",
+    "fast-equals": "6.2.2",
     "glob": "14.0.3",
     "glob-parent": "6.0.2",
     "graphql": "catalog:",
