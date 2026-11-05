@@ -132,6 +132,18 @@
         }
       }
     },
+    "headers": {
+      "ETag": {
+        "description": "Quantum-entangled entity tag of the shipment. Send it back in the `If-Match` header to avoid overwriting changes made by another dispatcher in a parallel timeline.",
+        "schema": { "type": "string" },
+        "example": "\"qe-7f3a9c\""
+      },
+      "WarpRateLimitRemaining": {
+        "description": "Number of warp-lane bookings left in the current rate limit window.",
+        "schema": { "type": "integer", "minimum": 0 },
+        "example": 42
+      }
+    },
     "securitySchemes": {
       "ApiKeyAuth": {
         "type": "apiKey",
@@ -860,6 +872,18 @@
         "responses": {
           "201": {
             "description": "Shipment created successfully",
+            "headers": {
+              "Location": {
+                "description": "URL of the newly created shipment.",
+                "required": true,
+                "schema": { "type": "string", "format": "uri" },
+                "example": "https://api.cosmocargo.space/v1/shipments/CC-2187-ORION"
+              },
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "X-Warp-RateLimit-Remaining": {
+                "$ref": "#/components/headers/WarpRateLimitRemaining"
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2956,7 +2980,10 @@
         },
         "responses": {
           "204": {
-            "description": "Shipment priority updated"
+            "description": "Shipment priority updated",
+            "headers": {
+              "ETag": { "$ref": "#/components/headers/ETag" }
+            }
           }
         }
       }
