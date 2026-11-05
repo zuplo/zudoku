@@ -33,6 +33,49 @@ Rules:
 
 ## Before
 
+<!-- The old behavior, in the form the table above suggests. For example:
+
+```ts
+type NavigationItem = {
+  label: string;
+  icon?: string;
+};
+```
+-->
+
+## After
+
+<!-- Same form and layout as Before, with the change marked. For example:
+
+```diff
+ type NavigationItem = {
+   label: string;
+-  icon?: string;
++  icon?: string | ReactNode;
+ };
+```
+-->
+
+## Examples |
+
+| UI | Screenshots |
+
+Rules:
+
+- Use the same form and layout for Before and After, so the difference is the only thing that moves.
+  A single ```diff can cover both.
+- Mark what changed: (new), (removed), (changed), or diff + / -.
+- Show only the part that changed and its immediate neighbours.
+- Trivial changes (dependency bumps, typos, test-only) need nothing here: write "N/A". -->
+
+**Summary:** <what changed, one line>. **Risk:** low | medium | high. <issue link>
+
+## Why
+
+<!-- 1-3 sentences: the problem and who it hurts. -->
+
+## Before
+
 <!-- The old behavior, in the form the table above suggests. -->
 
 ```diff
@@ -64,9 +107,9 @@ Delete this section if nothing user-facing changes. -->
 <!-- Risk-ranked decisions to check while reading the code. One line each.
 Don't list files. -->
 
-1. **<decision>**: <assumption to check>
+1. **Decision**: the assumption to check
 
-Skip: <generated or mechanical files a reviewer can scroll past, or "nothing">
+Skip: <!-- generated or mechanical files a reviewer can scroll past, or "nothing" -->
 
 ### Try it
 
@@ -93,8 +136,8 @@ option, default, rendered output, CLI behavior, or error message is
 impact: user, even when it looks small. -->
 
 ```release-notes
-impact: user          # user | internal | none
-type: fixed           # new | improved | changed | fixed | deprecated | breaking
+impact:               # user | internal | none
+type:                 # new | improved | changed | fixed | deprecated | breaking
 entry: >
   One sentence a Zudoku user would understand.
 details: >

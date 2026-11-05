@@ -160,11 +160,11 @@ separate module (see `navigation/motionFeatures.ts`). Always use `m.*` (not `mot
 
 ## Pull requests
 
-- Use `.github/pull_request_template.md` as the PR body and fill in every section, including the
-  `release-notes` code block.
-- Lead with diagrams or type diffs over prose.
-- Remove the HTML comments and delete optional sections that don't apply.
-- The "Release notes check" workflow validates the release-notes block and sets `skip-changelog` for
-  internal changes.
+- Use `.github/pull_request_template.md` as the PR body and fill in the required sections. Delete
+  optional sections that don't apply.
+- Lead with diagrams (ASCII or Mermaid) or type diffs over prose.
+- Remove the HTML comments.
+- The `release-notes` block is optional for community contributors; a maintainer fills it in. The
+  "Release notes check" workflow validates the block and sets `skip-changelog` for internal changes.
 - A change to a config option, default, plugin API, rendered output, CLI behavior, or error message
   is `impact: user` even when small.
