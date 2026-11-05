@@ -56,46 +56,6 @@ type NavigationItem = {
 ```
 -->
 
-## Examples |
-
-| UI | Screenshots |
-
-Rules:
-
-- Use the same form and layout for Before and After, so the difference is the only thing that moves.
-  A single ```diff can cover both.
-- Mark what changed: (new), (removed), (changed), or diff + / -.
-- Show only the part that changed and its immediate neighbours.
-- Trivial changes (dependency bumps, typos, test-only) need nothing here: write "N/A". -->
-
-**Summary:** <what changed, one line>. **Risk:** low | medium | high. <issue link>
-
-## Why
-
-<!-- 1-3 sentences: the problem and who it hurts. -->
-
-## Before
-
-<!-- The old behavior, in the form the table above suggests. -->
-
-```diff
- type NavigationItem = {
-   label: string;
--  icon?: string;
- };
-```
-
-## After
-
-<!-- Same form and layout as Before. -->
-
-```diff
- type NavigationItem = {
-   label: string;
-+  icon?: string | ReactNode; // changed
- };
-```
-
 ## Examples
 
 <!-- Required when the change affects zudoku.config.ts, plugin APIs, the CLI,
