@@ -380,6 +380,33 @@ async function syncLabels({
   }
 }
 
+// On a public repo the workflow runs on pull_request_target, so its token can
+// write labels for any PR. Only let a block drive labels when the PR author is
+// a maintainer, or a maintainer made the edit that triggered this run.
+export async function canSetLabels({
+  github,
+  context,
+  config,
+  pr,
+  owner,
+  repo,
+}) {
+  if (!config.externalContributorsOptional) return true;
+  if (MEMBER_ASSOCIATIONS.has(pr.author_association)) return true;
+  const sender = context.payload.sender?.login;
+  if (!sender || sender === pr.user?.login) return false;
+  try {
+    const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+      owner,
+      repo,
+      username: sender,
+    });
+    return ["admin", "maintain", "write"].includes(data.permission);
+  } catch {
+    return false;
+  }
+}
+
 export async function run({ github, context, core }) {
   const enforce = process.env.CHANGELOG_CHECK_MODE === "enforce";
   try {
@@ -414,7 +441,13 @@ async function check({ github, context, core, enforce }) {
     result,
     config,
   );
-  await syncLabels({ github, core, owner, repo, number, toAdd, toRemove });
+  if (await canSetLabels({ github, context, config, pr, owner, repo })) {
+    await syncLabels({ github, core, owner, repo, number, toAdd, toRemove });
+  } else if (toAdd.length || toRemove.length) {
+    result.notes.push(
+      "Labels are left for a maintainer to set on community PRs.",
+    );
+  }
 
   const summary = core.summary.addHeading(config.title, 3);
   if (result.fields) {
