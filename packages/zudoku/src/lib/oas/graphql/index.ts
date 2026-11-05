@@ -623,6 +623,9 @@ const ExampleItem = builder
       summary: t.exposeString("summary", { nullable: true }),
       description: t.exposeString("description", { nullable: true }),
       value: t.expose("value", { type: JSONScalar, nullable: true }),
+      // `value` is null both when it is missing and when it is an explicit
+      // `null` example, so expose whether it was supplied at all
+      hasValue: t.boolean({ resolve: (parent) => parent.value !== undefined }),
       externalValue: t.exposeString("externalValue", { nullable: true }),
     }),
   });
@@ -649,11 +652,17 @@ const ParameterItem = builder
       allowReserved: t.exposeBoolean("allowReserved", { nullable: true }),
       examples: t.field({
         type: [ExampleItem],
+        // OAS 3.1 documents are not upgraded, so a singular `example` is
+        // still present there
         resolve: (parent) =>
-          Object.entries(parent.examples ?? {}).map(([name, value]) => ({
-            name,
-            ...(typeof value === "string" ? { value } : value),
-          })),
+          parent.examples
+            ? Object.entries(parent.examples).map(([name, value]) => ({
+                name,
+                ...(typeof value === "string" ? { value } : value),
+              }))
+            : parent.example !== undefined
+              ? [{ name: "", value: parent.example }]
+              : [],
         nullable: true,
       }),
       schema: t.expose("schema", { type: JSONSchemaScalar, nullable: true }),

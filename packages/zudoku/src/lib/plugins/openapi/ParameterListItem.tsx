@@ -42,6 +42,15 @@ export const ParameterListItem = ({
   );
   const [isOpen, setIsOpen] = useState(false);
 
+  // Parameter-level examples take precedence over the schema's examples
+  const parameterExamples = (parameter.examples ?? []).flatMap((example) =>
+    example.hasValue ? [example.value] : [],
+  );
+  const exampleSchema =
+    parameterExamples.length > 0
+      ? { ...paramSchema, examples: parameterExamples }
+      : paramSchema;
+
   const isCollapsible =
     paramSchema.type === "object" ||
     (isArrayType(paramSchema) &&
@@ -53,7 +62,7 @@ export const ParameterListItem = ({
     paramSchema.description ||
     (paramSchema.type === "array" && paramSchema.items?.enum) ||
     paramSchema.enum ||
-    paramSchema.example !== undefined ||
+    (exampleSchema.examples?.length ?? 0) > 0 ||
     paramSchema.default !== undefined,
   );
 
@@ -134,7 +143,7 @@ export const ParameterListItem = ({
                 />
               )
             )}
-            <SchemaExampleAndDefault schema={paramSchema} />
+            <SchemaExampleAndDefault schema={exampleSchema} />
           </div>
         )}
       </ItemContent>

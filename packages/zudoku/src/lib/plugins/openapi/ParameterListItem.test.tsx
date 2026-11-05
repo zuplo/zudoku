@@ -4,7 +4,22 @@ import { describe, expect, it } from "vitest";
 import type { ParameterItem } from "./ParameterList.js";
 import { ParameterListItem } from "./ParameterListItem.js";
 
-const parameter = (schema: unknown): ParameterItem => ({
+type ExampleItem = NonNullable<ParameterItem["examples"]>[number];
+
+const example = (overrides: Partial<ExampleItem>): ExampleItem => ({
+  name: "default",
+  value: null,
+  hasValue: true,
+  summary: null,
+  description: null,
+  externalValue: null,
+  ...overrides,
+});
+
+const parameter = (
+  schema: unknown,
+  examples: ParameterItem["examples"] = [],
+): ParameterItem => ({
   name: "status",
   in: "query",
   description: null,
@@ -13,7 +28,7 @@ const parameter = (schema: unknown): ParameterItem => ({
   style: null,
   explode: null,
   allowReserved: null,
-  examples: [],
+  examples,
 });
 
 describe("ParameterListItem", () => {
@@ -50,5 +65,66 @@ describe("ParameterListItem", () => {
     expect(
       screen.getByRole("button", { name: "Toggle parameter" }),
     ).toBeInTheDocument();
+  });
+
+  it("shows a schema example without a description", () => {
+    render(
+      <ParameterListItem
+        parameter={parameter({ type: "string", examples: ["warp-9"] })}
+        group="query"
+        id="list-shipments"
+      />,
+    );
+
+    expect(screen.getByText("warp-9")).toBeInTheDocument();
+  });
+
+  it("prefers a parameter-level example over the schema example", () => {
+    render(
+      <ParameterListItem
+        parameter={parameter({ type: "string", examples: ["warp-9"] }, [
+          example({ value: "quantum-7" }),
+        ])}
+        group="query"
+        id="list-shipments"
+      />,
+    );
+
+    expect(screen.getByText("quantum-7")).toBeInTheDocument();
+    expect(screen.queryByText("warp-9")).not.toBeInTheDocument();
+  });
+
+  it("shows an explicit null parameter example", () => {
+    render(
+      <ParameterListItem
+        parameter={parameter(
+          { type: ["string", "null"], examples: ["warp-9"] },
+          [example({ value: null })],
+        )}
+        group="query"
+        id="list-shipments"
+      />,
+    );
+
+    expect(screen.getByText("null")).toBeInTheDocument();
+    expect(screen.queryByText("warp-9")).not.toBeInTheDocument();
+  });
+
+  it("skips parameter examples without an inline value", () => {
+    render(
+      <ParameterListItem
+        parameter={parameter({ type: "string", examples: ["warp-9"] }, [
+          example({
+            value: null,
+            hasValue: false,
+            externalValue: "https://cosmocargo.space/examples/lane.json",
+          }),
+        ])}
+        group="query"
+        id="list-shipments"
+      />,
+    );
+
+    expect(screen.getByText("warp-9")).toBeInTheDocument();
   });
 });
