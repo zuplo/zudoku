@@ -157,3 +157,14 @@ separate module (see `navigation/motionFeatures.ts`). Always use `m.*` (not `mot
 - `examples/cosmo-cargo/` - Feature-rich demo of a futuristic space shipping company. Use this to
   test new features. Content should match the space/sci-fi tone (quantum, interstellar, warp drives,
   etc.). Run with `nx run cosmo-cargo:dev`
+
+## Pull requests
+
+- Use `.github/pull_request_template.md` as the PR body and fill in every section, including the
+  `release-notes` code block.
+- Lead with diagrams or type diffs over prose.
+- Remove the HTML comments and delete optional sections that don't apply.
+- The "Release notes check" workflow validates the release-notes block and sets `skip-changelog` for
+  internal changes.
+- A change to a config option, default, plugin API, rendered output, CLI behavior, or error message
+  is `impact: user` even when small.
