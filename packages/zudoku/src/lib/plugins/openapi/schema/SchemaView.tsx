@@ -322,7 +322,16 @@ export const SchemaView = ({
   }
 
   if (schema.const) {
-    return <ConstValue schema={schema} />;
+    if (embedded) return <ConstValue schema={schema} />;
+
+    return (
+      <Frame>
+        {cardHeader}
+        <FramePanel className="text-sm">
+          <ConstValue schema={schema} />
+        </FramePanel>
+      </Frame>
+    );
   }
 
   const hasUnion = Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf);

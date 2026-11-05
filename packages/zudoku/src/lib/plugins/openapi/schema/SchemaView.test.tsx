@@ -76,4 +76,16 @@ describe("SchemaView", () => {
 
     expect(screen.getByText("string[] | null")).toBeInTheDocument();
   });
+
+  it("keeps the card header for a const schema", () => {
+    render(
+      <SchemaView
+        schema={{ type: "string", const: "DOCKED" }}
+        cardHeader={<div>Response tabs</div>}
+      />,
+    );
+
+    expect(screen.getByText("Response tabs")).toBeInTheDocument();
+    expect(screen.getByText("DOCKED")).toBeInTheDocument();
+  });
 });
