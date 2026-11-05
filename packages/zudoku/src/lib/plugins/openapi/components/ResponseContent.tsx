@@ -1,10 +1,14 @@
 import * as Tabs from "@radix-ui/react-tabs";
-import { useState } from "react";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { type ReactNode, useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { cn } from "zudoku/ui/util.js";
+import { Heading } from "../../../components/Heading.js";
 import { Markdown } from "../../../components/Markdown.js";
 import type { Content } from "../interfaces.js";
+import { ParameterItemList } from "../ParameterList.js";
+import type { ParameterListItemData } from "../ParameterListItem.js";
 import { SchemaView } from "../schema/SchemaView.js";
 import { withBinaryMediaType } from "../schema/utils.js";
 
@@ -12,13 +16,43 @@ type Response = {
   statusCode: string;
   description?: string | null;
   content?: Content[] | null;
+  headers?: ParameterListItemData[] | null;
 };
 
+const ResponseSectionHeading = ({
+  id,
+  summary,
+  statusCode,
+  children,
+}: {
+  id: string;
+  summary?: string;
+  statusCode: string;
+  children: ReactNode;
+}) => (
+  <Heading
+    level={4}
+    id={id}
+    className="px-2 pt-3 pb-2 text-sm! font-semibold text-foreground"
+  >
+    {summary && (
+      <VisuallyHidden>
+        {summary} &rsaquo; {statusCode} &rsaquo;{" "}
+      </VisuallyHidden>
+    )}
+    {children}
+  </Heading>
+);
+
 export const ResponseContent = ({
+  id,
+  summary,
   responses,
   selectedResponse,
   onSelectResponse,
 }: {
+  id: string;
+  summary?: string;
   responses: Response[];
   selectedResponse?: string;
   onSelectResponse?: (value: string) => void;
@@ -87,6 +121,34 @@ export const ResponseContent = ({
     </div>
   );
 
+  const renderResponseSections = (response: Response) => (
+    <>
+      {response.headers && response.headers.length > 0 && (
+        <>
+          <ResponseSectionHeading
+            id={`${id}/responses/${response.statusCode}/headers`}
+            summary={summary}
+            statusCode={response.statusCode}
+          >
+            Headers
+          </ResponseSectionHeading>
+          <ParameterItemList
+            parameters={response.headers}
+            group="header"
+            id={id}
+          />
+        </>
+      )}
+      <ResponseSectionHeading
+        id={`${id}/responses/${response.statusCode}/body`}
+        summary={summary}
+        statusCode={response.statusCode}
+      >
+        Body
+      </ResponseSectionHeading>
+    </>
+  );
+
   return (
     <div className="flex flex-col gap-2">
       <Tabs.Root
@@ -106,7 +168,12 @@ export const ResponseContent = ({
                 )?.schema,
                 selectedMediaType,
               )}
-              cardHeader={cardHeader}
+              cardHeader={
+                <>
+                  {cardHeader}
+                  {renderResponseSections(response)}
+                </>
+              }
             />
           </Tabs.Content>
         ))}

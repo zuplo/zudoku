@@ -208,6 +208,8 @@ export const OperationListItem = ({
                       Responses
                     </Heading>
                     <ResponseContent
+                      id={operation.slug}
+                      summary={operation.summary ?? undefined}
                       responses={operation.responses}
                       selectedResponse={selectedResponse}
                       onSelectResponse={setSelectedResponse}
