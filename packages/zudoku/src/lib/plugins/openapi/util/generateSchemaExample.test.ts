@@ -388,6 +388,23 @@ describe("generateSchemaExample", () => {
     expect(generateSchemaExample({ enum: ["a", "b", "c"] })).toBe("a");
   });
 
+  it("prefers enum values over format examples", () => {
+    expect(
+      generateSchemaExample({
+        type: "integer",
+        format: "int32",
+        enum: [10, 20, 50],
+      }),
+    ).toBe(10);
+    expect(
+      generateSchemaExample({
+        type: "string",
+        format: "date",
+        enum: ["2025-01-01", "2025-07-01"],
+      }),
+    ).toBe("2025-01-01");
+  });
+
   describe("oneOf", () => {
     it("prefers non-null variant", () => {
       expect(
