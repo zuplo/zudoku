@@ -58,8 +58,8 @@ catalogs:
       specifier: 6.0.3
       version: 6.0.3
     zod:
-      specifier: 4.6.6
-      version: 4.6.6
+      specifier: 4.6.7
+      version: 4.6.7
 
 overrides:
   '@grpc/grpc-js': '>=1.9.16 <2'
@@ -511,7 +511,7 @@ importers:
         version: 16.14.2
       zod:
         specifier: 'catalog:'
-        version: 4.6.6
+        version: 4.6.7
     devDependencies:
       '@tsdown/css':
         specifier: 'catalog:'
@@ -994,7 +994,7 @@ importers:
         version: 18.2.0
       zod:
         specifier: 'catalog:'
-        version: 4.6.6
+        version: 4.6.7
       zustand:
         specifier: 5.0.16
         version: 5.0.16(@types/react@19.3.0)(react@19.3.1)(use-sync-external-store@1.7.0(react@19.3.1))
@@ -9477,9 +9477,6 @@ packages:
 
   zigpty@0.2.1:
     resolution: {integrity: sha512-MR9JqJx2wf5f4wz8zpx050AlqrmWeIW+1h0SO5iEyhG3HFRjY5luC3szS2ux2EGuPjE5OU9ZAuiCBeMWBTrqZw==}
-
-  zod@4.6.6:
-    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
   zod@4.6.7:
     resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
@@ -18492,8 +18489,6 @@ snapshots:
 
   zigpty@0.2.1:
     optional: true
-
-  zod@4.6.6: {}
 
   zod@4.6.7: {}
 
