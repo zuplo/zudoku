@@ -63,6 +63,18 @@ export class EntraAuthenticationProvider
     }
   }
 
+  // Multi-tenant access tokens carry the concrete tenant's issuer, so resolve
+  // the template from the token's `tid` (its signature is already verified).
+  protected override getExpectedAccessTokenIssuer(
+    as: oauth.AuthorizationServer,
+    payload: Record<string, unknown>,
+  ): string {
+    const { tid } = payload;
+    return typeof tid === "string" && tid.length > 0
+      ? as.issuer.replace(ISSUER_TENANT_PLACEHOLDER, () => tid)
+      : as.issuer;
+  }
+
   // Entra's `email` claim is only present when the account has a mailbox, which
   // isn't guaranteed — often absent for users from external tenants. Its
   // UserInfo endpoint also omits `preferred_username`, so the base profile
