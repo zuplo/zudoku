@@ -45,6 +45,11 @@ export type Content = {
   examples?: Array<Example> | null;
 };
 
+export type RequestExampleSelection = {
+  mediaType: string | undefined;
+  exampleIndex: number;
+};
+
 export type TransformExamplesFn = (options: {
   content: Content[];
   context: ZudokuContext;

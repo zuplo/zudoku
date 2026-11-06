@@ -3032,7 +3032,7 @@
       "post": {
         "tags": ["Shipment Management"],
         "summary": "Create a lost shipment claim",
-        "description": "Submit a claim for a lost or damaged shipment. This endpoint accepts multipart/form-data to allow uploading photos and other evidence files along with the claim details.\n\n### Supported File Types\n- Images: JPEG, PNG, GIF, WebP (max 10MB each)\n- Documents: PDF (max 25MB each)\n\n### Maximum Files\nYou can upload up to 10 files per claim.",
+        "description": "Submit a claim for a lost or damaged shipment. Send `multipart/form-data` to upload photos and other evidence files along with the claim details, or `application/json` to reference evidence that is already hosted elsewhere.\n\n### Supported File Types\n- Images: JPEG, PNG, GIF, WebP (max 10MB each)\n- Documents: PDF (max 25MB each)\n\n### Maximum Files\nYou can upload up to 10 files per claim.",
         "operationId": "createShipmentClaim",
         "parameters": [
           {
@@ -3118,6 +3118,71 @@
                 },
                 "documents": {
                   "contentType": "application/pdf"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["claimType", "description", "claimantEmail"],
+                "properties": {
+                  "claimType": {
+                    "type": "string",
+                    "enum": ["LOST", "DAMAGED", "DELAYED", "MISSING_CONTENTS"],
+                    "description": "The type of claim being filed"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 5000,
+                    "description": "Detailed description of the issue and circumstances"
+                  },
+                  "claimantEmail": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address for claim correspondence"
+                  },
+                  "claimantPhone": {
+                    "type": "string",
+                    "pattern": "^\\+[1-9]\\d{1,14}$",
+                    "description": "Phone number for claim correspondence (E.164 format)"
+                  },
+                  "declaredValue": {
+                    "type": "number",
+                    "format": "float",
+                    "minimum": 0,
+                    "description": "Declared value of the shipment contents in USD"
+                  },
+                  "incidentDate": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Date when the incident was discovered"
+                  },
+                  "evidenceUrls": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "maxItems": 15,
+                    "description": "Links to photos or documents already stored in a Cosmo Cargo evidence vault or another reachable archive"
+                  }
+                }
+              },
+              "examples": {
+                "damagedWarpCoil": {
+                  "summary": "Damaged warp coil",
+                  "value": {
+                    "claimType": "DAMAGED",
+                    "description": "Warp coil arrived with a cracked containment sleeve after the Kepler-186f relay transfer.",
+                    "claimantEmail": "quartermaster@nebula-outpost.space",
+                    "declaredValue": 18500,
+                    "incidentDate": "2026-10-12",
+                    "evidenceUrls": [
+                      "https://vault.cosmocargo.space/evidence/warp-coil-front.jpg",
+                      "https://vault.cosmocargo.space/evidence/relay-handover-log.pdf"
+                    ]
+                  }
                 }
               }
             }
