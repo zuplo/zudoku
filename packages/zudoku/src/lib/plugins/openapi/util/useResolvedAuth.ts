@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import type { ApiIdentity } from "../../../core/ZudokuContext.js";
-import {
-  NO_IDENTITY,
-  SECURITY_SCHEME_PREFIX,
-} from "../../../hooks/useIdentityStore.js";
+import { valueToIdentitySelection } from "../../../hooks/useIdentityStore.js";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 import { useSecurityCredentialsStore } from "../playground/securityCredentialsStore.js";
 import { EMPTY_RESOLVED_AUTH, type ResolvedAuth } from "./createHttpSnippet.js";
@@ -26,24 +23,27 @@ export const useResolvedAuth = ({
 }): ResolvedAuth => {
   const credentials = useSecurityCredentialsStore((s) => s.credentials);
 
-  const schemeName = identityId?.startsWith(SECURITY_SCHEME_PREFIX)
-    ? identityId.slice(SECURITY_SCHEME_PREFIX.length)
-    : undefined;
+  const selection = useMemo(
+    () => valueToIdentitySelection(identityId),
+    [identityId],
+  );
 
   const schemeAuth = useMemo(
     () =>
-      schemeName
-        ? resolveSchemeAuth({ operation, schemeName, credentials })
+      selection.type === "scheme"
+        ? resolveSchemeAuth({
+            operation,
+            schemeNames: selection.names,
+            credentials,
+          })
         : undefined,
-    [operation, schemeName, credentials],
+    [operation, selection, credentials],
   );
 
-  const isIdentityId = Boolean(
-    identityId && identityId !== NO_IDENTITY && !schemeName,
-  );
-  const identity = isIdentityId
-    ? identities?.find((i) => i.id === identityId)
-    : undefined;
+  const identity =
+    selection.type === "identity"
+      ? identities?.find((i) => i.id === selection.id)
+      : undefined;
 
   const { data: identityAuth, error } = useQuery({
     enabled: identity !== undefined,

@@ -2,6 +2,7 @@ import { ShieldCheckIcon, ShieldCogCornerIcon } from "lucide-react";
 import { useState } from "react";
 import { useApiIdentitySelection } from "../hooks/useApiIdentitySelection.js";
 import {
+  securitySchemeNamesLabel,
   useIdentityStore,
   valueToIdentitySelection,
 } from "../hooks/useIdentityStore.js";
@@ -36,7 +37,9 @@ export const ApiIdentityPicker = ({
   // surface it so choosing an option below visibly replaces it.
   const activeScheme = valueToIdentitySelection(rememberedIdentity);
   const schemeNotice =
-    activeScheme.type === "scheme" ? activeScheme.name : undefined;
+    activeScheme.type === "scheme"
+      ? securitySchemeNamesLabel(activeScheme.names)
+      : undefined;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

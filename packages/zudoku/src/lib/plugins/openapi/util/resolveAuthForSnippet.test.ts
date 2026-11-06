@@ -141,6 +141,43 @@ describe("resolveAuthForSnippet", () => {
     ]);
   });
 
+  it("resolves every scheme of a grouped requirement", async () => {
+    const operation = makeOperation([
+      { name: "Key", type: "apiKey", in: "header", paramName: "X-Key" },
+      { name: "Secret", type: "apiKey", in: "header", paramName: "X-Secret" },
+    ]);
+    const result = await resolveAuthForSnippet({
+      operation,
+      identityId: `${SECURITY_SCHEME_PREFIX}Key+Secret`,
+      identities: undefined,
+      credentials: {
+        Key: authorizedCred("key-value"),
+        Secret: authorizedCred("secret-value"),
+      },
+    });
+    expect(result.headers).toEqual([
+      { name: "x-key", value: "key-value" },
+      { name: "x-secret", value: "secret-value" },
+    ]);
+  });
+
+  it("returns empty when only one scheme of a grouped requirement is selected", async () => {
+    const operation = makeOperation([
+      { name: "Key", type: "apiKey", in: "header", paramName: "X-Key" },
+      { name: "Secret", type: "apiKey", in: "header", paramName: "X-Secret" },
+    ]);
+    const result = await resolveAuthForSnippet({
+      operation,
+      identityId: `${SECURITY_SCHEME_PREFIX}Key`,
+      identities: undefined,
+      credentials: {
+        Key: authorizedCred("key-value"),
+        Secret: authorizedCred("secret-value"),
+      },
+    });
+    expect(result).toEqual({ headers: [], queryString: [] });
+  });
+
   it("resolves ApiIdentity headers and URL query params", async () => {
     const identity: ApiIdentity = {
       id: "my-identity",
