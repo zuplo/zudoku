@@ -14,10 +14,11 @@ import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { ToggleGroup, ToggleGroupItem } from "../../ui/ToggleGroup.js";
 import { cn } from "../../util/cn.js";
 import {
-  CLAUDE_CONNECTORS_URL,
+  CHATGPT_PLUGINS_URL,
   type McpApp,
   type McpServerData,
   getClaudeCodeCommand,
+  getClaudeConnectorLink,
   getCodexCliCommand,
   getCodexConfig,
   getCursorConfig,
@@ -63,15 +64,18 @@ const Steps = ({ children }: { children: ReactNode }) => (
 const InstallButton = ({
   href,
   external,
+  onClick,
   children,
 }: {
   href: string;
   external?: boolean;
+  onClick?: () => void;
   children: ReactNode;
 }) => (
   <Button asChild size="sm" className="not-prose gap-1.5">
     <a
       href={href}
+      onClick={onClick}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
       {children}
@@ -108,6 +112,7 @@ export const MCPEndpoint = ({
   const vscodeConfig = getVscodeConfig(name, mcpUrl, auth);
   const cursorDeepLink = getCursorDeepLink(name, mcpUrl, auth);
   const vscodeDeepLink = getVscodeDeepLink(name, mcpUrl, auth);
+  const claudeConnectorLink = getClaudeConnectorLink(name, mcpUrl);
 
   const [selectedAppId, setSelectedAppId] = useState(
     visibleApps[0]?.id ?? "generic",
@@ -177,32 +182,33 @@ export const MCPEndpoint = ({
         }
         return (
           <>
+            <div className="not-prose space-y-2">
+              <InstallButton href={claudeConnectorLink} external>
+                <McpClientLogo appId="claude" className="size-3.5" />
+                Add to Claude
+              </InstallButton>
+              <p className="text-xs text-muted-foreground">
+                Opens Claude with {name} and its URL filled in. Or add it by
+                hand under Customize → Connectors → + Add → Add custom
+                connector.
+              </p>
+            </div>
             <Steps>
               <li>
                 <p>
-                  <strong>Copy the {name} URL.</strong> Use the copy button
-                  above — you'll need it in the next step.
+                  <strong>Review and add.</strong> Check the name and URL, click{" "}
+                  <strong>Continue</strong>, keep the detected sign-in settings,
+                  and click <strong>Add</strong>.
                 </p>
               </li>
               <li>
                 <p>
-                  <strong>Open Settings → Connectors.</strong> Add a custom
-                  connector, name it {name}, and paste the URL.
-                </p>
-                <InstallButton href={CLAUDE_CONNECTORS_URL} external>
-                  Open connector settings
-                  <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
-                </InstallButton>
-              </li>
-              <li>
-                <p>
-                  <strong>Connect and sign in.</strong> Click{" "}
-                  <strong>Add → Connect</strong> and sign in — you're all set,
-                  and the {name} tools appear in your conversations.
+                  <strong>Sign in.</strong> Complete sign-in when prompted — the{" "}
+                  {name} tools appear in your conversations.
                 </p>
               </li>
             </Steps>
-            <DocsLink href="https://modelcontextprotocol.io/quickstart/user">
+            <DocsLink href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp">
               View official docs
             </DocsLink>
           </>
@@ -212,32 +218,48 @@ export const MCPEndpoint = ({
         return (
           <>
             <Callout type="note" title="Requirements">
-              ChatGPT Plus, Team, Enterprise, or Edu subscription.
+              ChatGPT web on a Pro, Business, Enterprise or Edu plan. In
+              workspaces, an admin must allow custom MCP servers.
             </Callout>
+            <div className="not-prose space-y-2">
+              <InstallButton
+                href={CHATGPT_PLUGINS_URL}
+                external
+                onClick={handleCopy}
+              >
+                <McpClientLogo appId="chatgpt" className="size-3.5" />
+                Copy URL & open ChatGPT
+                <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
+              </InstallButton>
+              <p className="text-xs text-muted-foreground">
+                ChatGPT can't prefill custom servers yet, so this copies the URL
+                and opens the Plugins page for you to paste it.
+              </p>
+            </div>
             <Steps>
               <li>
                 <p>
-                  <strong>Turn on Developer Mode.</strong> Go to{" "}
-                  <strong>Settings → Apps → Advanced settings</strong>, enable{" "}
-                  <strong>Developer Mode</strong>, then click{" "}
-                  <strong>Create app</strong>.
+                  <strong>Add a custom MCP server.</strong> On{" "}
+                  <strong>Plugins</strong>, click <strong>+</strong> →{" "}
+                  <strong>Add custom MCP server</strong>.
                 </p>
               </li>
               <li>
                 <p>
-                  <strong>Create the app.</strong> Name it {name} and paste the
-                  MCP server URL above as the connection.
+                  <strong>Fill in the connection.</strong> Name it {name}, paste
+                  the URL under <strong>Connection</strong>, and set up
+                  authentication.
                 </p>
               </li>
               <li>
                 <p>
-                  <strong>Connect and sign in.</strong> Click{" "}
-                  <strong>Create</strong> and sign in — you're all set, and the
-                  app is available in your conversations.
+                  <strong>Create and sign in.</strong> Accept the risk warning,
+                  click <strong>Create as a plugin</strong>, and sign in. Type{" "}
+                  <InlineCode>@</InlineCode> in a new chat to use {name}.
                 </p>
               </li>
             </Steps>
-            <DocsLink href="https://developers.openai.com/apps-sdk/deploy/connect-chatgpt#create-a-connector">
+            <DocsLink href="https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt">
               View official docs
             </DocsLink>
           </>
