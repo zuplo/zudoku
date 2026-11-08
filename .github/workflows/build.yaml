@@ -233,18 +233,37 @@ jobs:
           key: cache-lychee-v4-${{ github.sha }}
           restore-keys: cache-lychee-v4-
 
+      # Installed by hand instead of via lycheeverse/lychee-action: the action
+      # downloads lychee with a single curl call and no retry, so a transient
+      # 5xx from GitHub's release download endpoint fails the whole job. The
+      # endpoint has had multi-minute windows of 504s, hence the long budget.
+      - name: Install lychee
+        env:
+          LYCHEE_VERSION: v0.24.2
+        run: |
+          mkdir -p "$RUNNER_TEMP/lychee"
+          curl -sSfL --retry 30 --retry-delay 10 --retry-max-time 300 --retry-all-errors \
+            -o "$RUNNER_TEMP/lychee.tar.gz" \
+            "https://github.com/lycheeverse/lychee/releases/download/lychee-${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz"
+          tar -xzf "$RUNNER_TEMP/lychee.tar.gz" -C "$RUNNER_TEMP/lychee" --strip-components=1 \
+            lychee-x86_64-unknown-linux-gnu/lychee
+          echo "$RUNNER_TEMP/lychee" >> "$GITHUB_PATH"
+
       - name: Link Checker
-        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
-        with:
-          args: >-
-            --config ./docs/lychee.toml
-            --remap "https://zudoku.dev file://${{ github.workspace }}/docs/dist"
-            --fallback-extensions html
-            --cache
-            --max-cache-age 1d
-            --root-dir $PWD/docs/dist
-            --include-fragments
-            ./docs/dist
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          lychee \
+            --config ./docs/lychee.toml \
+            --remap "https://zudoku.dev file://${{ github.workspace }}/docs/dist" \
+            --fallback-extensions html \
+            --cache \
+            --max-cache-age 1d \
+            --root-dir "$PWD/docs/dist" \
+            --include-fragments \
+            --format markdown \
+            ./docs/dist | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Save lychee cache
         if: always()
         uses: actions/cache/save@v6
