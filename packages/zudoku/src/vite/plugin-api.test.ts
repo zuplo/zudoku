@@ -1,9 +1,25 @@
-import { describe, expect, it } from "vitest";
-import {
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { type Plugin, parse } from "vite";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ConfigWithMeta } from "../config/loader.js";
+import { validateConfig } from "../config/validators/ZudokuConfig.js";
+import viteApiPlugin, {
   generateDefaultApiOptionsCode,
   generateSchemaImportsCode,
   schemaConfigurationChanged,
 } from "./plugin-api.js";
+import { findRouteImports } from "./protected/annotator.js";
+
+const { currentConfig } = vi.hoisted(() => ({
+  currentConfig: { value: undefined as unknown },
+}));
+
+vi.mock("../config/loader.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../config/loader.js")>()),
+  getCurrentConfig: () => currentConfig.value,
+}));
 
 describe("schemaConfigurationChanged", () => {
   const apis = {
@@ -32,7 +48,7 @@ describe("schemaConfigurationChanged", () => {
 });
 
 describe("generateSchemaImportsCode", () => {
-  it("emits one shared schema loader registry", () => {
+  it("emits a schema loader registry", () => {
     expect(
       generateSchemaImportsCode([
         { importKey: "/processed/first.js", processedTime: 123 },
@@ -44,6 +60,15 @@ describe("generateSchemaImportsCode", () => {
       '  "/processed/second.js": () => import("/processed/second.js?d=456"),',
       "};",
     ]);
+  });
+
+  it("names the registry when a name is given", () => {
+    expect(
+      generateSchemaImportsCode(
+        [{ importKey: "/processed/first.js", processedTime: 123 }],
+        "schemaImports0",
+      )[0],
+    ).toBe("const schemaImports0 = {");
   });
 
   it("normalizes Windows import paths without changing registry keys", () => {
@@ -168,5 +193,70 @@ describe("generateDefaultApiOptionsCode", () => {
       showInfoPage: true,
       examplesLanguage: "ruby",
     });
+  });
+});
+
+describe("viteApiPlugin", () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.realpath(
+      await fs.mkdtemp(path.join(os.tmpdir(), "zudoku-api-plugin-test-")),
+    );
+  });
+
+  afterEach(async () => {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+
+  const writeSchema = async (name: string) => {
+    const file = path.join(tempDir, `${name}.json`);
+    await fs.writeFile(
+      file,
+      JSON.stringify({
+        openapi: "3.1.0",
+        info: { title: name, version: "1.0.0" },
+        paths: {},
+      }),
+    );
+    return file;
+  };
+
+  it("scopes each file API's schema imports to that API's path", async () => {
+    const config: ConfigWithMeta = {
+      ...validateConfig({
+        apis: [
+          { type: "file", path: "public-api", input: await writeSchema("a") },
+          { type: "file", path: "internal-api", input: await writeSchema("b") },
+        ],
+      }),
+      __meta: {
+        rootDir: tempDir,
+        moduleDir: path.join(tempDir, "node_modules"),
+        mode: "module",
+        dependencies: [],
+        configPath: path.join(tempDir, "zudoku.config.ts"),
+      },
+    };
+    currentConfig.value = config;
+
+    const plugin: Plugin = await viteApiPlugin();
+    // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
+    const hook = plugin.load!;
+    const loadFn = typeof hook === "function" ? hook : hook.handler;
+    const code = await loadFn.call(
+      { addWatchFile: () => {} } as any,
+      "\0virtual:zudoku-api-plugins",
+    );
+    if (typeof code !== "string") throw new Error("Expected generated code");
+    const { program } = await parse("api.js", code);
+
+    const rootsBySpec = Object.groupBy(
+      findRouteImports(program),
+      (route) => route.spec,
+    );
+    expect(
+      Object.values(rootsBySpec).map((routes) => routes?.map((r) => r.root)),
+    ).toEqual([["public-api"], ["internal-api"]]);
   });
 });
