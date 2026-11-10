@@ -237,7 +237,7 @@ jobs:
             www
 
       # Trigger updates of internal projects using Zudoku
-      - run: gh workflow run update-zudoku.yaml --repo zuplo/docs --ref main
+      - run: gh workflow run update-zudoku.yaml --repo zuplo/docs --ref main -f version="$ZUDOKU_VERSION"
         if: env.IS_RELEASE == 'true'
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
