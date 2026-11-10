@@ -19,7 +19,9 @@ const mutationStub = vi.hoisted(() => ({
   reset: vi.fn(),
 }));
 
-const useMutationMock = vi.hoisted(() => vi.fn(() => mutationStub));
+// A new object on every call, as the real useMutation returns, while `mutate`
+// and `reset` stay the same functions.
+const useMutationMock = vi.hoisted(() => vi.fn(() => ({ ...mutationStub })));
 
 vi.mock("zudoku/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("zudoku/react-query")>();
@@ -234,5 +236,23 @@ describe("CancelSubscriptionDialog", () => {
 
     expect(periodEndOption()).toBeChecked();
     expect(mutationStub.reset).toHaveBeenCalled();
+  });
+
+  it("resets the request state once per opening, not on every render", () => {
+    render(
+      <CancelSubscriptionDialog
+        {...defaultProps}
+        hasCurrentBillables
+        hasFutureBillables={false}
+      />,
+    );
+    expect(mutationStub.reset).toHaveBeenCalledTimes(1);
+
+    // Typing re-renders the dialog.
+    fireEvent.change(screen.getByLabelText(/to confirm/), {
+      target: { value: "Grow" },
+    });
+
+    expect(mutationStub.reset).toHaveBeenCalledTimes(1);
   });
 });
