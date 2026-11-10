@@ -104,7 +104,16 @@ export const CancelSubscriptionDialog = ({
   }, [open, resetCancelMutation]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        // Stay open while the request runs. Reopening would reset the mutation
+        // and allow a second cancellation, and closing would suggest the
+        // subscription was kept while the cancellation still goes through.
+        if (!nextOpen && cancelSubscriptionMutation.isPending) return;
+        onOpenChange(nextOpen);
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Cancel Subscription</DialogTitle>
@@ -251,7 +260,11 @@ export const CancelSubscriptionDialog = ({
           >
             Cancel subscription
           </ActionButton>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="ghost"
+            disabled={cancelSubscriptionMutation.isPending}
+            onClick={() => onOpenChange(false)}
+          >
             Keep my subscription
           </Button>
         </div>

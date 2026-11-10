@@ -197,6 +197,40 @@ describe("CancelSubscriptionDialog", () => {
     expect(periodEndOption()).toBeChecked();
   });
 
+  it("stays open while the cancellation is in flight", () => {
+    mutationStub.isPending = true;
+
+    render(
+      <CancelSubscriptionDialog
+        {...defaultProps}
+        hasCurrentBillables
+        hasFutureBillables={false}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Keep my subscription" }),
+    ).toBeDisabled();
+
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+
+    expect(defaultProps.onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it("closes on Escape when no cancellation is in flight", () => {
+    render(
+      <CancelSubscriptionDialog
+        {...defaultProps}
+        hasCurrentBillables
+        hasFutureBillables={false}
+      />,
+    );
+
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+
+    expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
+  });
+
   it("keeps the cancel button disabled until the plan name is typed", () => {
     render(
       <CancelSubscriptionDialog
