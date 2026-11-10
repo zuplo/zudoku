@@ -114,7 +114,7 @@ export const CancelSubscriptionDialog = ({
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Cancel Subscription</DialogTitle>
           <DialogDescription>We're sorry to see you go.</DialogDescription>
