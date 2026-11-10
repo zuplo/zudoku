@@ -59,6 +59,7 @@ describe("CancelSubscriptionDialog", () => {
   beforeEach(() => {
     mutationStub.mutate.mockClear();
     mutationStub.reset.mockClear();
+    mutationStub.isPending = false;
     mutationStub.isError = false;
     mutationStub.error = null;
     useMutationMock.mockClear();
@@ -175,6 +176,25 @@ describe("CancelSubscriptionDialog", () => {
     confirmAndCancel();
 
     expect(mutationStub.mutate).toHaveBeenCalledWith({ timing: "immediate" });
+  });
+
+  it("locks the timing options while the cancellation is in flight", () => {
+    mutationStub.isPending = true;
+
+    render(
+      <CancelSubscriptionDialog
+        {...defaultProps}
+        hasCurrentBillables
+        hasFutureBillables={false}
+      />,
+    );
+
+    expect(periodEndOption()).toBeDisabled();
+    expect(immediateOption()).toBeDisabled();
+
+    fireEvent.click(immediateOption());
+
+    expect(periodEndOption()).toBeChecked();
   });
 
   it("keeps the cancel button disabled until the plan name is typed", () => {

@@ -122,6 +122,9 @@ export const CancelSubscriptionDialog = ({
             <RadioGroup
               aria-labelledby="cancel-timing-label"
               value={timing}
+              // Changing the option resets the mutation, which would detach a
+              // request still in flight and re-enable the cancel button.
+              disabled={cancelSubscriptionMutation.isPending}
               onValueChange={(value) => {
                 if (!isCancelTiming(value)) return;
                 setTiming(value);
