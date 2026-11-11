@@ -378,7 +378,7 @@ export const enrichWithZuploMcpServerData = ({
     await traverseAsync(modifiedSchema, async (node, nodePath) => {
       // Check if we're at a "post" operation (paths -> /some/path -> "post").
       // HTTP MCP servers are only allow post operations.
-      if (!nodePath || nodePath.length !== 3 || nodePath[2] !== "post") {
+      if (nodePath?.length !== 3 || nodePath[2] !== "post") {
         return node;
       }
 

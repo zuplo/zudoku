@@ -30,7 +30,6 @@ import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { RouterError } from "../lib/errors/RouterError.js";
 import { ZudokuError } from "../lib/util/invariant.js";
 import { detectRouteConflicts } from "./detectRouteConflicts.js";
-import { ZuploEnv } from "./env.js";
 import { notFoundRoute } from "./notFoundRoute.js";
 import { processRoutes } from "./processRoutes.js";
 import { createRedirectRoutes } from "./utils/createRedirectRoutes.js";
@@ -65,7 +64,7 @@ export const convertZudokuConfigToOptions = (
     site: {
       ...config.site,
       showPoweredBy:
-        ZuploEnv.buildConfig?.entitlements.devPortalZuploBranding ??
+        import.meta.env.ZUPLO_DEV_PORTAL_ZUPLO_BRANDING ??
         config.site?.showPoweredBy,
       logo: config.site?.logo,
     },

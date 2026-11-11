@@ -1,0 +1,45 @@
+# Validates the release-notes block in the PR description and syncs the
+# release-notes labels from it. See the ## Release notes section of
+# .github/pull_request_template.md.
+#
+# CHANGELOG_CHECK_MODE: "warn" reports problems as warnings and always passes;
+# switch to "enforce" to fail the check once the blocks look right.
+name: Release notes check
+
+on:
+  # pull_request_target so fork and Dependabot PRs get a token that can set
+  # labels. Safe because nothing from the PR is executed: checkout takes the
+  # base branch, and the script only reads the PR body through the API.
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: changelog-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changelog-check:
+    name: Release notes block
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - uses: actions/github-script@v9
+        env:
+          CHANGELOG_CHECK_MODE: warn
+          CHANGELOG_CONFIG: public
+          CHANGELOG_AREAS: ""
+        with:
+          script: |
+            const { run } = await import(
+              `${process.env.GITHUB_WORKSPACE}/.github/scripts/changelog-check.mjs`
+            );
+            await run({ github, context, core });
