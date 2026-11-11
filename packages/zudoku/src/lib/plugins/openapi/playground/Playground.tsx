@@ -36,6 +36,10 @@ import type {
 } from "../graphql/graphql.js";
 import type { Content } from "../interfaces.js";
 import { type ServerWithVariables, useSelectedServer } from "../state.js";
+import {
+  findSecurityOption,
+  type SecurityOption,
+} from "../util/extractOperationSecurityOptions.js";
 import { getServerLabel } from "../util/resolveServerUrl.js";
 import { AuthorizeDialog } from "./AuthorizeDialog.js";
 import BodyPanel from "./BodyPanel.js";
@@ -55,9 +59,10 @@ import { UrlQueryParams } from "./request-panel/UrlQueryParams.js";
 import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
 import {
-  applySecurityCredentials,
+  areSchemesAuthorized,
+  createAuthorizedRequest,
   getSecurityLockedHeaders,
-  getSecurityQueryParams,
+  resolveSelectedRequirement,
   useSecurityCredentialsStore,
 } from "./securityCredentialsStore.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
@@ -180,6 +185,18 @@ export type SecurityRequirementProp = {
   }>;
 };
 
+type PlaygroundSecurityScheme = {
+  name: string;
+  type: SecuritySchemeType;
+  description?: string | null;
+  in?: SecuritySchemeIn | null;
+  paramName?: string | null;
+  scheme?: string | null;
+  bearerFormat?: string | null;
+  openIdConnectUrl?: string | null;
+  flows?: Record<string, unknown> | null;
+};
+
 export type PlaygroundContentProps = {
   server?: string;
   servers?: ServerWithVariables[];
@@ -191,17 +208,7 @@ export type PlaygroundContentProps = {
   defaultBody?: string;
   examples?: Content[];
   security?: SecurityRequirementProp[];
-  securitySchemes?: Array<{
-    name: string;
-    type: SecuritySchemeType;
-    description?: string | null;
-    in?: SecuritySchemeIn | null;
-    paramName?: string | null;
-    scheme?: string | null;
-    bearerFormat?: string | null;
-    openIdConnectUrl?: string | null;
-    flows?: Record<string, unknown> | null;
-  }>;
+  securityOptions?: Array<SecurityOption<PlaygroundSecurityScheme>>;
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
@@ -219,7 +226,7 @@ export const Playground = ({
   defaultBody = "",
   examples,
   security,
-  securitySchemes = [],
+  securityOptions = [],
   requiresLogin = false,
   onLogin,
   onSignUp,
@@ -232,7 +239,9 @@ export const Playground = ({
     serverVariableOverrides,
   } = useSelectedServer(servers);
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
-  const [showAuthorizeDialog, setShowAuthorizeDialog] = useState(false);
+  const [authorizeSchemeNames, setAuthorizeSchemeNames] = useState<
+    string[] | undefined
+  >();
   const identities = useApiIdentities();
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
@@ -288,8 +297,8 @@ export const Playground = ({
             : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
-          ...securitySchemes.map((s) =>
-            identitySelectionToValue({ type: "scheme", name: s.name }),
+          ...securityOptions.map((option) =>
+            identitySelectionToValue({ type: "scheme", names: option.names }),
           ),
           ...(identities.data?.map((i) => i.id) ?? []),
         ]),
@@ -304,19 +313,28 @@ export const Playground = ({
 
   const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
 
-  const identitySelection = valueToIdentitySelection(identity);
-  const selectedSchemeName =
-    identitySelection.type === "scheme" ? identitySelection.name : undefined;
+  const identitySelection = useMemo(
+    () => valueToIdentitySelection(identity),
+    [identity],
+  );
+  const authorizeSchemes = authorizeSchemeNames
+    ? findSecurityOption(securityOptions, authorizeSchemeNames)?.schemes
+    : undefined;
 
   const securityLockedHeaders = useMemo(() => {
-    const cred = selectedSchemeName
-      ? securityCredentials[selectedSchemeName]
-      : undefined;
-    if (!selectedSchemeName || !cred) return [];
-    return getSecurityLockedHeaders(security, {
-      [selectedSchemeName]: cred,
-    });
-  }, [security, securityCredentials, selectedSchemeName]);
+    if (identitySelection.type !== "scheme") {
+      return [];
+    }
+    const selected = resolveSelectedRequirement(
+      security,
+      identitySelection.names,
+      securityCredentials,
+    );
+    if (!selected) {
+      return [];
+    }
+    return getSecurityLockedHeaders(selected.security, selected.credentials);
+  }, [security, securityCredentials, identitySelection]);
 
   useEffect(() => {
     if (identity) {
@@ -350,34 +368,25 @@ export const Playground = ({
       const requestUrl = createUrl(server ?? resolvedServer, url, data);
 
       const dataSelection = valueToIdentitySelection(data.identity);
-      const schemeName =
-        dataSelection.type === "scheme" ? dataSelection.name : undefined;
+      const selectedRequirement =
+        dataSelection.type === "scheme"
+          ? resolveSelectedRequirement(
+              security,
+              dataSelection.names,
+              useSecurityCredentialsStore.getState().credentials,
+            )
+          : undefined;
 
-      const schemeCredentials = (() => {
-        if (!schemeName) return {};
-        const cred =
-          useSecurityCredentialsStore.getState().credentials[schemeName];
-        return cred ? { [schemeName]: cred } : {};
-      })();
-
-      if (schemeName) {
-        for (const [key, value] of getSecurityQueryParams(
-          security,
-          schemeCredentials,
-        )) {
-          requestUrl.searchParams.set(key, value);
-        }
-      }
-
-      const request = new Request(requestUrl, {
+      const requestInit = {
         method: upperMethod,
         headers,
         body: ["GET", "HEAD"].includes(upperMethod) ? null : body,
-      });
+      };
+      const request = selectedRequirement
+        ? createAuthorizedRequest(requestUrl, requestInit, selectedRequirement)
+        : new Request(requestUrl, requestInit);
 
-      if (schemeName) {
-        applySecurityCredentials(request, security, schemeCredentials);
-      } else if (data.identity !== NO_IDENTITY) {
+      if (dataSelection.type === "identity") {
         await identities.data
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
@@ -655,7 +664,7 @@ export const Playground = ({
             </div>
             <div className="relative overflow-y-auto h-[80vh]">
               {(identities.data?.length !== 0 ||
-                securitySchemes.length > 0) && (
+                securityOptions.length > 0) && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <IdCardLanyardIcon size={16} aria-hidden="true" />
@@ -668,25 +677,27 @@ export const Playground = ({
                       onSelectionChange={(next) => {
                         if (
                           next.type === "scheme" &&
-                          !securityCredentials[next.name]?.isAuthorized
+                          !areSchemesAuthorized(next.names, securityCredentials)
                         ) {
-                          setShowAuthorizeDialog(true);
+                          setAuthorizeSchemeNames(next.names);
                         }
                         setValue("identity", identitySelectionToValue(next));
                       }}
-                      securitySchemes={
-                        securitySchemes.length > 0 ? securitySchemes : undefined
+                      securityOptions={
+                        securityOptions.length > 0 ? securityOptions : undefined
                       }
                       securityCredentials={securityCredentials}
-                      onConfigureScheme={() => setShowAuthorizeDialog(true)}
+                      onConfigureScheme={setAuthorizeSchemeNames}
                     />
-                    {selectedSchemeName && (
+                    {authorizeSchemes && (
                       <AuthorizeDialog
-                        securitySchemes={securitySchemes.filter(
-                          (s) => s.name === selectedSchemeName,
-                        )}
-                        open={showAuthorizeDialog}
-                        onOpenChange={setShowAuthorizeDialog}
+                        securitySchemes={authorizeSchemes}
+                        open
+                        onOpenChange={(open) => {
+                          if (!open) {
+                            setAuthorizeSchemeNames(undefined);
+                          }
+                        }}
                       />
                     )}
                   </CollapsibleContent>
