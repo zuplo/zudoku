@@ -416,8 +416,18 @@ export const getVscodeDeepLink = (
   return `vscode:mcp/install?${encodeURIComponent(JSON.stringify(config))}`;
 };
 
-// Opens Claude's custom connector settings with the "Add custom connector"
-// dialog already open. Claude has no deep link that pre-fills the server URL,
-// so users still paste it into the dialog.
-export const CLAUDE_CONNECTORS_URL =
-  "https://claude.ai/customize/connectors?modal=add-custom-connector";
+// Claude "Add to Claude" install link. Opens the "Add custom connector" dialog
+// on claude.ai with the name and URL prefilled; the user still reviews and
+// confirms. Custom connectors take no headers (OAuth or no auth only), so there
+// is nothing else to carry.
+// https://claude.com/docs/connectors/building/directory-vs-custom#custom-connector-install-link
+export const getClaudeConnectorLink = (name: string, mcpUrl: string): string =>
+  `https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=${encodeURIComponent(
+    name,
+  )}&connectorUrl=${encodeURIComponent(mcpUrl)}`;
+
+// ChatGPT has no link that prefills a custom MCP server: it only deep-links to
+// plugins published in its own directory. The closest is the Plugins page,
+// where "+ → Add custom MCP server" opens the form.
+// https://github.com/openai/openai-apps-sdk-examples/issues/223
+export const CHATGPT_PLUGINS_URL = "https://chatgpt.com/plugins";
