@@ -27,8 +27,8 @@
     }
   },
   "dependencies": {
-    "@docsearch/core": "^4.7.0",
-    "@docsearch/css": "^4.7.0",
+    "@docsearch/core": "^5.2.0",
+    "@docsearch/css": "^5.2.0",
     "@docsearch/modal": "^5.2.0"
   },
   "devDependencies": {
