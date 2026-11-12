@@ -48,15 +48,19 @@ export const RestoreSubscriptionDialog = ({
     },
   });
 
+  // Depend on `reset`, which is stable, not on the mutation object: useMutation
+  // returns a new object every render, so the effect would reset after every
+  // render, re-render again, and clear the error before it is ever shown.
+  const { reset: resetRestoreMutation } = restoreSubscriptionMutation;
   useEffect(() => {
     if (open) {
-      restoreSubscriptionMutation.reset();
+      resetRestoreMutation();
     }
-  }, [open, restoreSubscriptionMutation]);
+  }, [open, resetRestoreMutation]);
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
-      restoreSubscriptionMutation.reset();
+      resetRestoreMutation();
     }
     onOpenChange(nextOpen);
   };
