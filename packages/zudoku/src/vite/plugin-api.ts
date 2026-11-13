@@ -78,8 +78,9 @@ const toCodeString = (value: string) =>
 
 export const generateSchemaImportsCode = (
   schemaImports: { importKey: string; processedTime: number }[],
+  name = "schemaImports",
 ) => [
-  "const schemaImports = {",
+  `const ${name} = {`,
   ...schemaImports.map(
     (schema) =>
       `  ${toCodeString(schema.importKey)}: () => import(${toCodeString(`${schema.importKey.replaceAll("\\", "/")}?d=${schema.processedTime}`)}),`,
@@ -245,13 +246,6 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         code.push(...generateDefaultApiOptionsCode());
         const apis = ensureArray(config.apis);
         const apiMetadata: ApiCatalogItem[] = [];
-        const schemaImports = schemaManager.getSchemaImports();
-
-        // Every file API uses the same registry so the local GraphQL server can
-        // resolve schemas across the whole portal. Emit it once: inlining the
-        // complete map into every plugin duplicates all loader closures and
-        // import paths in the client entry chunk.
-        code.push(...generateSchemaImportsCode(schemaImports));
 
         for (const apiConfig of apis) {
           if (apiConfig.type === "file" && apiConfig.path) {
@@ -344,7 +338,16 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               }
             }
 
+            // Each API gets a registry of only its own schemas. The protected
+            // annotator follows the registry into the plugin's `path`, so a
+            // shared registry would put every schema under every API's route.
+            // GraphQLClient merges the registries for the local server.
+            const schemaImportsName = `schemaImports${apiIndex}`;
             code.push(
+              ...generateSchemaImportsCode(
+                schemas.filter((s) => s.importKey),
+                schemaImportsName,
+              ),
               "configuredApiPlugins.push(openApiPlugin({",
               `  type: "file",`,
               `  input: ${JSON.stringify(versionedInput)},`,
@@ -360,7 +363,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    generateCodeSnippet: config.defaults?.apis?.generateCodeSnippet,`,
               `    ...(apis[${apiIndex}].options ?? {}),`,
               `  },`,
-              `  schemaImports,`,
+              `  schemaImports: ${schemaImportsName},`,
               "}));",
             );
           } else {
