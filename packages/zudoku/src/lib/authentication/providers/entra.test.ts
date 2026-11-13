@@ -258,4 +258,35 @@ describe("EntraAuthenticationProvider", () => {
       expect(profile.email).toBeUndefined();
     });
   });
+
+  describe("access token issuer without UserInfo", () => {
+    const expectedIssuer = (issuer: string, payload: Record<string, unknown>) =>
+      (
+        new EntraAuthenticationProvider({
+          type: "entra",
+          clientId: "test-client",
+          disableUserInfo: true,
+        }) as unknown as {
+          getExpectedAccessTokenIssuer: (
+            as: oauth.AuthorizationServer,
+            payload: Record<string, unknown>,
+          ) => string;
+        }
+      ).getExpectedAccessTokenIssuer({ issuer }, payload);
+
+    test("substitutes the token's tid into the templated issuer", () => {
+      expect(expectedIssuer(ISSUER_TEMPLATE, { tid: "tenant-abc" })).toBe(
+        "https://login.microsoftonline.com/tenant-abc/v2.0",
+      );
+    });
+
+    test("keeps the template when the token has no tid", () => {
+      expect(expectedIssuer(ISSUER_TEMPLATE, {})).toBe(ISSUER_TEMPLATE);
+    });
+
+    test("keeps a concrete tenant's issuer", () => {
+      const issuer = "https://login.microsoftonline.com/tenant-abc/v2.0";
+      expect(expectedIssuer(issuer, { tid: "tenant-other" })).toBe(issuer);
+    });
+  });
 });

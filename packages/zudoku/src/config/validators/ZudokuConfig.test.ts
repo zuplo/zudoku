@@ -92,6 +92,25 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it.each([
+    {
+      type: "openid" as const,
+      clientId: "client123",
+      issuer: "https://example.com",
+    },
+    { type: "entra" as const, clientId: "client123" },
+    { type: "auth0" as const, clientId: "client123", domain: "example.com" },
+  ])("should accept disableUserInfo in $type config", (authentication) => {
+    const config = {
+      authentication: { ...authentication, disableUserInfo: true },
+    };
+
+    expect(validateConfig(config).authentication).toMatchObject({
+      disableUserInfo: true,
+    });
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
   it("should reject non-boolean allowInsecureRequests in openid config", () => {
     process.env.NODE_ENV = "production";
 
