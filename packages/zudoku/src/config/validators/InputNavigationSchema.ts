@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { z } from "zod";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
@@ -66,7 +67,13 @@ const InputNavigationCustomPageSchema = z.object({
   type: z.literal("custom-page"),
   path: z.string(),
   label: z.string().optional(),
-  element: z.any(),
+  element: z.any().optional(),
+  // Code-split alternative to `element`, e.g. `lazy: () => import("./Page")`
+  lazy: z
+    .custom<() => Promise<{ default: ComponentType }>>(
+      (val) => typeof val === "function",
+    )
+    .optional(),
   layout: z.enum(["default", "none"]).optional(),
   ...CommonItemFields,
 });
