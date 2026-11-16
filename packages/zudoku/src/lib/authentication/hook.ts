@@ -34,10 +34,15 @@ export const useRefreshUserProfile = ({
     enabled:
       isAuthEnabled && typeof authentication?.refreshUserProfile === "function",
     queryFn: async () => {
-      const result = await authentication?.refreshUserProfile?.();
-      useAuthState.setState({ profileFetchedAt: Date.now() });
-      return result;
+      const refreshed = await authentication?.refreshUserProfile?.();
+      // `false` means nothing was fetched (e.g. signed out, or SSR mode
+      // without client-side tokens), so there is nothing to timestamp.
+      if (refreshed) useAuthState.setState({ profileFetchedAt: Date.now() });
+      return refreshed;
     },
+    // The query cache doesn't survive a reload, but the persisted profile
+    // does. Seeding the query with it, dated by the last fetch, lets
+    // `staleTime` skip the refresh on a fresh page load.
     initialData: profile ? true : undefined,
     initialDataUpdatedAt: profileFetchedAt ?? undefined,
   });
