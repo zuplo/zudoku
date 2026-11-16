@@ -1050,6 +1050,8 @@ builder.queryType({
 
 export const schema = builder.toSchema();
 
+// graphql-yoga 6 logs every request at info ("Request processed"), which
+// floods `zudoku build` output during prerendering. Keep warnings and errors.
 export const createGraphQLServer = (
   options?: Omit<YogaServerOptions<any, any>, "schema">,
-) => createYoga({ schema, batching: true, ...options });
+) => createYoga({ schema, batching: true, logging: "warn", ...options });

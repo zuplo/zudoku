@@ -100,6 +100,11 @@
         "rules": {
           "suspicious": {
             "noExplicitAny": "off"
+          },
+          "correctness": {
+            // Tests define one-off components/wrappers inside test cases that
+            // close over per-test values; they render once per test.
+            "noComponentHookFactories": "off"
           }
         }
       }

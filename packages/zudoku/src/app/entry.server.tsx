@@ -346,7 +346,7 @@ export type MountOptions<T = Hono> = {
 
 declare const __ZUDOKU_TEMPLATE__: string;
 
-export const mount = <T = Hono>(
+export const mount = <T = Hono,>(
   app: Hono,
   options: MountOptions<T> = {},
 ): T => {
@@ -364,5 +364,5 @@ export const mount = <T = Hono>(
   return (options.adapter?.finalize?.(app) ?? app) as T;
 };
 
-export const createServer = <T = Hono>(options: MountOptions<T> = {}): T =>
+export const createServer = <T = Hono,>(options: MountOptions<T> = {}): T =>
   mount(createApp(), options);

@@ -517,11 +517,97 @@ describe("getSubscriptionPhaseViews", () => {
 
     expect(future?.priceLabel).toEqual({ type: "priced", amount: 750 });
   });
+
+  it("leaves out the paid phase that cancelling a trial at its end cuts to zero length", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-12T14:00:00.000Z"));
+
+    // Cancelled at the end of the trial: the subscription ends on Nov 13, and
+    // the paid phase starts and ends there, so it never runs.
+    const views = getSubscriptionPhaseViews(
+      makeSubscription({
+        phases: [
+          makeSubscriptionPhase({
+            key: "trial",
+            activeFrom: "2026-11-12T13:58:00.000Z",
+            activeTo: "2026-11-13T13:58:00.000Z",
+            items: [],
+          }),
+          makeSubscriptionPhase({
+            key: "default",
+            activeFrom: "2026-11-13T13:58:00.000Z",
+            activeTo: "2026-11-13T13:58:00.000Z",
+            items: [feeItem("100")],
+          }),
+        ],
+      }),
+    );
+
+    expect(views.map((v) => [v.name, v.status])).toEqual([
+      ["trial", "current"],
+    ]);
+  });
+
+  it("leaves out a skipped trial instead of listing it as a previous phase", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-12T14:00:00.000Z"));
+
+    // A returning customer skips the trial, so it starts and ends when the
+    // subscription starts.
+    const views = getSubscriptionPhaseViews(
+      makeSubscription({
+        phases: [
+          makeSubscriptionPhase({
+            key: "trial",
+            activeFrom: "2026-11-10T19:58:24.000Z",
+            activeTo: "2026-11-10T19:58:24.000Z",
+            items: [],
+          }),
+          makeSubscriptionPhase({
+            key: "default",
+            activeFrom: "2026-11-10T19:58:24.000Z",
+            items: [feeItem("100")],
+          }),
+        ],
+      }),
+    );
+
+    expect(views.map((v) => [v.name, v.status])).toEqual([
+      ["default", "current"],
+    ]);
+  });
 });
 
 describe("subscriptionToCurrentPlan", () => {
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it("leaves out a phase that never runs", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-12T14:00:00.000Z"));
+
+    const plan = subscriptionToCurrentPlan(
+      makeSubscription({
+        phases: [
+          makeSubscriptionPhase({
+            key: "trial",
+            activeFrom: "2026-11-12T13:58:00.000Z",
+            activeTo: "2026-11-13T13:58:00.000Z",
+            items: [],
+          }),
+          makeSubscriptionPhase({
+            key: "default",
+            activeFrom: "2026-11-13T13:58:00.000Z",
+            activeTo: "2026-11-13T13:58:00.000Z",
+            items: [feeItem("100")],
+          }),
+        ],
+        planPhases: [],
+      }),
+    );
+
+    expect(plan.phases.map((p) => p.key)).toEqual(["trial"]);
   });
 
   it("keeps current + future phases (drops past), sourced from provisioned items even when the embedded plan snapshot is empty", () => {
