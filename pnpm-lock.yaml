@@ -547,11 +547,11 @@ importers:
   packages/plugin-search-algolia:
     dependencies:
       '@docsearch/core':
-        specifier: ^4.7.0
-        version: 4.7.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^5.2.0
+        version: 5.2.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@docsearch/css':
-        specifier: ^4.7.0
-        version: 4.7.0
+        specifier: ^5.2.0
+        version: 5.2.0
       '@docsearch/modal':
         specifier: ^5.2.0
         version: 5.2.0(@algolia/client-search@5.61.0)(@date-fns/tz@1.4.1)(@types/react@19.3.0)(date-fns@4.1.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(search-insights@2.17.3)
@@ -1973,20 +1973,6 @@ packages:
       '@devframes/hub':
         optional: true
 
-  '@docsearch/core@4.7.0':
-    resolution: {integrity: sha512-p/9xVKmPDj3FPvMfPf5naVO3Ej8SCbcUugGvx1+8GgkuBNbqxqN2Irx3WLBv8VY0jH7XpRwKWdlmjXLZsmTLsg==}
-    peerDependencies:
-      '@types/react': '>= 16.8.0 < 20.0.0'
-      react: '>= 16.8.0 < 20.0.0'
-      react-dom: '>= 16.8.0 < 20.0.0'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-      react:
-        optional: true
-      react-dom:
-        optional: true
-
   '@docsearch/core@5.2.0':
     resolution: {integrity: sha512-vLFEkAnN+kt8C3P5XRKE7ZouMBgCbDT+ihLAI/uWbRU4A0xUJiAns/GSdKOLAnyxNKK3K2mt1WepINi+7AS2IQ==}
     peerDependencies:
@@ -2000,9 +1986,6 @@ packages:
         optional: true
       react-dom:
         optional: true
-
-  '@docsearch/css@4.7.0':
-    resolution: {integrity: sha512-Sk5xkdRFeE7PeWjG9l4AfTwdvMfr9wHiwNNCpHXT4v4SNyNMKdHGvEILc31BgaVFGDDNbv5u/a73tofRiwbEZw==}
 
   '@docsearch/css@5.2.0':
     resolution: {integrity: sha512-KqJjLYMniiiKgZFdK+f7LTy3ZTL5r13buvxagNjDnYVGfa0NR+bb9BnjZq3FTl3VvsmkeW3aSr9AGIZsiQXY/A==}
@@ -10569,19 +10552,11 @@ snapshots:
       '@devframes/hub': 0.7.16(devframe@0.7.16(cac@7.1.0)(srvx@1.0.8)(typescript@6.0.3))
     optional: true
 
-  '@docsearch/core@4.7.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
-    optionalDependencies:
-      '@types/react': 19.3.0
-      react: 19.3.1
-      react-dom: 19.3.1(react@19.3.1)
-
   '@docsearch/core@5.2.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     optionalDependencies:
       '@types/react': 19.3.0
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
-
-  '@docsearch/css@4.7.0': {}
 
   '@docsearch/css@5.2.0': {}
 
