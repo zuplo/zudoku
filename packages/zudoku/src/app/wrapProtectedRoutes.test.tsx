@@ -82,11 +82,51 @@ describe("wrapProtectedRoutes", () => {
     });
   });
 
-  it("applies basePath when matching routes against patterns", async () => {
-    const routes: RouteObject[] = [{ path: "/docs/protected", lazy }];
-    const wrapped = wrapProtectedRoutes(routes, ["/protected"], false, "/docs");
+  // Route paths are relative to the router basename, like the pathname
+  // RouteGuard checks. With basePath "/docs", a page at "/docs/intro" is served
+  // at /docs/docs/intro and must match "/docs/*", not "/intro".
+  it("matches route paths as-is, even when they start like the basePath", async () => {
+    const routes: RouteObject[] = [
+      { path: "/docs/intro", lazy },
+      { path: "/docs/secret", lazy },
+    ];
+    const wrapped = wrapProtectedRoutes(routes, ["/docs/intro"], false);
 
     expect(await invokeLazy(wrapped[0])).toEqual({ element: null });
+    expect(await invokeLazy(wrapped[1])).toEqual({ element: <div>real</div> });
+  });
+
+  it("matches relative child paths against the joined parent path", async () => {
+    const routes: RouteObject[] = [
+      { path: "/", children: [{ path: "guides/introduction", lazy }] },
+    ];
+    const wrapped = wrapProtectedRoutes(routes, ["/guides/*"], false);
+
+    expect(await invokeLazy(wrapped[0]?.children?.[0])).toEqual({
+      element: null,
+    });
+  });
+
+  it("does not join absolute child paths onto the parent again", async () => {
+    const routes: RouteObject[] = [
+      {
+        path: "/api",
+        lazy,
+        children: [
+          { index: true, lazy },
+          { path: "/api/users", lazy },
+        ],
+      },
+    ];
+    const wrapped = wrapProtectedRoutes(routes, ["/api/users"], false);
+
+    expect(await invokeLazy(wrapped[0])).toEqual({ element: <div>real</div> });
+    expect(await invokeLazy(wrapped[0]?.children?.[0])).toEqual({
+      element: <div>real</div>,
+    });
+    expect(await invokeLazy(wrapped[0]?.children?.[1])).toEqual({
+      element: null,
+    });
   });
 
   it("accepts the object-form protectedRoutes config", async () => {
@@ -139,12 +179,26 @@ describe("warnInlineProtectedRoutes", () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it("applies basePath to patterns when matching", () => {
+  it("matches route paths as-is, even when they start like the basePath", () => {
     const routes: RouteObject[] = [
+      { path: "/docs/admin", element: <div>inline</div> },
       { path: "/docs/secret", element: <div>inline</div> },
     ];
-    warnInlineProtectedRoutes(routes, ["/secret"], "/docs");
+    warnInlineProtectedRoutes(routes, ["/docs/admin", "/secret"]);
     expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0]?.[0]).toContain(`"/docs/admin"`);
+  });
+
+  it("reports absolute child paths without the parent prefix", () => {
+    const routes: RouteObject[] = [
+      {
+        path: "/parent",
+        children: [{ path: "/parent/secret", element: <div>inline</div> }],
+      },
+    ];
+    warnInlineProtectedRoutes(routes, ["/parent/secret"]);
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0]?.[0]).toContain(`"/parent/secret"`);
   });
 
   it("walks children recursively", () => {

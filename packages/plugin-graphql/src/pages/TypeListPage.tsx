@@ -78,7 +78,7 @@ export const TypeListPage = ({ kind }: TypeListPageProps) => {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-primary hover:underline whitespace-nowrap"
             >
-              Learn more
+              Learn more<span className="sr-only"> about {meta.label}</span>
               <ExternalLinkIcon size={13} aria-hidden="true" />
             </a>
           </p>

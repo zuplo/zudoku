@@ -12,10 +12,12 @@ import remarkDirectiveRehype from "remark-directive-rehype";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
+import type { HighlighterCore } from "shiki";
 import type { PluggableList } from "unified";
 import { EXIT, visit } from "unist-util-visit";
+import type { VFile } from "vfile";
 import type { Plugin } from "vite";
-import { getCurrentConfig } from "../config/loader.js";
+import { type ConfigWithMeta, getCurrentConfig } from "../config/loader.js";
 import { getBuildConfig } from "../config/validators/BuildSchema.js";
 import {
   createConfiguredShikiRehypePlugins,
@@ -30,6 +32,7 @@ import { remarkLinkRewrite } from "./mdx/remark-link-rewrite.js";
 import { remarkNormalizeImageUrl } from "./mdx/remark-normalize-image-url.js";
 import { remarkStaticGeneration } from "./mdx/remark-static-generation.js";
 import { exportMdxjsConst } from "./mdx/utils.js";
+import { getBlogRoutesByFile } from "./plugin-blog.js";
 import {
   globMarkdownFiles,
   resolveCustomNavigationPaths,
@@ -87,6 +90,56 @@ const rehypeExcerptWithMdxExport = () => (tree: HastRoot) => {
   tree.children.unshift(exportMdxjsConst("excerpt", excerpt));
 };
 
+// rehype-raw re-parses the whole tree, which drops each element's `data`. That
+// is where the code fence meta lives (`data.meta`, e.g. `title="foo.ts" {1,3}`)
+// that Shiki and rehype-meta-as-attributes read, so carry it across the
+// re-parse in a temporary property (it survives as an HTML attribute).
+const CODE_META_PROPERTY = "dataZudokuCodeMeta";
+
+const rehypeRawKeepCodeMeta = () => {
+  const raw = rehypeRaw({ passThrough: [...nodeTypes] });
+
+  return (tree: HastRoot, file: VFile) => {
+    visit(tree, "element", (node) => {
+      if (node.tagName !== "code" || !node.data?.meta) return;
+      node.properties[CODE_META_PROPERTY] = node.data.meta;
+    });
+
+    const result = raw(tree, file);
+
+    visit(result, "element", (node) => {
+      const meta = node.properties[CODE_META_PROPERTY];
+      if (typeof meta !== "string") return;
+      delete node.properties[CODE_META_PROPERTY];
+      node.data = { ...node.data, meta };
+    });
+
+    return result;
+  };
+};
+
+export const createDefaultRehypePlugins = (
+  highlighter: HighlighterCore,
+  config: Pick<ConfigWithMeta, "syntaxHighlighting" | "build">,
+) =>
+  [
+    // Runs first so that raw HTML in `.md` files gets slugs, ToC entries and
+    // media handling like everything else
+    rehypeRawKeepCodeMeta,
+    rehypeSlug,
+    rehypeExtractTocWithJsx,
+    rehypeExtractTocWithJsxExport,
+    rehypeExcerptWithMdxExport,
+    rehypeNormalizeMdxImages,
+    rehypeMdxImportMedia,
+    rehypeMetaAsAttributes,
+    ...createConfiguredShikiRehypePlugins(
+      highlighter,
+      config.syntaxHighlighting?.themes,
+    ),
+    ...(config.build?.rehypePlugins ?? []),
+  ] satisfies PluggableList;
+
 const viteMdxPlugin = async (): Promise<Plugin> => {
   const config = getCurrentConfig();
   const buildConfig = await getBuildConfig();
@@ -103,6 +156,10 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
   );
   for (const [route, filePath] of Object.entries(fileMapping)) {
     routesByFile.set(filePath.replace(/\.mdx?$/, ""), route);
+  }
+  // Blog posts are served at their slug, not their file name
+  for (const [filePath, route] of await getBlogRoutesByFile(config)) {
+    routesByFile.set(filePath, route);
   }
 
   const defaultRemarkPlugins = [
@@ -129,21 +186,7 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
       ? buildConfig.remarkPlugins(defaultRemarkPlugins)
       : [...defaultRemarkPlugins, ...(buildConfig?.remarkPlugins ?? [])];
 
-  const defaultRehypePlugins = [
-    [rehypeRaw, { passThrough: nodeTypes }],
-    rehypeSlug,
-    rehypeExtractTocWithJsx,
-    rehypeExtractTocWithJsxExport,
-    rehypeExcerptWithMdxExport,
-    rehypeNormalizeMdxImages,
-    rehypeMdxImportMedia,
-    rehypeMetaAsAttributes,
-    ...createConfiguredShikiRehypePlugins(
-      highlighter,
-      config.syntaxHighlighting?.themes,
-    ),
-    ...(config.build?.rehypePlugins ?? []),
-  ] satisfies PluggableList;
+  const defaultRehypePlugins = createDefaultRehypePlugins(highlighter, config);
 
   const rehypePlugins =
     typeof buildConfig?.rehypePlugins === "function"

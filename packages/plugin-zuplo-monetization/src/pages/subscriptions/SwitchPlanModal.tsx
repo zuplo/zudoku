@@ -21,42 +21,17 @@ import type { Subscription } from "../../types/SubscriptionType.js";
 import { getActivePhase } from "../../utils/billables.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import type { EntitlementSet } from "../../utils/comparePlanEntitlements.js";
+import {
+  isNewerPlanVersion,
+  planChangeCheckoutBody,
+  resolvePlanChangeMode,
+} from "../../utils/planChange.js";
 import { categorizeSubscriptionItems } from "../../utils/subscriptionEntitlements.js";
 import { CurrentPlanBaseline } from "../components/CurrentPlanBaseline.js";
 import {
   type PlanChangeMode,
   PlanChangeCard,
 } from "../components/PlanChangeCard.js";
-
-const isPrivatePlan = (plan: Plan) =>
-  plan.metadata?.zuplo_private_plan === "true";
-
-const planVersion = (plan: Pick<Plan, "version">) => plan.version ?? 1;
-
-const isNewerPlanVersion = (subscribedPlan: Plan, target: Plan): boolean =>
-  target.key === subscribedPlan.key &&
-  planVersion(target) > planVersion(subscribedPlan);
-
-const resolveIsUpgrade = ({
-  target,
-  targetIndex,
-  subscribedPlan,
-  currentIndex,
-}: {
-  target: Plan;
-  targetIndex: number;
-  subscribedPlan: Plan;
-  currentIndex: number;
-}): boolean => {
-  if (target.key === subscribedPlan.key) {
-    return planVersion(target) > planVersion(subscribedPlan);
-  }
-  // Mirror the backend's planOrder rule (`newOrder >= currentOrder`). The
-  // catalog is sorted by the same planOrder, so index is a faithful proxy;
-  // the modal's timing copy is a prediction the confirm page confirms via the
-  // server's authoritative `activeFrom`.
-  return targetIndex >= currentIndex;
-};
 
 export type SwitchPlanTarget = {
   subscriptionId: string;
@@ -101,22 +76,18 @@ export const SwitchPlanModal = ({
           );
         }
 
-        const switchTo = variables;
         return {
           method: "POST",
-          body: JSON.stringify({
-            planId: switchTo.plan.id,
-            successURL: generateUrl(`/subscription-change-confirm`, {
-              searchParams: {
-                planId: switchTo.plan.id,
-                subscriptionId: switchTo.subscriptionId,
-                mode: switchTo.mode,
+          body: JSON.stringify(
+            planChangeCheckoutBody(
+              {
+                planId: variables.plan.id,
+                subscriptionId: variables.subscriptionId,
+                mode: variables.mode,
               },
-            }),
-            cancelURL: generateUrl("/subscriptions", {
-              searchParams: { subscriptionId: switchTo.subscriptionId },
-            }),
-          }),
+              generateUrl,
+            ),
+          ),
         };
       },
     },
@@ -175,15 +146,7 @@ export const SwitchPlanModal = ({
       };
     }
 
-    const subscribedOnCatalog = catalogItems.some(
-      (p) => p.id === subscribedPlan.id,
-    );
-    const currentIndex = subscribedOnCatalog
-      ? catalogItems.findIndex((p) => p.id === subscribedPlan.id)
-      : -1;
-    const subscribedIsPrivate = isPrivatePlan(subscribedPlan);
-
-    const entries = catalogItems.flatMap((plan, targetIndex) => {
+    const entries = catalogItems.flatMap((plan) => {
       if (plan.id === subscribedPlan.id) return [];
       if (
         plansHeldByOtherSubscriptions.keys.has(plan.key) ||
@@ -194,30 +157,20 @@ export const SwitchPlanModal = ({
       return [
         {
           plan,
-          isUpgrade: resolveIsUpgrade({
-            target: plan,
-            targetIndex,
+          mode: resolvePlanChangeMode({
+            catalog: catalogItems,
             subscribedPlan,
-            currentIndex,
+            target: plan,
           }),
           isNewerVersion: isNewerPlanVersion(subscribedPlan, plan),
         },
       ];
     });
 
-    // Private subscriptions: public targets are upgrades, private targets switch.
-    if (subscribedIsPrivate) {
-      return {
-        upgrades: entries.filter((c) => !isPrivatePlan(c.plan)),
-        downgrades: [] as PlanEntry[],
-        privatePlans: entries.filter((c) => isPrivatePlan(c.plan)),
-      };
-    }
-
     return {
-      upgrades: entries.filter((c) => c.isUpgrade && !isPrivatePlan(c.plan)),
-      downgrades: entries.filter((c) => !c.isUpgrade && !isPrivatePlan(c.plan)),
-      privatePlans: entries.filter((c) => isPrivatePlan(c.plan)),
+      upgrades: entries.filter((c) => c.mode === "upgrade"),
+      downgrades: entries.filter((c) => c.mode === "downgrade"),
+      privatePlans: entries.filter((c) => c.mode === "private"),
     };
   }, [plansData?.items, subscribedPlan, plansHeldByOtherSubscriptions]);
 

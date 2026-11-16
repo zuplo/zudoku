@@ -12,7 +12,8 @@ configuration.
 All plugins in Zudoku must implement the `ZudokuPlugin` type, which is a union of these plugin
 interfaces:
 
-- **CommonPlugin**: Basic plugin with initialization, head elements, and MDX component customization
+- **CommonPlugin**: Basic plugin with initialization, head elements, MDX component customization,
+  and a React provider that wraps the app
 - **ProfileMenuPlugin**: Add custom items to the profile menu
 - **NavigationPlugin**: Define custom routes and sidebar items
 - **ApiIdentityPlugin**: Provide API identities for testing
@@ -142,6 +143,42 @@ declare global {
   }
 }
 ```
+
+### React Providers
+
+Some libraries are set up by wrapping your app in a React context provider. Use the `Provider`
+option to wrap the whole Zudoku app with one. For example, to use
+[`posthog-js`](https://posthog.com/docs/libraries/react) instead of adding a snippet with `getHead`:
+
+```tsx
+import { PostHogProvider } from "posthog-js/react";
+import type { ZudokuPlugin } from "zudoku";
+
+const posthogPlugin: ZudokuPlugin = {
+  Provider: ({ children }) => (
+    <PostHogProvider
+      apiKey={import.meta.env.ZUDOKU_PUBLIC_POSTHOG_KEY}
+      options={{ api_host: "https://us.i.posthog.com" }}
+    >
+      {children}
+    </PostHogProvider>
+  ),
+};
+```
+
+`Provider` is a regular React component:
+
+- It renders inside Zudoku's own providers, so it can use hooks like `useZudoku` or `useAuth` from
+  `zudoku/hooks`. It mounts once all plugins have finished `initialize`.
+- It stays mounted when the user navigates between pages.
+- If several plugins define a `Provider`, they are nested in the order of the `plugins` array, so
+  the first plugin's provider is the outermost one.
+- It also renders during prerendering and server-side rendering. Keep browser-only code, like
+  accessing `window`, inside effects. Keep per-user data in component state instead of module scope,
+  where the server would share it between requests.
+
+To wrap only your plugin's own routes, see
+[Wrapping Routes with Context or Layout](#wrapping-routes-with-context-or-layout).
 
 ### Navigation Plugin
 

@@ -1,29 +1,16 @@
-import { z } from "zod/mini";
-import { parseBuildConfig } from "./ZuploBuildConfig.js";
+import { getZuploSystemConfigurations } from "../vite/zuplo.js";
 
-const formatError = (error: unknown) => {
-  if (error instanceof SyntaxError) {
-    return "ZUPLO_BUILD_CONFIG contains invalid JSON";
-  }
-  if (error instanceof z.core.$ZodError) {
-    return `ZUPLO_BUILD_CONFIG is invalid:\n${z.prettifyError(error)}`;
-  }
-  return `ZUPLO_BUILD_CONFIG is invalid: ${error}`;
+const parseBoolean = (value: string | undefined): boolean | undefined => {
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return undefined;
 };
 
-const getZuploBuildConfig = () => {
-  if (!process.env.ZUPLO_BUILD_CONFIG) return undefined;
-
-  try {
-    const parsed = JSON.parse(process.env.ZUPLO_BUILD_CONFIG);
-    return parseBuildConfig(parsed);
-  } catch (error) {
-    // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.error(formatError(error));
-    return undefined;
-  }
-};
-
+/**
+ * Build-time only. Reads Zuplo settings from `process.env`; the client
+ * receives only the derived values through Vite `define` (see
+ * `vite/config.ts`), so don't import this from app code.
+ */
 export const ZuploEnv = {
   /**
    * Indicates that the build is running in Zuplo "mode"
@@ -36,5 +23,24 @@ export const ZuploEnv = {
     return process.env.ZUPLO_SERVER_URL;
   },
 
-  buildConfig: getZuploBuildConfig(),
+  /**
+   * The Zuplo deployment name, from `ZUPLO_DEPLOYMENT_NAME`, falling back to
+   * the deployment name in `ZUPLO_SYSTEM_CONFIGURATIONS`.
+   */
+  get deploymentName(): string | undefined {
+    return (
+      process.env.ZUPLO_DEPLOYMENT_NAME ||
+      getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
+        ?.__ZUPLO_DEPLOYMENT_NAME
+    );
+  },
+
+  /**
+   * Whether Zuplo branding is shown in the dev portal, from
+   * `ZUPLO_DEV_PORTAL_ZUPLO_BRANDING` (`"true"` or `"false"`). Any other value
+   * means it isn't set.
+   */
+  get devPortalZuploBranding(): boolean | undefined {
+    return parseBoolean(process.env.ZUPLO_DEV_PORTAL_ZUPLO_BRANDING);
+  },
 };

@@ -93,6 +93,7 @@ const ApiOptionsSchema = z
     supportedLanguages: z.array(LanguageOption),
     disablePlayground: z.boolean(),
     disableSidecar: z.boolean(),
+    disableRequestBox: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
@@ -531,6 +532,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     audience: z.string().optional(),
     scopes: z.array(z.string()).optional(),
     allowInsecureRequests: z.boolean().optional(),
+    disableUserInfo: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -550,6 +552,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     issuer: z.string().optional(),
     audience: z.string().optional(),
     scopes: z.array(z.string()).optional(),
+    disableUserInfo: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -598,6 +601,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignOut: z.string().optional(),
     authorizationParams: z.record(z.string(), z.string()).optional(),
     forwardAuthorizationParams: z.array(z.string()).optional(),
+    disableUserInfo: z.boolean().optional(),
     options: z
       .object({
         alwaysPromptLogin: z.boolean().optional(),

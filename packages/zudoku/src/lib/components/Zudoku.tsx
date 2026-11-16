@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import {
   memo,
   type PropsWithChildren,
+  type ReactNode,
   use,
   useEffect,
   useMemo,
@@ -11,7 +12,7 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Outlet, useLocation, useNavigation } from "react-router";
-import { isMdxProviderPlugin } from "../core/plugins.js";
+import { hasProvider, isMdxProviderPlugin } from "../core/plugins.js";
 import {
   ZudokuContext,
   type ZudokuContextOptions,
@@ -52,6 +53,18 @@ const ZudokuInner = memo(
         ...props.mdx?.components,
       };
     }, [props.mdx?.components, props.plugins]);
+    // Rendered as components (not called as functions) so providers can use
+    // hooks and Zudoku's contexts. Memoized so they don't re-render on every
+    // navigation.
+    const content = useMemo(
+      () =>
+        (props.plugins ?? []).filter(hasProvider).reduceRight<ReactNode>(
+          // biome-ignore lint/correctness/useJsxKeyInIterable: nested single children, not a list
+          (inner, { Provider }) => <Provider>{inner}</Provider>,
+          children ?? <Outlet />,
+        ),
+      [props.plugins, children],
+    );
     const [didNavigate, setDidNavigate] = useState(false);
     const navigation = useNavigation();
     const queryClient = useQueryClient();
@@ -84,9 +97,7 @@ const ZudokuInner = memo(
           <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
             <MDXProvider components={mdxComponents}>
               <ThemeProvider attribute="class" disableTransitionOnChange>
-                <ViewportAnchorProvider>
-                  {children ?? <Outlet />}
-                </ViewportAnchorProvider>
+                <ViewportAnchorProvider>{content}</ViewportAnchorProvider>
               </ThemeProvider>
             </MDXProvider>
           </SlotProvider>

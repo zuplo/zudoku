@@ -23,6 +23,33 @@ const PlaygroundDialog = lazy(() =>
   })),
 );
 
+const OpenPlaygroundButton = ({
+  server,
+  method = "get",
+  url = "/",
+  children,
+  ...props
+}: PropsWithChildren<Partial<PlaygroundContentProps>>) => {
+  if (!server) {
+    throw new Error("Server is required");
+  }
+
+  return (
+    <Suspense>
+      <PlaygroundDialog url={url} method={method} server={server} {...props}>
+        <Button className="gap-2 items-center" variant="outline">
+          {children ?? (
+            <>
+              Open in Playground
+              <CirclePlayIcon size={16} aria-hidden="true" />
+            </>
+          )}
+        </Button>
+      </PlaygroundDialog>
+    </Suspense>
+  );
+};
+
 export const GetNavigationOperationsQuery = GetNavigationOperationsDocument;
 
 export type OperationResult =
@@ -59,37 +86,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
       }
     },
     getMdxComponents: () => ({
-      OpenPlaygroundButton: ({
-        server,
-        method = "get",
-        url = "/",
-        children,
-        ...props
-      }: PropsWithChildren<Partial<PlaygroundContentProps>>) => {
-        if (!server) {
-          throw new Error("Server is required");
-        }
-
-        return (
-          <Suspense>
-            <PlaygroundDialog
-              url={url}
-              method={method}
-              server={server}
-              {...props}
-            >
-              <Button className="gap-2 items-center" variant="outline">
-                {children ?? (
-                  <>
-                    Open in Playground
-                    <CirclePlayIcon size={16} aria-hidden="true" />
-                  </>
-                )}
-              </Button>
-            </PlaygroundDialog>
-          </Suspense>
-        );
-      },
+      OpenPlaygroundButton,
     }),
     getNavigation: async (path, context) => {
       // Catalog documents are a single self-contained page with their own

@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "zudoku/react-query";
 import { RestoreSubscriptionDialog } from "./RestoreSubscriptionDialog.js";
 
 vi.mock("zudoku/hooks", () => ({
@@ -10,44 +11,38 @@ vi.mock("../../hooks/useDeploymentName.js", () => ({
   useDeploymentName: () => "test-deployment",
 }));
 
-const mutationStub = vi.hoisted(() => ({
-  mutate: vi.fn(),
-  isPending: false,
-  isError: false,
-  isSuccess: false,
-  error: null as Error | null,
-  reset: vi.fn(),
-}));
-
-vi.mock("zudoku/react-query", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("zudoku/react-query")>();
-  return {
-    ...actual,
-    useMutation: () => mutationStub,
-    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-  };
-});
-
-const defaultProps = {
-  open: true,
-  onOpenChange: vi.fn(),
-  planName: "Growth",
-  subscriptionId: "sub-123",
-  billingPeriodEnd: "2025-08-01T00:00:00.000Z",
-};
-
-describe("RestoreSubscriptionDialog", () => {
-  beforeEach(() => {
-    mutationStub.mutate.mockClear();
-    mutationStub.reset.mockClear();
-    mutationStub.isError = false;
-    mutationStub.isSuccess = false;
-    mutationStub.error = null;
-    defaultProps.onOpenChange.mockClear();
+// A real QueryClient rather than a mocked useMutation, so the dialog sees how
+// useMutation really behaves: a new result object on every render, and state
+// that changes after the request settles.
+const renderDialog = ({
+  mutationFn = vi.fn().mockResolvedValue({}),
+  onOpenChange = vi.fn(),
+} = {}) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { mutations: { retry: false, mutationFn } },
   });
 
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RestoreSubscriptionDialog
+        open
+        onOpenChange={onOpenChange}
+        planName="Growth"
+        subscriptionId="sub-123"
+        billingPeriodEnd="2025-08-01T12:00:00.000Z"
+      />
+    </QueryClientProvider>,
+  );
+
+  return { mutationFn, onOpenChange };
+};
+
+const resumeButton = () =>
+  screen.getByRole("button", { name: "Resume subscription" });
+
+describe("RestoreSubscriptionDialog", () => {
   it("renders title and plan name when open", () => {
-    render(<RestoreSubscriptionDialog {...defaultProps} />);
+    renderDialog();
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(
@@ -57,25 +52,33 @@ describe("RestoreSubscriptionDialog", () => {
   });
 
   it("renders resume guidance copy", () => {
-    render(<RestoreSubscriptionDialog {...defaultProps} />);
+    renderDialog();
 
     expect(screen.getByText("What happens if you resume")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Keep cancellation" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Resume subscription" }),
-    ).toBeInTheDocument();
+    expect(resumeButton()).toBeInTheDocument();
   });
 
-  it("shows error alert when mutation failed", () => {
-    mutationStub.isError = true;
-    mutationStub.error = new Error("Network error");
+  it("resumes the subscription and closes", async () => {
+    const { mutationFn, onOpenChange } = renderDialog();
 
-    render(<RestoreSubscriptionDialog {...defaultProps} />);
+    fireEvent.click(resumeButton());
+
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+    expect(mutationFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows why resuming failed", async () => {
+    renderDialog({
+      mutationFn: vi.fn().mockRejectedValue(new Error("Network error")),
+    });
+
+    fireEvent.click(resumeButton());
 
     expect(
-      screen.getByText("Could not resume subscription"),
+      await screen.findByText("Could not resume subscription"),
     ).toBeInTheDocument();
     expect(screen.getByText("Network error")).toBeInTheDocument();
   });

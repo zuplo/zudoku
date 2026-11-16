@@ -72,12 +72,17 @@ There are two distinct pipelines depending on how schemas are loaded:
 
 1. `$RefParser.bundle()` bundles external refs, keeps internal `$ref`s. Uses
    `preservedProperties: ["description", "summary"]` so other `$ref` sibling properties are lost.
-2. `@scalar/openapi-parser` `upgrade()` converts OAS 3.0 → 3.1. Converts `example` → `examples`
-   (array for schema paths, `{ default: { value } }` for non-schema paths) and deletes `example`.
-   Skips if already OAS 3.1+.
+2. `upgradeOpenApi()` runs `@scalar/openapi-parser` `upgrade()` to convert OAS 3.0 → 3.1. Converts
+   `example` → `examples` (array for schema paths, `{ default: { value } }` for non-schema paths)
+   and deletes `example`. `nullable: true` next to a `$ref`/`allOf` becomes
+   `anyOf: [X, { type: "null" }]`, and `format: binary` becomes a typeless `{ contentMediaType }`
+   (the UI handles both shapes). Scalar skips everything under `responses.default`, so
+   `upgradeOpenApi()` upgrades those responses separately. Skips if already OAS 3.1+.
 3. `flattenAllOfProcessor` resolves `$ref`s inside `allOf` arrays then merges via
    `@x0k/json-schema-merge`.
 4. Custom user-defined processors run.
+5. Built-in `removeInternal` strips `x-internal` paths, operations and parameters (every build).
+6. Zuplo processors run (only when `ZuploEnv.isZuplo`).
 
 ### URL schemas (runtime via `validate()` in `oas/parser/index.ts`)
 
@@ -152,3 +157,14 @@ separate module (see `navigation/motionFeatures.ts`). Always use `m.*` (not `mot
 - `examples/cosmo-cargo/` - Feature-rich demo of a futuristic space shipping company. Use this to
   test new features. Content should match the space/sci-fi tone (quantum, interstellar, warp drives,
   etc.). Run with `nx run cosmo-cargo:dev`
+
+## Pull requests
+
+- Use `.github/pull_request_template.md` as the PR body and fill in the required sections. Delete
+  optional sections that don't apply.
+- Lead with diagrams (ASCII or Mermaid) or type diffs over prose.
+- Remove the HTML comments.
+- The `release-notes` block is optional for community contributors; a maintainer fills it in. The
+  "Release notes check" workflow validates the block and sets `skip-changelog` for internal changes.
+- A change to a config option, default, plugin API, rendered output, CLI behavior, or error message
+  is `impact: user` even when small.

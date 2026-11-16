@@ -57,6 +57,19 @@ describe("generateSchemaImportsCode", () => {
       "};",
     ]);
   });
+
+  it("escapes characters that are unsafe in inlined code", () => {
+    const importKey = "/processed/</script>\u2028.js";
+    const code = generateSchemaImportsCode([{ importKey, processedTime: 1 }]);
+
+    expect(code[1]).not.toContain("</script>");
+    expect(code[1]).not.toContain("\u2028");
+    const schemaImports = new Function(
+      `${code.join("\n").replace("import(", "(")}\nreturn schemaImports;`,
+    )() as Record<string, () => string>;
+    expect(Object.keys(schemaImports)).toEqual([importKey]);
+    expect(schemaImports[importKey]?.()).toBe(`${importKey}?d=1`);
+  });
 });
 
 describe("generateDefaultApiOptionsCode", () => {
@@ -82,6 +95,7 @@ describe("generateDefaultApiOptionsCode", () => {
       supportedLanguages: undefined,
       disablePlayground: undefined,
       disableSidecar: undefined,
+      disableRequestBox: undefined,
       disableSecurity: true,
       disableMcpAuthInstructions: undefined,
       showVersionSelect: "if-available",
@@ -124,6 +138,7 @@ describe("generateDefaultApiOptionsCode", () => {
           supportedLanguages: ["js", "go"],
           disablePlayground: true,
           disableSidecar: true,
+          disableRequestBox: true,
           disableMcpAuthInstructions: true,
           showInfoPage: false,
           schemaDownload,
@@ -135,6 +150,7 @@ describe("generateDefaultApiOptionsCode", () => {
       supportedLanguages: ["js", "go"],
       disablePlayground: true,
       disableSidecar: true,
+      disableRequestBox: true,
       disableMcpAuthInstructions: true,
       showInfoPage: false,
       schemaDownload,

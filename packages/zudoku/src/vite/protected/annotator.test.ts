@@ -1,6 +1,10 @@
 import { parse } from "vite";
 import { describe, expect, it } from "vitest";
-import { matchPathObject, matchRouteDict } from "./annotator.js";
+import {
+  findRouteImports,
+  matchPathObject,
+  matchRouteDict,
+} from "./annotator.js";
 
 const firstObject = async (code: string): Promise<any> => {
   const { program } = await parse("test.js", code);
@@ -100,6 +104,48 @@ describe("matchPathObject (Shape A)", () => {
     });
   });
 
+  it("ignores references shadowed by a nested function scope", async () => {
+    // Every `admin` value below resolves to a parameter or local binding, not
+    // to the top-level registry, so its import must not be gated by "/public".
+    const { route, bindings } = await pathObjectAndBindings(`
+      const admin = { load: () => import("./admin-secret.js") };
+      const route = {
+        path: "/public",
+        loader: (admin) => ({ value: admin }),
+        action: (admin) => ({ admin }),
+        handle: ({ admin }) => ({ admin }),
+        meta: function ([admin = 1]) { return { admin }; },
+        lazy: () => {
+          const admin = import("./public.js");
+          return { admin };
+        },
+        shouldRevalidate: () => {
+          try {} catch (admin) { return { admin }; }
+        },
+      };
+    `);
+
+    expect(matchPathObject(route, bindings)).toEqual({
+      root: "/public",
+      specs: ["./public.js"],
+    });
+  });
+
+  it("still follows unshadowed references inside nested functions", async () => {
+    const { route, bindings } = await pathObjectAndBindings(`
+      const admin = { load: () => import("./admin-secret.js") };
+      const route = {
+        path: "/admin",
+        loader: (other) => ({ value: admin, other }),
+      };
+    `);
+
+    expect(matchPathObject(route, bindings)).toEqual({
+      root: "/admin",
+      specs: ["./admin-secret.js"],
+    });
+  });
+
   it("follows a registry referenced by a nested property value", async () => {
     const { route, bindings } = await pathObjectAndBindings(`
       const schemaImports = { "/processed/first.js": () => import("./first.js") };
@@ -122,6 +168,28 @@ describe("matchPathObject (Shape A)", () => {
   it("returns undefined when there are no dynamic imports", async () => {
     const node = await firstObject(`const r = { path: "/foo", label: "x" };`);
     expect(matchPathObject(node)).toBeUndefined();
+  });
+});
+
+describe("findRouteImports", () => {
+  it("does not resolve a route's registry through a shadowing parameter", async () => {
+    const { program } = await parse(
+      "test.js",
+      `
+      const schemaImports = { "/processed/a.js": () => import("./a.js") };
+      export const api = { path: "/api", schemaImports };
+      export const makeRoute = (schemaImports) => ({
+        path: "/custom",
+        schemaImports,
+        lazy: () => import("./custom.js"),
+      });
+    `,
+    );
+
+    expect(findRouteImports(program)).toEqual([
+      { spec: "./a.js", root: "/api" },
+      { spec: "./custom.js", root: "/custom" },
+    ]);
   });
 });
 

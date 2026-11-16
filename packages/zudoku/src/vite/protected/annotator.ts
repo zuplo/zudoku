@@ -1,22 +1,105 @@
 import type { Plugin } from "vite";
 import { clearProtectedRegistry, registerProtectedScope } from "./registry.js";
 
-// Minimal ESTree walker. Visits every node; skips position fields.
 // biome-ignore lint/suspicious/noExplicitAny: working against a loose ESTree shape
 type AstNode = any;
 
-const walk = (node: AstNode, visit: (n: AstNode) => void) => {
+type Shadowed = ReadonlySet<string>;
+
+const FUNCTION_TYPES = new Set([
+  "FunctionDeclaration",
+  "FunctionExpression",
+  "ArrowFunctionExpression",
+]);
+
+// Names bound by a declaration pattern (`a`, `{ a, b: [c] }`, `...d`, `e = 1`).
+const patternNames = (pattern: AstNode): string[] => {
+  switch (pattern?.type) {
+    case "Identifier":
+      return [pattern.name];
+    case "AssignmentPattern":
+      return patternNames(pattern.left);
+    case "RestElement":
+      return patternNames(pattern.argument);
+    case "ArrayPattern":
+      return (pattern.elements ?? []).flatMap(patternNames);
+    case "ObjectPattern":
+      return (pattern.properties ?? []).flatMap((prop: AstNode) =>
+        patternNames(prop.type === "RestElement" ? prop : prop.value),
+      );
+    default:
+      return [];
+  }
+};
+
+const declaredNames = (statement: AstNode): string[] => {
+  if (statement?.type === "VariableDeclaration") {
+    return (statement.declarations ?? []).flatMap((declaration: AstNode) =>
+      patternNames(declaration.id),
+    );
+  }
+  if (
+    (statement?.type === "FunctionDeclaration" ||
+      statement?.type === "ClassDeclaration") &&
+    statement.id
+  ) {
+    return [statement.id.name];
+  }
+  return [];
+};
+
+// Names a node binds for its own subtree. Program-level declarations are the
+// registries themselves, so only nested scopes shadow them. `var` is treated
+// as block-scoped: missing a hoisted shadow only keeps the previous behavior.
+const scopeNames = (node: AstNode): string[] => {
+  if (FUNCTION_TYPES.has(node.type)) {
+    return [
+      ...(node.params ?? []).flatMap(patternNames),
+      ...(node.type === "FunctionExpression" && node.id ? [node.id.name] : []),
+    ];
+  }
+  switch (node.type) {
+    case "BlockStatement":
+    case "StaticBlock":
+      return (node.body ?? []).flatMap(declaredNames);
+    case "CatchClause":
+      return patternNames(node.param);
+    case "ForStatement":
+      return declaredNames(node.init);
+    case "ForInStatement":
+    case "ForOfStatement":
+      return declaredNames(node.left);
+    case "ClassExpression":
+      return node.id ? [node.id.name] : [];
+    default:
+      return [];
+  }
+};
+
+// Minimal ESTree walker. Visits every node; skips position fields. Tracks
+// the names bound by enclosing nested scopes, so a local or parameter with the
+// same name as a top-level registry is not mistaken for a reference to it.
+const walk = (
+  node: AstNode,
+  visit: (n: AstNode, shadowed: Shadowed) => void,
+  shadowed: Shadowed = new Set(),
+) => {
   if (!node || typeof node !== "object") return;
-  if (typeof node.type === "string") visit(node);
+  let inner = shadowed;
+  if (typeof node.type === "string") {
+    visit(node, shadowed);
+    const names = scopeNames(node);
+    if (names.length > 0) inner = new Set([...shadowed, ...names]);
+  }
   for (const key of Object.keys(node)) {
     if (key === "loc" || key === "start" || key === "end" || key === "range") {
       continue;
     }
     const val = node[key];
     if (Array.isArray(val)) {
-      for (const v of val) walk(v, visit);
+      for (const v of val) walk(v, visit, inner);
     } else if (val && typeof val === "object") {
-      walk(val, visit);
+      walk(val, visit, inner);
     }
   }
 };
@@ -49,21 +132,24 @@ const collectTopLevelObjectBindings = (ast: AstNode): ObjectBindings =>
 // top-level object bindings so generated route objects can share a loader
 // registry without losing their route-to-import association.
 //
-// Only identifiers in *value* position resolve to a binding. `walk` is neither
-// scope- nor parent-aware, so property keys (`{ admin: false }`), member
+// Only identifiers in *value* position resolve to a binding. `walk` is not
+// parent-aware, so property keys (`{ admin: false }`), member
 // properties (`layouts.admin`), and parameter names (`(admin) => ...`) all
 // arrive as plain `Identifier` nodes; treating those as references would
-// attribute an unrelated registry's imports to this route.
+// attribute an unrelated registry's imports to this route. Likewise a value
+// whose name is rebound by an enclosing function or block is not a reference.
 const collectImportSpecs = (
   node: AstNode,
   objectBindings: ObjectBindings,
+  shadowed: Shadowed,
   visitedBindings = new Set<string>(),
 ): string[] => {
   const out: string[] = [];
   const referenced: AstNode[] = [];
 
-  const considerReference = (candidate: AstNode) => {
+  const considerReference = (candidate: AstNode, scope: Shadowed) => {
     if (candidate?.type !== "Identifier") return;
+    if (scope.has(candidate.name)) return;
     if (visitedBindings.has(candidate.name)) return;
     const binding = objectBindings.get(candidate.name);
     if (!binding) return;
@@ -74,20 +160,32 @@ const collectImportSpecs = (
 
   // A shared registry reaches a route either as the sibling value itself
   // (`{ path, schemaImports }`) or as a nested property value.
-  considerReference(node);
+  considerReference(node, shadowed);
 
-  walk(node, (n) => {
-    if (n.type === "ImportExpression") {
-      const spec = literalString(n.source);
-      if (spec) out.push(spec);
-      return;
-    }
+  walk(
+    node,
+    (n, scope) => {
+      if (n.type === "ImportExpression") {
+        const spec = literalString(n.source);
+        if (spec) out.push(spec);
+        return;
+      }
 
-    if (n.type === "Property") considerReference(n.value);
-  });
+      if (n.type === "Property") considerReference(n.value, scope);
+    },
+    shadowed,
+  );
 
+  // A registry is a top-level object, so nothing outside it shadows its body.
   for (const binding of referenced) {
-    out.push(...collectImportSpecs(binding, objectBindings, visitedBindings));
+    out.push(
+      ...collectImportSpecs(
+        binding,
+        objectBindings,
+        new Set(),
+        visitedBindings,
+      ),
+    );
   }
   return out;
 };
@@ -97,6 +195,7 @@ const collectImportSpecs = (
 export const matchPathObject = (
   node: AstNode,
   objectBindings: ObjectBindings = new Map(),
+  shadowed: Shadowed = new Set(),
 ): { root: string; specs: string[] } | undefined => {
   if (node.type !== "ObjectExpression") return;
   let root: string | undefined;
@@ -110,7 +209,7 @@ export const matchPathObject = (
   }
   if (!root) return;
   const specs = siblingValues.flatMap((value) =>
-    collectImportSpecs(value, objectBindings),
+    collectImportSpecs(value, objectBindings, shadowed),
   );
   if (specs.length === 0) return;
   return { root, specs };
@@ -142,6 +241,20 @@ export const matchRouteDict = (
   return pairs;
 };
 
+export const findRouteImports = (
+  ast: AstNode,
+): Array<{ spec: string; root: string }> => {
+  const tasks: Array<{ spec: string; root: string }> = [];
+  const objectBindings = collectTopLevelObjectBindings(ast);
+  walk(ast, (node, shadowed) => {
+    const a = matchPathObject(node, objectBindings, shadowed);
+    if (a) for (const spec of a.specs) tasks.push({ spec, root: a.root });
+    const b = matchRouteDict(node);
+    if (b) for (const { spec, root } of b) tasks.push({ spec, root });
+  });
+  return tasks;
+};
+
 // Auto-registers route-shaped dynamic imports. Covers plugin-docs,
 // plugin-api, and user custom pages without plugin-side changes.
 export const protectedAnnotatorPlugin = (): Plugin => ({
@@ -165,16 +278,7 @@ export const protectedAnnotatorPlugin = (): Plugin => ({
       return;
     }
 
-    const tasks: Array<{ spec: string; root: string }> = [];
-    const objectBindings = collectTopLevelObjectBindings(ast);
-    walk(ast, (node) => {
-      const a = matchPathObject(node, objectBindings);
-      if (a) for (const spec of a.specs) tasks.push({ spec, root: a.root });
-      const b = matchRouteDict(node);
-      if (b) for (const { spec, root } of b) tasks.push({ spec, root });
-    });
-
-    for (const { spec, root } of tasks) {
+    for (const { spec, root } of findRouteImports(ast)) {
       const resolved = await this.resolve(spec, id);
       if (!resolved || resolved.external) {
         this.warn(

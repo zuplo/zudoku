@@ -99,7 +99,9 @@ export const GraphQLPlayground = ({
       onEditHeaders={(headers) => onOperationChange?.({ headers })}
       shouldPersistHeaders
       hideToolbarButtons
-      resetKey={operation?.id ?? "empty"}
+      // Must match the id the workbench gives the operation created by the
+      // first edit (0), or that edit remounts GraphiQL.
+      resetKey={operation?.id ?? 0}
       className={cn(
         "h-full border rounded-lg overflow-hidden bg-background font-sans text-foreground",
         className,

@@ -236,7 +236,16 @@ enum SecuritySchemeType {
 
 type Server {
   description: String
+  name: String
   url: String!
+  variables: [ServerVariable!]!
+}
+
+type ServerVariable {
+  default: String!
+  description: String
+  enum: [String!]
+  name: String!
 }
 
 type TagItem {
