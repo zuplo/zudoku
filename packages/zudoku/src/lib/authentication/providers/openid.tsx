@@ -1,3 +1,4 @@
+import type { JWTPayload } from "jose";
 import * as oauth from "oauth4webapi";
 import { ErrorBoundary } from "react-error-boundary";
 import type { NavigateFunction } from "react-router";
@@ -23,6 +24,41 @@ import { redirectToSignUpUrl } from "./util.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
+
+// ID token claims that describe the token or the sign-in event rather than
+// the user. UserInfo never returns them, so they are dropped when the profile
+// is built from the ID token instead.
+const ID_TOKEN_PROTOCOL_CLAIMS = new Set([
+  "iss",
+  "aud",
+  "exp",
+  "iat",
+  "nbf",
+  "jti",
+  "nonce",
+  "azp",
+  "at_hash",
+  "c_hash",
+  "s_hash",
+  "auth_time",
+  "acr",
+  "amr",
+  "sid",
+]);
+
+const userInfoFromIdTokenClaims = (
+  claims: oauth.IDToken,
+): oauth.UserInfoResponse => ({
+  ...Object.fromEntries(
+    Object.entries(claims).filter(
+      ([key]) => !ID_TOKEN_PROTOCOL_CLAIMS.has(key),
+    ),
+  ),
+  sub: claims.sub,
+});
+
+const stringClaim = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
 
 const decodeJwtExp = async (token: string): Promise<number | undefined> => {
   try {
@@ -85,8 +121,10 @@ export class OpenIDAuthenticationProvider
     "acr_values",
   ];
   private readonly allowInsecureRequests: boolean;
+  private readonly disableUserInfo: boolean;
   private readonly sessionEndpoint: string;
   private serverSessionHydration?: Promise<OpenIdProviderData | undefined>;
+  private jwks?: ReturnType<typeof import("jose").createRemoteJWKSet>;
 
   constructor({
     issuer,
@@ -102,6 +140,7 @@ export class OpenIDAuthenticationProvider
     authorizationParams,
     forwardAuthorizationParams,
     allowInsecureRequests,
+    disableUserInfo,
   }: OpenIDAuthenticationConfig) {
     super();
     this.client = {
@@ -115,6 +154,7 @@ export class OpenIDAuthenticationProvider
     this.sessionEndpoint = joinUrl(basePath, SESSION_ENDPOINT_PATH);
     this.scopes = scopes ?? ["openid", "profile", "email"];
     this.allowInsecureRequests = allowInsecureRequests ?? false;
+    this.disableUserInfo = disableUserInfo ?? false;
 
     this.redirectToAfterSignUp = redirectToAfterSignUp;
     this.redirectToAfterSignIn = redirectToAfterSignIn;
@@ -169,24 +209,46 @@ export class OpenIDAuthenticationProvider
     return as;
   }
 
+  // The `iss` a JWT access token must carry when it is verified without
+  // UserInfo. Called with the payload only after its signature checked out.
+  protected getExpectedAccessTokenIssuer(
+    as: oauth.AuthorizationServer,
+    _payload: Record<string, unknown>,
+  ): string {
+    return as.issuer;
+  }
+
+  // Off when the config opts out (`disableUserInfo: true`) or the issuer doesn't
+  // advertise the endpoint. The profile then comes from the ID token in the
+  // browser, and from the verified JWT access token on the server.
+  protected usesUserInfo(as: oauth.AuthorizationServer): boolean {
+    return !this.disableUserInfo && typeof as.userinfo_endpoint === "string";
+  }
+
   /**
    * Sets the tokens from various OAuth responses
    * @param response
+   * @param previous The token state a refresh replaces. Refresh responses
+   *   usually omit the ID token, so the last one is kept: its claims are the
+   *   profile when UserInfo is off, and it is the `id_token_hint` at sign-out.
    */
-  protected setTokensFromResponse(response: oauth.TokenEndpointResponse) {
+  protected setTokensFromResponse(
+    response: oauth.TokenEndpointResponse,
+    previous?: OpenIdProviderData,
+  ) {
     if (!response.expires_in) {
       throw new AuthorizationError("No expires_in in response");
     }
 
     const claims = response.id_token
       ? oauth.getValidatedIdTokenClaims(response)
-      : undefined;
+      : previous?.claims;
 
     const tokens: OpenIdProviderData = {
       type: "openid",
       accessToken: response.access_token,
       refreshToken: response.refresh_token,
-      idToken: response.id_token,
+      idToken: response.id_token ?? previous?.idToken,
       expiresOn: new Date(Date.now() + response.expires_in * 1000),
       tokenType: response.token_type,
       claims,
@@ -264,6 +326,15 @@ export class OpenIDAuthenticationProvider
     token: string,
   ): Promise<VerifyAccessTokenResult> {
     const authServer = await this.getAuthServer();
+    return this.usesUserInfo(authServer)
+      ? this.verifyAccessTokenWithUserInfo(authServer, token)
+      : this.verifyJwtAccessToken(authServer, token);
+  }
+
+  private async verifyAccessTokenWithUserInfo(
+    authServer: oauth.AuthorizationServer,
+    token: string,
+  ): Promise<VerifyAccessTokenResult> {
     const response = await oauth.userInfoRequest(
       authServer,
       this.client,
@@ -291,6 +362,85 @@ export class OpenIDAuthenticationProvider
     };
   }
 
+  // A token the issuer minted for another application must not open a session
+  // here. With `audience` set, jwtVerify has already checked `aud`. Without
+  // it, this client has to be named in `aud` or in the claim saying who the
+  // token was issued to: `azp` (OIDC), `client_id` (RFC 9068) or `cid` (Okta).
+  private isIssuedToThisClient(payload: JWTPayload): boolean {
+    if (this.audience) return true;
+
+    const clientId = this.client.client_id;
+    const audiences =
+      typeof payload.aud === "string" ? [payload.aud] : (payload.aud ?? []);
+    return (
+      audiences.includes(clientId) ||
+      [payload.azp, payload.client_id, payload.cid].includes(clientId)
+    );
+  }
+
+  // Without UserInfo the access token has to be a JWT signed by the issuer: it
+  // is checked against the issuer's JWKS, must expire, and must be issued to
+  // this application. The profile comes from its claims. Opaque tokens can't
+  // be verified this way, so they are rejected.
+  private async verifyJwtAccessToken(
+    authServer: oauth.AuthorizationServer,
+    token: string,
+  ): Promise<VerifyAccessTokenResult> {
+    if (!authServer.jwks_uri) {
+      throw new AuthorizationError(
+        "The issuer advertises no jwks_uri, so access tokens can't be verified without UserInfo",
+      );
+    }
+
+    const jose = await import("jose");
+    this.jwks ??= jose.createRemoteJWKSet(new URL(authServer.jwks_uri));
+
+    try {
+      const { payload } = await jose.jwtVerify(token, this.jwks, {
+        // jwtVerify only checks `exp` when present; a token without one could
+        // keep opening sessions forever.
+        requiredClaims: ["exp"],
+        ...(this.audience && { audience: this.audience }),
+      });
+
+      const sub = stringClaim(payload.sub);
+      if (
+        !sub ||
+        payload.iss !==
+          this.getExpectedAccessTokenIssuer(authServer, payload) ||
+        !this.isIssuedToThisClient(payload)
+      ) {
+        return undefined;
+      }
+
+      return {
+        profile: {
+          sub,
+          email: stringClaim(payload.email),
+          name: stringClaim(payload.name),
+          emailVerified: Boolean(payload.email_verified),
+          pictureUrl: stringClaim(payload.picture),
+        },
+        expiresAt: typeof payload.exp === "number" ? payload.exp : undefined,
+      };
+    } catch (e) {
+      // A JWKS that can't be loaded is an outage (→ 502, cookies kept), not a
+      // bad token. jose reports a non-200 or unparsable JWKS response as a
+      // bare JOSEError, which carries the generic code.
+      if (
+        e instanceof jose.errors.JWKSTimeout ||
+        e instanceof jose.errors.JWKSInvalid ||
+        (e instanceof jose.errors.JOSEError &&
+          e.code === jose.errors.JOSEError.code)
+      ) {
+        throw e;
+      }
+      // Any other JOSEError is an invalid, expired or opaque token (→ 401).
+      if (e instanceof jose.errors.JOSEError) return undefined;
+      throw e;
+    }
+  }
+
   public async refreshUserProfile(): Promise<boolean> {
     // SSR mode doesn't persist `providerData`; tokens live only in the
     // httpOnly cookie. Without client-side tokens we can't call userInfo —
@@ -300,17 +450,25 @@ export class OpenIDAuthenticationProvider
     const accessToken = await this.getAccessToken();
     const authServer = await this.getAuthServer();
 
-    const userInfoResponse = await oauth.userInfoRequest(
-      authServer,
-      this.client,
-      accessToken,
-      this.oauthOptions,
-    );
-    const userInfo = await userInfoResponse.json();
-
     const { providerData } = useAuthState.getState();
     const claims =
       providerData?.type === "openid" ? providerData.claims : undefined;
+
+    let userInfo: oauth.UserInfoResponse;
+    if (this.usesUserInfo(authServer)) {
+      const userInfoResponse = await oauth.userInfoRequest(
+        authServer,
+        this.client,
+        accessToken,
+        this.oauthOptions,
+      );
+      userInfo = await userInfoResponse.json();
+    } else {
+      // No ID token to build from, e.g. a session restored from the SSR
+      // cookie. Keep the profile we already have.
+      if (!claims) return false;
+      userInfo = userInfoFromIdTokenClaims(claims);
+    }
 
     const profile = this.buildUserProfile(userInfo, claims);
 
@@ -510,7 +668,7 @@ export class OpenIDAuthenticationProvider
         throw new AuthorizationError("No access token in response");
       }
 
-      this.setTokensFromResponse(result);
+      this.setTokensFromResponse(result, tokenState);
 
       return result.access_token.toString();
     } else {
@@ -603,7 +761,7 @@ export class OpenIDAuthenticationProvider
           throw new AuthorizationError("No access token in response");
         }
 
-        this.setTokensFromResponse(result);
+        this.setTokensFromResponse(result, tokenState);
       } catch {
         useAuthState.getState().setLoggedOut();
         return;
@@ -666,29 +824,13 @@ export class OpenIDAuthenticationProvider
       response,
     );
 
+    if (!this.usesUserInfo(authServer) && !oauthResult.id_token) {
+      throw new AuthorizationError(
+        "The token response contains no ID token, and UserInfo is disabled or not offered by the issuer, so there is no user profile to sign in with. Request the `openid` scope.",
+      );
+    }
+
     this.setTokensFromResponse(oauthResult);
-
-    const accessToken = await this.getAccessToken();
-
-    const { providerData } = useAuthState.getState();
-    const claims =
-      providerData?.type === "openid" ? providerData.claims : undefined;
-
-    const userInfoResponse = await oauth.userInfoRequest(
-      authServer,
-      this.client,
-      accessToken,
-      this.oauthOptions,
-    );
-    const userInfo = await userInfoResponse.json();
-
-    const profile = this.buildUserProfile(userInfo, claims);
-
-    useAuthState.setState({
-      isAuthenticated: true,
-      isPending: false,
-      profile,
-    });
     await this.refreshUserProfile();
 
     const redirectTo = sessionStorage.getItem("redirect-to") ?? "/";
