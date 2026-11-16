@@ -69,6 +69,11 @@ export const getFirstMatchingPath = (item: NavigationItem): string => {
     case "link":
       return item.to;
     case "category": {
+      // `landing` wins over `link` so a category can point elsewhere than the
+      // path that identifies it (see `getItemPath`).
+      if (item.landing) {
+        return joinUrl(getCategoryLinkHref(item.landing));
+      }
       if (item.link) {
         return joinUrl(getCategoryLinkHref(item.link));
       }
@@ -93,15 +98,14 @@ export const getFirstMatchingPath = (item: NavigationItem): string => {
 export const cleanPath = (path: string) =>
   joinUrl(path.split("?").at(0)?.split("#").at(0) ?? "");
 
-// Returns the item's path or its first navigable descendant's path.
+// Returns the item's landing target, its own path, or its first navigable
+// descendant's path.
 export const sectionLanding = (item: NavigationItem) =>
-  getItemPath(item) ?? getFirstMatchingPath(item);
+  getFirstMatchingPath(item);
 
-// Where a `stack` category drills to: its link target, else its first page.
+// Where a `stack` category drills to: its landing/link target, else its first page.
 export const stackCategoryTarget = (category: NavigationCategory) =>
-  category.link
-    ? joinUrl(getCategoryLinkHref(category.link))
-    : getFirstMatchingPath(category);
+  getFirstMatchingPath(category);
 
 export const navigationItemKey = (item: NavigationItem) =>
   item.type +
@@ -152,13 +156,15 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
 
   return traverseNavigationItem(category, (item) => {
     switch (item.type) {
-      case "category":
-        if (!item.link) {
+      case "category": {
+        const target = item.landing ?? item.link;
+        if (!target) {
           return undefined;
         }
-        return joinUrl(getCategoryLinkHref(item.link)) === pathname
+        return joinUrl(getCategoryLinkHref(target)) === pathname
           ? true
           : undefined;
+      }
       case "custom-page":
       case "doc":
         return joinUrl(item.path) === pathname ? true : undefined;
@@ -190,11 +196,14 @@ export const usePrevNext = (): {
     )
       return;
 
+    const categoryTarget =
+      item.type === "category" ? (item.landing ?? item.link) : undefined;
+
     const itemId =
       item.type === "doc"
         ? joinUrl(item.path)
-        : item.type === "category" && item.link
-          ? joinUrl(getCategoryLinkHref(item.link))
+        : categoryTarget
+          ? joinUrl(getCategoryLinkHref(categoryTarget))
           : undefined;
 
     if (!itemId) return;
