@@ -189,7 +189,7 @@ export const ApiKeysList = ({
                 const keyId = deleteKeyMutation.variables?.keyId;
                 if (!keyId) return;
 
-                deleteKeyMutation.mutateAsync({ keyId });
+                deleteKeyMutation.mutate({ keyId });
               }}
             >
               Retry
@@ -214,7 +214,7 @@ export const ApiKeysList = ({
                 isActive={true}
                 label="Current Key"
                 onDelete={() =>
-                  deleteKeyMutation.mutateAsync({ keyId: activeKey.id })
+                  deleteKeyMutation.mutate({ keyId: activeKey.id })
                 }
               />
             </PendingFirstPaymentAlert>
@@ -230,9 +230,7 @@ export const ApiKeysList = ({
               expiresOn={activeKey.expiresOn}
               isActive={true}
               label="Current Key"
-              onDelete={() =>
-                deleteKeyMutation.mutateAsync({ keyId: activeKey.id })
-              }
+              onDelete={() => deleteKeyMutation.mutate({ keyId: activeKey.id })}
             />
           ))}
 
@@ -248,7 +246,8 @@ export const ApiKeysList = ({
             expiresOn={apiKey.expiresOn}
             isActive={false}
             label="Previous Key"
-            onDelete={() => deleteKeyMutation.mutateAsync({ keyId: apiKey.id })}
+            isDeleting={deleteKeyMutation.isPending}
+            onDelete={() => deleteKeyMutation.mutate({ keyId: apiKey.id })}
           />
         ))}
       </div>

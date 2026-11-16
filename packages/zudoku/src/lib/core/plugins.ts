@@ -1,5 +1,10 @@
 import type { LucideIcon } from "lucide-react";
-import type { HTMLAttributeAnchorTarget, ReactNode } from "react";
+import type {
+  ComponentType,
+  HTMLAttributeAnchorTarget,
+  PropsWithChildren,
+  ReactNode,
+} from "react";
 import type { Location, RouteObject } from "react-router";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type { ProtectedRoutesInput } from "../../config/validators/ProtectedRoutesSchema.js";
@@ -100,6 +105,14 @@ export interface CommonPlugin {
   ) => Promise<void | boolean> | void | boolean;
   getHead?: (args: { location: Location }) => ReactNode | undefined;
   getMdxComponents?: () => MdxComponentsType;
+  /**
+   * A component that wraps the rendered app, e.g. a React context provider
+   * from a third-party library. It renders inside Zudoku's own providers, so
+   * hooks like `useZudoku` work, and mounts once all plugins finished
+   * `initialize`. Providers nest in plugin order: the first plugin's
+   * `Provider` is the outermost one.
+   */
+  Provider?: ComponentType<PropsWithChildren>;
 }
 
 export type EventConsumerPlugin<Event extends ZudokuEvents = ZudokuEvents> = {
@@ -139,6 +152,13 @@ export const hasHead = (obj: ZudokuPlugin): obj is CommonPlugin =>
 
 export const isMdxProviderPlugin = (obj: ZudokuPlugin): obj is CommonPlugin =>
   "getMdxComponents" in obj && typeof obj.getMdxComponents === "function";
+
+// Not a `typeof === "function"` check: `memo`, `lazy` and `forwardRef`
+// components are objects.
+export const hasProvider = (
+  obj: ZudokuPlugin,
+): obj is CommonPlugin & Required<Pick<CommonPlugin, "Provider">> =>
+  "Provider" in obj && obj.Provider != null;
 
 export const isApiIdentityPlugin = (
   obj: ZudokuPlugin,

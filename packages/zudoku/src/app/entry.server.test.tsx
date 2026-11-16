@@ -1,4 +1,4 @@
-import { use } from "react";
+import { Suspense, use } from "react";
 import { Outlet, type RouteObject } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RenderContext } from "../lib/components/context/RenderContext.js";
@@ -15,6 +15,7 @@ vi.mock("virtual:zudoku-config", () => ({
       llms: { llmsTxt: true },
     },
     sitemap: { siteUrl: "https://example.com" },
+    protectedRoutes: ["/docs/*"],
   },
 }));
 
@@ -54,8 +55,26 @@ const ExistingStatus = ({ status }: { status: number }) => {
   return <Outlet />;
 };
 
+// Created per test so the boundary is still pending on React's first render
+// pass and only completes before the stream is read.
+let deferredContent: Promise<string>;
+
+const DeferredPage = () => <main>{use(deferredContent)}</main>;
+
 const routes: RouteObject[] = [
   { path: "/", element: <main>Home</main> },
+  {
+    path: "/deferred",
+    // Nested in an element like `Layout` does: React never outlines a boundary
+    // rendered at the root, so this mirrors the real page structure.
+    element: (
+      <div>
+        <Suspense fallback={<div>Loading fallback</div>}>
+          <DeferredPage />
+        </Suspense>
+      </div>
+    ),
+  },
   { path: "/404", element: <main>Explicit status page</main> },
   {
     path: "/protected",
@@ -192,5 +211,42 @@ describe("handleRequest", () => {
     );
     expect(response.headers.get("Vary")).toBe("Accept");
     await expect(response.text()).resolves.toBe("");
+  });
+
+  // With basePath "/docs", a page at "/docs/intro" is served at
+  // /docs/docs/intro. Its route path is relative to the basename, so
+  // "/docs/*" protects it and its chunk must not load for a signed-out user.
+  it("does not load a protected chunk for a route under the basePath", async () => {
+    const protectedLazy = vi.fn(async () => ({
+      element: <main>Protected content</main>,
+    }));
+    const response = await handleRequest({
+      template,
+      request: new Request("http://localhost/docs/docs/intro", {
+        headers: { Accept: "text/html" },
+      }),
+      routes: [{ path: "/docs/intro", lazy: protectedLazy }, notFoundRoute],
+      basePath: "/docs",
+    });
+
+    expect(protectedLazy).not.toHaveBeenCalled();
+    await expect(response.text()).resolves.not.toContain("Protected content");
+  });
+
+  it("inlines large suspended content instead of deferring it to a script", async () => {
+    deferredContent = new Promise((resolve) => {
+      setTimeout(() => resolve("Deferred paragraph. ".repeat(1000)), 10);
+    });
+    const response = await renderPath("/deferred", { accept: "text/html" });
+    const body = await response.text();
+
+    expect(response.status).toBe(200);
+    // React outlines completed boundaries above `progressiveChunkSize` into a
+    // hidden segment swapped in by an inline script. Crawlers without JS would
+    // only see the fallback, so the content must be rendered in place.
+    expect(body).toContain("<main>Deferred paragraph. ");
+    expect(body).not.toContain("Loading fallback");
+    expect(body).not.toContain('<div hidden id="S:');
+    expect(body).not.toContain('<template id="B:');
   });
 });

@@ -1,7 +1,7 @@
 import { UndoIcon } from "lucide-react";
 import { AnimatePresence, LazyMotion, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Link } from "react-router";
 import { cn } from "../../util/cn.js";
 import { NavigationItem } from "./NavigationItem.js";
@@ -25,10 +25,12 @@ const variants = {
 
 export const NavigationFrames = ({
   frame,
+  section,
   onRequestClose,
   className,
 }: {
   frame: NavigationFrame;
+  section?: string;
   onRequestClose?: () => void;
   className?: string;
 }) => {
@@ -89,13 +91,20 @@ export const NavigationFrames = ({
                 </span>
               </Link>
             )}
-            {frame.items.map((item) => (
-              <NavigationItem
-                key={navigationItemKey(item)}
-                item={item}
-                onRequestClose={onRequestClose}
-              />
-            ))}
+            {/* Categories keep their open state in local useState and are keyed
+                by label, so without this key a same-label category in another
+                section would be reused with its state. Keying by section remounts
+                the items on a section switch, while the frame itself stays
+                mounted so a plain section switch doesn't slide. */}
+            <Fragment key={section}>
+              {frame.items.map((item) => (
+                <NavigationItem
+                  key={navigationItemKey(item)}
+                  item={item}
+                  onRequestClose={onRequestClose}
+                />
+              ))}
+            </Fragment>
           </m.div>
         </AnimatePresence>
       </div>

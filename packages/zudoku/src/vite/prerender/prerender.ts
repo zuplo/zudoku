@@ -23,6 +23,7 @@ import { generateSitemap } from "../sitemap.js";
 import {
   routesToPrerenderPaths,
   routesToRewrites,
+  withoutDynamicRedirectRoutes,
   selectPagesToIndex,
 } from "./utils.js";
 import type { StaticWorkerData, WorkerData } from "./worker.js";
@@ -87,7 +88,10 @@ export const prerender = async ({
   const module = await import(entryServerPath);
   const getRoutes = module.getRoutesByConfig as typeof getRoutesByConfig;
 
-  const routes = getRoutes(config);
+  const routes = withoutDynamicRedirectRoutes(
+    getRoutes(config),
+    config.redirects,
+  );
   const paths = routesToPrerenderPaths(routes, config.redirects);
   const rewrites = routesToRewrites(routes);
   const { maxThreads, maxOldGenerationSizeMb } = getWorkerScaling(

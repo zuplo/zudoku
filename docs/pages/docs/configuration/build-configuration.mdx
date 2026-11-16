@@ -114,10 +114,17 @@ export default {
 An array of [Rehype](https://github.com/rehypejs/rehype) plugins to transform HTML content. These
 plugins run after Markdown is converted to HTML.
 
+For example, to render math with [KaTeX](https://katex.org), add `rehype-katex` together with
+`remark-math`, which parses `$...$` and `$$...$$` math in Markdown. KaTeX also needs its stylesheet,
+which you can import in your `zudoku.config.ts` like any other
+[custom CSS](../customization/colors-theme.mdx#custom-css) (`import "katex/dist/katex.min.css";`).
+
 ```ts
 import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
 
 export default {
+  remarkPlugins: [remarkMath],
   rehypePlugins: [rehypeKatex],
 };
 ```

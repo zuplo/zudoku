@@ -361,7 +361,7 @@ const LandingPage = () => {
           href="https://zudoku.dev/docs"
           className="hover:drop-shadow transition-all duration-300 text-xl rounded-full bg-black text-white px-8 py-3 flex items-center gap-2 w-fit self-center group"
         >
-          Learn More{" "}
+          Learn More<span className="sr-only"> about Zudoku</span>{" "}
           <ArrowRightIcon
             size={20}
             className="group-hover:translate-x-1 transition-all duration-300"

@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { $RefParser } from "@apidevtools/json-schema-ref-parser";
-import { upgrade } from "@scalar/openapi-parser";
 import { deepEqual } from "fast-equals";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
@@ -23,6 +22,7 @@ import {
   type OpenApiPublication,
 } from "./openapi-publication.js";
 import { generateCode } from "./schema-codegen.js";
+import { upgradeOpenApi } from "./upgradeOpenApi.js";
 
 type ProcessedSchema = {
   schema: OpenAPIDocument;
@@ -104,14 +104,7 @@ export class SchemaManager {
     this.storeDir = storeDir;
     this.config = config;
     this.processors = [
-      ({ schema }) => {
-        const upgraded = upgrade(schema as unknown as Record<string, unknown>)
-          .specification as OpenAPIDocument;
-        if (upgraded?.info && typeof upgraded.info.version !== "string") {
-          upgraded.info.version = "0.0.1";
-        }
-        return upgraded;
-      },
+      ({ schema }) => upgradeOpenApi(schema),
       flattenAllOfProcessor,
       ...processors,
     ];

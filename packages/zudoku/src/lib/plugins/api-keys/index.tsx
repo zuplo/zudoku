@@ -11,6 +11,7 @@ import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import invariant from "../../util/invariant.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { throwIfProblemJson } from "../../util/problemJson.js";
+import { fetchSigned } from "./fetchSigned.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
 const DEFAULT_GATEWAY_URL = "https://api.zuploedge.com";
@@ -93,7 +94,7 @@ const createZuploService = ({
           method: "DELETE",
         },
       );
-      const response = await fetch(await context.signRequest(request));
+      const response = await fetchSigned(context, request);
       await throwIfProblemJson(response);
       invariant(response.ok, "Failed to delete API key");
     },
@@ -103,23 +104,22 @@ const createZuploService = ({
         "Cannot update API key description.",
         developerHintOptions,
       );
-      const response = await fetch(
-        await context.signRequest(
-          new Request(
-            joinUrl(
-              getApiKeyEndpoint(context),
-              `${deploymentName}/consumers/${consumer.id}`,
-            ),
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                label: consumer.label,
-              }),
-            },
+      const response = await fetchSigned(
+        context,
+        new Request(
+          joinUrl(
+            getApiKeyEndpoint(context),
+            `${deploymentName}/consumers/${consumer.id}`,
           ),
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              label: consumer.label,
+            }),
+          },
         ),
       );
       await throwIfProblemJson(response);
@@ -127,21 +127,20 @@ const createZuploService = ({
     },
     rollKey: async (consumerId, context) => {
       invariant(deploymentName, "Cannot roll API key.", developerHintOptions);
-      const response = await fetch(
-        await context.signRequest(
-          new Request(
-            joinUrl(
-              getApiKeyEndpoint(context),
-              `${deploymentName}/consumers/${consumerId}/roll-key`,
-            ),
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({}),
-            },
+      const response = await fetchSigned(
+        context,
+        new Request(
+          joinUrl(
+            getApiKeyEndpoint(context),
+            `${deploymentName}/consumers/${consumerId}/roll-key`,
           ),
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          },
         ),
       );
       await throwIfProblemJson(response);
@@ -152,9 +151,7 @@ const createZuploService = ({
       const request = new Request(
         joinUrl(getApiKeyEndpoint(context), `${deploymentName}/consumers`),
       );
-      await context.signRequest(request);
-
-      const keys = await fetch(request);
+      const keys = await fetchSigned(context, request);
       await throwIfProblemJson(keys);
       invariant(keys.ok, "Failed to fetch API keys");
 
