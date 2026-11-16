@@ -5,6 +5,7 @@ import { vitePluginSsrCss } from "./css/plugin.js";
 import viteApiKeysPlugin from "./plugin-api-keys.js";
 import viteApiPlugin from "./plugin-api.js";
 import viteAuthPlugin from "./plugin-auth.js";
+import viteBlogPlugin from "./plugin-blog.js";
 import { viteConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteConfigPlugin from "./plugin-config.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
@@ -28,6 +29,7 @@ export default function vitePlugin(): PluginOption {
     viteCustomPagesPlugin(),
     viteAuthPlugin(),
     viteDocsPlugin(),
+    viteBlogPlugin(),
     viteDocMetadataPlugin(),
     viteNavigationPlugin(),
     viteApiPlugin(),

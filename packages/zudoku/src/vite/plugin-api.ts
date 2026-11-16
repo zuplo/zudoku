@@ -21,6 +21,7 @@ import {
   type OasDocumentType,
   type VersionedInput,
 } from "../lib/plugins/openapi/interfaces.js";
+import { removeInternal } from "../lib/plugins/openapi/processors/removeInternal.js";
 import {
   countMcpServers,
   countOperations,
@@ -51,6 +52,7 @@ export const generateDefaultApiOptionsCode = () => [
   `  supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
   `  disablePlayground: config.defaults?.apis?.disablePlayground,`,
   `  disableSidecar: config.defaults?.apis?.disableSidecar,`,
+  `  disableRequestBox: config.defaults?.apis?.disableRequestBox,`,
   `  disableSecurity: config.defaults?.apis?.disableSecurity ?? true,`,
   `  disableMcpAuthInstructions: config.defaults?.apis?.disableMcpAuthInstructions,`,
   `  showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
@@ -59,13 +61,28 @@ export const generateDefaultApiOptionsCode = () => [
   `};`,
 ];
 
+const UNSAFE_CODE_CHARS: Record<string, string> = {
+  "<": "\\u003C",
+  ">": "\\u003E",
+  "\u2028": "\\u2028",
+  "\u2029": "\\u2029",
+};
+
+// JSON.stringify yields a valid JS string literal; additionally escape the
+// characters that are unsafe once generated code is inlined into HTML.
+const toCodeString = (value: string) =>
+  JSON.stringify(value).replace(
+    /[<>\u2028\u2029]/g,
+    (char) => UNSAFE_CODE_CHARS[char] ?? char,
+  );
+
 export const generateSchemaImportsCode = (
   schemaImports: { importKey: string; processedTime: number }[],
 ) => [
   "const schemaImports = {",
   ...schemaImports.map(
     (schema) =>
-      `  ${JSON.stringify(schema.importKey)}: () => import(${JSON.stringify(`${schema.importKey.replaceAll("\\", "/")}?d=${schema.processedTime}`)}),`,
+      `  ${toCodeString(schema.importKey)}: () => import(${toCodeString(`${schema.importKey.replaceAll("\\", "/")}?d=${schema.processedTime}`)}),`,
   ),
   "};",
 ];
@@ -128,7 +145,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
     PROCESSED_STORE_SUBPATH,
   );
 
-  const processors = [...buildProcessors, ...zuploProcessors];
+  const processors = [...buildProcessors, removeInternal(), ...zuploProcessors];
   const schemaManager = new SchemaManager({
     storeDir: tmpStoreDir,
     config: initialConfig,

@@ -27,7 +27,20 @@ export type ServersQueryQueryVariables = Exact<{
 }>;
 
 export type ServersQueryQuery = {
-  schema: { url: string | null; servers: Array<{ url: string }> };
+  schema: {
+    url: string | null;
+    servers: Array<{
+      url: string;
+      name: string | null;
+      description: string | null;
+      variables: Array<{
+        name: string;
+        default: string;
+        enum: Array<string> | null;
+        description: string | null;
+      }>;
+    }>;
+  };
 };
 
 export type GetMcpCatalogQueryVariables = Exact<{
@@ -49,7 +62,14 @@ export type GetMcpCatalogQuery = {
         operationId: string | null;
         path: string;
         extensions: any;
-        servers: Array<{ url: string }>;
+        servers: Array<{
+          url: string;
+          variables: Array<{
+            name: string;
+            default: string;
+            enum: Array<string> | null;
+          }>;
+        }>;
       }>;
     }>;
   };
@@ -65,7 +85,17 @@ export type OperationsFragmentFragment = {
   path: string;
   deprecated: boolean | null;
   extensions: any;
-  servers: Array<{ url: string; description: string | null }>;
+  servers: Array<{
+    url: string;
+    name: string | null;
+    description: string | null;
+    variables: Array<{
+      name: string;
+      default: string;
+      enum: Array<string> | null;
+      description: string | null;
+    }>;
+  }>;
   parameters: Array<{
     name: string;
     in: ParameterIn;
@@ -166,7 +196,17 @@ export type OperationsForTagQuery = {
     title: string;
     url: string | null;
     version: string;
-    servers: Array<{ url: string }>;
+    servers: Array<{
+      url: string;
+      name: string | null;
+      description: string | null;
+      variables: Array<{
+        name: string;
+        default: string;
+        enum: Array<string> | null;
+        description: string | null;
+      }>;
+    }>;
     tag: {
       name: string | null;
       description: string | null;
@@ -284,7 +324,20 @@ export type GetServerQueryQueryVariables = Exact<{
 }>;
 
 export type GetServerQueryQuery = {
-  schema: { url: string | null; servers: Array<{ url: string }> };
+  schema: {
+    url: string | null;
+    servers: Array<{
+      url: string;
+      name: string | null;
+      description: string | null;
+      variables: Array<{
+        name: string;
+        default: string;
+        enum: Array<string> | null;
+        description: string | null;
+      }>;
+    }>;
+  };
 };
 
 export type GetNavigationOperationsQueryVariables = Exact<{
@@ -354,7 +407,14 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   extensions
   servers {
     url
+    name
     description
+    variables {
+      name
+      default
+      enum
+      description
+    }
   }
   parameters {
     name
@@ -466,6 +526,14 @@ export const ServersQueryDocument = new TypedDocumentString(`
     url
     servers {
       url
+      name
+      description
+      variables {
+        name
+        default
+        enum
+        description
+      }
     }
   }
 }
@@ -490,6 +558,11 @@ export const GetMcpCatalogDocument = new TypedDocumentString(`
         extensions
         servers {
           url
+          variables {
+            name
+            default
+            enum
+          }
         }
       }
     }
@@ -504,6 +577,14 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   schema(input: $input, type: $type) {
     servers {
       url
+      name
+      description
+      variables {
+        name
+        default
+        enum
+        description
+      }
     }
     description
     summary
@@ -543,7 +624,14 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   extensions
   servers {
     url
+    name
     description
+    variables {
+      name
+      default
+      enum
+      description
+    }
   }
   parameters {
     name
@@ -761,6 +849,14 @@ export const GetServerQueryDocument = new TypedDocumentString(`
     url
     servers {
       url
+      name
+      description
+      variables {
+        name
+        default
+        enum
+        description
+      }
     }
   }
 }

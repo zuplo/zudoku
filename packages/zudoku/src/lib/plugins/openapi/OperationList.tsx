@@ -15,6 +15,7 @@ import { UNTAGGED_PATH } from "./index.js";
 import { OperationListItem } from "./OperationListItem.js";
 import { useSelectedServer } from "./state.js";
 import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
+import { readSeoExtension } from "./util/seoExtension.js";
 import { useWarmupSchema } from "./util/useWarmupSchema.js";
 
 export const OperationsFragment = graphql(/* GraphQL */ `
@@ -30,7 +31,14 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     extensions
     servers {
       url
+      name
       description
+      variables {
+        name
+        default
+        enum
+        description
+      }
     }
     parameters {
       name
@@ -145,6 +153,14 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
     schema(input: $input, type: $type) {
       servers {
         url
+        name
+        description
+        variables {
+          name
+          default
+          enum
+          description
+        }
       }
       description
       summary
@@ -192,7 +208,7 @@ export const OperationList = ({
     untagged,
   });
   const schema = useSuspenseQuery(query).data.schema;
-  const { selectedServer: globalSelectedServer } = useSelectedServer(
+  const { resolvedServer: globalSelectedServer } = useSelectedServer(
     schema.servers,
   );
   const title = schema.title;
@@ -227,6 +243,7 @@ export const OperationList = ({
   }
 
   const { operations, next, prev, description: tagDescription } = schema.tag;
+  const seo = readSeoExtension(schema.tag.extensions);
 
   // Simple heuristic to determine if we should lazy highlight the code
   // This is to avoid the performance issues when there are a lot of operations
@@ -235,13 +252,15 @@ export const OperationList = ({
   // The summary property is preferable here as it is a short description of
   // the API, whereas the description property is typically longer and supports
   // commonmark formatting, making it ill-suited for use in the meta description
-  const metaDescription = tagDescription
-    ? sanitizeMarkdownForMetatag(tagDescription)
-    : summary
-      ? summary
-      : description
-        ? sanitizeMarkdownForMetatag(description)
-        : undefined;
+  const metaDescription =
+    seo.description ??
+    (tagDescription
+      ? sanitizeMarkdownForMetatag(tagDescription)
+      : summary
+        ? summary
+        : description
+          ? sanitizeMarkdownForMetatag(description)
+          : undefined);
 
   const paginationProps = {
     prev: prev
@@ -269,7 +288,10 @@ export const OperationList = ({
     ? "Other endpoints"
     : (schema.tag.extensions?.["x-displayName"] ?? schema.tag.name);
 
-  const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
+  // `x-zudoku-seo` only affects the document head, the sidebar and heading
+  // keep using `x-displayName`
+  const helmetTitle =
+    seo.title ?? [tagTitle, title].filter(Boolean).join(" - ");
 
   return (
     <div

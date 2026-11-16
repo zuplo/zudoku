@@ -23,7 +23,6 @@ import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
 import { protectedAnnotatorPlugin } from "./protected/annotator.js";
 import { getProtectedSourceMatcher } from "./protected/registry.js";
-import { getZuploSystemConfigurations } from "./zuplo.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
@@ -39,6 +38,35 @@ export const getAppServerEntryPath = () =>
 let hasLoggedCdnInfo = false;
 const MEDIA_REGEX =
   /\.(a?png|jpe?g|gif|bmp|svg|webp|tiff|ico|webm|ogg|mp3|wav|m4a|avif|mp4)/i;
+
+/**
+ * Seeds Vite's dependency scanner with Zudoku's own source.
+ *
+ * `zudoku` is in `optimizeDeps.exclude`, so its source is served to the browser
+ * unbundled and its bare imports have to be pre-bundled by name. When Zudoku is
+ * installed normally its source lives inside `node_modules`, and Vite skips
+ * runtime dependency discovery for any importer under `node_modules` (it serves
+ * the raw file with a `?v=` query instead). This scan is therefore the only
+ * chance to find those dependencies — anything it misses reaches the browser as
+ * raw CommonJS and fails to parse as ESM.
+ *
+ * The scan aborts wholesale on a single unresolvable import, so the entries must
+ * not include modules that only resolve in another environment.
+ */
+export const getDepScanEntries = () => {
+  const src = path.posix.join(getZudokuRootDir(), "src");
+
+  return [
+    `${src}/{app,lib}/**/*.{ts,tsx}`,
+    // Client-environment scan: `entry.server.tsx` imports
+    // `virtual:zudoku-markdown-files`, which only the `ssr` environment
+    // provides. Including it fails the scan and disables pre-bundling entirely.
+    `!${getAppServerEntryPath()}`,
+    // Not published, but present in the monorepo — keeps local dev scanning the
+    // same file set an installed site does (and out of vitest's dependencies).
+    `!${src}/**/*.test.*`,
+  ];
+};
 
 const defineEnvVars = (vars: string[]) =>
   Object.fromEntries(
@@ -96,10 +124,7 @@ export async function getViteConfig(
     });
   }
 
-  const deploymentName =
-    ZuploEnv.buildConfig?.deploymentName ||
-    getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
-      ?.__ZUPLO_DEPLOYMENT_NAME;
+  const deploymentName = ZuploEnv.deploymentName;
 
   const viteConfig: InlineConfig = {
     root: dir,
@@ -129,10 +154,13 @@ export async function getViteConfig(
       "import.meta.env.ZUDOKU_HAS_SERVER": JSON.stringify(options.ssr === true),
       "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME":
         JSON.stringify(deploymentName),
+      // Derived value only; the raw env var is read at build time.
+      "import.meta.env.ZUPLO_DEV_PORTAL_ZUPLO_BRANDING": JSON.stringify(
+        ZuploEnv.devPortalZuploBranding,
+      ),
       ...defineEnvVars([
         "SENTRY_DSN",
         "ZUPLO_BUILD_ID",
-        "ZUPLO_BUILD_CONFIG",
         "ZUPLO_ENVIRONMENT_TYPE",
         "ZUPLO_SERVER_URL",
         "ZUPLO_GATEWAY_SERVICE_URL",
@@ -229,7 +257,7 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
-      entries: [path.posix.join(getZudokuRootDir(), "src/{app,lib}/**")],
+      entries: getDepScanEntries(),
       exclude: ["zudoku"],
       include: [
         "@mdx-js/react",

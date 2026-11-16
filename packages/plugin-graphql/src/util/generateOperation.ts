@@ -30,11 +30,23 @@ export const generateGraphQLOperation = ({
   index: SchemaIndex;
 }): GeneratedGraphQLOperation => {
   const operationName = toOperationName(field.name);
+  // Only required arguments get an example value. A placeholder for an optional
+  // argument silently changes what the operation does (`states: [""]` filters by
+  // an empty string, `resultSize: 0` asks for nothing) and usually makes the
+  // request fail. Optional arguments stay declared in the document so they are
+  // easy to discover, but are left out of the variables, so they are not sent.
   const variables = Object.fromEntries(
-    field.args.map((arg) => [arg.name, getExampleValue(arg.type, index)]),
+    field.args
+      .filter(isRequiredInput)
+      .map((arg) => [arg.name, getExampleValue(arg.type, index)]),
   );
   const variableDefinitions = field.args
-    .map((arg) => `$${arg.name}: ${formatType(arg.type)}`)
+    .map(
+      (arg) =>
+        `$${arg.name}: ${formatType(arg.type)}${
+          arg.defaultValue == null ? "" : ` = ${arg.defaultValue}`
+        }`,
+    )
     .join(", ");
   const argumentList = field.args
     .map((arg) => `${arg.name}: $${arg.name}`)
@@ -204,7 +216,12 @@ const prioritizeFields = (fields: readonly IntrospectionField[]) => {
 };
 
 const hasRequiredArgs = (field: IntrospectionField) =>
-  field.args.some((arg) => arg.defaultValue == null && isNonNull(arg.type));
+  field.args.some(isRequiredInput);
+
+// An input is only required if omitting it is an error: a default value makes
+// the argument optional even when its type is non-null.
+const isRequiredInput = (input: IntrospectionInputValue) =>
+  input.defaultValue == null && isNonNull(input.type);
 
 const isNonNull = (type: IntrospectionTypeRef) => type.kind === "NON_NULL";
 
@@ -217,14 +234,15 @@ const isLeafType = (type: IntrospectionTypeRef, index: SchemaIndex) => {
 const getExampleValue = (
   type: IntrospectionTypeRef,
   index: SchemaIndex,
+  seen = new Set<string>(),
 ): unknown => {
   if (type.kind === "NON_NULL") {
-    return getExampleValue(type.ofType, index);
+    return getExampleValue(type.ofType, index, seen);
   }
 
-  if (type.kind === "LIST") {
-    return [getExampleValue(type.ofType, index)];
-  }
+  // An empty list is the only safe example for a list: a single placeholder
+  // element reads as a real value, so `[String]` would be filtered by `[""]`.
+  if (type.kind === "LIST") return [];
 
   const resolvedType = index.getType(type.name);
 
@@ -232,28 +250,37 @@ const getExampleValue = (
     case "SCALAR":
       return getScalarExample(type.name);
     case "ENUM":
-      return (resolvedType as IntrospectionEnumType).enumValues[0]?.name ?? "";
+      return getEnumExample(resolvedType);
     case "INPUT_OBJECT":
-      return getInputObjectExample(resolvedType, index);
+      return getInputObjectExample(resolvedType, index, seen);
     default:
       return null;
   }
 };
 
+const getEnumExample = (type: IntrospectionEnumType) =>
+  (type.enumValues.find((value) => !value.isDeprecated) ?? type.enumValues[0])
+    ?.name ?? null;
+
 const getInputObjectExample = (
   type: IntrospectionInputObjectType,
   index: SchemaIndex,
-) =>
-  Object.fromEntries(
-    type.inputFields
-      .filter((field) => field.defaultValue == null && isNonNull(field.type))
-      .map((field) => [field.name, getInputFieldExample(field, index)]),
-  );
+  seen: Set<string>,
+): unknown => {
+  // Input objects can require each other in a cycle; stop instead of recursing
+  // forever (no valid example exists for such a field anyway).
+  if (seen.has(type.name)) return null;
+  const nextSeen = new Set(seen).add(type.name);
 
-const getInputFieldExample = (
-  field: IntrospectionInputValue,
-  index: SchemaIndex,
-) => getExampleValue(field.type, index);
+  return Object.fromEntries(
+    type.inputFields
+      .filter(isRequiredInput)
+      .map((field) => [
+        field.name,
+        getExampleValue(field.type, index, nextSeen),
+      ]),
+  );
+};
 
 const getScalarExample = (name: string) => {
   switch (name) {

@@ -26,6 +26,7 @@ import {
   ZudokuSignUpDisabledUi,
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
+import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
 import { redirectToSignUpUrl } from "./util.js";
 
 export type SupabaseProviderData = {
@@ -143,10 +144,9 @@ class SupabaseAuthenticationProvider
       redirectToSignUpUrl(this.signUpConfig.url, navigate, replace);
       return;
     }
+    const target = this.config.redirectToAfterSignUp ?? redirectTo;
     void navigate(
-      redirectTo
-        ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`
-        : `/signup`,
+      target ? `/signup?redirectTo=${encodeURIComponent(target)}` : `/signup`,
     );
   };
 
@@ -154,10 +154,9 @@ class SupabaseAuthenticationProvider
     { navigate }: AuthActionContext,
     { redirectTo }: AuthActionOptions,
   ) => {
+    const target = this.config.redirectToAfterSignIn ?? redirectTo;
     void navigate(
-      redirectTo
-        ? `/signin?redirectTo=${encodeURIComponent(redirectTo)}`
-        : `/signin`,
+      target ? `/signin?redirectTo=${encodeURIComponent(target)}` : `/signin`,
     );
   };
 
@@ -253,15 +252,36 @@ class SupabaseAuthenticationProvider
     }
   };
 
-  private onOAuthSignIn = async (providerId: string) => {
+  // Absolute URL Supabase sends the user back to after OAuth. The configured
+  // value wins, then the page's `redirectTo` (set by signIn/signUp), limited to
+  // this origin so it can't become an open redirect.
+  private getOAuthRedirectUrl(configured?: string) {
+    if (configured && URL.canParse(configured)) return configured;
+
+    const redirectTo =
+      configured ??
+      getRelativeRedirectUrl(
+        new URLSearchParams(window.location.search).get("redirectTo"),
+      );
+    const base = joinUrl(window.location.origin, this.config.basePath);
+    const url = URL.canParse(redirectTo)
+      ? new URL(redirectTo)
+      : new URL(joinUrl(base, redirectTo));
+
+    return url.origin === window.location.origin ? url.toString() : base;
+  }
+
+  private onOAuthSignIn = (providerId: string) =>
+    this.startOAuth(providerId, this.config.redirectToAfterSignIn);
+
+  private onOAuthSignUp = (providerId: string) =>
+    this.startOAuth(providerId, this.config.redirectToAfterSignUp);
+
+  private startOAuth = async (providerId: string, configured?: string) => {
     useAuthState.setState({ isPending: true });
     const { error } = await this.client.auth.signInWithOAuth({
       provider: providerId as Provider,
-      options: {
-        redirectTo:
-          this.config.redirectToAfterSignIn ??
-          joinUrl(window.location.origin, this.config.basePath),
-      },
+      options: { redirectTo: this.getOAuthRedirectUrl(configured) },
     });
     if (error) {
       useAuthState.setState({ isPending: false });
@@ -371,7 +391,7 @@ class SupabaseAuthenticationProvider
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
-            onOAuthSignUp={this.onOAuthSignIn}
+            onOAuthSignUp={this.onOAuthSignUp}
             onUsernamePasswordSignUp={this.onUsernamePasswordSignUp}
           />
         ),

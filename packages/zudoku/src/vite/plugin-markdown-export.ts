@@ -31,7 +31,7 @@ export type MarkdownFileInfo = {
 const MARKDOWN_FILES_MODULE_ID = "virtual:zudoku-markdown-files";
 const RESOLVED_MARKDOWN_FILES_MODULE_ID = `\0${MARKDOWN_FILES_MODULE_ID}`;
 
-const processMarkdownFile = async (
+export const processMarkdownFile = async (
   filePath: string,
 ): Promise<{ content: string; title?: string; description?: string }> => {
   const { content: markdownContent, data: frontmatter } =
@@ -46,7 +46,7 @@ const processMarkdownFile = async (
   return {
     content: finalMarkdown,
     title: frontmatter.title,
-    description: frontmatter.description,
+    description: frontmatter.seo?.description ?? frontmatter.description,
   };
 };
 

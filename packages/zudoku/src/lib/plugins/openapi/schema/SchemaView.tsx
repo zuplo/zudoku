@@ -17,11 +17,27 @@ import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { SchemaRefLink } from "./SchemaRefLink.js";
 import { UnionView } from "./UnionView.js";
-import { getSchemaRefName, isArrayType, isBasicType } from "./utils.js";
+import {
+  getEnumDescriptions,
+  getSchemaRefName,
+  isArrayType,
+  isBasicType,
+  isCircularRef,
+  unwrapNullableUnion,
+} from "./utils.js";
 
-const RootRefLabel = ({ name }: { name: string }) => (
+const RootRefLabel = ({
+  name,
+  nullable,
+}: {
+  name: string;
+  nullable?: boolean;
+}) => (
   <div className="text-xs font-semibold flex items-center gap-1.5 px-4 py-2 border-b bg-muted/40">
     <SchemaRefLink name={name} />
+    {nullable && (
+      <span className="font-normal text-muted-foreground">| null</span>
+    )}
   </div>
 );
 
@@ -37,13 +53,19 @@ const renderBasicSchema = (
   schema: SchemaObject,
   cardHeader?: React.ReactNode,
   embedded?: boolean,
+  nullable?: boolean,
 ) => {
   const content = (
     <>
       <span className="text-sm text-muted-foreground">
-        <ParamInfos schema={schema} />
+        <ParamInfos schema={schema} nullable={nullable} />
       </span>
-      {schema.enum && <EnumValues values={schema.enum} />}
+      {schema.enum && (
+        <EnumValues
+          values={schema.enum}
+          descriptions={getEnumDescriptions(schema)}
+        />
+      )}
       {renderMarkdown(schema.description)}
       <SchemaExampleAndDefault schema={schema} />
     </>
@@ -116,12 +138,14 @@ const ObjectSchemaView = ({
   cardHeader,
   embedded,
   rootRefName,
+  nullable,
 }: {
   schema: SchemaObject;
   defaultOpen: boolean;
   cardHeader?: React.ReactNode;
   embedded?: boolean;
   rootRefName?: string;
+  nullable?: boolean;
 }) => {
   const [showDeprecated, setShowDeprecated] = useState(false);
   const deprecatedRef = useRef<HTMLDivElement>(null);
@@ -222,7 +246,9 @@ const ObjectSchemaView = ({
       )}
       {(hasPanelContent || rootRefName) && (
         <FramePanel className="p-0!">
-          {rootRefName && <RootRefLabel name={rootRefName} />}
+          {rootRefName && (
+            <RootRefLabel name={rootRefName} nullable={nullable} />
+          )}
           {itemsList}
           {deprecatedProperties && (
             <div ref={deprecatedRef} id={deprecatedId} hidden={!showDeprecated}>
@@ -266,7 +292,7 @@ const ObjectSchemaView = ({
 };
 
 export const SchemaView = ({
-  schema,
+  schema: rootSchema,
   defaultOpen = false,
   cardHeader,
   embedded,
@@ -278,6 +304,10 @@ export const SchemaView = ({
   embedded?: boolean;
   hideRootRef?: boolean;
 }) => {
+  const { schema, nullable } = rootSchema
+    ? unwrapNullableUnion(rootSchema)
+    : { schema: rootSchema, nullable: false };
+
   if (!schema || Object.keys(schema).length === 0) {
     return (
       <Frame>
@@ -304,13 +334,14 @@ export const SchemaView = ({
   }
 
   if (isBasicType(schema.type)) {
-    return renderBasicSchema(schema, cardHeader, embedded);
+    return renderBasicSchema(schema, cardHeader, embedded, nullable);
   }
 
   if (isArrayType(schema) && typeof schema.items === "object") {
+    // Wrap the original schema, so the property row can label it `| null`
     const wrappedSchema: SchemaObject = {
       type: "object",
-      properties: { "": schema },
+      properties: { "": rootSchema ?? schema },
     };
 
     return (
@@ -328,7 +359,13 @@ export const SchemaView = ({
         cardHeader={cardHeader}
         embedded={embedded}
         rootRefName={rootRefName}
+        nullable={nullable}
       />
     );
   }
+
+  if (isCircularRef(schema)) return null;
+
+  // Schemas without a type, e.g. raw binary (`{ contentMediaType: "image/png" }`)
+  return renderBasicSchema(schema, cardHeader, embedded, nullable);
 };

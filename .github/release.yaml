@@ -7,9 +7,15 @@ changelog:
       labels:
         - breaking-change
         - deprecation
+    - title: Behavior Changes ⚠️
+      labels:
+        - behavior-change
     - title: New Features 🎉
       labels:
         - feature
+    - title: Improvements ✨
+      labels:
+        - improvement
     - title: Bug Fixes 🐛
       labels:
         - bug
