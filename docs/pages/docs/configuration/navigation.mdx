@@ -357,8 +357,7 @@ type NavigationCustomPage = {
   type: "custom-page";
   path: string;
   label?: string;
-  element?: any;
-  lazy?: () => Promise<{ default: React.ComponentType }>;
+  element: React.ReactNode | (() => Promise<{ default: React.ComponentType }>);
   icon?: string; // Lucide icon name
   layout?: "default" | "none";
   badge?: {
@@ -380,19 +379,19 @@ type NavigationCustomPage = {
 Set `layout: "none"` to render the page without the default Zudoku layout (header, sidebar, footer).
 This is useful for fully custom landing pages.
 
-Use `lazy` instead of `element` to load the page in its own chunk. It takes a function returning a
-module whose default export is the page component:
+To load the page in its own chunk, pass a function that imports a module whose default export is the
+page component:
 
 ```tsx
 {
   type: "custom-page",
   path: "/a-custom-page",
-  lazy: () => import("./src/MyCustomPage"),
+  element: () => import("./src/MyCustomPage"),
 }
 ```
 
-Use `lazy` for pages behind [protected routes](../guides/server-side-content-protection.md) so their
-code stays out of the public bundle.
+Lazy-load pages behind [protected routes](../guides/server-side-content-protection.md) so their code
+stays out of the public bundle.
 
 ### `type: separator`
 

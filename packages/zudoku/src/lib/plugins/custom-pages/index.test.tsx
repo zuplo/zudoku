@@ -8,7 +8,7 @@ it("resolves a lazy custom page to its default export", async () => {
       {
         type: "custom-page",
         path: "/lazy",
-        lazy: () => Promise.resolve({ default: Page }),
+        element: () => Promise.resolve({ default: Page }),
       },
     ]).getRoutes?.() ?? [];
 

@@ -63,15 +63,6 @@ describe("InputNavigationSchema", () => {
     expect(result).toEqual([{ type: "separator", display }]);
   });
 
-  it("keeps a custom-page lazy loader", () => {
-    const lazy = () => Promise.resolve({ default: () => null });
-    const result = InputNavigationSchema.parse([
-      { type: "custom-page", path: "/lazy", lazy },
-    ]);
-
-    expect(result).toEqual([{ type: "custom-page", path: "/lazy", lazy }]);
-  });
-
   it("rejects items with an invalid type", () => {
     const result = InputNavigationSchema.safeParse([{ type: "lnk", to: "/" }]);
 
