@@ -83,8 +83,8 @@ dicts.
 | -------------------------------- | ----------------------------- | -------------- |
 | MDX docs (`plugin-docs`)         | Shape B (route dict)          | ✅             |
 | File OpenAPI (`plugin-api`)      | Shape A (via `openApiPlugin`) | ✅             |
-| User custom pages with `lazy`    | Shape A (`{path, lazy}`)      | ✅             |
-| User custom pages with `element` | Not code-split                | ❌ (see below) |
+| Lazy custom pages                | Shape A (`{path, element}`)   | ✅             |
+| Inline JSX custom pages          | Not code-split                | ❌ (see below) |
 | URL-based OpenAPI (`type: url`)  | Fetched at runtime            | ❌ (see below) |
 | Raw inline OpenAPI (`type: raw`) | Inlined in main bundle        | ❌ (see below) |
 
@@ -100,7 +100,7 @@ not detected:
 navigation: items.map((i) => ({
   type: "custom-page",
   path: `/foo/${i.slug}`,
-  lazy: () => import(`./Foo-${i.slug}`),
+  element: () => import(`./Foo-${i.slug}`),
 }));
 ```
 
@@ -114,7 +114,7 @@ them:
   items: items.map((i) => ({
     type: "custom-page",
     path: i.slug,
-    lazy: () => import(`./Foo-${i.slug}`),
+    element: () => import(`./Foo-${i.slug}`),
   })),
 }
 ```
@@ -134,10 +134,10 @@ Writing
 ships `<Secret />` directly in the main bundle. There's no chunk to gate and no URL to block; the
 runtime `RouteGuard` prevents rendering but the JavaScript is already on the user's machine.
 
-**Fix:** switch to `lazy`:
+**Fix:** lazy-load it:
 
 ```ts
-{ type: "custom-page", path: "/secret", lazy: () => import("./Secret") }
+{ type: "custom-page", path: "/secret", element: () => import("./Secret") }
 ```
 
 ### URL-based OpenAPI specs
@@ -194,7 +194,7 @@ server-side, use an SSR adapter.
 ## Pre-ship checklist
 
 - [ ] Build passes (any unmatched `protectedRoutes` pattern fails the build).
-- [ ] Any custom pages meant to be protected use `lazy: () => import(...)`, not `element`.
+- [ ] Any custom pages meant to be protected use `element: () => import(...)`, not inline JSX.
 - [ ] Any dynamically-generated protected routes are nested under a static-path ancestor.
 - [ ] URL-based and raw inline OpenAPI specs have their own access control at their origin.
 - [ ] Visit a protected chunk URL directly in an unauthenticated browser (grab one from DevTools)

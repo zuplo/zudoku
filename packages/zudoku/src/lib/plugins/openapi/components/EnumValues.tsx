@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
 import { cn } from "../../../util/cn.js";
 import { SelectOnClick } from "./SelectOnClick.js";
@@ -7,9 +7,11 @@ import { SelectOnClick } from "./SelectOnClick.js";
 export const EnumValues = ({
   values,
   className,
+  descriptions,
   maxVisibleValues = 8,
 }: {
   values: Array<string | number>;
+  descriptions?: Record<string, string>;
   className?: string;
   maxVisibleValues?: number;
 }) => {
@@ -24,13 +26,30 @@ export const EnumValues = ({
   return (
     <div className={cn("flex flex-wrap gap-1.5", className)}>
       <span className="text-muted-foreground">Enum values:</span>
-      {visibleValues.map((value) => (
-        <div key={value}>
-          <SelectOnClick className="border rounded-sm px-1 font-mono">
-            {value}
-          </SelectOnClick>
-        </div>
-      ))}
+      {descriptions ? (
+        <dl className="basis-full grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
+          {visibleValues.map((value) => (
+            <Fragment key={value}>
+              <dt>
+                <SelectOnClick className="border rounded-sm px-1 font-mono">
+                  {value}
+                </SelectOnClick>
+              </dt>
+              <dd className="text-muted-foreground">
+                {descriptions[String(value)]}
+              </dd>
+            </Fragment>
+          ))}
+        </dl>
+      ) : (
+        visibleValues.map((value) => (
+          <div key={value}>
+            <SelectOnClick className="border rounded-sm px-1 font-mono">
+              {value}
+            </SelectOnClick>
+          </div>
+        ))
+      )}
       {shouldCollapse && (
         <Button
           variant="ghost"

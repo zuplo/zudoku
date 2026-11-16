@@ -17,9 +17,13 @@ export const customPagesPlugin = (
 
     traverseNavigation(navigation, (item) => {
       if (item.type === "custom-page") {
+        const { element } = item;
         customPages.push({
           path: item.path,
-          element: item.element,
+          // `element: () => import("./Page")` lazy-loads the default export
+          ...(typeof element === "function"
+            ? { lazy: async () => ({ Component: (await element()).default }) }
+            : { element }),
           handle: {
             layout: item.layout ?? "default",
           },

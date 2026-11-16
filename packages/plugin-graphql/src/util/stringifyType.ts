@@ -1,22 +1,9 @@
 import type { TypeWrapper } from "./unwrapType.js";
 
-export const stringifyType = (
-  name: string,
-  wrappers: TypeWrapper[],
-): string => {
-  const [left, right] = wrappers.reduce<[string, string]>(
-    ([l, r], kind) => {
-      switch (kind) {
-        case "NON_NULL":
-          return [l, `${r}!`];
-        case "LIST":
-          return [`${l}[`, `${r}]`];
-        default:
-          return [l, r];
-      }
-    },
-    ["", ""],
+// `wrappers` is ordered outermost-first (see `unwrapType`), so wrap the name
+// starting from the innermost wrapper: [LIST, NON_NULL] is `[T!]`, not `[T]!`.
+export const stringifyType = (name: string, wrappers: TypeWrapper[]): string =>
+  wrappers.reduceRight(
+    (type, kind) => (kind === "LIST" ? `[${type}]` : `${type}!`),
+    name,
   );
-
-  return `${left}${name}${right}`;
-};

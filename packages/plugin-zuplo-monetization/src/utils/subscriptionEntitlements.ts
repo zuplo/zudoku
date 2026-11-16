@@ -255,11 +255,31 @@ const phaseRateCards = (
     ? subscriptionItemsToRateCards(phase.items)
     : (plan.phases?.find((p) => p.key === phase.key)?.rateCards ?? []);
 
+/**
+ * A phase that ends where it starts never runs. The backend leaves phases like
+ * that in place: cancelling a trial at its end cuts the paid phase after it to
+ * zero length, and a returning customer's skipped trial starts and ends at
+ * once. Such phases are neither upcoming nor previous, and nothing is billed
+ * for them.
+ */
+const neverRuns = ({
+  activeFrom,
+  activeTo,
+}: {
+  activeFrom: string;
+  activeTo?: string;
+}) => {
+  if (!activeTo) return false;
+  return new Date(activeTo).getTime() <= new Date(activeFrom).getTime();
+};
+
 const phasesByActiveFrom = (subscription: Subscription) =>
-  [...subscription.phases].sort(
-    (a, b) =>
-      new Date(a.activeFrom).getTime() - new Date(b.activeFrom).getTime(),
-  );
+  subscription.phases
+    .filter((phase) => !neverRuns(phase))
+    .sort(
+      (a, b) =>
+        new Date(a.activeFrom).getTime() - new Date(b.activeFrom).getTime(),
+    );
 
 /**
  * A clean ISO-8601 duration between two instants, preferring whole calendar

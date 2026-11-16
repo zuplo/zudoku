@@ -119,11 +119,7 @@ export const handleRequest = async ({
   const effectiveRoutes = wrapProtectedRoutesForRender(
     routes,
     config.protectedRoutes,
-    {
-      isAuthenticated: !!ssrAuth?.profile,
-      bypassProtection,
-      basePath,
-    },
+    { isAuthenticated: !!ssrAuth?.profile, bypassProtection },
   );
 
   const { query, dataRoutes } = createStaticHandler(effectiveRoutes, {
@@ -186,6 +182,12 @@ export const handleRequest = async ({
 
   try {
     const reactStream = await renderToReadableStream(App, {
+      // The stream is only read after `allReady`, so nothing is streamed
+      // progressively anyway. Without this, React outlines completed Suspense
+      // boundaries larger than the default chunk size (12.8 kB) into a hidden
+      // segment swapped in by an inline script, leaving only the fallback
+      // visible to clients that don't run JS (AI crawlers, curl, reader mode).
+      progressiveChunkSize: Number.MAX_SAFE_INTEGER,
       onError(error) {
         status = 500;
         logger.error(`SSR Error (${request.method} ${request.url}):`, error);
@@ -344,7 +346,7 @@ export type MountOptions<T = Hono> = {
 
 declare const __ZUDOKU_TEMPLATE__: string;
 
-export const mount = <T = Hono>(
+export const mount = <T = Hono,>(
   app: Hono,
   options: MountOptions<T> = {},
 ): T => {
@@ -362,5 +364,5 @@ export const mount = <T = Hono>(
   return (options.adapter?.finalize?.(app) ?? app) as T;
 };
 
-export const createServer = <T = Hono>(options: MountOptions<T> = {}): T =>
+export const createServer = <T = Hono,>(options: MountOptions<T> = {}): T =>
   mount(createApp(), options);

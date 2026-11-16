@@ -121,12 +121,15 @@ const NavigationCategoryInner = ({
               search: location.search,
             }}
             className={styles}
-            onClick={() => {
+            onClick={(event) => {
+              // The chevron toggle prevents default to collapse without navigating
+              if (event.defaultPrevented) return;
               // if it is the current path and closed then open it because there's no path change to trigger the open
               if (isActive && !open) {
                 setHasInteracted(true);
                 setOpen(true);
               }
+              onRequestClose?.();
             }}
           >
             {({ isActive: linkActive, isPending }) => (

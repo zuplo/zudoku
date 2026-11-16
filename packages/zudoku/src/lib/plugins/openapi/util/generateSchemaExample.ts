@@ -1,5 +1,5 @@
 import type { SchemaObject } from "../../../oas/graphql/index.js";
-import { isCircularRef } from "../schema/utils.js";
+import { isBinarySchema, isCircularRef } from "../schema/utils.js";
 
 const isIntegerSchema = (schema: SchemaObject): boolean =>
   schema.type === "integer" ||
@@ -81,6 +81,10 @@ export const generateSchemaExample = (
     schema.examples.length > 0
   ) {
     return schema.examples[0];
+  }
+
+  if (isBinarySchema(schema)) {
+    return "<binary>";
   }
 
   if (schemaType === "object" && schema.properties) {

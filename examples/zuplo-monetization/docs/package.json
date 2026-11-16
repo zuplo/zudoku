@@ -24,7 +24,7 @@
     "@zuplo/zudoku-plugin-monetization": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-hook-form": "^7.83.0",
+    "react-hook-form": "^7.89.0",
     "zudoku": "workspace:*"
   },
   "devDependencies": {
