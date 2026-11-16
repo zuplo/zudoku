@@ -42,9 +42,10 @@ export const useRefreshUserProfile = ({
     },
     // The query cache doesn't survive a reload, but the persisted profile
     // does. Seeding the query with it, dated by the last fetch, lets
-    // `staleTime` skip the refresh on a fresh page load.
+    // `staleTime` skip the refresh on a fresh page load. A profile without a
+    // fetch time (e.g. persisted by an older version) counts as stale.
     initialData: profile ? true : undefined,
-    initialDataUpdatedAt: profileFetchedAt ?? undefined,
+    initialDataUpdatedAt: profileFetchedAt ?? 0,
   });
 };
 

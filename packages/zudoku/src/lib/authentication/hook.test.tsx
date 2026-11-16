@@ -79,6 +79,16 @@ describe("useRefreshUserProfile", () => {
     );
   });
 
+  test("refreshes on mount when the persisted profile has no fetch time", async () => {
+    useAuthState.setState({ profile: PROFILE, profileFetchedAt: null });
+    const { refreshUserProfile, wrapper } = setup();
+
+    renderHook(() => useRefreshUserProfile(), { wrapper });
+    await flush();
+
+    expect(refreshUserProfile).toHaveBeenCalledTimes(1);
+  });
+
   test("refreshes on mount when there is no profile", async () => {
     const { refreshUserProfile, wrapper } = setup();
 
