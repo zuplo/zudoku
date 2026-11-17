@@ -233,6 +233,8 @@ Each URL version object requires:
 - `input`: URL to the OpenAPI document
 - `label`: Optional display name for the version selector (defaults to `path` if not provided)
 
+::if{mode=opensource}
+
 ## Server variables
 
 If your OpenAPI document declares
@@ -280,6 +282,8 @@ the variable's `description` under each field.
   its own values, and the **Server** row edits only the document's root servers.
 - **Author-supplied samples:** samples you provide with `x-code-samples` are shown exactly as
   written. Changing a server variable doesn't update a URL inside them.
+
+::
 
 ## Options
 
