@@ -273,9 +273,13 @@ the variable's `description` under each field.
 - **Remembered values:** Zudoku stores the values in the reader's browser, so they are still there
   on the next visit. Values are stored per server URL template. A stored value that is no longer in
   a variable's `enum` is ignored, and the `default` applies instead.
-- **One value everywhere:** the playground sends requests to the resolved URL, and the code samples
-  in the sidecar use the same URL, so what a reader sees in a sample is what the playground calls.
-  The same values also apply to operations and paths that declare their own servers.
+- **Shared by server URL template:** the playground sends requests to the resolved URL, and the code
+  samples Zudoku generates in the sidecar use the same values for the same server, so a generated
+  sample matches what the playground calls. Values are tied to the exact server URL template, not to
+  the variable name. An operation or path that declares a server with a different URL template keeps
+  its own values, and the **Server** row edits only the document's root servers.
+- **Author-supplied samples:** samples you provide with `x-code-samples` are shown exactly as
+  written. Changing a server variable doesn't update a URL inside them.
 
 ## Options
 
