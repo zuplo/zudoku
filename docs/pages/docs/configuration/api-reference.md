@@ -233,6 +233,50 @@ Each URL version object requires:
 - `input`: URL to the OpenAPI document
 - `label`: Optional display name for the version selector (defaults to `path` if not provided)
 
+## Server variables
+
+If your OpenAPI document declares
+[server variables](https://spec.openapis.org/oas/v3.1.0#server-variable-object) in a server URL,
+Zudoku lets readers pick the values themselves. The API reference shows a **Server** row above the
+operations. When the selected server has variables, an **Edit server variables** button appears
+beside its URL. Selecting it opens a panel with the resolved URL and one field per variable, with
+the variable's `description` under each field.
+
+```json title="openapi.json"
+{
+  "servers": [
+    {
+      "url": "https://{sector}.relay.example.com:{port}/{basePath}",
+      "variables": {
+        "sector": {
+          "default": "sol",
+          "enum": ["sol", "alpha-centauri", "proxima"],
+          "description": "Star sector of the relay node"
+        },
+        "port": {
+          "default": "8443",
+          "description": "Relay port"
+        },
+        "basePath": {
+          "default": "v1"
+        }
+      }
+    }
+  ]
+}
+```
+
+- **Enum values:** a variable with an `enum` renders as a dropdown that offers only the listed
+  values.
+- **Free text:** a variable without an `enum` renders as a text field that shows the `default` as
+  its placeholder. Clearing the field returns the variable to its `default`.
+- **Remembered values:** Zudoku stores the values in the reader's browser, so they are still there
+  on the next visit. Values are stored per server URL template. A stored value that is no longer in
+  a variable's `enum` is ignored, and the `default` applies instead.
+- **One value everywhere:** the playground sends requests to the resolved URL, and the code samples
+  in the sidecar use the same URL, so what a reader sees in a sample is what the playground calls.
+  The same values also apply to operations and paths that declare their own servers.
+
 ## Options
 
 The `options` field allows you to customize the API reference behavior:
