@@ -696,4 +696,48 @@ describe("validateConfig parsed result", () => {
     });
     spy.mockRestore();
   });
+  describe("redirects", () => {
+    it("accepts redirect paths without surrounding whitespace", () => {
+      process.env.NODE_ENV = "production";
+
+      expect(() =>
+        validateConfig({
+          redirects: [
+            { from: "/old page", to: "/new" },
+            { from: "/caf\u00E9", to: "https://example.com/a" },
+          ],
+        }),
+      ).not.toThrow();
+    });
+
+    it("fails the build for a redirect source with a trailing non-breaking space", () => {
+      process.env.NODE_ENV = "production";
+
+      expect(() =>
+        validateConfig({ redirects: [{ from: "/apis\u00A0", to: "/api" }] }),
+      ).toThrow(
+        'Redirect path "/apis\u00A0" has leading or trailing whitespace',
+      );
+    });
+
+    it("fails the build for whitespace around a redirect target", () => {
+      process.env.NODE_ENV = "production";
+
+      expect(() =>
+        validateConfig({ redirects: [{ from: "/apis", to: " /api" }] }),
+      ).toThrow(/redirects\[0\]\.to/);
+    });
+
+    it("only warns about a whitespace redirect in development", () => {
+      process.env.NODE_ENV = "development";
+      const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      validateConfig({ redirects: [{ from: "\u2003/apis", to: "/api" }] });
+
+      expect(spy).toHaveBeenCalledWith(
+        expect.stringContaining("has leading or trailing whitespace"),
+      );
+      spy.mockRestore();
+    });
+  });
 });
