@@ -4,7 +4,12 @@ import { describe, expect, test, vi } from "vitest";
 import firebaseAuth from "./firebase.js";
 
 vi.mock("firebase/app", () => ({ initializeApp: () => ({}) }));
-vi.mock("firebase/auth", () => ({ getAuth: () => ({}) }));
+vi.mock("firebase/auth", () => ({
+  getAuth: () => ({
+    authStateReady: () => Promise.resolve(),
+    currentUser: null,
+  }),
+}));
 
 const buildProvider = (
   options: {
