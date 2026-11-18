@@ -409,9 +409,17 @@ const DocsConfigSchema = z
   // `prefault` so parsing an absent value still yields the inner defaults
   .prefault({});
 
+// Catches paths pasted with stray whitespace, such as a trailing non-breaking
+// space (U+00A0). `trim()` removes every Unicode whitespace character. Such a
+// path never matches a request, and some hosts reject it when deploying.
+const RedirectPath = z.string().refine((path) => path === path.trim(), {
+  error: (issue) =>
+    `Redirect path ${JSON.stringify(issue.input)} has leading or trailing whitespace. Remove it.`,
+});
+
 const Redirect = z.object({
-  from: z.string(),
-  to: z.string(),
+  from: RedirectPath,
+  to: RedirectPath,
 });
 
 const SearchSchema = z
