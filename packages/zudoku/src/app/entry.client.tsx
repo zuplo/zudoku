@@ -12,9 +12,12 @@ import { setupCookieSync } from "../lib/authentication/cookie-sync.js";
 import { SESSION_ENDPOINT_PATH } from "../lib/authentication/cookies.js";
 import { authState } from "../lib/authentication/state.js";
 import { BootstrapClient } from "../lib/components/Bootstrap.js";
+import { activateDeferredStylesheets } from "../lib/util/activateDeferredStylesheets.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { requestIdle } from "../lib/util/requestIdle.js";
 import { getRoutesByConfig, getShikiReady } from "./main.js";
+
+activateDeferredStylesheets();
 
 if (import.meta.env.ZUDOKU_HAS_SERVER) {
   setupCookieSync(authState, joinUrl(config.basePath, SESSION_ENDPOINT_PATH));

@@ -141,6 +141,7 @@
     "@unhead/react": "3.4.2",
     "@vitejs/plugin-react": "6.1.2",
     "@x0k/json-schema-merge": "1.0.4",
+    "beasties": "0.4.3",
     "bs58": "6.0.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",

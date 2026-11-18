@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -6,6 +7,7 @@ import { createBuilder, type Rolldown } from "vite";
 import { ZuploEnv } from "../app/env.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { type ConfigWithMeta, loadZudokuConfig } from "../config/loader.js";
+import { getBuildConfig } from "../config/validators/BuildSchema.js";
 import { getIssuer } from "../lib/auth/issuer.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -22,6 +24,25 @@ import {
 } from "./protected/build.js";
 
 const DIST_DIR = "dist";
+
+const DEFERRED_STYLESHEET_ACTIVATOR =
+  'requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const link of document.querySelectorAll("link[data-zudoku-deferred-stylesheet]")){link.rel="stylesheet";link.removeAttribute("data-zudoku-deferred-stylesheet")}}));';
+
+const writeDeferredStylesheetActivator = async (clientOutDir: string) => {
+  const hash = createHash("sha256")
+    .update(DEFERRED_STYLESHEET_ACTIVATOR)
+    .digest("hex")
+    .slice(0, 8);
+  const fileName = `assets/zudoku-critical-css-${hash}.js`;
+
+  await writeFile(
+    path.join(clientOutDir, fileName),
+    DEFERRED_STYLESHEET_ACTIVATOR,
+    "utf-8",
+  );
+
+  return fileName;
+};
 
 type CssBuildOutput = {
   fileName: string;
@@ -149,9 +170,16 @@ export async function runBuild(options: BuildOptions) {
     );
   }
 
+  const buildConfig = ssr ? undefined : await getBuildConfig();
+  const deferredStylesheetActivator =
+    buildConfig?.prerender?.criticalCss === true
+      ? joinUrl(base, await writeDeferredStylesheetActivator(clientOutDir))
+      : undefined;
+
   const html = getBuildHtml({
     jsEntry: joinUrl(base, jsEntry),
     cssEntries: cssEntries.map((css) => joinUrl(base, css)),
+    deferredStylesheetActivator,
     dir: config.site?.dir,
   });
 
