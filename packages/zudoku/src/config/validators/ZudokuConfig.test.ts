@@ -697,16 +697,14 @@ describe("validateConfig parsed result", () => {
     spy.mockRestore();
   });
   describe("redirects", () => {
-    it("accepts documented redirect forms", () => {
+    it("accepts redirect paths without surrounding whitespace", () => {
       process.env.NODE_ENV = "production";
 
       expect(() =>
         validateConfig({
           redirects: [
-            { from: "/:lang?/old", to: "/:lang/new" },
-            { from: "/dashboard/*", to: "https://dashboard.example.com/*" },
-            { from: "/old", to: "?tab=2" },
-            { from: "/caf\u00E9", to: "/new%20page#top" },
+            { from: "/old page", to: "/new" },
+            { from: "/caf\u00E9", to: "https://example.com/a" },
           ],
         }),
       ).not.toThrow();
@@ -718,7 +716,7 @@ describe("validateConfig parsed result", () => {
       expect(() =>
         validateConfig({ redirects: [{ from: "/apis\u00A0", to: "/api" }] }),
       ).toThrow(
-        'Redirect `from` "/apis\u00A0" contains U+00A0 at position 5. Remove it.',
+        'Redirect path "/apis\u00A0" has leading or trailing whitespace',
       );
     });
 
@@ -737,7 +735,7 @@ describe("validateConfig parsed result", () => {
       validateConfig({ redirects: [{ from: "\u2003/apis", to: "/api" }] });
 
       expect(spy).toHaveBeenCalledWith(
-        expect.stringContaining("contains U+2003 at position 0"),
+        expect.stringContaining("has leading or trailing whitespace"),
       );
       spy.mockRestore();
     });

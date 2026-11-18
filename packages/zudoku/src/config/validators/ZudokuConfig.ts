@@ -19,7 +19,6 @@ import type {
 import type { InkeepSearchPluginOptions } from "../../lib/plugins/search-inkeep/index.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
-import { getRedirectPathError } from "../../lib/util/redirectPattern.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
 import { HeaderNavigationSchema } from "./HeaderNavigationSchema.js";
@@ -410,15 +409,17 @@ const DocsConfigSchema = z
   // `prefault` so parsing an absent value still yields the inner defaults
   .prefault({});
 
-const redirectPath = (field: "from" | "to") =>
-  z.string().superRefine((path, ctx) => {
-    const message = getRedirectPathError(path, field);
-    if (message) ctx.addIssue({ code: "custom", message });
-  });
+// Catches paths pasted with stray whitespace, such as a trailing non-breaking
+// space (U+00A0). `trim()` removes every Unicode whitespace character. Such a
+// path never matches a request, and some hosts reject it when deploying.
+const RedirectPath = z.string().refine((path) => path === path.trim(), {
+  error: (issue) =>
+    `Redirect path ${JSON.stringify(issue.input)} has leading or trailing whitespace. Remove it.`,
+});
 
 const Redirect = z.object({
-  from: redirectPath("from"),
-  to: redirectPath("to"),
+  from: RedirectPath,
+  to: RedirectPath,
 });
 
 const SearchSchema = z

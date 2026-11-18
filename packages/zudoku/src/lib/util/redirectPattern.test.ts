@@ -2,7 +2,6 @@ import { matchRoutes } from "react-router";
 import { describe, expect, it } from "vitest";
 import { joinUrl } from "./joinUrl.js";
 import {
-  getRedirectPathError,
   isDynamicRedirect,
   resolveRedirectTarget,
   toBuildOutputRedirects,
@@ -222,52 +221,5 @@ describe("toBuildOutputRedirects", () => {
         resolveWithRouter(redirects, path),
       );
     }
-  });
-});
-
-describe("getRedirectPathError", () => {
-  it.each([
-    ["/", "from"],
-    ["no-slash", "from"],
-    ["/blog/:slug", "from"],
-    ["/:lang?/old", "from"],
-    ["/v1/*", "from"],
-    ["/caf\u00E9", "from"],
-    ["/posts/:slug/:year?ref=blog#top", "to"],
-    ["?tab=2", "to"],
-    ["#section", "to"],
-    ["/new%20page", "to"],
-    ["https://dashboard.example.com/*", "to"],
-    ["//cdn.example.com/a", "to"],
-  ] as const)("accepts %j as %s", (path, field) => {
-    expect(getRedirectPathError(path, field)).toBeUndefined();
-  });
-
-  it.each([
-    ["/apis\u00A0", "U+00A0 at position 5"],
-    ["\u2003/apis", "U+2003 at position 0"],
-    [
-      "/old page",
-      "U+0020 at position 4. Remove it. Use %20 for a space in a URL.",
-    ],
-    ["/a\u200Bb", "U+200B at position 2"],
-    ["\uFEFF/a", "U+FEFF at position 0"],
-    ["/a\tb", "U+0009 at position 2"],
-    ["/a\nb", "U+000A at position 2"],
-  ])("rejects %j", (path, message) => {
-    expect(getRedirectPathError(path, "from")).toContain(message);
-    expect(getRedirectPathError(path, "to")).toContain(message);
-  });
-
-  it("rejects absolute targets that aren't http(s) URLs", () => {
-    expect(getRedirectPathError("javascript:alert(1)", "to")).toBe(
-      'Redirect `to` "javascript:alert(1)" uses javascript:. Only http: and https: URLs are allowed.',
-    );
-    expect(getRedirectPathError("https://exa mple.com", "to")).toContain(
-      "U+0020",
-    );
-    expect(getRedirectPathError("https://[::1", "to")).toBe(
-      'Redirect `to` "https://[::1" is not a valid URL.',
-    );
   });
 });
