@@ -18,6 +18,9 @@ describe("getBuildHtml", () => {
     expect(html.indexOf("zudoku-critical-css.js")).toBeLessThan(
       html.indexOf("entry.js"),
     );
+    expect(html).toContain(
+      '<script type="module" crossorigin fetchpriority="low" src="/assets/entry.js"></script>',
+    );
   });
 
   test("does not load a separate activator by default", () => {
@@ -27,5 +30,6 @@ describe("getBuildHtml", () => {
     });
 
     expect(html).not.toContain("zudoku-critical-css");
+    expect(html).not.toContain('fetchpriority="low"');
   });
 });

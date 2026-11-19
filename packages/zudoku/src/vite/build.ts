@@ -25,8 +25,8 @@ import {
 
 const DIST_DIR = "dist";
 
-const DEFERRED_STYLESHEET_ACTIVATOR =
-  'requestAnimationFrame(()=>requestAnimationFrame(()=>{for(const link of document.querySelectorAll("link[data-zudoku-deferred-stylesheet]")){link.rel="stylesheet";link.removeAttribute("data-zudoku-deferred-stylesheet")}}));';
+export const DEFERRED_STYLESHEET_ACTIVATOR =
+  '(()=>{const links=document.querySelectorAll("link[data-zudoku-deferred-stylesheet]");if(!links.length)return;let activated=false,timer;const activate=()=>{if(activated)return;activated=true;clearTimeout(timer);document.removeEventListener("visibilitychange",activateIfHidden);for(const link of links){link.rel="stylesheet";link.removeAttribute("data-zudoku-deferred-stylesheet")}},activateIfHidden=()=>{if(document.visibilityState==="hidden")activate()};if(document.visibilityState==="hidden"){activate();return}document.addEventListener("visibilitychange",activateIfHidden);timer=setTimeout(activate,250);requestAnimationFrame(()=>requestAnimationFrame(activate))})();';
 
 const writeDeferredStylesheetActivator = async (clientOutDir: string) => {
   const hash = createHash("sha256")

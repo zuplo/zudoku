@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { getEagerCssEntries } from "./build.js";
+import { DEFERRED_STYLESHEET_ACTIVATOR, getEagerCssEntries } from "./build.js";
+
+test("the critical CSS activator makes progress without animation frames", () => {
+  expect(DEFERRED_STYLESHEET_ACTIVATOR).toContain(
+    'document.visibilityState==="hidden"',
+  );
+  expect(DEFERRED_STYLESHEET_ACTIVATOR).toContain(
+    "timer=setTimeout(activate,250)",
+  );
+});
 
 describe("getEagerCssEntries", () => {
   it("keeps eager and standalone CSS while excluding lazy chunk CSS", () => {

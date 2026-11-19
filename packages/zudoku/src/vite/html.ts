@@ -38,7 +38,9 @@ export function getBuildHtml({
   const deferredStylesheetScript = deferredStylesheetActivator
     ? `    <script defer src="${deferredStylesheetActivator}"></script>`
     : "";
-  const applicationScript = `    <script type="module" crossorigin src="${jsEntry}"></script>`;
+  const applicationScript = `    <script type="module" crossorigin${
+    deferredStylesheetActivator ? ' fetchpriority="low"' : ""
+  } src="${jsEntry}"></script>`;
   const headAssets = (
     deferredStylesheetActivator
       ? [cssLinks, deferredStylesheetScript, applicationScript]
