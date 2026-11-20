@@ -125,6 +125,10 @@ export const generateSchemaExample = (
     return [];
   }
 
+  if (schema.enum) {
+    return schema.enum[0];
+  }
+
   if (schema.format !== undefined) {
     switch (schema.format) {
       case "date-time":
@@ -161,10 +165,6 @@ export const generateSchemaExample = (
       case "double":
         return getNumberExample(schema);
     }
-  }
-
-  if (schema.enum) {
-    return schema.enum[0];
   }
 
   if (schema.oneOf && schema.oneOf.length > 0) {
