@@ -253,6 +253,28 @@ export const Playground = ({
     (a, b) => pathParamOrder.indexOf(a.name) - pathParamOrder.indexOf(b.name),
   );
 
+  const isBodySupported = ["POST", "PUT", "PATCH", "DELETE"].includes(
+    method.toUpperCase(),
+  );
+  // Without a Content-Type the browser sends string bodies as text/plain, so
+  // default it to the request body's media type unless the operation sets one.
+  const bodyMediaType = isBodySupported
+    ? examples?.at(0)?.mediaType
+    : undefined;
+  const hasContentTypeHeader = headers.some(
+    (header) => header.name.toLowerCase() === "content-type",
+  );
+  const defaultHeaders = [
+    ...headers.map((header) => ({
+      name: header.name,
+      value: header.defaultValue ?? "",
+      active: header.defaultActive ?? false,
+    })),
+    ...(bodyMediaType && !hasContentTypeHeader
+      ? [{ name: "Content-Type", value: bodyMediaType, active: true }]
+      : []),
+  ];
+
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
       defaultValues: {
@@ -279,12 +301,8 @@ export const Playground = ({
           value: param.defaultValue ?? "",
         })),
         headers:
-          headers.length > 0
-            ? headers.map((header) => ({
-                name: header.name,
-                value: header.defaultValue ?? "",
-                active: header.defaultActive ?? false,
-              }))
+          defaultHeaders.length > 0
+            ? defaultHeaders
             : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
@@ -536,9 +554,6 @@ export const Playground = ({
   );
 
   const showLogin = requiresLogin && !skipLogin && !isLoginDialogDismissed;
-  const isBodySupported = ["POST", "PUT", "PATCH", "DELETE"].includes(
-    method.toUpperCase(),
-  );
   const [isCopied, copyToClipboard] = useCopyToClipboard();
 
   return (
