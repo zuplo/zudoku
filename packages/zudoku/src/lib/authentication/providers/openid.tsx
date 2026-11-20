@@ -96,7 +96,7 @@ export class OpenIDAuthenticationProvider
 {
   protected client: oauth.Client;
   protected issuer: string;
-  protected authorizationServer: oauth.AuthorizationServer | undefined;
+  protected authorizationServer: Promise<oauth.AuthorizationServer> | undefined;
 
   protected callbackUrlPath: string;
 
@@ -177,18 +177,23 @@ export class OpenIDAuthenticationProvider
   }
 
   protected async getAuthServer() {
-    if (!this.authorizationServer) {
-      const issuerUrl = new URL(this.issuer);
-      const response = await oauth.discoveryRequest(
-        issuerUrl,
-        this.oauthOptions,
-      );
+    this.authorizationServer ??= (async () => {
+      try {
+        const issuerUrl = new URL(this.issuer);
+        const response = await oauth.discoveryRequest(
+          issuerUrl,
+          this.oauthOptions,
+        );
 
-      this.authorizationServer = await oauth.processDiscoveryResponse(
-        await this.getExpectedDiscoveryIssuer(issuerUrl, response),
-        response,
-      );
-    }
+        return await oauth.processDiscoveryResponse(
+          await this.getExpectedDiscoveryIssuer(issuerUrl, response),
+          response,
+        );
+      } catch (err) {
+        this.authorizationServer = undefined;
+        throw err;
+      }
+    })();
     return this.authorizationServer;
   }
 
@@ -476,6 +481,7 @@ export class OpenIDAuthenticationProvider
       isAuthenticated: true,
       isPending: false,
       profile,
+      profileFetchedAt: Date.now(),
     });
 
     return true;
@@ -737,6 +743,7 @@ export class OpenIDAuthenticationProvider
           isAuthenticated: false,
           isPending: false,
           profile: null,
+          profileFetchedAt: null,
           providerData: null,
         });
         return;
