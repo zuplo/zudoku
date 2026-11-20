@@ -4,6 +4,7 @@ import {
   type BasicCredentials,
   getSecurityLockedHeaders,
   getSecurityQueryParams,
+  resolveSelectedRequirement,
   type SecurityCredential,
   useSecurityCredentialsStore,
 } from "./securityCredentialsStore.js";
@@ -399,5 +400,78 @@ describe("getSecurityQueryParams", () => {
       ]),
     ];
     expect(getSecurityQueryParams(security, {})).toEqual([]);
+  });
+});
+
+describe("resolveSelectedRequirement", () => {
+  const keyScheme = {
+    name: "Key",
+    type: "apiKey",
+    in: "header",
+    paramName: "X-Key",
+  };
+  const secretScheme = {
+    name: "Secret",
+    type: "apiKey",
+    in: "header",
+    paramName: "X-Secret",
+  };
+  const bearerScheme = { name: "Bearer", type: "http", scheme: "bearer" };
+  const pairRequirement = makeReq([keyScheme, secretScheme]);
+  const bearerRequirement = makeReq([bearerScheme]);
+  const security = [pairRequirement, bearerRequirement];
+
+  it("narrows to the selected pair when both schemes are authorized", () => {
+    const credentials = {
+      Key: cred("key-value"),
+      Secret: cred("secret-value"),
+      Bearer: cred("token"),
+    };
+    expect(
+      resolveSelectedRequirement(security, ["Secret", "Key"], credentials),
+    ).toEqual({
+      security: [pairRequirement],
+      credentials: { Key: credentials.Key, Secret: credentials.Secret },
+    });
+  });
+
+  it("returns undefined when one scheme of the pair is not authorized", () => {
+    expect(
+      resolveSelectedRequirement(security, ["Key", "Secret"], {
+        Key: cred("key-value"),
+        Secret: { value: "secret-value", isAuthorized: false },
+      }),
+    ).toBeUndefined();
+  });
+
+  it("returns undefined when the selection is only part of a requirement", () => {
+    expect(
+      resolveSelectedRequirement(security, ["Key"], {
+        Key: cred("key-value"),
+        Secret: cred("secret-value"),
+      }),
+    ).toBeUndefined();
+  });
+
+  it("resolves a single-scheme requirement", () => {
+    const credentials = { Bearer: cred("token") };
+    expect(
+      resolveSelectedRequirement(security, ["Bearer"], credentials),
+    ).toEqual({ security: [bearerRequirement], credentials });
+  });
+
+  it("injects both headers of a grouped requirement", () => {
+    const selected = resolveSelectedRequirement(security, ["Key", "Secret"], {
+      Key: cred("key-value"),
+      Secret: cred("secret-value"),
+    });
+    const request = new Request("https://example.com");
+    applySecurityCredentials(
+      request,
+      selected?.security,
+      selected?.credentials ?? {},
+    );
+    expect(request.headers.get("X-Key")).toBe("key-value");
+    expect(request.headers.get("X-Secret")).toBe("secret-value");
   });
 });

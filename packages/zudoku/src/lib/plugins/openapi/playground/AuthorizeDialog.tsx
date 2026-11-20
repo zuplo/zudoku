@@ -5,6 +5,7 @@ import {
   LogOutIcon,
   ShieldCheckIcon,
 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
 import {
   Dialog,
@@ -13,12 +14,18 @@ import {
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
 import { Markdown } from "../../../components/Markdown.js";
+import { securitySchemeNamesLabel } from "../../../hooks/useIdentityStore.js";
 import type { SecuritySchemeType } from "../graphql/graphql.js";
-import { ApiKeySchemeForm } from "./scheme-forms/ApiKeySchemeForm.js";
-import { HttpBasicSchemeForm } from "./scheme-forms/HttpBasicSchemeForm.js";
-import { HttpBearerSchemeForm } from "./scheme-forms/HttpBearerSchemeForm.js";
+import {
+  isCredentialComplete,
+  SchemeCredentialField,
+} from "./scheme-forms/SchemeCredentialField.js";
 import type { SecuritySchemeData } from "./scheme-forms/types.js";
-import { useSecurityCredentialsStore } from "./securityCredentialsStore.js";
+import {
+  areSchemesAuthorized,
+  type SecurityCredentialValue,
+  useSecurityCredentialsStore,
+} from "./securityCredentialsStore.js";
 
 const schemeIcon = (type: SecuritySchemeType) => {
   switch (type) {
@@ -34,29 +41,76 @@ const schemeIcon = (type: SecuritySchemeType) => {
   }
 };
 
-const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
+const CredentialsEntry = ({ schemes }: { schemes: SecuritySchemeData[] }) => {
   const { credentials, setCredential, clearCredential } =
     useSecurityCredentialsStore();
-  const isAuthorized = credentials[scheme.name]?.isAuthorized ?? false;
+  const [values, setValues] = useState<Record<string, SecurityCredentialValue>>(
+    {},
+  );
+
+  const schemeNames = schemes.map((scheme) => scheme.name);
+  const isAuthorized = areSchemesAuthorized(schemeNames, credentials);
+  const pendingSchemes = schemes.filter(
+    (scheme) => !credentials[scheme.name]?.isAuthorized,
+  );
+  const hasAnyAuthorized = pendingSchemes.length < schemes.length;
+  const canAuthorize = pendingSchemes.every((scheme) =>
+    isCredentialComplete(scheme, values[scheme.name]),
+  );
+
+  const authorize = () => {
+    for (const scheme of pendingSchemes) {
+      const value = values[scheme.name];
+      if (value !== undefined) {
+        setCredential(scheme.name, value);
+      }
+    }
+    setValues({});
+  };
+
+  const [firstScheme] = schemes;
+  if (!firstScheme) {
+    return null;
+  }
+  const isGrouped = schemes.length > 1;
+  const authorizeButton = (
+    <Button size="lg" disabled={!canAuthorize} onClick={authorize}>
+      Authorize
+    </Button>
+  );
 
   return (
     <div className="flex flex-col gap-3 p-4 border rounded-lg">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {schemeIcon(scheme.type)}
-          <span className="font-medium text-sm">{scheme.name}</span>
-          <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded">
-            {scheme.type}
-          </code>
+          {schemeIcon(firstScheme.type)}
+          <span className="font-medium text-sm">
+            {securitySchemeNamesLabel(schemeNames)}
+          </span>
+          {!isGrouped && (
+            <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded">
+              {firstScheme.type}
+            </code>
+          )}
         </div>
-        {isAuthorized && (
+        {hasAnyAuthorized && (
           <div className="flex items-center gap-2">
-            <CheckCircle2Icon size={14} className="text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Configured</span>
+            {isAuthorized && (
+              <>
+                <CheckCircle2Icon size={14} className="text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  Configured
+                </span>
+              </>
+            )}
             <Button
               variant="ghost"
               size="icon-xs"
-              onClick={() => clearCredential(scheme.name)}
+              onClick={() => {
+                for (const name of schemeNames) {
+                  clearCredential(name);
+                }
+              }}
               title="Remove authorization"
             >
               <LogOutIcon size={14} />
@@ -64,67 +118,45 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
           </div>
         )}
       </div>
-      {scheme.description && (
-        <Markdown
-          content={scheme.description}
-          className="prose-xs text-xs text-muted-foreground max-w-full"
-        />
-      )}
-      {!isAuthorized && (
-        <>
-          {scheme.type === "apiKey" && scheme.in !== "cookie" && (
-            <ApiKeySchemeForm
-              scheme={scheme}
-              onAuthorize={(value) => setCredential(scheme.name, value)}
-            />
-          )}
-          {scheme.type === "apiKey" && scheme.in === "cookie" && (
-            <p className="text-xs text-muted-foreground italic">
-              Cookie-based API key authentication is not supported in the
-              browser playground due to fetch API restrictions.
-            </p>
-          )}
-          {scheme.type === "http" &&
-            scheme.scheme?.toLowerCase() === "basic" && (
-              <HttpBasicSchemeForm
-                onAuthorize={(value) => setCredential(scheme.name, value)}
+      {schemes.map((scheme) => {
+        const isSchemeAuthorized = credentials[scheme.name]?.isAuthorized;
+        return (
+          <div key={scheme.name} className="flex flex-col gap-2">
+            {isGrouped && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium">{scheme.name}</span>
+                {!isAuthorized && isSchemeAuthorized && (
+                  <span className="text-xs text-muted-foreground">
+                    Configured
+                  </span>
+                )}
+              </div>
+            )}
+            {scheme.description && (
+              <Markdown
+                content={scheme.description}
+                className="prose-xs text-xs text-muted-foreground max-w-full"
               />
             )}
-          {scheme.type === "http" &&
-            scheme.scheme?.toLowerCase() === "bearer" && (
-              <HttpBearerSchemeForm
+            {!isSchemeAuthorized && (
+              <SchemeCredentialField
                 scheme={scheme}
-                onAuthorize={(value) => setCredential(scheme.name, value)}
-              />
-            )}
-          {scheme.type === "http" &&
-            scheme.scheme?.toLowerCase() !== "basic" &&
-            scheme.scheme?.toLowerCase() !== "bearer" && (
-              <p className="text-xs text-muted-foreground italic">
-                HTTP {scheme.scheme} authentication is not supported in the
-                playground. Configure it via custom headers.
-              </p>
-            )}
-          {(scheme.type === "oauth2" || scheme.type === "openIdConnect") && (
-            <p className="text-xs text-muted-foreground">
-              {scheme.type === "oauth2" ? "OAuth 2.0" : "OpenID Connect"}{" "}
-              requires a Zudoku authentication provider.{" "}
-              <a
-                href="https://zudoku.dev/docs/configuration/oauth-security-schemes"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-foreground"
+                value={values[scheme.name]}
+                onChange={(value) =>
+                  setValues((previous) => ({
+                    ...previous,
+                    [scheme.name]: value,
+                  }))
+                }
               >
-                Learn how to configure it
-              </a>
-            </p>
-          )}
-          {scheme.type === "mutualTLS" && (
-            <p className="text-xs text-muted-foreground italic">
-              Mutual TLS is configured at the transport level.
-            </p>
-          )}
-        </>
+                {!isGrouped && authorizeButton}
+              </SchemeCredentialField>
+            )}
+          </div>
+        );
+      })}
+      {isGrouped && !isAuthorized && (
+        <div className="flex justify-end">{authorizeButton}</div>
       )}
     </div>
   );
@@ -153,9 +185,7 @@ export const AuthorizeDialog = ({
           session storage and cleared when you close the browser tab.
         </DialogDescription>
         <div className="flex flex-col gap-3">
-          {securitySchemes.map((scheme) => (
-            <SchemeEntry key={scheme.name} scheme={scheme} />
-          ))}
+          <CredentialsEntry schemes={securitySchemes} />
         </div>
         <div className="flex justify-end">
           <Button size="lg" onClick={() => onOpenChange(false)}>
