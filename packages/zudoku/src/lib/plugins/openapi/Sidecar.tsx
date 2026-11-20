@@ -1,4 +1,4 @@
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useZudoku } from "zudoku/hooks";
 import { Badge } from "zudoku/ui/Badge.js";
@@ -18,6 +18,7 @@ import { useOasConfig } from "./context.js";
 import { GeneratedExampleSidecarBox } from "./GeneratedExampleSidecarBox.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
+import type { RequestExampleSelection } from "./interfaces.js";
 import { AuthSelectorPopover } from "./playground/AuthSelectorPopover.js";
 import { GraphiQLDialog } from "./playground/GraphiQLDialog.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
@@ -108,11 +109,15 @@ export const Sidecar = ({
   selectedResponse,
   globalSelectedServer,
   shouldLazyHighlight,
+  selectedRequestExample,
+  onRequestExampleChange,
 }: {
   operation: OperationsFragmentFragment;
   selectedResponse?: string;
   globalSelectedServer?: string;
   shouldLazyHighlight?: boolean;
+  selectedRequestExample: RequestExampleSelection;
+  onRequestExampleChange: (selected: RequestExampleSelection) => void;
 }) => {
   const { options } = useOasConfig();
   const auth = useAuthState();
@@ -152,28 +157,32 @@ export const Sidecar = ({
         })
       : requestBodyContent;
 
-  const [selectedRequestExample, setSelectedRequestExample] = useState<{
-    contentTypeIndex: number;
-    exampleIndex: number;
-  }>({
-    contentTypeIndex: 0,
-    exampleIndex: 0,
-  });
-
-  const selectedContent = transformedRequestBodyContent?.at(
-    selectedRequestExample.contentTypeIndex,
-  );
+  const selectedContentIndex =
+    transformedRequestBodyContent?.findIndex(
+      (content) => content.mediaType === selectedRequestExample.mediaType,
+    ) ?? -1;
+  const selectedContent = transformedRequestBodyContent?.[selectedContentIndex];
+  // `transformExamples` may drop the selected media type. Fall back to its
+  // untransformed content so the generated example and snippet still match the
+  // type selected in the request body section.
+  const selectedSchemaContent =
+    selectedContent ??
+    requestBodyContent?.find(
+      (content) => content.mediaType === selectedRequestExample.mediaType,
+    );
+  const requestMediaType =
+    selectedRequestExample.mediaType ?? "application/json";
   const currentExample = selectedContent?.examples?.at(
     selectedRequestExample.exampleIndex,
   );
 
   const currentExampleCode = currentExample
     ? (currentExample?.value ?? currentExample)
-    : selectedContent?.schema
+    : selectedSchemaContent?.schema
       ? generateSchemaExample(
           withBinaryMediaType(
-            selectedContent.schema,
-            selectedContent.mediaType,
+            selectedSchemaContent.schema,
+            selectedSchemaContent.mediaType,
           ),
         )
       : undefined;
@@ -258,12 +267,12 @@ export const Sidecar = ({
       selectedServer,
       exampleBody:
         isGraphQLEndpoint || !currentExampleCode
-          ? { mimeType: selectedContent?.mediaType ?? "application/json" }
+          ? { mimeType: requestMediaType }
           : {
-              mimeType: selectedContent?.mediaType ?? "application/json",
+              mimeType: requestMediaType,
               text:
                 formatRequestBodyForDisplay(
-                  selectedContent?.mediaType,
+                  selectedSchemaContent?.mediaType,
                   currentExampleCode,
                 ) ?? "",
             },
@@ -278,7 +287,8 @@ export const Sidecar = ({
     operation,
     selectedServer,
     selectedLang,
-    selectedContent,
+    selectedSchemaContent,
+    requestMediaType,
     options,
     auth,
     context,
@@ -428,10 +438,15 @@ export const Sidecar = ({
       {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox
           content={displayRequestBodyContent ?? transformedRequestBodyContent}
-          onExampleChange={(selected) => {
-            setSelectedRequestExample(selected);
+          onExampleChange={({ contentTypeIndex, exampleIndex }) => {
+            const content = transformedRequestBodyContent[contentTypeIndex];
+            if (!content) return;
+            onRequestExampleChange({
+              mediaType: content.mediaType,
+              exampleIndex,
+            });
           }}
-          selectedContentIndex={selectedRequestExample.contentTypeIndex}
+          selectedContentIndex={selectedContentIndex}
           selectedExampleIndex={selectedRequestExample.exampleIndex}
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
@@ -442,10 +457,11 @@ export const Sidecar = ({
         <GeneratedExampleSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
-          language={getLanguageForMediaType(selectedContent?.mediaType)}
+          language={getLanguageForMediaType(selectedSchemaContent?.mediaType)}
+          mediaType={selectedSchemaContent?.mediaType}
           code={
             formatRequestBodyForDisplay(
-              selectedContent?.mediaType,
+              selectedSchemaContent?.mediaType,
               currentExampleCode,
             ) ?? ""
           }

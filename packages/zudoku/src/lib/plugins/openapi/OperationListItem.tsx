@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
+import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
@@ -10,6 +11,7 @@ import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
 import { useOasConfig } from "./context.js";
 import { type FragmentType, useFragment } from "./graphql/index.js";
+import type { RequestExampleSelection } from "./interfaces.js";
 import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
@@ -47,6 +49,28 @@ export const OperationListItem = ({
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
+  const requestContent = operation.requestBody?.content ?? [];
+  const [requestExampleSelection, setSelectedRequestExample] =
+    useState<RequestExampleSelection>({
+      mediaType: requestContent.at(0)?.mediaType,
+      exampleIndex: 0,
+    });
+  // The stored media type goes stale when this item re-renders with different
+  // content (e.g. switching API versions keeps the same slug), so fall back to
+  // the first content type instead of dropping the request body.
+  const selectedRequestContent =
+    requestContent.find(
+      (content) => content.mediaType === requestExampleSelection.mediaType,
+    ) ?? requestContent.at(0);
+  const selectedRequestExample: RequestExampleSelection =
+    selectedRequestContent?.mediaType === requestExampleSelection.mediaType
+      ? requestExampleSelection
+      : { mediaType: selectedRequestContent?.mediaType, exampleIndex: 0 };
+  const hasMultipleRequestContentTypes = requestContent.length > 1;
+  // Keep the section (and its selector) visible when the selected content type
+  // has no schema, so readers can still switch to another one.
+  const showRequestBody =
+    hasMultipleRequestContentTypes || Boolean(selectedRequestContent?.schema);
   const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
   const graphqlEndpoint = getGraphQLEndpoint(operation);
   const isGraphQLEndpoint = graphqlEndpoint !== undefined;
@@ -157,39 +181,67 @@ export const OperationListItem = ({
                       []
                     ),
                   )}
-                {renderIf(operation.requestBody?.content?.at(0)?.schema, () => (
-                  <Separator className="my-4" />
-                ))}
-                {renderIf(
-                  operation.requestBody?.content?.at(0)?.schema,
-                  (schema) => (
+                {renderIf(showRequestBody, () => (
+                  <>
+                    <Separator className="my-4" />
                     <div className="flex flex-col gap-4">
-                      <Heading
-                        level={3}
-                        className="capitalize flex items-center gap-2"
-                        id={`${operation.slug}/request-body`}
-                      >
-                        {operation.summary && (
-                          <PagefindSearchMeta>
-                            {operation.summary} &rsaquo;{" "}
-                          </PagefindSearchMeta>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <Heading
+                          level={3}
+                          className="capitalize flex items-center gap-2"
+                          id={`${operation.slug}/request-body`}
+                        >
+                          {operation.summary && (
+                            <PagefindSearchMeta>
+                              {operation.summary} &rsaquo;{" "}
+                            </PagefindSearchMeta>
+                          )}
+                          Request Body{" "}
+                          {operation.requestBody?.required === false ? (
+                            <Badge variant="muted">optional</Badge>
+                          ) : (
+                            ""
+                          )}
+                        </Heading>
+                        {hasMultipleRequestContentTypes && (
+                          <NativeSelect
+                            aria-label="Request body content type"
+                            className="text-xs h-fit py-1 max-w-full truncate bg-background"
+                            value={selectedRequestExample.mediaType}
+                            onChange={(event) =>
+                              setSelectedRequestExample({
+                                mediaType: event.target.value,
+                                exampleIndex: 0,
+                              })
+                            }
+                          >
+                            {requestContent.map((content) => (
+                              <NativeSelectOption
+                                key={content.mediaType}
+                                value={content.mediaType}
+                              >
+                                {content.mediaType}
+                              </NativeSelectOption>
+                            ))}
+                          </NativeSelect>
                         )}
-                        Request Body{" "}
-                        {operation.requestBody?.required === false ? (
-                          <Badge variant="muted">optional</Badge>
-                        ) : (
-                          ""
-                        )}
-                      </Heading>
-                      <SchemaView
-                        schema={withBinaryMediaType(
-                          schema,
-                          operation.requestBody?.content?.at(0)?.mediaType,
-                        )}
-                      />
+                      </div>
+                      {selectedRequestContent?.schema ? (
+                        <SchemaView
+                          key={selectedRequestContent.mediaType}
+                          schema={withBinaryMediaType(
+                            selectedRequestContent.schema,
+                            selectedRequestContent.mediaType,
+                          )}
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">
+                          No schema defined for this content type.
+                        </p>
+                      )}
                     </div>
-                  ),
-                )}
+                  </>
+                ))}
                 <Separator className="my-4" />
                 {operation.responses.length > 0 && (
                   <>
@@ -220,6 +272,8 @@ export const OperationListItem = ({
               operation={operation}
               globalSelectedServer={globalSelectedServer}
               shouldLazyHighlight={shouldLazyHighlight}
+              selectedRequestExample={selectedRequestExample}
+              onRequestExampleChange={setSelectedRequestExample}
             />
           );
           return isGraphQLEndpoint ? (
