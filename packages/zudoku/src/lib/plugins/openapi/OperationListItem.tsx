@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Heading } from "../../components/Heading.js";
+import { Slot } from "../../components/index.js";
 import { Markdown } from "../../components/Markdown.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { cn } from "../../util/cn.js";
@@ -100,6 +101,11 @@ export const OperationListItem = ({
     />
   );
 
+  const operationSlotData = useMemo(
+    () => ({ operationId: operation.operationId }),
+    [operation.operationId],
+  );
+
   return (
     <div>
       {operation.deprecated && (
@@ -116,12 +122,24 @@ export const OperationListItem = ({
       >
         {isGraphQLEndpoint ? (
           <div className="flex flex-col gap-4 min-w-0">
+            <Slot.Target
+              name="before-openapi-operation-title"
+              data={operationSlotData}
+            />
             {heading}
             {methodPathBlock}
             {description}
+            <Slot.Target
+              name="after-openapi-operation-description"
+              data={operationSlotData}
+            />
           </div>
         ) : (
           <>
+            <Slot.Target
+              name="before-openapi-operation-title"
+              data={operationSlotData}
+            />
             {heading}
             {methodPathBlock}
             {isMCPEndpoint ? (
@@ -142,6 +160,10 @@ export const OperationListItem = ({
                 )}
               >
                 {description}
+                <Slot.Target
+                  name="after-openapi-operation-description"
+                  data={operationSlotData}
+                />
                 {operation.parameters &&
                   operation.parameters.length > 0 &&
                   PARAM_GROUPS.flatMap((group) =>
