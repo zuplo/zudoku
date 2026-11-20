@@ -24,6 +24,7 @@ export type PathItemObject = DeepOmitReference<OpenAPIV3_1.PathItemObject>;
 export type ParameterObject = DeepOmitReference<OpenAPIV3_1.ParameterObject>;
 export type TagObject = DeepOmitReference<OpenAPIV3_1.TagObject>;
 export type ExampleObject = DeepOmitReference<OpenAPIV3_1.ExampleObject>;
+export type HeaderObject = DeepOmitReference<OpenAPIV3_1.HeaderObject>;
 export type EncodingObject = DeepOmitReference<OpenAPIV3_1.EncodingObject>;
 export type SchemaObject = DeepOmitReference<OpenAPIV3_1.SchemaObject>;
 export type ArraySchemaObject =

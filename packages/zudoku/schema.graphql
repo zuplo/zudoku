@@ -121,11 +121,23 @@ type RequestBodyObject {
   required: Boolean
 }
 
+type ResponseHeaderItem {
+  deprecated: Boolean
+  description: String
+  examples: [ExampleItem!]
+  explode: Boolean
+  extensions: JSONObject
+  name: String!
+  required: Boolean
+  schema: JSONSchema
+  style: String
+}
+
 type ResponseItem {
   content: [MediaTypeObject!]
   description: String
   extensions: JSONObject
-  headers: JSON
+  headers: [ResponseHeaderItem!]!
   links: JSON
   statusCode: String!
 }

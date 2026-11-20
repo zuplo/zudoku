@@ -13,6 +13,7 @@ import type {
   EncodingObject,
   ExampleObject,
   ExternalDocumentationObject,
+  HeaderObject,
   LicenseObject,
   OpenAPIDocument,
   OperationObject,
@@ -700,6 +701,44 @@ const RequestBodyObject = builder
     }),
   });
 
+const ResponseHeaderItem = builder
+  .objectRef<HeaderObject & { name: string }>("ResponseHeaderItem")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      description: t.exposeString("description", { nullable: true }),
+      required: t.exposeBoolean("required", { nullable: true }),
+      deprecated: t.exposeBoolean("deprecated", { nullable: true }),
+      style: t.exposeString("style", { nullable: true }),
+      explode: t.exposeBoolean("explode", { nullable: true }),
+      examples: t.field({
+        type: [ExampleItem],
+        resolve: (parent) =>
+          parent.examples
+            ? Object.entries(parent.examples).map(([name, value]) => ({
+                name,
+                ...(typeof value === "string" ? { value } : value),
+              }))
+            : parent.example !== undefined
+              ? [{ name: "", value: parent.example }]
+              : [],
+        nullable: true,
+      }),
+      // A header uses either `schema` or a single-entry `content` map
+      schema: t.field({
+        type: JSONSchemaScalar,
+        resolve: (parent) =>
+          parent.schema ?? Object.values(parent.content ?? {}).at(0)?.schema,
+        nullable: true,
+      }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
+    }),
+  });
+
 const ResponseItem = builder
   .objectRef<{
     statusCode: string;
@@ -709,7 +748,7 @@ const ResponseItem = builder
       schema: any;
       examples: Array<ExampleObject & { name: string }>;
     }>;
-    headers?: any;
+    headers: Array<HeaderObject & { name: string }>;
     links?: any;
   }>("ResponseItem")
   .implement({
@@ -717,7 +756,7 @@ const ResponseItem = builder
       statusCode: t.exposeString("statusCode"),
       description: t.exposeString("description", { nullable: true }),
       content: t.expose("content", { type: [MediaTypeItem], nullable: true }),
-      headers: t.expose("headers", { type: JSONScalar, nullable: true }),
+      headers: t.expose("headers", { type: [ResponseHeaderItem] }),
       links: t.expose("links", { type: JSONScalar, nullable: true }),
       extensions: t.field({
         type: JSONObjectScalar,
@@ -817,7 +856,10 @@ const OperationItem = builder
                       : [],
                 }),
               ),
-              headers: response.headers,
+              headers: Object.entries(response.headers ?? {})
+                // Per spec, a `Content-Type` response header SHALL be ignored
+                .filter(([name]) => name.toLowerCase() !== "content-type")
+                .map(([name, header]) => ({ name, ...header })),
               links: response.links,
             }),
           );

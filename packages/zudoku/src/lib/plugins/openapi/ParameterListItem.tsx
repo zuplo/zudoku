@@ -19,7 +19,15 @@ import {
   unwrapNullableUnion,
 } from "./schema/utils.js";
 
-const getParameterSchema = (parameter: ParameterItem): SchemaObject => {
+// Structural subset of a parameter so that parameter-like items (e.g. response
+// headers) can be rendered the same way.
+export type ParameterListItemData = Pick<
+  ParameterItem,
+  "name" | "description" | "required" | "schema"
+> &
+  Partial<Pick<ParameterItem, "style" | "explode" | "examples">>;
+
+const getParameterSchema = (parameter: ParameterListItemData): SchemaObject => {
   if (parameter.schema != null && typeof parameter.schema === "object") {
     return parameter.schema;
   }
@@ -33,7 +41,7 @@ export const ParameterListItem = ({
   group,
   id,
 }: {
-  parameter: ParameterItem;
+  parameter: ParameterListItemData;
   group: ParameterGroup;
   id: string;
 }) => {
