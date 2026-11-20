@@ -110,6 +110,7 @@ export type OperationsFragmentFragment = {
       description: string | null;
       externalValue: string | null;
       value: any;
+      hasValue: boolean;
       summary: string | null;
     }> | null;
   }> | null;
@@ -430,6 +431,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
       description
       externalValue
       value
+      hasValue
       summary
     }
   }
@@ -647,6 +649,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
       description
       externalValue
       value
+      hasValue
       summary
     }
   }
