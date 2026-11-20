@@ -85,5 +85,6 @@ export async function captureEvent({
 }
 
 export async function shutdownAnalytics(): Promise<void> {
-  return _postHog?.shutdown();
+  // Analytics are best-effort and must never fail the CLI (e.g. offline builds)
+  await _postHog?.shutdown().catch(() => {});
 }

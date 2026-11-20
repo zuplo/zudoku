@@ -13,6 +13,16 @@ interface VersionCheckInfo {
   latestVersion: string | undefined;
 }
 export async function warnIfOutdatedVersion(currentVersion: string) {
+  // The update check is best-effort: it must never fail the CLI, e.g. when the
+  // build environment has no outbound network access.
+  try {
+    return await checkForUpdate(currentVersion);
+  } catch {
+    return false;
+  }
+}
+
+async function checkForUpdate(currentVersion: string) {
   // Print update information, if available
   if (
     !process.env.ZUDOKU_OVERRIDE_CI_TO_TEST &&
@@ -48,10 +58,16 @@ ${colors.gray("Upgrade to receive the latest features and fixes.")}`,
 async function getLatestVersion(): Promise<string | undefined> {
   const response = await fetch(
     "https://api.github.com/repos/zuplo/zudoku/releases?per_page=1",
-  );
+    { signal: AbortSignal.timeout(5000) },
+  ).catch(() => undefined);
+
+  if (!response) return undefined;
+
   // Try to get the version from the tag name
   if (response.status === 200) {
-    const result = (await response.json()) as { tag_name: string }[];
+    const result = (await response.json().catch(() => undefined)) as
+      | { tag_name: string }[]
+      | undefined;
     if (Array.isArray(result) && result.length > 0) {
       // biome-ignore lint/style/noNonNullAssertion: ?
       return result[0]!.tag_name.substring(1);
