@@ -26,7 +26,7 @@ import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import { withBinaryMediaType } from "./schema/utils.js";
 import { useResolvedServerUrl } from "./state.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
-import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
+import { extractOperationSecurityOptions } from "./util/extractOperationSecurityOptions.js";
 import {
   formatRequestBodyForDisplay,
   getLanguageForMediaType,
@@ -202,11 +202,11 @@ export const Sidecar = ({
   const selectedServer = globalSelectedServer || fallbackServerUrl || "";
   const operationUrl = joinUrl(selectedServer, operation.path);
 
-  const securitySchemes = useMemo(
+  const securityOptions = useMemo(
     () =>
       options?.disableSecurity
         ? []
-        : extractOperationSecuritySchemes(operation),
+        : extractOperationSecurityOptions(operation),
     [operation, options?.disableSecurity],
   );
 
@@ -367,7 +367,7 @@ export const Sidecar = ({
                   <GraphiQLDialog
                     endpoint={graphQLEndpoint?.endpoint ?? operationUrl}
                     operation={operation}
-                    securitySchemes={securitySchemes}
+                    securityOptions={securityOptions}
                     defaultTabs={
                       graphQLTabs && graphQLTabs.length > 0
                         ? graphQLTabs
@@ -419,7 +419,7 @@ export const Sidecar = ({
             <AuthSelectorPopover
               operation={operation}
               url={operationUrl}
-              securitySchemes={securitySchemes}
+              securityOptions={securityOptions}
             />
           </SidecarBox.Footer>
         </SidecarBox.Root>

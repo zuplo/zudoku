@@ -4,6 +4,7 @@ import {
   type IdentitySelection,
   identitySelectionToValue,
   NO_IDENTITY,
+  securitySchemeNamesLabel,
   valueToIdentitySelection,
 } from "../hooks/useIdentityStore.js";
 import { Button } from "../ui/Button.js";
@@ -18,16 +19,16 @@ export const IdentitySelector = ({
   identities,
   selection = NONE,
   onSelectionChange,
-  securitySchemes,
+  securityOptions,
   securityCredentials,
   onConfigureScheme,
 }: {
   identities?: ApiIdentity[];
   selection?: IdentitySelection;
   onSelectionChange: (selection: IdentitySelection) => void;
-  securitySchemes?: Array<{ name: string; type: string }>;
+  securityOptions?: Array<{ names: string[] }>;
   securityCredentials?: Record<string, { isAuthorized: boolean }>;
-  onConfigureScheme?: (schemeName: string) => void;
+  onConfigureScheme?: (schemeNames: string[]) => void;
 }) => (
   <div className="w-full overflow-hidden">
     <RadioGroup
@@ -48,21 +49,22 @@ export const IdentitySelector = ({
           </Label>
         ),
       )}
-      {securitySchemes?.map((scheme) => {
+      {securityOptions?.map((option) => {
         const schemeId = identitySelectionToValue({
           type: "scheme",
-          name: scheme.name,
+          names: option.names,
         });
-        const isAuthorized =
-          securityCredentials?.[scheme.name]?.isAuthorized ?? false;
+        const isAuthorized = option.names.every(
+          (name) => securityCredentials?.[name]?.isAuthorized ?? false,
+        );
         return (
           <Label
             key={schemeId}
-            className="h-10 items-center border-b font-normal flex gap-4 p-4 cursor-pointer hover:bg-accent/75"
+            className="h-10 min-w-0 items-center border-b font-normal flex gap-4 p-4 cursor-pointer hover:bg-accent/75"
           >
             <RadioGroupItem value={schemeId} id={schemeId} />
-            <span className="flex-1 truncate">
-              {scheme.name}
+            <span className="flex-1 min-w-0 truncate">
+              {securitySchemeNamesLabel(option.names)}
               {!isAuthorized && (
                 <span className="text-muted-foreground ml-1.5 text-xs">
                   (not configured)
@@ -76,7 +78,7 @@ export const IdentitySelector = ({
                 size="icon-xs"
                 onClick={(e) => {
                   e.preventDefault();
-                  onConfigureScheme(scheme.name);
+                  onConfigureScheme(option.names);
                 }}
               >
                 <SettingsIcon size={14} />

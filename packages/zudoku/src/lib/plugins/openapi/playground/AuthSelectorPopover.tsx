@@ -6,25 +6,32 @@ import IdentitySelector from "../../../components/IdentitySelector.js";
 import { useApiIdentitySelection } from "../../../hooks/useApiIdentitySelection.js";
 import {
   identitySelectionToValue,
+  securitySchemeNamesLabel,
   useIdentityStore,
   valueToIdentitySelection,
 } from "../../../hooks/useIdentityStore.js";
 import { cn } from "../../../util/cn.js";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
-import type { SecuritySchemeItem } from "../util/extractOperationSecuritySchemes.js";
+import {
+  findSecurityOption,
+  type SecurityOption,
+} from "../util/extractOperationSecurityOptions.js";
 import { useResolvedAuth } from "../util/useResolvedAuth.js";
 import { AuthorizeDialog } from "./AuthorizeDialog.js";
-import { useSecurityCredentialsStore } from "./securityCredentialsStore.js";
+import {
+  areSchemesAuthorized,
+  useSecurityCredentialsStore,
+} from "./securityCredentialsStore.js";
 
 export const AuthSelectorPopover = ({
   operation,
   url,
-  securitySchemes,
+  securityOptions,
   showLabel,
 }: {
   operation: OperationsFragmentFragment;
   url: string;
-  securitySchemes: SecuritySchemeItem[];
+  securityOptions: SecurityOption[];
   // Renders the trigger as a labeled button instead of an icon-only button.
   showLabel?: boolean;
 }) => {
@@ -36,8 +43,8 @@ export const AuthSelectorPopover = ({
   const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
 
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [authorizeSchemeName, setAuthorizeSchemeName] = useState<
-    string | undefined
+  const [authorizeSchemeNames, setAuthorizeSchemeNames] = useState<
+    string[] | undefined
   >();
 
   const resolvedAuth = useResolvedAuth({
@@ -50,21 +57,24 @@ export const AuthSelectorPopover = ({
     resolvedAuth.headers.length > 0 || resolvedAuth.queryString.length > 0;
 
   const remembered = valueToIdentitySelection(rememberedIdentity);
-  const inapplicableSchemeName =
+  const inapplicableSchemeLabel =
     remembered.type === "scheme" &&
-    !securitySchemes.some((s) => s.name === remembered.name)
-      ? remembered.name
+    !findSecurityOption(securityOptions, remembered.names)
+      ? securitySchemeNamesLabel(remembered.names)
       : undefined;
-  const selection = inapplicableSchemeName
+  const selection = inapplicableSchemeLabel
     ? { type: "none" as const }
     : remembered;
 
-  if (securitySchemes.length === 0 && identities.length === 0) return null;
+  if (securityOptions.length === 0 && identities.length === 0) return null;
 
   const selectedLabel =
     selection.type === "scheme"
-      ? selection.name
+      ? securitySchemeNamesLabel(selection.names)
       : (selectedIdentity?.label ?? "Authentication");
+  const authorizeSchemes = authorizeSchemeNames
+    ? findSecurityOption(securityOptions, authorizeSchemeNames)?.schemes
+    : undefined;
 
   return (
     <>
@@ -88,10 +98,10 @@ export const AuthSelectorPopover = ({
           <div className="px-4 py-2.5 text-xs text-muted-foreground border-b bg-muted/40">
             Selection syncs across endpoints that support it.
           </div>
-          {inapplicableSchemeName && (
+          {inapplicableSchemeLabel && (
             <div className="px-4 py-2.5 text-xs text-muted-foreground border-b bg-amber-500/10">
-              Selected <code>{inapplicableSchemeName}</code> isn't supported for
-              this endpoint.
+              Selected <code>{inapplicableSchemeLabel}</code> isn't supported
+              for this endpoint.
             </div>
           )}
           <IdentitySelector
@@ -101,31 +111,31 @@ export const AuthSelectorPopover = ({
               setRememberedIdentity(identitySelectionToValue(next));
               if (
                 next.type === "scheme" &&
-                !securityCredentials[next.name]?.isAuthorized
+                !areSchemesAuthorized(next.names, securityCredentials)
               ) {
                 setPopoverOpen(false);
-                setAuthorizeSchemeName(next.name);
+                setAuthorizeSchemeNames(next.names);
               }
             }}
-            securitySchemes={
-              securitySchemes.length > 0 ? securitySchemes : undefined
+            securityOptions={
+              securityOptions.length > 0 ? securityOptions : undefined
             }
             securityCredentials={securityCredentials}
-            onConfigureScheme={(name) => {
+            onConfigureScheme={(names) => {
               setPopoverOpen(false);
-              setAuthorizeSchemeName(name);
+              setAuthorizeSchemeNames(names);
             }}
           />
         </PopoverContent>
       </Popover>
-      {authorizeSchemeName && (
+      {authorizeSchemes && (
         <AuthorizeDialog
-          securitySchemes={securitySchemes.filter(
-            (s) => s.name === authorizeSchemeName,
-          )}
-          open={Boolean(authorizeSchemeName)}
+          securitySchemes={authorizeSchemes}
+          open
           onOpenChange={(open) => {
-            if (!open) setAuthorizeSchemeName(undefined);
+            if (!open) {
+              setAuthorizeSchemeNames(undefined);
+            }
           }}
         />
       )}
