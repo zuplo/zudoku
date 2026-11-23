@@ -216,7 +216,10 @@ export const matchPathObject = (
 };
 
 // Shape B: `{ "/foo": () => import(...), ... }`. Keys must be path-like
-// (leading `/`, no `.`) to avoid matching file-path dicts.
+// (leading `/`, no module extension) to avoid matching file-path dicts.
+// Route paths may still contain dots, e.g. `/sdk/v1.2`.
+const MODULE_EXTENSION = /\.(?:[cm]?[jt]sx?|mdx?)$/;
+
 export const matchRouteDict = (
   node: AstNode,
 ): Array<{ root: string; spec: string }> | undefined => {
@@ -227,7 +230,7 @@ export const matchRouteDict = (
   for (const prop of props) {
     if (prop.type !== "Property") return;
     const key = literalString(prop.key);
-    if (!key?.startsWith("/") || key.includes(".")) return;
+    if (!key?.startsWith("/") || MODULE_EXTENSION.test(key)) return;
     if (
       prop.value?.type !== "ArrowFunctionExpression" ||
       prop.value.body?.type !== "ImportExpression"
