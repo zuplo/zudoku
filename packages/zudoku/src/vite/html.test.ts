@@ -2,6 +2,15 @@ import { describe, expect, test } from "vitest";
 import { getBuildHtml } from "./html.js";
 
 describe("getBuildHtml", () => {
+  test("does not preload optional bundled fonts", () => {
+    const html = getBuildHtml({
+      jsEntry: "/assets/entry.js",
+      cssEntries: ["/assets/entry.css"],
+    });
+
+    expect(html).not.toContain('as="font"');
+  });
+
   test("loads the critical CSS activator before the application entry", () => {
     const html = getBuildHtml({
       jsEntry: "/assets/entry.js",
