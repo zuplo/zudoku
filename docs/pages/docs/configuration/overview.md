@@ -294,6 +294,9 @@ URL.
 `from` paths can contain `:param` segments and a trailing `*` wildcard. See
 [Redirects](/docs/guides/redirects#path-parameters-and-wildcards) for details.
 
+A `from` or `to` path that starts or ends with whitespace, including a non-breaking space, fails
+`zudoku build`. The dev server shows a warning instead.
+
 ### `port`
 
 The port on which the development server will run. Defaults to `3000`. This option can also be

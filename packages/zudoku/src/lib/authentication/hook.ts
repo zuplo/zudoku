@@ -15,18 +15,37 @@ export type UseAuthReturn = ReturnType<typeof useAuth>;
  */
 export const useRefreshUserProfile = ({
   refetchOnWindowFocus,
+  refetchOnMount,
 }: {
   refetchOnWindowFocus?: boolean | "always";
+  refetchOnMount?: boolean | "always";
 } = {}) => {
   const { authentication } = useZudoku();
+  const profile = useAuthState((s) => s.profile);
+  const profileFetchedAt = useAuthState((s) => s.profileFetchedAt);
   const isAuthEnabled = typeof authentication !== "undefined";
 
   return useQuery({
     refetchOnWindowFocus,
+    refetchOnMount,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
     queryKey: ["refresh-user-profile"],
     enabled:
       isAuthEnabled && typeof authentication?.refreshUserProfile === "function",
-    queryFn: () => authentication?.refreshUserProfile?.(),
+    queryFn: async () => {
+      const refreshed = await authentication?.refreshUserProfile?.();
+      // `false` means nothing was fetched (e.g. signed out, or SSR mode
+      // without client-side tokens), so there is nothing to timestamp.
+      if (refreshed) useAuthState.setState({ profileFetchedAt: Date.now() });
+      return refreshed;
+    },
+    // The query cache doesn't survive a reload, but the persisted profile
+    // does. Seeding the query with it, dated by the last fetch, lets
+    // `staleTime` skip the refresh on a fresh page load. A profile without a
+    // fetch time (e.g. persisted by an older version) counts as stale.
+    initialData: profile ? true : undefined,
+    initialDataUpdatedAt: profileFetchedAt ?? 0,
   });
 };
 
@@ -36,8 +55,11 @@ export const useVerifiedEmail = () => {
   const navigate = useNavigate();
   const isAuthEnabled = typeof authentication !== "undefined";
 
+  const isUnverified = authState.profile?.emailVerified === false;
+
   const { refetch: refreshUserProfile } = useRefreshUserProfile({
-    refetchOnWindowFocus: "always",
+    refetchOnWindowFocus: isUnverified ? "always" : true,
+    refetchOnMount: isUnverified ? "always" : undefined,
   });
 
   return {
