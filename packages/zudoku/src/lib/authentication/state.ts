@@ -29,6 +29,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   isPending: boolean;
   profile: UserProfile | null;
+  profileFetchedAt: number | null;
   providerData: ProviderData | null;
   setAuthenticationPending: () => void;
   setLoggedOut: () => void;
@@ -61,12 +62,14 @@ export const authState = create<AuthState>()(
       isAuthenticated: !!ssrAuthInitial?.profile,
       isPending: ssrAuthInitial === undefined,
       profile: ssrAuthInitial?.profile ?? null,
+      profileFetchedAt: null,
       providerData: null,
       setAuthenticationPending: () =>
         set(() => ({
           isAuthenticated: false,
           isPending: false,
           profile: null,
+          profileFetchedAt: null,
           providerData: null,
         })),
       setLoggedOut: () =>
@@ -74,6 +77,7 @@ export const authState = create<AuthState>()(
           isAuthenticated: false,
           isPending: false,
           profile: null,
+          profileFetchedAt: null,
           providerData: null,
         })),
       setLoggedIn: ({ profile, providerData }) =>
@@ -81,6 +85,7 @@ export const authState = create<AuthState>()(
           isAuthenticated: true,
           isPending: false,
           profile,
+          profileFetchedAt: Date.now(),
           providerData,
         })),
     }),
