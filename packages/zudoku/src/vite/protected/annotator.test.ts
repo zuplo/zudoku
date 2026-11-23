@@ -204,11 +204,20 @@ describe("matchRouteDict (Shape B)", () => {
     ]);
   });
 
-  it("rejects dicts whose keys contain a dot (file-path dicts)", async () => {
+  it("rejects dicts whose keys have a module extension (file-path dicts)", async () => {
     const node = await firstObject(
       `const m = { "/abs/path/file.js": () => import("./file.js") };`,
     );
     expect(matchRouteDict(node)).toBeUndefined();
+  });
+
+  it("captures route paths that contain a dot", async () => {
+    const node = await firstObject(
+      `const m = { "/sdk/v1.2": () => import("./v1.2.mdx") };`,
+    );
+    expect(matchRouteDict(node)).toEqual([
+      { root: "/sdk/v1.2", spec: "./v1.2.mdx" },
+    ]);
   });
 
   it("rejects dicts whose keys don't start with /", async () => {

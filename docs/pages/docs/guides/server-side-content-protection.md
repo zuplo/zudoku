@@ -53,8 +53,8 @@ openApiPlugin({
 
 ### Shape B: dict keyed by route path
 
-An object whose keys are route-path strings (start with `/`, contain no `.`) mapping to arrow
-functions that call `import()`.
+An object whose keys are route-path strings (start with `/`, no module extension such as `.js` or
+`.mdx`) mapping to arrow functions that call `import()`.
 
 ```ts
 const fileImports = {
@@ -63,8 +63,8 @@ const fileImports = {
 };
 ```
 
-The dot guard keeps file-path dicts (like `{"/abs/path/x.js": ...}`) from being mistaken for route
-dicts.
+The extension guard keeps file-path dicts (like `{"/abs/path/x.js": ...}`) from being mistaken for
+route dicts. Route paths with a dot, like `/sdk/v1.2`, still match.
 
 ### From registry to chunking
 
