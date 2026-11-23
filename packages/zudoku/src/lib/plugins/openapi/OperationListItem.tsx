@@ -45,6 +45,10 @@ export const OperationListItem = ({
   const fallbackServerUrl = useResolvedServerUrl(operation.servers.at(0));
   const displayServerUrl = globalSelectedServer || fallbackServerUrl;
 
+  const requestBody = operation.requestBody?.content?.at(0);
+  const hasRequest =
+    (operation.parameters?.length ?? 0) > 0 || Boolean(requestBody?.schema);
+
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
   const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
@@ -142,54 +146,56 @@ export const OperationListItem = ({
                 )}
               >
                 {description}
-                {operation.parameters &&
-                  operation.parameters.length > 0 &&
-                  PARAM_GROUPS.flatMap((group) =>
-                    groupedParameters[group]?.length ? (
-                      <ParameterList
-                        key={group}
-                        summary={operation.summary ?? undefined}
-                        id={operation.slug}
-                        parameters={groupedParameters[group]}
-                        group={group}
-                      />
-                    ) : (
-                      []
-                    ),
-                  )}
-                {renderIf(operation.requestBody?.content?.at(0)?.schema, () => (
-                  <Separator className="my-4" />
+                {renderIf(hasRequest, () => (
+                  <div className="flex flex-col gap-6">
+                    <Heading level={3} id={`${operation.slug}/request`}>
+                      {operation.summary && (
+                        <PagefindSearchMeta>
+                          {operation.summary} &rsaquo;{" "}
+                        </PagefindSearchMeta>
+                      )}
+                      Request
+                    </Heading>
+                    {PARAM_GROUPS.flatMap((group) =>
+                      groupedParameters[group]?.length ? (
+                        <ParameterList
+                          key={group}
+                          summary={operation.summary ?? undefined}
+                          id={operation.slug}
+                          parameters={groupedParameters[group]}
+                          group={group}
+                        />
+                      ) : (
+                        []
+                      ),
+                    )}
+                    {renderIf(requestBody?.schema, (schema) => (
+                      <div className="flex flex-col gap-3">
+                        <Heading
+                          level={4}
+                          className="text-lg! font-semibold flex items-center gap-2"
+                          id={`${operation.slug}/request-body`}
+                        >
+                          {operation.summary && (
+                            <PagefindSearchMeta>
+                              {operation.summary} &rsaquo;{" "}
+                            </PagefindSearchMeta>
+                          )}
+                          Body{" "}
+                          {operation.requestBody?.required === false && (
+                            <Badge variant="muted">optional</Badge>
+                          )}
+                        </Heading>
+                        <SchemaView
+                          schema={withBinaryMediaType(
+                            schema,
+                            requestBody?.mediaType,
+                          )}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 ))}
-                {renderIf(
-                  operation.requestBody?.content?.at(0)?.schema,
-                  (schema) => (
-                    <div className="flex flex-col gap-4">
-                      <Heading
-                        level={3}
-                        className="capitalize flex items-center gap-2"
-                        id={`${operation.slug}/request-body`}
-                      >
-                        {operation.summary && (
-                          <PagefindSearchMeta>
-                            {operation.summary} &rsaquo;{" "}
-                          </PagefindSearchMeta>
-                        )}
-                        Request Body{" "}
-                        {operation.requestBody?.required === false ? (
-                          <Badge variant="muted">optional</Badge>
-                        ) : (
-                          ""
-                        )}
-                      </Heading>
-                      <SchemaView
-                        schema={withBinaryMediaType(
-                          schema,
-                          operation.requestBody?.content?.at(0)?.mediaType,
-                        )}
-                      />
-                    </div>
-                  ),
-                )}
                 <Separator className="my-4" />
                 {operation.responses.length > 0 && (
                   <>
@@ -202,6 +208,8 @@ export const OperationListItem = ({
                       Responses
                     </Heading>
                     <ResponseContent
+                      id={operation.slug}
+                      summary={operation.summary ?? undefined}
                       responses={operation.responses}
                       selectedResponse={selectedResponse}
                       onSelectResponse={setSelectedResponse}

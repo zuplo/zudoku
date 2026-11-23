@@ -139,6 +139,22 @@ export const OperationsFragment = graphql(/* GraphQL */ `
         }
         schema
       }
+      headers {
+        name
+        description
+        required
+        deprecated
+        style
+        explode
+        schema
+        examples {
+          name
+          description
+          externalValue
+          value
+          summary
+        }
+      }
     }
   }
 `);

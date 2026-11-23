@@ -179,6 +179,22 @@ export type OperationsFragmentFragment = {
       }> | null;
       encoding: Array<{ name: string }> | null;
     }> | null;
+    headers: Array<{
+      name: string;
+      description: string | null;
+      required: boolean | null;
+      deprecated: boolean | null;
+      style: string | null;
+      explode: boolean | null;
+      schema: any;
+      examples: Array<{
+        name: string;
+        description: string | null;
+        externalValue: string | null;
+        value: any;
+        summary: string | null;
+      }> | null;
+    }>;
   }>;
 } & { " $fragmentName"?: "OperationsFragmentFragment" };
 
@@ -515,6 +531,22 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
       }
       schema
     }
+    headers {
+      name
+      description
+      required
+      deprecated
+      style
+      explode
+      schema
+      examples {
+        name
+        description
+        externalValue
+        value
+        summary
+      }
+    }
   }
 }
     `,
@@ -731,6 +763,22 @@ export const OperationsForTagDocument = new TypedDocumentString(`
         name
       }
       schema
+    }
+    headers {
+      name
+      description
+      required
+      deprecated
+      style
+      explode
+      schema
+      examples {
+        name
+        description
+        externalValue
+        value
+        summary
+      }
     }
   }
 }`) as unknown as TypedDocumentString<
