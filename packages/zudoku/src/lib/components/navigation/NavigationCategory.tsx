@@ -10,6 +10,7 @@ import { joinUrl } from "../../util/joinUrl.js";
 import { useNavigationFilter } from "./NavigationFilterContext.js";
 import { NavigationItem } from "./NavigationItem.js";
 import {
+  getCategoryLinkHref,
   navigationItemKey,
   navigationListItem,
   useIsCategoryOpen,
@@ -33,13 +34,11 @@ const NavigationCategoryInner = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const linkHref = category.link
-    ? category.link.type === "doc"
-      ? category.link.path
-      : category.link.to
-    : "";
+  // `landing` overrides where the row navigates, falling back to `link`.
+  const categoryTarget = category.landing ?? category.link;
+  const linkHref = categoryTarget ? getCategoryLinkHref(categoryTarget) : "";
   const match = useMatch(linkHref);
-  const isActive = category.link ? match : false;
+  const isActive = categoryTarget ? match : false;
 
   useEffect(() => {
     // this is triggered when an item from the navigation is clicked
@@ -93,7 +92,7 @@ const NavigationCategoryInner = ({
   const styles = navigationListItem({
     className: [
       "group text-start font-medium",
-      isCollapsible || typeof category.link !== "undefined"
+      isCollapsible || typeof categoryTarget !== "undefined"
         ? "cursor-pointer"
         : "cursor-default hover:bg-transparent",
     ],
@@ -108,13 +107,13 @@ const NavigationCategoryInner = ({
         if (!isCollapsible) return;
         // Categories with a link navigate on row click, so they only open here
         // (closing is done via the chevron). Without a link the row toggles.
-        const nextOpen = category.link ? true : value;
+        const nextOpen = categoryTarget ? true : value;
         if (nextOpen !== open) setHasInteracted(true);
         setOpen(nextOpen);
       }}
     >
       <Collapsible.Trigger className="group" asChild disabled={!isCollapsible}>
-        {category.link ? (
+        {categoryTarget ? (
           <NavLink
             to={{
               pathname: joinUrl(linkHref),
