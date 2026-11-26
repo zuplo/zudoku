@@ -642,8 +642,8 @@ importers:
         specifier: 5.3.0
         version: 5.3.0
       '@graphiql/toolkit':
-        specifier: 0.12.1
-        version: 0.12.1(@types/node@22.20.5)(graphql-ws@6.4.1(crossws@0.4.16(srvx@1.0.8))(graphql@16.14.2)(ws@8.22.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)))(graphql@16.14.2)
+        specifier: 1.0.1
+        version: 1.0.1(@types/node@22.20.5)(graphql-ws@6.4.1(crossws@0.4.16(srvx@1.0.8))(graphql@16.14.2)(ws@8.22.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)))(graphql@16.14.2)
       '@graphql-typed-document-node/core':
         specifier: 3.2.0
         version: 3.2.0(graphql@16.14.2)
@@ -2662,10 +2662,10 @@ packages:
     resolution: {integrity: sha512-JUOtgFW6k9u4Y+xeIaEiLr3+cjoUPiAuLXoyKOJSia6Duzb7pq+A76P9ZdPDoAoxHdHzq6gE9/jKBGXlZT8FbA==}
     engines: {node: '>=6'}
 
-  '@graphiql/toolkit@0.12.1':
-    resolution: {integrity: sha512-OuHVUIvPL7nz3uAdG9eyZ5cZx87JH+XMOHiXgv3foYZWBPW8FNMGUyFflxP70jhv7bX9UPyYmRsTIJ+GSlK0PQ==}
+  '@graphiql/toolkit@1.0.1':
+    resolution: {integrity: sha512-CCvd5IYIBWrgVXimg5iUG30tJo/VnFDh+97if9Ee/FCfzoZIA9iBn9BRY5zfq1Q/MqCpGqDA0DoYjpdJraqVkw==}
     peerDependencies:
-      graphql: ^15.5.0 || ^16.0.0 || ^17.0.0
+      graphql: ^16.11.0 || ^17.0.0
       graphql-ws: '>= 4.5.0'
     peerDependenciesMeta:
       graphql-ws:
@@ -11266,7 +11266,7 @@ snapshots:
 
   '@fortawesome/fontawesome-free@6.7.2': {}
 
-  '@graphiql/toolkit@0.12.1(@types/node@22.20.5)(graphql-ws@6.4.1(crossws@0.4.16(srvx@1.0.8))(graphql@16.14.2)(ws@8.22.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)))(graphql@16.14.2)':
+  '@graphiql/toolkit@1.0.1(@types/node@22.20.5)(graphql-ws@6.4.1(crossws@0.4.16(srvx@1.0.8))(graphql@16.14.2)(ws@8.22.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)))(graphql@16.14.2)':
     dependencies:
       '@n1ru4l/push-pull-async-iterable-iterator': 3.2.0
       graphql: 16.14.2

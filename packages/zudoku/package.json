@@ -94,7 +94,7 @@
     "@envelop/core": "5.6.1",
     "@fontsource-variable/geist": "5.3.0",
     "@fontsource-variable/geist-mono": "5.3.0",
-    "@graphiql/toolkit": "0.12.1",
+    "@graphiql/toolkit": "1.0.1",
     "@graphql-typed-document-node/core": "3.2.0",
     "@hono/node-server": "2.1.6",
     "@lekoarts/rehype-meta-as-attributes": "3.0.3",
