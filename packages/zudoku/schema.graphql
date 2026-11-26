@@ -19,6 +19,7 @@ type EncodingItem {
 type ExampleItem {
   description: String
   externalValue: String
+  hasValue: Boolean!
   name: String!
   summary: String
   value: JSON

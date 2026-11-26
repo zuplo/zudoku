@@ -54,6 +54,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
         description
         externalValue
         value
+        hasValue
         summary
       }
     }
