@@ -8,7 +8,7 @@ import { ZuploEnv } from "../app/env.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { type ConfigWithMeta, loadZudokuConfig } from "../config/loader.js";
 import { getBuildConfig } from "../config/validators/BuildSchema.js";
-import { getIssuer } from "../lib/auth/issuer.js";
+import { getZuploAuthSettings } from "../lib/auth/zuplo-auth-settings.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig } from "./config.js";
@@ -244,7 +244,7 @@ const findServerConfigFilename = (result: Rolldown.RolldownOutput) => {
 const runPrerender = async (options: PrerenderOptions) => {
   const { dir, config, html, clientOutDir, serverOutDir, serverResult } =
     options;
-  const issuer = await getIssuer(config);
+  const zuploAuthSettings = await getZuploAuthSettings(config);
   const serverConfigFilename = findServerConfigFilename(serverResult);
 
   try {
@@ -304,12 +304,10 @@ const runPrerender = async (options: PrerenderOptions) => {
         : undefined,
     });
 
-    if (ZuploEnv.isZuplo && issuer) {
-      const provider = config.authentication?.type;
-
+    if (ZuploEnv.isZuplo && zuploAuthSettings) {
       await writeFile(
         path.join(dir, DIST_DIR, ".output/zuplo.json"),
-        JSON.stringify({ issuer, provider }, null, 2),
+        JSON.stringify(zuploAuthSettings, null, 2),
         "utf-8",
       );
     }
