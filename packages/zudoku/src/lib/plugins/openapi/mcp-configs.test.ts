@@ -4,6 +4,7 @@ import {
   getAuthHeader,
   getAuthType,
   getClaudeCodeCommand,
+  getClaudeConnectorLink,
   getCodexCliCommand,
   getCodexConfig,
   getCursorConfig,
@@ -675,5 +676,32 @@ describe("getVscodeDeepLink", () => {
       url: "https://api.example.com/mcp",
       headers: { "X-API-Key": "YOUR_API_KEY" },
     });
+  });
+});
+
+describe("getClaudeConnectorLink", () => {
+  it("prefills the add-custom-connector dialog with name and url", () => {
+    const link = getClaudeConnectorLink(
+      "Cosmo Cargo",
+      "https://api.example.com/mcp?region=mars",
+    );
+    const url = new URL(link);
+    expect(url.origin).toBe("https://claude.ai");
+    expect(url.pathname).toBe("/customize/connectors");
+    expect(url.searchParams.get("modal")).toBe("add-custom-connector");
+    expect(url.searchParams.get("connectorName")).toBe("Cosmo Cargo");
+    expect(url.searchParams.get("connectorUrl")).toBe(
+      "https://api.example.com/mcp?region=mars",
+    );
+  });
+
+  it("percent-encodes values so they can't leak into other params", () => {
+    const link = getClaudeConnectorLink(
+      "A & B",
+      "https://api.example.com/mcp?a=1&b=2",
+    );
+    expect(link).toBe(
+      "https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=A%20%26%20B&connectorUrl=https%3A%2F%2Fapi.example.com%2Fmcp%3Fa%3D1%26b%3D2",
+    );
   });
 });
